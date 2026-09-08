@@ -164,6 +164,12 @@ Suity testowe pilnują dwóch rzeczy, których żaden z powyższych skryptów ni
 - `tests/dom/` — kontrakt ćwiczeń. `onDone(ok)` woła się **dokładnie raz** dla
   każdego z 13 typów. Na tym opiera się licznik postępu: drugie wywołanie niczego
   nie wywraca, tylko po cichu zawyża wynik.
+- `tests/dom/contrast.spec.js` — kontrast liczony **przez przeglądarkę**, w obu
+  motywach. Paleta jest w OKLCH, a zewnętrzne narzędzia a11y czytają
+  `oklch(0.31 0.035 350)` jako trójkę RGB i wypisują kanał „350": ich wynik jest
+  artefaktem parsera, nie pomiarem. Tutaj kolor idzie na canvas 1×1 i wraca jako
+  sRGB, więc konwersję robi silnik i próg jest prawdziwy. Ten gate złapał
+  obramowanie zakładki przy 1.58:1 i licznik przy 2.58:1.
 
 `validate.mjs` uruchamia prawdziwe pliki danych w piaskownicy `node:vm` i scala je **tym samym**
 `assets/js/i18n.js`, którego używa przeglądarka — sprawdza więc dane po scaleniu, nie ich kopię.

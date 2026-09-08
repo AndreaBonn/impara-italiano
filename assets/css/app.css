@@ -635,10 +635,14 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
 
 /* ══════════════════ ZAKŁADKI ══════════════════ */
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+/* Obramowanie z --ink-faint, nie z --line-strong: to drugie daje 1.58:1
+   w jasnym i 1.80:1 w ciemnym, czyli granica kontrolki znika w tle.
+   Wypełnienie zakładki jest prawie w kolorze strony, więc to obramowanie
+   niesie kształt przycisku i musi przejść próg 3:1 (WCAG 1.4.11). */
 .tab{
   display:inline-flex;align-items:center;gap:8px;
   min-height:44px;padding:9px 18px;border-radius:var(--r-m);
-  background:var(--paper-2);border:2px solid var(--line-strong);
+  background:var(--paper-2);border:2px solid var(--ink-faint);
   font-family:inherit;font-size:.94rem;font-weight:600;color:var(--ink);cursor:pointer;
 }
 .tab:hover{border-color:var(--rosa-mid);}

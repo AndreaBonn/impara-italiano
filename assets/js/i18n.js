@@ -1,0 +1,137 @@
+/* ============================================================
+   i18n.js — magazyn tłumaczeń i scalanie ich z danymi kursu.
+
+   Dane w data/core/ są neutralne językowo: struktura, włoski,
+   klucze odpowiedzi. Teksty w języku ucznia leżą osobno
+   w data/i18n/<lang>/ i doklejają się tutaj, po id.
+
+   Scalanie jest idempotentne: pola neutralne nigdy nie są
+   nadpisywane, więc drugi język można nałożyć na te same
+   obiekty bez przeładowania strony.
+
+   Brak zależności zewnętrznych. Skrypt klasyczny (działa z file://).
+   ============================================================ */
+(function (global) {
+  "use strict";
+
+  var LINGUAI = global.LINGUAI = global.LINGUAI || {};
+
+  /* lang -> klucz („lesson:a1-u01-l1") -> łatka */
+  var store = {};
+
+  /** Rejestruje łatki jednego pliku. Wywoływane przez data/i18n/<lang>/*.js */
+  function addStrings(lang, map) {
+    var bag = store[lang] || (store[lang] = {});
+    Object.keys(map).forEach(function (k) { bag[k] = map[k]; });
+  }
+
+  function get(lang, key) {
+    var bag = store[lang];
+    return (bag && bag[key]) || null;
+  }
+
+  function hasLang(lang) { return !!store[lang]; }
+
+  /* ---------------- Prymitywy scalania ---------------- */
+
+  /** Kopiuje wyłącznie klucze obecne w łatce: nie tworzy pól, których nie było. */
+  function copy(target, patch, keys) {
+    for (var i = 0; i < keys.length; i++) {
+      if (patch[keys[i]] !== undefined) target[keys[i]] = patch[keys[i]];
+    }
+  }
+
+  /** Dokleja wartość tekstową do elementu tablicy, po indeksie. */
+  function byIndex(list, values, field) {
+    if (!list || !values) return;
+    for (var i = 0; i < list.length; i++) {
+      if (values[i] !== undefined) list[i][field] = values[i];
+    }
+  }
+
+  /** Kopiuje wskazane pola do każdego elementu tablicy, po indeksie. */
+  function objByIndex(list, patches, keys) {
+    if (!list || !patches) return;
+    for (var i = 0; i < list.length; i++) {
+      if (patches[i]) copy(list[i], patches[i], keys);
+    }
+  }
+
+  /* ---------------- Węzły kursu ---------------- */
+
+  var EX_KEYS = ["q", "why", "hint", "tr", "setting", "opts"];
+
+  function applyExercise(ex, p) {
+    if (!ex || !p) return;
+    copy(ex, p, EX_KEYS);
+    byIndex(ex.pairs, p.pairs, "tr");
+    byIndex(ex.items, p.items, "gloss");
+    objByIndex(ex.lines, p.lines, ["tr", "answerTr"]);
+  }
+
+  function applyGrammar(g, p) {
+    if (!g || !p) return;
+    copy(g, p, ["title", "note", "table"]);
+    objByIndex(g.examples, p.examples, ["tr", "note"]);
+  }
+
+  function applyLesson(L, lang) {
+    var p = L && get(lang, "lesson:" + L.id);
+    if (!p) return;
+    copy(L, p, ["title", "theme", "objectives", "theory", "culture"]);
+    applyGrammar(L.grammar, p.grammar);
+    byIndex(L.vocab, p.vocab, "tr");
+    if (L.dialogue) byIndex(L.dialogue.lines, p.dialogue, "tr");
+    if (L.exercises && p.exercises) {
+      for (var i = 0; i < L.exercises.length; i++) applyExercise(L.exercises[i], p.exercises[i]);
+    }
+  }
+
+  function applyUnit(u, lang) {
+    var p = get(lang, "unit:" + u.id);
+    if (p) copy(u, p, ["title", "grammarNote"]);
+    (u.lessons || []).forEach(function (l) { applyLesson(l, lang); });
+    if (u.test) applyLesson(u.test, lang);
+  }
+
+  function applyLevel(lv, lang) {
+    var p = get(lang, "level:" + lv.code);
+    if (p) copy(lv, p, ["name", "desc"]);
+    (lv.units || []).forEach(function (u) { applyUnit(u, lang); });
+  }
+
+  function applyConversation(c, lang) {
+    var p = get(lang, "conv:" + c.id);
+    if (!p) return;
+    copy(c, p, ["title", "setting", "closing"]);
+    objByIndex(c.turns, p.turns, ["tr", "task"]);
+  }
+
+  function applyRef(lang) {
+    var secs = global.GRAMMAR_REF || [];
+    var heads = get(lang, "refsec:titles");
+    secs.forEach(function (sec, i) {
+      if (heads && heads[i] !== undefined) sec.title = heads[i];
+      (sec.items || []).forEach(function (it) {
+        var p = get(lang, "ref:" + it.id);
+        if (p) copy(it, p, ["title", "sub", "body"]);
+      });
+    });
+  }
+
+  /**
+   * Nakłada teksty wybranego języka na wszystko, co jest już wczytane.
+   * Bezpieczne do wielokrotnego wywołania i do zmiany języka w locie.
+   */
+  function applyStrings(lang) {
+    var reg = global.Core && global.Core.registry;
+    if (reg) reg.levels.forEach(function (lv) { applyLevel(lv, lang); });
+    (global.CONVERSATIONS || []).forEach(function (c) { applyConversation(c, lang); });
+    applyRef(lang);
+  }
+
+  LINGUAI.addStrings = addStrings;
+  LINGUAI.applyStrings = applyStrings;
+  LINGUAI.hasStrings = hasLang;
+
+})(window);

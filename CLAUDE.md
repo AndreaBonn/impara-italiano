@@ -115,9 +115,25 @@ kolejne przebiegi nie generują ruchu w gicie.
 ```bash
 node scripts/validate.mjs           # duplikaty id, kompletność ćwiczeń, statystyki (domyślnie pl)
 node scripts/validate.mjs en        # to samo dla nakładki angielskiej
+node scripts/parity.mjs             # czy każdy język ma ten sam kształt co polski
 node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 python3 -m http.server 8080         # serwer do testów w przeglądarce
+```
+
+`parity.mjs` jest bramką dla nowego języka. Nakładki łączą się z warstwą neutralną **po indeksie**,
+więc tablica krótsza o jeden element niczego nie wywraca: jedno ćwiczenie po cichu zostaje w
+poprzednim języku. Skrypt porównuje kształt (klucze i długości, nie treść) każdej nakładki z polską
+i kończy się kodem 1 przy różnicy.
+
+Do testów w przeglądarce lepszy jest serwer bez cache. Zwykły `http.server` trzyma stare skrypty
+mimo zmian na dysku i strona pokazuje nieprawdę:
+
+```python
+class NoCache(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
 ```
 
 `validate.mjs` uruchamia prawdziwe pliki danych w piaskownicy `node:vm` i scala je **tym samym**
@@ -136,5 +152,8 @@ od języka wyjaśnień i dopisanie języka nie wymaga generowania ani jednego mp
   Amerykanina poprawna i bezużyteczna naraz.
 - **Próg 70%** zaliczenia lekcji (`Core.recordLesson`). Zmiana rozjeżdża opisy w treści lekcji.
 - **Kolejność jednostek.** Gramatyka jest kumulatywna: A2 zakłada opanowanie A1, B1 zakłada A2.
-- **Klucz `localStorage`** (`linguai.italiano.pl.v1`) i pole `schema`. Zmiana schematu wymaga
-  podniesienia numeru, inaczej stare zapisy wczytają się w niespójnym stanie.
+- **Klucz `localStorage`** (`linguai.italiano.v2`) i pole `schema`. Zmiana schematu wymaga
+  podniesienia numeru **i napisania migracji** w `core.js`, inaczej stare zapisy wczytają się
+  w niespójnym stanie. Migracja v1 → v2 (przekluczowanie fiszek na sam włoski) jest tam wzorem.
+- **Klucz fiszki to sam włoski.** Gdyby wchodziło w niego tłumaczenie, zmiana języka wyjaśnień
+  osierociłaby całą talię: to samo słowo, inny klucz, harmonogram powtórek do wyrzucenia.

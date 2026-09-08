@@ -62,6 +62,11 @@ Dwa miejsca wymagają uwagi:
   nie są wypowiadane, więc powielenie ich w każdym języku nic nie kosztuje po stronie nagrań.
 - **`gender.opts` zostaje w `core`**, mimo że to też `opts`. To zamknięty zbiór form włoskich,
   który musi się zgadzać z `items[].a`; wystawienie go na tłumaczenie psuje sprawdzanie.
+- **W warstwie neutralnej nie ma ani jednego słowa w języku ucznia.** Etykieta konstrukcji pisze
+  się po włosku (`dopo aver + participio`, nie `+ imiesłów`), a prompt ćwiczenia po włosku
+  (`Colloquiale:`, nie `Potocznie:`). Dopóki polski był jedynym językiem bazowym, taki wyciek był
+  niewidoczny: wyglądał jak poprawny tekst. Sprawdzenie to grep po `[ąęłżźćńś]` w `data/core/`
+  — jedyne trafienia to nagłówki plików.
 
 Tablice łączą się **po indeksie**, więc ich długość musi być identyczna po obu stronach.
 `LINGUAI.applyStrings(lang)` (`assets/js/i18n.js`) jest idempotentne i nigdy nie nadpisuje pól

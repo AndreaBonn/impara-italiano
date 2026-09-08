@@ -1,7 +1,10 @@
 # CLAUDE.md — Impara l'Italiano
 
-Statyczna platforma do nauki włoskiego z wyjaśnieniami po polsku. Bez backendu, bez build stepu,
-bez zależności zewnętrznych poza fontami Google.
+Statyczna platforma do nauki włoskiego z wyjaśnieniami w języku ucznia. Bez backendu,
+bez build stepu, bez zależności zewnętrznych poza fontami Google.
+
+Włoski jest zawsze językiem **uczonym**. Językiem **wyjaśnień** jest polski albo angielski
+(`en` = odmiana amerykańska, locale `en-US`) i uczeń go wybiera; `settings.lang` trzyma wybór.
 
 ## Zasady techniczne projektu
 
@@ -12,21 +15,57 @@ bez zależności zewnętrznych poza fontami Google.
   zgodnym z przeglądarkami od 2020.
 - **Dane oddzielone od silnika.** Pliki w `data/` zawierają wyłącznie treść. Logika renderowania
   siedzi w `assets/js/` i nie wie nic o konkretnych lekcjach.
-- **Leniwe ładowanie poziomów.** `Core.loadLevelData(code, cb)` wstrzykuje `<script>` dla plików
-  danego poziomu. Nowy poziom = wpis w `data/curriculum-index.js` z tablicą `dataFiles`.
+- **Dane w dwóch warstwach.** `data/core/<plik>.js` to warstwa neutralna językowo, a
+  `data/i18n/<lang>/<plik>.js` to teksty w języku ucznia. Ta sama nazwa pliku po obu stronach.
+  Włoskie zdanie istnieje **w jednym miejscu**, więc nazwy nagrań (liczone z jego treści)
+  nie mogą się rozjechać między językami. Nowy język = jeden katalog `data/i18n/<lang>/`,
+  bez kopiowania kursu.
+- **Leniwe ładowanie poziomów.** `Core.loadLevelData(code, cb)` wstrzykuje `<script>` najpierw
+  dla warstwy neutralnej, potem dla tekstów, i dopiero wtedy woła `LINGUAI.applyStrings(lang)`.
+  Nowy poziom = wpis w `data/core/curriculum-index.js` z tablicą `dataFiles` (same nazwy plików,
+  bez katalogu).
 
 ## Kontrakty
 
-### Lekcja
+### Lekcja — kształt po scaleniu
 ```js
-{ id, cefr, themePl, titleIt, titlePl, objectivesPl[],
-  theory[], grammar{title,note,table{head,rows},examples[]},
-  vocab[{it,pl,ex}], dialogue{titleIt,lines[]}, culture{titlePl,textPl},
+{ id, cefr, titleIt, title, theme, objectives[],
+  theory[], grammar{title,note,table{head,rows},examples[{it,tr,note}]},
+  vocab[{it,tr,ex}], dialogue{titleIt,lines[{who,it,tr}]}, culture{title,text},
   exercises[] }
 ```
-Pola `theory[]` przyjmują stringi albo obiekty: `{h,p}`, `{list}`, `{trap}`, `{pl}`, `{tip}`.
-Zawartość `p`, `trap`, `pl`, `tip` jest wstawiana jako HTML (celowo, dla wyróżnień) — nie wolno tam
-wstawiać treści pochodzącej od użytkownika.
+Pola `theory[]` przyjmują stringi albo obiekty: `{h,p}`, `{list}`, `{trap}`, `{contrast}`, `{tip}`.
+`{contrast}` to uwaga „w twoim języku jest inaczej” — pisze się ją **od nowa** dla każdego języka,
+nie tłumaczy: dla Polaka chodzi o rodzaj nijaki i deklinację, dla Amerykanina o to, że angielski
+nie ma rodzaju gramatycznego w ogóle. Zawartość `p`, `trap`, `contrast`, `tip` jest wstawiana jako
+HTML (celowo, dla wyróżnień) — nie wolno tam wstawiać treści pochodzącej od użytkownika.
+
+### Podział pola na warstwy
+
+Reguła: w `core` siedzi to, co jest włoskie, sprawdza odpowiedź albo trzyma strukturę.
+W nakładce siedzi to, co uczeń czyta po swojemu.
+
+| `data/core/` | `data/i18n/<lang>/` |
+|---|---|
+| `id`, `cefr`, `icon`, `titleIt` | `title`, `theme`, `objectives[]`, całe `theory[]`, całe `culture` |
+| `grammar.examples[].it` | `grammar.title`, `note`, **cała** `table` (head i rows), `examples[].tr` i `.note` |
+| `vocab[].it`, `.ex` | `vocab[]` → `tr` |
+| `dialogue.lines[].who`, `.it` | `dialogue.lines[]` → `tr` |
+| `t`, `a`, `dir`, `verb`, `tense`, `persons`, `tokens`, `text`, `gaps`, `it`, `alt`, `say` | `q`, `why`, `hint`, `tr`, `setting`, **całe** `opts[]` |
+| `pairs[].it`, `items[].it` i `.a`, `lines[].it`, `.sp`, `.choices`, `.a` | `pairs[].tr`, `items[].gloss`, `lines[].tr` i `.answerTr` |
+
+Dwa miejsca wymagają uwagi:
+
+- **`grammar.table` i `ex.opts` idą w całości do nakładki**, razem z włoskimi komórkami. Nie ma
+  w nich znacznika, która kolumna jest po włosku, a która po polsku — zależy to od tabeli.
+  Decyzję „to tłumaczę, tego nie ruszam” podejmuje więc tłumacz, nie skrypt. Te napisy nigdy
+  nie są wypowiadane, więc powielenie ich w każdym języku nic nie kosztuje po stronie nagrań.
+- **`gender.opts` zostaje w `core`**, mimo że to też `opts`. To zamknięty zbiór form włoskich,
+  który musi się zgadzać z `items[].a`; wystawienie go na tłumaczenie psuje sprawdzanie.
+
+Tablice łączą się **po indeksie**, więc ich długość musi być identyczna po obu stronach.
+`LINGUAI.applyStrings(lang)` (`assets/js/i18n.js`) jest idempotentne i nigdy nie nadpisuje pól
+neutralnych — dlatego drugi język można nałożyć na te same obiekty bez przeładowania strony.
 
 ### Ćwiczenie
 Typ w polu `t`. Dwanaście typów obsługiwanych w `assets/js/exercises.js`:
@@ -74,19 +113,27 @@ kolejne przebiegi nie generują ruchu w gicie.
 ## Kontrola jakości
 
 ```bash
-node scripts/validate.mjs           # duplikaty id, kompletność ćwiczeń, statystyki
+node scripts/validate.mjs           # duplikaty id, kompletność ćwiczeń, statystyki (domyślnie pl)
+node scripts/validate.mjs en        # to samo dla nakładki angielskiej
 node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 python3 -m http.server 8080         # serwer do testów w przeglądarce
 ```
 
-`validate.mjs` uruchamia pliki danych w piaskownicy `node:vm` ze stubem `LINGUAI`, więc sprawdza
-prawdziwe dane, nie ich kopię. Kończy się kodem 1 przy błędzie — nadaje się do CI.
+`validate.mjs` uruchamia prawdziwe pliki danych w piaskownicy `node:vm` i scala je **tym samym**
+`assets/js/i18n.js`, którego używa przeglądarka — sprawdza więc dane po scaleniu, nie ich kopię.
+Kończy się kodem 1 przy błędzie, nadaje się do CI.
+
+`extract_strings.mjs` czyta **wyłącznie `data/core/`**. To nie oszczędność, tylko dowód: gdyby
+wypowiadany napis mógł mieszkać w nakładce, ten skrypt by go tam nie znalazł. Nagrania nie zależą
+od języka wyjaśnień i dopisanie języka nie wymaga generowania ani jednego mp3.
 
 ## Czego nie zmieniać bez powodu
 
-- **Wyjaśnienia po polsku.** Kurs jest adresowany do Polaków; kontrastywne uwagi „po polsku jest
-  inaczej” to jego główna wartość wobec Duolingo. Bloki `{pl:...}` w teorii istnieją właśnie po to.
+- **Kontrastywność wyjaśnień.** Uwagi „w twoim języku jest inaczej” to główna wartość kursu wobec
+  Duolingo. Bloki `{contrast:...}` i `{trap:...}` istnieją właśnie po to i są **pisane pod konkretny
+  język**, nie tłumaczone z polskiego. Przetłumaczona dosłownie uwaga o polskiej deklinacji jest dla
+  Amerykanina poprawna i bezużyteczna naraz.
 - **Próg 70%** zaliczenia lekcji (`Core.recordLesson`). Zmiana rozjeżdża opisy w treści lekcji.
 - **Kolejność jednostek.** Gramatyka jest kumulatywna: A2 zakłada opanowanie A1, B1 zakłada A2.
 - **Klucz `localStorage`** (`linguai.italiano.pl.v1`) i pole `schema`. Zmiana schematu wymaga

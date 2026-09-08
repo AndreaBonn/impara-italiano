@@ -19,7 +19,7 @@
   var LINGUAI = global.LINGUAI = global.LINGUAI || {};
 
   /* Kod języka -> locale BCP-47. „en" znaczy angielski amerykański. */
-  var LOCALE = { pl: "pl-PL", en: "en-US" };
+  var LOCALE = { pl: "pl-PL", en: "en-US", es: "es-ES", fr: "fr-FR", de: "de-DE" };
   var FALLBACK = "en";
 
   /**

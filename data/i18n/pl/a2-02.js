@@ -596,7 +596,7 @@ LINGUAI.addStrings("pl", {
       },
       examples: [
         { tr: "W tym biurze pracuje się także w soboty." },
-        { tr: "Jak się mówi „biurko” po włosku?" },
+        { tr: "Jak się mówi „laptop” po włosku?" },
         { tr: "Tu się nie pali." },
         { tr: "W tej okolicy sprzedaje się mieszkania." },
         { tr: "Kiedy jest się nowym, zadaje się dużo pytań." },
@@ -834,7 +834,7 @@ LINGUAI.addStrings("pl", {
       { q: "Uzupełnij: „Buon appetito! — ___!” (nawzajem)" },
       {
         q: "Połącz okazję z życzeniem.",
-        pairs: ["tanti auguri", "buon anno", "congratulazioni", "buon viaggio"]
+        pairs: ["urodziny", "Nowy Rok", "awans", "podróż"]
       },
       {
         q: "Co to „il ponte” w kalendarzu?",

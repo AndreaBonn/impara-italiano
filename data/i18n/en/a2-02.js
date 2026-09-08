@@ -596,7 +596,7 @@ LINGUAI.addStrings("en", {
       },
       examples: [
         { tr: "In this office people work Saturdays too." },
-        { tr: "How do you say \"desk\" in Italian?" },
+        { tr: "How do you say \"laptop\" in Italian?" },
         { tr: "There's no smoking here." },
         { tr: "Apartments are for sale in this area." },
         { tr: "When you're new, you ask a lot of questions." },
@@ -834,7 +834,7 @@ LINGUAI.addStrings("en", {
       { q: "Fill in: \"Buon appetito! — ___!\" (you too)" },
       {
         q: "Match the occasion with the wish.",
-        pairs: ["tanti auguri", "buon anno", "congratulazioni", "buon viaggio"]
+        pairs: ["birthday", "New Year", "promotion", "trip"]
       },
       {
         q: "What is \"il ponte\" on the calendar?",

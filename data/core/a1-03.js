@@ -385,7 +385,7 @@ LINGUAI.addUnits("A1", [
         },
         vocab: [
           { it: "stare + gerundio" },
-          { it: "stare per + bezokolicznik" },
+          { it: "stare per + infinito" },
           { it: "adesso / ora" },
           { it: "in questo momento" },
           { it: "aspettare" },

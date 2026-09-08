@@ -442,7 +442,7 @@ LINGUAI.addUnits("C1", [
           { t: "fill", a: ["va"] },
           {
             t: "cloze",
-            text: "Urzędowo: „Si comunica che l'istanza di cui sopra è irricevibile.” Prościej: Vi {{1}} che la domanda indicata prima non {{2}} essere accettata.",
+            text: "Burocratese: «Si comunica che l'istanza di cui sopra è irricevibile.» Più semplice: Vi {{1}} che la domanda indicata prima non {{2}} essere accettata.",
             gaps: [["informiamo"], ["può"]]
           },
           {
@@ -496,7 +496,7 @@ LINGUAI.addUnits("C1", [
           { t: "mcq", a: 1 },
           {
             t: "cloze",
-            text: "Standardowo: „Non ricordo quella storia.” Z dislokacją: Quella storia, non {{1}} {{2}} ricordo.",
+            text: "Standard: «Non ricordo quella storia.» Con dislocazione: Quella storia, non {{1}} {{2}} ricordo.",
             gaps: [["me"], ["la"]]
           },
           { t: "trans", dir: "toIt", a: ["a roma non ci sono mai stato", "a roma non ci sono mai stata"] },

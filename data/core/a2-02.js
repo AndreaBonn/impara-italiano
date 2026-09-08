@@ -422,7 +422,7 @@ LINGUAI.addUnits("A2", [
         grammar: {
           examples: [
             { it: "In questo ufficio si lavora anche il sabato." },
-            { it: "Come si dice „biurko” in italiano?" },
+            { it: "Come si dice «laptop» in italiano?" },
             { it: "Qui non si fuma." },
             { it: "Si vendono appartamenti in questa zona." },
             { it: "Quando si è nuovi, si fanno molte domande." },
@@ -610,7 +610,15 @@ LINGUAI.addUnits("A2", [
           { t: "mcq", a: 1 },
           { t: "fill", a: ["viaggio"] },
           { t: "fill", a: ["altrettanto"] },
-          { t: "match", pairs: [{ it: "urodziny" }, { it: "Nowy Rok" }, { it: "awans" }, { it: "podróż" }] },
+          {
+            t: "match",
+            pairs: [
+              { it: "tanti auguri" },
+              { it: "buon anno" },
+              { it: "congratulazioni" },
+              { it: "buon viaggio" }
+            ]
+          },
           { t: "mcq", a: 1 },
           { t: "mcq", a: 1 },
           { t: "trans", dir: "toIt", a: ["buone feste a te e alla tua famiglia"] },

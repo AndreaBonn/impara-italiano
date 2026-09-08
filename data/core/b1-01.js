@@ -72,7 +72,7 @@ LINGUAI.addUnits("B1", [
         vocab: [
           { it: "benché / sebbene" },
           { it: "nonostante" },
-          { it: "affinché / perché (aby)" },
+          { it: "affinché / perché (finale)" },
           { it: "purché" },
           { it: "a meno che (non)" },
           { it: "prima che" },

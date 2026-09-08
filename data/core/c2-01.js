@@ -80,8 +80,8 @@ LINGUAI.addUnits("C2", [
           { it: "escludere" },
           { it: "la destinazione" },
           { it: "accorgersi di" },
-          { it: "una volta + imiesłów" },
-          { it: "appena + imiesłów" },
+          { it: "una volta + participio" },
+          { it: "appena + participio" },
           { it: "il presupposto" },
           { it: "in via preliminare" }
         ],
@@ -130,7 +130,7 @@ LINGUAI.addUnits("C2", [
           { it: "accingersi a" },
           { it: "seguitare a" },
           { it: "andare + gerundio" },
-          { it: "andare + imiesłów" },
+          { it: "andare + participio" },
           { it: "avere da" },
           { it: "esserci da" },
           { it: "rinunciare" },
@@ -441,7 +441,7 @@ LINGUAI.addUnits("C2", [
           { t: "mcq", a: 1 },
           {
             t: "match",
-            pairs: [{ it: "anguria" }, { it: "cocomero" }, { it: "mo'" }, { it: "passato remoto w mowie" }]
+            pairs: [{ it: "anguria" }, { it: "cocomero" }, { it: "mo'" }, { it: "passato remoto parlato" }]
           },
           { t: "fill", a: ["affatto"] },
           { t: "mcq", a: 1 },

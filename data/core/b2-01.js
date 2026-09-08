@@ -269,7 +269,7 @@ LINGUAI.addUnits("B2", [
           { t: "mcq", a: 1 },
           {
             t: "cloze",
-            text: "Potocznie: „Se lo sapevo, non venivo.” Standardowo: Se l'{{1}} saputo, non {{2}} venuto.",
+            text: "Colloquiale: «Se lo sapevo, non venivo.» Standard: Se l'{{1}} saputo, non {{2}} venuto.",
             gaps: [["avessi"], ["sarei"]]
           },
           {
@@ -485,12 +485,12 @@ LINGUAI.addUnits("B2", [
           ]
         },
         vocab: [
-          { it: "dopo aver + imiesłów" },
-          { it: "prima di + bezokolicznik" },
+          { it: "dopo aver + participio" },
+          { it: "prima di + infinito" },
           { it: "essendo" },
           { it: "avendo" },
           { it: "pur + gerundio" },
-          { it: "una volta + imiesłów" },
+          { it: "una volta + participio" },
           { it: "riflettere" },
           { it: "concludere" },
           { it: "sintetico" },

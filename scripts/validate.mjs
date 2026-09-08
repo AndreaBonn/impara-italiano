@@ -1,0 +1,190 @@
+/* ============================================================
+   validate.mjs — kontrola spójności danych kursu
+   Uruchomienie:  node scripts/validate.mjs
+   Sprawdza: duplikaty id, brakujące pola, poprawność ćwiczeń,
+   zgodność odpowiedzi mcq z liczbą opcji, statystyki.
+   ============================================================ */
+import { readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import vm from "node:vm";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+const EX_TYPES = new Set([
+  "mcq", "multi", "fill", "cloze", "trans", "order", "match",
+  "conj", "gender", "listen", "speak", "dialogue", "truefalse"
+]);
+
+const levels = [];
+const byCode = {};
+const errors = [];
+const warnings = [];
+
+const sandbox = {
+  window: {},
+  console,
+  LINGUAI: {
+    registerLevel(lv) {
+      if (byCode[lv.code]) errors.push(`Poziom ${lv.code} zarejestrowany dwa razy`);
+      lv.units = lv.units || [];
+      levels.push(lv);
+      byCode[lv.code] = lv;
+    },
+    addUnits(code, units) {
+      if (!byCode[code]) { errors.push(`addUnits dla nieznanego poziomu: ${code}`); return; }
+      byCode[code].units = byCode[code].units.concat(units);
+    }
+  }
+};
+sandbox.window = sandbox;
+vm.createContext(sandbox);
+
+function run(file) {
+  const src = readFileSync(join(ROOT, "data", file), "utf8");
+  try {
+    vm.runInContext(src, sandbox, { filename: file });
+  } catch (e) {
+    errors.push(`${file}: ${e.message}`);
+  }
+}
+
+run("curriculum-index.js");
+const dataFiles = readdirSync(join(ROOT, "data"))
+  .filter(f => /^[abc]\d-\d+\.js$/.test(f))
+  .sort();
+dataFiles.forEach(run);
+run("conversations.js");
+run("grammar-reference.js");
+
+/* ---------------- Walidacja ---------------- */
+const ids = new Map();
+let nUnits = 0, nLessons = 0, nEx = 0, nVocab = 0;
+const exByType = {};
+
+function checkExercise(ex, where) {
+  if (!ex.t) { errors.push(`${where}: ćwiczenie bez pola t`); return; }
+  if (!EX_TYPES.has(ex.t)) errors.push(`${where}: nieznany typ „${ex.t}”`);
+  exByType[ex.t] = (exByType[ex.t] || 0) + 1;
+
+  if (ex.t === "mcq" || ex.t === "truefalse") {
+    const n = (ex.opts || []).length;
+    if (ex.t === "mcq" && n < 2) errors.push(`${where}: mcq ma mniej niż 2 opcje`);
+    if (typeof ex.a !== "number") errors.push(`${where}: mcq bez indeksu odpowiedzi`);
+    else if (n && (ex.a < 0 || ex.a >= n)) errors.push(`${where}: indeks odpowiedzi poza zakresem`);
+  }
+  if (ex.t === "multi") {
+    if (!Array.isArray(ex.a) || !ex.a.length) errors.push(`${where}: multi bez tablicy odpowiedzi`);
+    else ex.a.forEach(i => { if (i < 0 || i >= (ex.opts || []).length) errors.push(`${where}: multi — indeks poza zakresem`); });
+  }
+  if (ex.t === "fill" || ex.t === "trans") {
+    const acc = Array.isArray(ex.a) ? ex.a : [ex.a];
+    if (!acc.length || acc.some(x => typeof x !== "string" || !x.length)) {
+      errors.push(`${where}: ${ex.t} bez poprawnej odpowiedzi`);
+    }
+  }
+  if (ex.t === "cloze") {
+    const n = (String(ex.text || "").match(/\{\{\d+\}\}/g) || []).length;
+    if (!Array.isArray(ex.gaps)) errors.push(`${where}: cloze bez gaps`);
+    else if (n !== ex.gaps.length) errors.push(`${where}: cloze — ${n} luk, ${ex.gaps.length} odpowiedzi`);
+  }
+  if (ex.t === "order") {
+    if (!Array.isArray(ex.tokens) || ex.tokens.length < 2) errors.push(`${where}: order bez tokenów`);
+    if (!ex.a) errors.push(`${where}: order bez odpowiedzi`);
+  }
+  if (ex.t === "match") {
+    if (!Array.isArray(ex.pairs) || ex.pairs.length < 2) errors.push(`${where}: match bez par`);
+  }
+  if (ex.t === "conj") {
+    if (!ex.verb) errors.push(`${where}: conj bez czasownika`);
+  }
+  if (ex.t === "gender") {
+    if (!Array.isArray(ex.items) || !ex.items.length) errors.push(`${where}: gender bez items`);
+    else ex.items.forEach(it => { if (!it[1]) errors.push(`${where}: gender — brak poprawnej formy dla „${it[0]}”`); });
+  }
+  if (ex.t === "listen" && !ex.it) errors.push(`${where}: listen bez tekstu włoskiego`);
+  if (ex.t === "speak" && !ex.it) errors.push(`${where}: speak bez tekstu włoskiego`);
+  if (ex.t === "dialogue") {
+    if (!Array.isArray(ex.lines) || !ex.lines.length) errors.push(`${where}: dialogue bez linii`);
+    else ex.lines.forEach((l, i) => {
+      if (l.choices && typeof l.a !== "number") errors.push(`${where}: dialogue linia ${i} bez indeksu odpowiedzi`);
+    });
+  }
+}
+
+function checkLesson(l, lv, unit) {
+  if (!l.id) { errors.push(`${lv.code}/${unit.id}: lekcja bez id`); return; }
+  if (ids.has(l.id)) errors.push(`Duplikat id lekcji: ${l.id}`);
+  ids.set(l.id, true);
+  if (!l.titleIt) errors.push(`${l.id}: brak titleIt`);
+  if (!l.titlePl) errors.push(`${l.id}: brak titlePl`);
+  nLessons++;
+  (l.vocab || []).forEach(v => {
+    nVocab++;
+    if (!v.it || !v.pl) errors.push(`${l.id}: pozycja słownika bez it/pl`);
+  });
+  const ex = l.exercises || [];
+  if (!ex.length) warnings.push(`${l.id}: brak ćwiczeń`);
+  ex.forEach((e, i) => { nEx++; checkExercise(e, `${l.id}#${i + 1}`); });
+}
+
+levels.forEach(lv => {
+  if (!lv.units.length) warnings.push(`Poziom ${lv.code}: brak jednostek`);
+  lv.units.forEach(u => {
+    nUnits++;
+    if (ids.has(u.id)) errors.push(`Duplikat id jednostki: ${u.id}`);
+    ids.set(u.id, true);
+    (u.lessons || []).forEach(l => checkLesson(l, lv, u));
+    if (u.test) checkLesson(u.test, lv, u);
+    else warnings.push(`${u.id}: brak sprawdzianu`);
+  });
+});
+
+/* konwersacje */
+const convIds = new Set();
+(sandbox.CONVERSATIONS || []).forEach(c => {
+  if (convIds.has(c.id)) errors.push(`Duplikat id rozmowy: ${c.id}`);
+  convIds.add(c.id);
+  if (!Array.isArray(c.turns) || !c.turns.length) errors.push(`Rozmowa ${c.id}: brak tur`);
+  (c.turns || []).forEach((t, i) => {
+    if (t.sp === "TY" && !(t.accept || t.it)) errors.push(`Rozmowa ${c.id} tura ${i}: brak akceptowanych odpowiedzi`);
+    if (t.sp !== "TY" && !t.it) errors.push(`Rozmowa ${c.id} tura ${i}: brak kwestii włoskiej`);
+  });
+});
+
+/* gramatyka */
+const gramIds = new Set();
+(sandbox.GRAMMAR_REF || []).forEach(sec => {
+  (sec.items || []).forEach(it => {
+    if (gramIds.has(it.id)) errors.push(`Duplikat id hasła gramatycznego: ${it.id}`);
+    gramIds.add(it.id);
+    if (!it.body) errors.push(`Hasło ${it.id}: brak treści`);
+  });
+});
+
+/* ---------------- Raport ---------------- */
+console.log("\n=== STATYSTYKI ===");
+levels.forEach(lv => {
+  const lessons = lv.units.reduce((n, u) => n + (u.lessons || []).length + (u.test ? 1 : 0), 0);
+  const exs = lv.units.reduce((n, u) =>
+    n + (u.lessons || []).reduce((m, l) => m + (l.exercises || []).length, 0) +
+    (u.test ? (u.test.exercises || []).length : 0), 0);
+  console.log(`  ${lv.code.padEnd(3)} ${String(lv.units.length).padStart(2)} jednostek  ${String(lessons).padStart(3)} lekcji  ${String(exs).padStart(4)} ćwiczeń`);
+});
+console.log(`  ---`);
+console.log(`  RAZEM: ${nUnits} jednostek, ${nLessons} lekcji, ${nEx} ćwiczeń, ${nVocab} pozycji słownika`);
+console.log(`  Rozmowy: ${(sandbox.CONVERSATIONS || []).length} · Hasła gramatyczne: ${gramIds.size}`);
+console.log("\n=== TYPY ĆWICZEŃ ===");
+Object.keys(exByType).sort((a, b) => exByType[b] - exByType[a])
+  .forEach(t => console.log(`  ${t.padEnd(11)} ${exByType[t]}`));
+
+if (warnings.length) {
+  console.log(`\n=== OSTRZEŻENIA (${warnings.length}) ===`);
+  warnings.slice(0, 30).forEach(w => console.log("  ! " + w));
+}
+if (errors.length) {
+  console.log(`\n=== BŁĘDY (${errors.length}) ===`);
+  errors.slice(0, 60).forEach(e => console.log("  x " + e));
+  process.exit(1);
+}
+console.log("\nOK — brak błędów.\n");

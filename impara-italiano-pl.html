@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impara l'Italiano 🇮🇹 — 20 Poziomów</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#5B4552;
+  --paper:#FFF8F3;
+  --paper-raised:#FFFFFF;
+  --rose:#F6AFC2;
+  --rose-deep:#EF87A3;
+  --mint:#AEE0C4;
+  --mint-deep:#7FC9A0;
+  --cream:#FFF0E6;
+  --gold:#F0C177;
+  --correct:#5CAF83;
+  --incorrect:#E67B93;
+  --line:#F0DDE3;
+  --line-strong:#EBC3D0;
+  --sidebar-w:280px;
+  --display:'Fredoka', sans-serif;
+  --sans:'Quicksand', -apple-system, sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  font-family:var(--sans);
+  font-weight:500;
+  color:var(--ink);
+  background:var(--paper);
+  line-height:1.6;
+}
+a{color:var(--rose-deep);}
+
+/* ---------- Layout shell ---------- */
+.shell{display:flex;min-height:100vh;}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:var(--sidebar-w);
+  flex-shrink:0;
+  background:linear-gradient(165deg, var(--rose) 0%, var(--rose-deep) 55%, var(--mint-deep) 130%);
+  color:#FFFDF9;
+  display:flex;
+  flex-direction:column;
+  position:sticky;
+  top:0;
+  height:100vh;
+}
+.sidebar-head{
+  padding:30px 24px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.25);
+}
+.sidebar-head .brand{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:1.55rem;
+  margin:0 0 4px;
+}
+.sidebar-head .flag{font-size:1.1rem;}
+.sidebar-head .tagline{
+  margin:0;
+  font-size:0.85rem;
+  color:#FFF0F5;
+  font-weight:500;
+}
+.progress-wrap{padding:18px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.25);}
+.progress-label{display:flex;justify-content:space-between;font-size:0.78rem;color:#FFF0F5;margin-bottom:8px;font-weight:600;}
+.progress-track{height:10px;background:rgba(255,255,255,0.28);border-radius:20px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--gold);width:0%;transition:width .4s ease;border-radius:20px;}
+
+.level-nav{
+  flex:1;
+  overflow-y:auto;
+  padding:14px 12px 24px;
+}
+.level-btn{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  text-align:left;
+  background:rgba(255,255,255,0.08);
+  border:none;
+  color:#FFFDF9;
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:0.92rem;
+  padding:10px 14px;
+  border-radius:16px;
+  cursor:pointer;
+  margin-bottom:6px;
+}
+.level-btn:hover{background:rgba(255,255,255,0.2);}
+.level-btn.active{background:#FFFDF9;color:var(--rose-deep);}
+.level-btn .num{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:0.8rem;
+  width:22px;
+  flex-shrink:0;
+  opacity:0.85;
+}
+.level-btn .check{
+  margin-left:auto;
+  font-size:0.85rem;
+  opacity:0;
+}
+.level-btn.done .check{opacity:1;}
+
+/* ---------- Main ---------- */
+.main{
+  flex:1;
+  min-width:0;
+  padding:48px 56px 100px;
+  max-width:900px;
+}
+.level-header{
+  border-bottom:3px dashed var(--rose);
+  padding-bottom:20px;
+  margin-bottom:34px;
+}
+.level-meta{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:12px;
+}
+.tag{
+  font-size:0.72rem;
+  font-weight:700;
+  padding:5px 12px;
+  border-radius:20px;
+  border:1px solid var(--line-strong);
+  color:var(--ink);
+  background:var(--cream);
+}
+.tag.cefr{background:var(--rose-deep);color:#fff;border-color:var(--rose-deep);}
+.level-title{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:2.2rem;
+  margin:0 0 8px;
+  color:var(--rose-deep);
+}
+.level-sub{
+  font-family:var(--sans);
+  font-style:normal;
+  font-weight:600;
+  font-size:1.05rem;
+  color:#8A7480;
+  margin:0;
+}
+
+.section{margin-bottom:40px;}
+.section-label{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:1.2rem;
+  margin:0 0 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:var(--ink);
+}
+.section-label .dot{
+  width:12px;height:12px;border-radius:50%;
+  background:var(--mint-deep);
+  display:inline-block;
+}
+.theory p{
+  max-width:66ch;
+  font-size:1.02rem;
+  margin:0 0 12px;
+}
+
+.grammar-box{
+  border:2px solid var(--line-strong);
+  background:linear-gradient(180deg, var(--cream) 0%, var(--paper-raised) 100%);
+  padding:22px 26px;
+  border-radius:22px;
+}
+.grammar-rule{
+  font-weight:700;
+  font-family:var(--display);
+  font-size:1.05rem;
+  margin:0 0 12px;
+  color:var(--rose-deep);
+}
+.grammar-examples{margin:0;padding:0;list-style:none;}
+.grammar-examples li{
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:1rem;
+  padding:8px 0;
+  border-bottom:1px dashed var(--line-strong);
+}
+.grammar-examples li:last-child{border-bottom:none;}
+.grammar-examples .en{
+  font-family:var(--sans);
+  font-weight:500;
+  color:#8A7480;
+  font-size:0.88rem;
+}
+
+.vocab-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.vocab-item{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 18px;
+  font-size:0.95rem;
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:16px;
+}
+.vocab-item .it{font-weight:700;color:var(--rose-deep);}
+.vocab-item .en{color:#8A7480;font-weight:500;}
+
+.exercise{
+  border:2px solid var(--line);
+  background:var(--paper-raised);
+  padding:22px 24px;
+  border-radius:22px;
+  margin-bottom:18px;
+}
+.exercise-num{
+  font-family:var(--display);
+  font-weight:600;
+  color:var(--mint-deep);
+  font-size:0.85rem;
+  margin-bottom:8px;
+}
+.exercise-prompt{font-size:1rem;margin:0 0 16px;font-weight:600;}
+.options{display:flex;flex-direction:column;gap:10px;}
+.option{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:2px solid var(--line-strong);
+  background:#fff;
+  padding:11px 16px;
+  border-radius:16px;
+  cursor:pointer;
+  font-size:0.95rem;
+  font-weight:600;
+  transition:border-color .15s, background .15s;
+}
+.option:hover{border-color:var(--rose-deep);}
+.option.selected{border-color:var(--rose-deep);background:#FFF0F5;}
+.option.correct{border-color:var(--correct);background:#EAF7EF;}
+.option.incorrect{border-color:var(--incorrect);background:#FDEDF0;}
+.option input{accent-color:var(--rose-deep);}
+
+.fill-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.fill-row input[type=text]{
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:0.98rem;
+  padding:11px 16px;
+  border:2px solid var(--line-strong);
+  border-radius:16px;
+  min-width:220px;
+}
+.fill-row input[type=text]:focus{outline:none;border-color:var(--rose-deep);}
+
+.check-btn{
+  margin-top:16px;
+  background:var(--rose-deep);
+  color:#fff;
+  border:none;
+  padding:11px 22px;
+  font-family:var(--sans);
+  font-weight:700;
+  font-size:0.88rem;
+  border-radius:20px;
+  cursor:pointer;
+}
+.check-btn:hover{background:#E06E8D;}
+.check-btn:disabled{opacity:0.5;cursor:default;}
+
+.feedback{
+  margin-top:14px;
+  padding:12px 16px;
+  border-radius:16px;
+  font-size:0.92rem;
+  font-weight:600;
+  display:none;
+}
+.feedback.show{display:block;}
+.feedback.good{background:#EAF7EF;color:var(--correct);border:2px solid var(--correct);}
+.feedback.bad{background:#FDEDF0;color:var(--incorrect);border:2px solid var(--incorrect);}
+.feedback .explain{display:block;margin-top:6px;color:var(--ink);font-size:0.88rem;font-weight:500;}
+
+.level-nav-footer{
+  display:flex;
+  justify-content:space-between;
+  margin-top:48px;
+  padding-top:22px;
+  border-top:1px solid var(--line);
+}
+.nav-arrow-btn{
+  font-family:var(--sans);
+  font-weight:700;
+  font-size:0.9rem;
+  background:var(--cream);
+  border:2px solid var(--line-strong);
+  padding:11px 20px;
+  border-radius:20px;
+  cursor:pointer;
+  color:var(--ink);
+}
+.nav-arrow-btn:hover{border-color:var(--rose-deep);color:var(--rose-deep);}
+.nav-arrow-btn:disabled{opacity:0.35;cursor:default;}
+
+.mobile-toggle{display:none;}
+
+@media (max-width: 860px){
+  .sidebar{position:fixed;left:0;top:0;z-index:20;transform:translateX(-100%);transition:transform .25s ease;box-shadow:2px 0 24px rgba(239,135,163,0.3);}
+  .sidebar.open{transform:translateX(0);}
+  .main{padding:90px 20px 60px;max-width:100%;}
+  .mobile-toggle{
+    display:flex;
+    position:fixed;top:16px;left:16px;z-index:30;
+    background:var(--rose-deep);color:#fff;border:none;
+    width:46px;height:46px;border-radius:50%;align-items:center;justify-content:center;
+    font-size:1.2rem;cursor:pointer;box-shadow:0 4px 14px rgba(239,135,163,0.4);
+  }
+  .vocab-grid{grid-template-columns:1fr;}
+  .level-title{font-size:1.7rem;}
+}
+</style>
+</head>
+<body>
+
+<button class="mobile-toggle" id="mobileToggle" aria-label="Przełącz menu poziomów">☰</button>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <p class="brand"><span class="flag">🇮🇹</span> Impara l'Italiano</p>
+      <p class="tagline">20 poziomów · A1 → A2 · wyjaśnienia po polsku 🎀</p>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Postęp ogólny</span><span id="progressPct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="level-nav" id="levelNav"></div>
+  </nav>
+
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+/* ============ DANE POZIOMÓW ============ */
+const LEVELS = [
+{
+  id:1, cefr:"A1", theme:"Powitania", title:"Buongiorno!",
+  sub:"Powitania i czasownik essere (być)",
+  theory:[
+    "Włoskie powitania zmieniają się w zależności od pory dnia oraz od tego, jak formalnie musisz się wyrażać. Buongiorno obejmuje ranek i wczesne popołudnie, buonasera przejmuje rolę wieczorem, a ciao to uniwersalne, nieformalne „cześć\" i „pa\", którego używasz ze znajomymi, rodziną czy rówieśnikami.",
+    "Czasownik essere („być\") to jeden z dwóch najważniejszych czasowników włoskich — będziesz go używać nieustannie, opisując tożsamość, pochodzenie i stan. Jak większość włoskich czasowników, jego formy zmieniają się całkowicie dla każdej osoby, więc trzeba je zapamiętać, a nie odgadywać."
+  ],
+  grammar:{
+    rule:"Essere (być) — czas teraźniejszy",
+    examples:[
+      ["io sono","ja jestem"],["tu sei","ty jesteś (nieformalnie)"],["lui/lei è","on/ona jest"],
+      ["noi siamo","my jesteśmy"],["voi siete","wy jesteście"],["loro sono","oni/one są"]
+    ]
+  },
+  vocab:[["ciao","cześć / pa"],["buongiorno","dzień dobry (rano)"],["buonasera","dobry wieczór"],["arrivederci","do widzenia (formalnie)"],["come stai?","jak się masz? (nieformalnie)"],["come sta?","jak się Pan/Pani ma?"],["bene, grazie","dobrze, dziękuję"],["piacere","miło Cię poznać"]],
+  exercises:[
+    {type:"mcq",prompt:"Jakiego powitania użyjesz, wchodząc do sklepu o 9 rano?",options:["Buonasera","Buongiorno","Ciao ciao"],answer:1,explain:"Buongiorno używa się od rana do wczesnego popołudnia; buonasera przejmuje rolę wieczorem."},
+    {type:"mcq",prompt:"Jak powiedzieć „my jesteśmy\" po włosku?",options:["loro sono","noi siamo","voi siete"],answer:1,explain:"Noi siamo = my jesteśmy. Loro sono to „oni/one są\", a voi siete to „wy jesteście\"."},
+    {type:"fill",prompt:"Uzupełnij: „Io ___ italiano.” (Jestem Włochem.)",answer:"sono",hint:"pierwsza osoba liczby pojedynczej czasownika essere",explain:"Io sono to forma pierwszej osoby czasownika essere — „ja jestem\"."},
+    {type:"fill",prompt:"Przetłumacz: „Miło Cię poznać”",answer:"piacere",explain:"Piacere używa się w momencie poznania kogoś."}
+  ]
+},
+{
+  id:2, cefr:"A1", theme:"Podstawy gramatyki", title:"Il, lo, la…",
+  sub:"Rodzaj oraz rodzajniki określone/nieokreślone",
+  theory:[
+    "Każdy włoski rzeczownik ma rodzaj — męski lub żeński — co wpływa niemal na wszystko, co się z nim wiąże: rodzajniki, przymiotniki, a nawet niektóre formy czasownika, które poznasz później. Zasada kciuka: rzeczowniki kończące się na -o są zwykle rodzaju męskiego, a te kończące się na -a — żeńskiego, choć są wyjątki.",
+    "Rodzajnik określony („the\") ma kilka form w zależności od rodzaju, liczby i głoski, od której zaczyna się rzeczownik. Na pierwszy rzut oka wygląda to na dużo do zapamiętania naraz, ale wzorzec szybko staje się automatyczny dzięki praktyce."
+  ],
+  grammar:{
+    rule:"Rodzajniki określone (the)",
+    examples:[
+      ["il libro","książka (r. męski)"],["lo studente","student (r. męski, przed s+spółgłoska/z)"],
+      ["la casa","dom (r. żeński)"],["l'amico / l'amica","przyjaciel/przyjaciółka (przed samogłoską)"],
+      ["i libri","książki (l.mn. r. męski)"],["gli studenti","studenci (przypadek specjalny)"],
+      ["le case","domy (l.mn. r. żeński)"]
+    ]
+  },
+  vocab:[["il libro","książka"],["la casa","dom"],["lo zaino","plecak"],["l'amico","przyjaciel"],["l'amica","przyjaciółka"],["un ragazzo","chłopak"],["una ragazza","dziewczyna"],["uno studente","student"]],
+  exercises:[
+    {type:"mcq",prompt:"Który rodzajnik pasuje do „casa” (dom)?",options:["il","la","lo"],answer:1,explain:"Casa kończy się na -a i jest rodzaju żeńskiego, więc bierze la."},
+    {type:"mcq",prompt:"„Zaino” (plecak) zaczyna się na z, więc bierze...",options:["il","lo","l'"],answer:1,explain:"Rzeczowniki męskie zaczynające się na z lub s+spółgłoska biorą lo zamiast il."},
+    {type:"fill",prompt:"Uzupełnij: „___ amico” (przyjaciel, r. męski, przed samogłoską)",answer:"l'",explain:"Przed samogłoską il/la ściągają się do l' — l'amico, l'amica."},
+    {type:"fill",prompt:"Liczba mnoga od „il libro” to „___ libri”.",answer:"i",explain:"Rzeczowniki męskie w l.mn. zwykle biorą rodzajnik i: il libro → i libri."}
+  ]
+},
+{
+  id:3, cefr:"A1", theme:"Podstawy gramatyki", title:"Avere e i numeri",
+  sub:"Czasownik avere (mieć) i liczby 0–20",
+  theory:[
+    "Avere („mieć\") to drugi kluczowy czasownik, a włoski opiera się na nim tam, gdzie polski by tego nie oczekiwał — ho fame znaczy dosłownie „mam głód\", podczas gdy powiedzielibyśmy „jestem głodny\". Podobnych wyrażeń z avere poznasz jeszcze wiele.",
+    "Liczby to podstawowe słownictwo: przydadzą Ci się do cen, wieku, numerów telefonu i podawania godziny. Naucz się najpierw solidnie 0–20, bo liczby 21–100 buduje się głównie przez ich łączenie."
+  ],
+  grammar:{
+    rule:"Avere (mieć) — czas teraźniejszy",
+    examples:[
+      ["io ho","ja mam"],["tu hai","ty masz"],["lui/lei ha","on/ona ma"],
+      ["noi abbiamo","my mamy"],["voi avete","wy macie"],["loro hanno","oni/one mają"]
+    ]
+  },
+  vocab:[["zero","0"],["uno","1"],["due","2"],["tre","3"],["quattro","4"],["cinque","5"],["sei","6"],["sette","7"],["otto","8"],["nove","9"],["dieci","10"],["ho fame","jestem głodny/a"],["ho sete","chce mi się pić"],["ho ... anni","mam ... lat"]],
+  exercises:[
+    {type:"mcq",prompt:"Jak powiedzieć „oni mają”?",options:["loro hanno","loro sono","noi abbiamo"],answer:0,explain:"Loro hanno = oni mają. Loro sono znaczyłoby „oni są” (essere, nie avere)."},
+    {type:"mcq",prompt:"Co dosłownie znaczy „ho fame” i jak to rozumieć?",options:["mam głód → jestem głodny/a","jestem głodem → jestem zły/a","mam głodny → bez sensu"],answer:0,explain:"Avere używa się do stanów fizycznych jak głód czy pragnienie."},
+    {type:"fill",prompt:"Zapisz cyfrę dla „sette”:",answer:"7",explain:"Sette = siedem (7)."},
+    {type:"fill",prompt:"Uzupełnij: „Noi ___ due gatti.” (Mamy dwa koty.)",answer:"abbiamo",explain:"Noi abbiamo = my mamy, pierwsza osoba l.mn. czasownika avere."}
+  ]
+},
+{
+  id:4, cefr:"A1", theme:"Podstawy gramatyki", title:"Aggettivi e colori",
+  sub:"Zgodność przymiotników, na przykładzie kolorów",
+  theory:[
+    "Włoskie przymiotniki zwykle stoją po rzeczowniku i — podobnie jak sam rzeczownik — zmieniają końcówkę, by dopasować się do rodzaju i liczby. Większość przymiotników ma prosty wzorzec -o/-a/-i/-e, choć kilka (jak verde, „zielony\") ma tę samą formę dla obu rodzajów.",
+    "Kolory to świetny sposób na ćwiczenie tej zgodności, bo będziesz ich używać bardzo często, a wzorzec jest bardzo regularny."
+  ],
+  grammar:{
+    rule:"Zgodność przymiotników (wzorzec -o/-a/-i/-e)",
+    examples:[
+      ["il libro rosso","czerwona książka (r. m., l.poj.)"],["la casa rossa","czerwony dom (r. ż., l.poj.)"],
+      ["i libri rossi","czerwone książki (l.mn.)"],["le case rosse","czerwone domy (l.mn.)"],
+      ["la maglia verde","zielona koszulka (przymiotnik nieodmienny -e)"]
+    ]
+  },
+  vocab:[["rosso/a","czerwony/a"],["blu","niebieski (nieodmienny)"],["verde","zielony/a"],["giallo/a","żółty/a"],["nero/a","czarny/a"],["bianco/a","biały/a"],["grande","duży/a"],["piccolo/a","mały/a"]],
+  exercises:[
+    {type:"mcq",prompt:"„La macchina” (samochód, r. żeński) jest czerwony. Jak napiszesz „czerwony”?",options:["rosso","rossa","rossi"],answer:1,explain:"Macchina jest rodzaju żeńskiego l.poj., więc przymiotnik bierze końcówkę -a: rossa."},
+    {type:"mcq",prompt:"Który przymiotnik koloru NIE zmienia się między rodzajami?",options:["rosso","verde","nero"],answer:1,explain:"Verde kończy się na -e — ta klasa przymiotników ma tę samą formę dla obu rodzajów."},
+    {type:"fill",prompt:"„I libri ___.” (czarne książki, l.mn. r. męski)",answer:"neri",explain:"Nero → neri w liczbie mnogiej rodzaju męskiego."},
+    {type:"fill",prompt:"„La casa è ___.” (dom jest duży, r. żeński)",answer:"grande",explain:"Grande kończy się na -e, więc forma jest taka sama dla obu rodzajów."}
+  ]
+},
+{
+  id:5, cefr:"A1", theme:"Podstawy gramatyki", title:"Verbi in -ARE",
+  sub:"Regularne czasowniki na -are w czasie teraźniejszym",
+  theory:[
+    "Włoskie czasowniki dzielą się na trzy grupy według końcówki bezokolicznika: -are, -ere i -ire. Grupa -are jest największa i najbardziej regularna — gdy nauczysz się wzorca na przykładzie parlare („mówić\"), odmienisz tak setki innych czasowników.",
+    "Zauważ, że włoski przez większość czasu nie potrzebuje zaimków osobowych (io, tu, lui...), bo końcówka czasownika sama mówi, kto wykonuje czynność. Rodzimi użytkownicy zwykle je pomijają, chyba że są potrzebne dla podkreślenia lub jasności."
+  ],
+  grammar:{
+    rule:"Parlare (mówić) — wzorzec -ARE",
+    examples:[
+      ["parlo","ja mówię"],["parli","ty mówisz"],["parla","on/ona mówi"],
+      ["parliamo","my mówimy"],["parlate","wy mówicie"],["parlano","oni/one mówią"]
+    ]
+  },
+  vocab:[["parlare","mówić"],["lavorare","pracować"],["studiare","uczyć się"],["ascoltare","słuchać"],["guardare","patrzeć/oglądać"],["abitare","mieszkać"],["comprare","kupować"],["cantare","śpiewać"]],
+  exercises:[
+    {type:"mcq",prompt:"„Lei lavora molto” znaczy:",options:["Dużo pracuję","Ona dużo pracuje","Oni dużo pracują"],answer:1,explain:"Lavora to trzecia osoba l.poj. czasownika lavorare — „on/ona pracuje\"."},
+    {type:"mcq",prompt:"Jaka jest forma „noi” (my) czasownika studiare?",options:["studiamo","studiate","studiano"],answer:0,explain:"-iamo to końcówka „my” wspólna dla wszystkich trzech grup: studiamo."},
+    {type:"fill",prompt:"Uzupełnij: „Io ___ italiano ogni giorno.” (Uczę się włoskiego codziennie.) — użyj studiare",answer:"studio",explain:"Io studio = ja się uczę, pierwsza osoba l.poj."},
+    {type:"fill",prompt:"Uzupełnij: „Loro ___ la TV.” (Oni oglądają telewizję.) — użyj guardare",answer:"guardano",explain:"Loro guardano = oni oglądają, trzecia osoba l.mn."}
+  ]
+},
+{
+  id:6, cefr:"A1", theme:"Podstawy gramatyki", title:"Verbi in -ERE",
+  sub:"Regularne czasowniki na -ere oraz c'è / ci sono",
+  theory:[
+    "Grupa -ere działa podobnie jak -are, ale z innymi końcówkami. Jest nieco mniej regularna (kilka bardzo popularnych czasowników -ere jest nieregularnych, poznasz je później), ale podstawowy wzorzec z leggere („czytać\") pasuje do wielu codziennych czasowników.",
+    "C'è i ci sono to dwa małe, ale bardzo przydatne wyrażenia znaczące „jest” i „są”. Użyjesz ich, by opisać, co gdzieś istnieje — w pokoju, w mieście, w lodówce."
+  ],
+  grammar:{
+    rule:"Leggere (czytać) — wzorzec -ERE",
+    examples:[
+      ["leggo","ja czytam"],["leggi","ty czytasz"],["legge","on/ona czyta"],
+      ["leggiamo","my czytamy"],["leggete","wy czytacie"],["leggono","oni/one czytają"],
+      ["c'è un libro","jest książka"],["ci sono due libri","są dwie książki"]
+    ]
+  },
+  vocab:[["leggere","czytać"],["scrivere","pisać"],["vedere","widzieć"],["prendere","brać"],["chiudere","zamykać"],["mettere","kłaść"],["c'è","jest"],["ci sono","są"]],
+  exercises:[
+    {type:"mcq",prompt:"„C'è” używa się dla:",options:["liczby pojedynczej „jest”","liczby mnogiej „są”","powitania"],answer:0,explain:"C'è = jest (l.poj.). Ci sono używa się dla liczby mnogiej."},
+    {type:"mcq",prompt:"Jaka jest forma „loro” (oni) czasownika scrivere?",options:["scrivono","scrivano","scriveno"],answer:0,explain:"Loro scrivono = oni piszą, końcówka -ono typowa dla czasowników -ere."},
+    {type:"fill",prompt:"Uzupełnij: „___ due ragazzi in classe.” (W klasie jest dwóch chłopców.)",answer:"ci sono",explain:"Używamy ci sono, bo „due ragazzi” jest w liczbie mnogiej."},
+    {type:"fill",prompt:"Uzupełnij: „Tu ___ un libro.” (Czytasz książkę.) — użyj leggere",answer:"leggi",explain:"Tu leggi = ty czytasz, druga osoba l.poj."}
+  ]
+},
+{
+  id:7, cefr:"A1", theme:"Podstawy gramatyki", title:"Verbi in -IRE",
+  sub:"Regularne czasowniki na -ire, w tym wzorzec -isc",
+  theory:[
+    "Trzecia i najmniejsza grupa czasowników to -ire. Większość (jak dormire, „spać\") odmienia się wprost według wzorca, ale spora podgrupa wstawia -isc- przed końcówką w większości form — capire („rozumieć\") to bardzo częsty przykład.",
+    "Nie ma prostej reguły, które czasowniki -ire biorą -isc- — uczysz się tego przy każdym czasowniku osobno, choć słowniki zwykle to oznaczają."
+  ],
+  grammar:{
+    rule:"Dormire (regularny) vs. Capire (wzorzec -isc-)",
+    examples:[
+      ["dormo / dormi / dorme","ja śpię / ty śpisz / on-ona śpi"],
+      ["dormiamo / dormite / dormono","my śpimy / wy śpicie / oni śpią"],
+      ["capisco / capisci / capisce","ja rozumiem / ty rozumiesz / on-ona rozumie"],
+      ["capiamo / capite / capiscono","my rozumiemy / wy rozumiecie / oni rozumieją"]
+    ]
+  },
+  vocab:[["dormire","spać"],["partire","wyjeżdżać"],["aprire","otwierać"],["sentire","słyszeć/czuć"],["capire","rozumieć"],["finire","kończyć"],["preferire","woleć"],["pulire","sprzątać"]],
+  exercises:[
+    {type:"mcq",prompt:"Który z nich ma wzorzec -isc-?",options:["dormire","capire","partire"],answer:1,explain:"Capire → capisco, capisci, capisce, capiamo, capite, capiscono."},
+    {type:"mcq",prompt:"„Io non capisco” znaczy:",options:["Nie śpię","Nie rozumiem","Nie otwieram"],answer:1,explain:"Capisco pochodzi od capire, „rozumieć” — non capisco = nie rozumiem."},
+    {type:"fill",prompt:"Uzupełnij: „Il negozio ___ alle nove.” (Sklep otwiera się o dziewiątej.) — użyj aprire",answer:"apre",explain:"Apre to trzecia osoba l.poj. czasownika aprire."},
+    {type:"fill",prompt:"Uzupełnij: „Loro ___ molto bene l'italiano.” (Oni bardzo dobrze rozumieją włoski.) — użyj capire",answer:"capiscono",explain:"Loro capiscono używa wstawki -isc- typowej dla tej podgrupy."}
+  ]
+},
+{
+  id:8, cefr:"A1", theme:"Rutyna dnia", title:"La famiglia",
+  sub:"Słownictwo rodzinne i przymiotniki dzierżawcze",
+  theory:[
+    "Rozmowa o rodzinie to jedna z pierwszych prawdziwych rozmów, jakie przeprowadzisz po włosku. Przymiotniki dzierżawcze (mio, tuo, suo...) zwykle potrzebują rodzajnika przed sobą — il mio libro („moja książka\") — z jednym ważnym wyjątkiem: pojedynczy, nieokreślony bliżej członek rodziny nie ma rodzajnika, więc mówi się mia madre, a nie la mia madre.",
+    "Podobnie jak inne przymiotniki, dzierżawcze zgadzają się rodzajem i liczbą z rzeczą posiadaną, a nie z posiadaczem."
+  ],
+  grammar:{
+    rule:"Dzierżawcze przy członkach rodziny (bez rodzajnika, l.poj.)",
+    examples:[
+      ["mia madre","moja mama"],["mio padre","mój tata"],["tuo fratello","twój brat"],
+      ["tua sorella","twoja siostra"],["il mio libro","moja książka (rodzajnik potrzebny — to nie rodzina)"],
+      ["i miei genitori","moi rodzice (l.mn. = rodzajnik wraca)"]
+    ]
+  },
+  vocab:[["la madre","mama"],["il padre","tata"],["il fratello","brat"],["la sorella","siostra"],["i genitori","rodzice"],["il nonno","dziadek"],["la nonna","babcia"],["il figlio/la figlia","syn/córka"]],
+  exercises:[
+    {type:"mcq",prompt:"Co jest poprawne dla „moja mama”?",options:["la mia madre","mia madre","la madre mia"],answer:1,explain:"Pojedynczy członek rodziny nie ma rodzajnika: mia madre, nie la mia madre."},
+    {type:"mcq",prompt:"„I miei genitori” znaczy:",options:["moi rodzice","twoi rodzice","rodzice"],answer:0,explain:"Genitori jest w l.mn., więc rodzajnik wraca: i miei genitori = moi rodzice."},
+    {type:"fill",prompt:"Przetłumacz: „twój brat” (nieformalne „twój”)",answer:"tuo fratello",explain:"Tuo fratello — pojedynczy członek rodziny, bez rodzajnika."},
+    {type:"fill",prompt:"Przetłumacz: „babcia”",answer:"la nonna",explain:"La nonna = babcia."}
+  ]
+},
+{
+  id:9, cefr:"A1", theme:"Jedzenie", title:"Il cibo",
+  sub:"Słownictwo o jedzeniu i czasownik piacere",
+  theory:[
+    "Piacere („podobać się\") działa odwrotnie niż polskie „lubić\": zamiast „lubię pizzę\", włoski dosłownie mówi „pizza jest mi miła\" — mi piace la pizza. Dlatego czasownik zgadza się z rzeczą, która się podoba, a nie z osobą, która ją lubi.",
+    "To często myli uczących się na początku, więc warto poćwiczyć wprost na jedzeniu, bo będziesz to robić bez przerwy przy stole."
+  ],
+  grammar:{
+    rule:"Piacere (podobać się) — zgadza się z rzeczą, która się podoba",
+    examples:[
+      ["mi piace la pizza","lubię pizzę (rzecz w l.poj.)"],
+      ["mi piacciono gli spaghetti","lubię spaghetti (rzecz w l.mn.)"],
+      ["ti piace il caffè?","lubisz kawę?"],
+      ["non mi piace il pesce","nie lubię ryb"]
+    ]
+  },
+  vocab:[["il pane","chleb"],["la pasta","makaron"],["il formaggio","ser"],["la frutta","owoce"],["la verdura","warzywa"],["la carne","mięso"],["il pesce","ryba"],["il dolce","deser"]],
+  exercises:[
+    {type:"mcq",prompt:"Dlaczego „piace” zmienia się na „piacciono” w „mi piacciono gli spaghetti”?",options:["To losowy wyjątek","Zgadza się z „spaghetti”, które jest w l.mn.","To inny czasownik"],answer:1,explain:"Piacere zgadza się z rzeczą, która się podoba — l.mn. „spaghetti” wymaga piacciono."},
+    {type:"mcq",prompt:"„Non mi piace il pesce” znaczy:",options:["Lubię ryby","Nie lubię ryb","Ryby nie istnieją"],answer:1,explain:"Non mi piace + rzeczownik l.poj. = nie lubię [tej rzeczy]."},
+    {type:"fill",prompt:"Przetłumacz: „ser”",answer:"formaggio",explain:"Il formaggio = ser."},
+    {type:"fill",prompt:"Uzupełnij: „___ piace la pasta.” (Lubię makaron.)",answer:"mi",explain:"Mi piace = to jest mi miłe → lubię to."}
+  ]
+},
+{
+  id:10, cefr:"A1", theme:"Restauracja", title:"Al ristorante",
+  sub:"Zamawianie jedzenia i czasownik potere (móc)",
+  theory:[
+    "Zamawianie w restauracji opiera się mocno na trybie warunkowym vorrei („chciałbym/chciałabym\"), grzeczniejszym niż zwykłe voglio („chcę\"). Vorrei usłyszysz bez przerwy w sklepach i restauracjach w całych Włoszech.",
+    "Potere („móc\") to czasownik modalny — nieregularny, ale niezbędny, bo używa się go do pytania o pozwolenie i opisywania możliwości w niemal każdym kontekście."
+  ],
+  grammar:{
+    rule:"Potere (móc) — czas teraźniejszy (nieregularny)",
+    examples:[
+      ["posso","ja mogę"],["puoi","ty możesz"],["può","on/ona może"],
+      ["possiamo","my możemy"],["potete","wy możecie"],["possono","oni/one mogą"],
+      ["vorrei un caffè, per favore","chciałbym/chciałabym kawę, proszę"]
+    ]
+  },
+  vocab:[["il menù","menu"],["il conto","rachunek"],["vorrei...","chciałbym/chciałabym..."],["per favore","proszę"],["il cameriere","kelner"],["prenotare","rezerwować"],["un tavolo per due","stolik dla dwóch osób"],["il coperto","opłata za nakrycie"]],
+  exercises:[
+    {type:"mcq",prompt:"Co jest grzeczniejsze przy zamawianiu?",options:["Voglio un caffè","Vorrei un caffè","Ho un caffè"],answer:1,explain:"Vorrei to grzeczna, warunkowa forma używana zwykle przy zamawianiu."},
+    {type:"mcq",prompt:"„Posso avere il conto?” znaczy:",options:["Czy mogę prosić o rachunek?","Mam rachunek","Czy mogę zarezerwować stolik?"],answer:0,explain:"Posso = mogę, od potere. Posso avere...? = Czy mogę prosić o...?"},
+    {type:"fill",prompt:"Przetłumacz: „stolik dla dwóch osób”",answer:"un tavolo per due",explain:"Un tavolo per due — dosłownie „stół dla dwóch”."},
+    {type:"fill",prompt:"Uzupełnij: „Noi ___ prenotare per stasera?” (Czy możemy zarezerwować na dziś wieczór?) — użyj potere",answer:"possiamo",explain:"Noi possiamo = my możemy, pierwsza osoba l.mn. czasownika potere."}
+  ]
+},
+{
+  id:11, cefr:"A1", theme:"Zakupy", title:"Facciamo spese",
+  sub:"Słownictwo zakupowe, questo/quello, liczby 20–100",
+  theory:[
+    "Questo („ten\") i quello („tamten\") oba zgadzają się rodzajem i liczbą z rzeczownikiem, do którego się odnoszą, podobnie jak przymiotniki. Quello ma kilka dodatkowych nieregularnych form przed pewnymi spółgłoskami.",
+    "Liczby powyżej 20 buduje się, łącząc znane już dziesiątki — venti, trenta, quaranta... — z liczbami 1–9, często odrzucając samogłoskę: ventuno, a nie ventiuno."
+  ],
+  grammar:{
+    rule:"Questo / quello oraz liczby 20–100",
+    examples:[
+      ["questo negozio","ten sklep (r. męski)"],["questa maglietta","ta koszulka (r. żeński)"],
+      ["quel negozio","tamten sklep"],["quella maglietta","tamta koszulka"],
+      ["venti, trenta, quaranta, cinquanta","20, 30, 40, 50"],["cento","100"]
+    ]
+  },
+  vocab:[["il negozio","sklep"],["la taglia","rozmiar"],["il prezzo","cena"],["costare","kosztować"],["quanto costa?","ile to kosztuje?"],["caro/a","drogi/a"],["economico/a","tani/a"],["i saldi","wyprzedaż"]],
+  exercises:[
+    {type:"mcq",prompt:"„Quanto costa questa maglietta?” znaczy:",options:["Gdzie jest ta koszulka?","Ile kosztuje ta koszulka?","Czy podoba Ci się ta koszulka?"],answer:1,explain:"Quanto costa...? = Ile kosztuje...?"},
+    {type:"mcq",prompt:"Która to liczba: „cinquanta”?",options:["15","50","500"],answer:1,explain:"Cinquanta = 50. Łatwo pomylić z quindici (15) i cinquecento (500)."},
+    {type:"fill",prompt:"Przetłumacz: „drogi”",answer:"caro",explain:"Caro/a = drogi; przeciwieństwo to economico/a."},
+    {type:"fill",prompt:"Zapisz cyfrę dla „ottanta”:",answer:"80",explain:"Ottanta = 80, zbudowane z otto (8) + -anta."}
+  ]
+},
+{
+  id:12, cefr:"A1", theme:"Rutyna dnia", title:"La routine quotidiana",
+  sub:"Czasowniki zwrotne: svegliarsi, alzarsi, vestirsi",
+  theory:[
+    "Wiele codziennych czynności po włosku wyraża się czasownikami zwrotnymi — czynnościami wykonywanymi na sobie. Rozpoznasz je po końcówce -si w bezokoliczniku (svegliarsi, „budzić się\"), a potrzebują zaimka zwrotnego (mi, ti, si, ci, vi, si) przed odmienionym czasownikiem.",
+    "Te czasowniki to podstawa opisywania dnia codziennego, więc warto poćwiczyć je na prawdziwych czynnościach: budzeniu się, wstawaniu, ubieraniu się."
+  ],
+  grammar:{
+    rule:"Czasowniki zwrotne — svegliarsi (budzić się)",
+    examples:[
+      ["mi sveglio","ja się budzę"],["ti svegli","ty się budzisz"],["si sveglia","on/ona się budzi"],
+      ["ci svegliamo","my się budzimy"],["vi svegliate","wy się budzicie"],["si svegliano","oni/one się budzą"]
+    ]
+  },
+  vocab:[["svegliarsi","budzić się"],["alzarsi","wstawać"],["lavarsi","myć się"],["vestirsi","ubierać się"],["fare colazione","jeść śniadanie"],["uscire di casa","wychodzić z domu"],["andare a letto","iść spać"],["addormentarsi","zasypiać"]],
+  exercises:[
+    {type:"mcq",prompt:"Po czym poznasz, że czasownik jest zwrotny w formie słownikowej?",options:["Zaczyna się na samogłoskę","Kończy się na -si","Ma akcent"],answer:1,explain:"Bezokoliczniki zwrotne kończą się na -si: svegliarsi, alzarsi, vestirsi."},
+    {type:"mcq",prompt:"„Ci svegliamo alle sette” znaczy:",options:["Oni budzą się o siódmej","Budzimy się o siódmej","Budzisz się o siódmej"],answer:1,explain:"Ci svegliamo = my się budzimy, zaimek zwrotny ci dla „my”."},
+    {type:"fill",prompt:"Uzupełnij: „Io ___ alle sei.” (Wstaję o szóstej.) — użyj alzarsi",answer:"mi alzo",explain:"Mi alzo = wstaję, pierwsza osoba zwrotna czasownika alzarsi."},
+    {type:"fill",prompt:"Przetłumacz: „jeść śniadanie”",answer:"fare colazione",explain:"Fare colazione — dosłownie „robić śniadanie”."}
+  ]
+},
+{
+  id:13, cefr:"A1", theme:"Rutyna dnia", title:"A che ora?",
+  sub:"Podawanie godziny i przysłówki częstotliwości",
+  theory:[
+    "Podawanie godziny po włosku używa „Che ora è?” dla pytania o godzinę, na które odpowiada się sono le + liczba (albo è l'una dla samej pierwszej, bo „jeden” jest w l.poj.). Godzina używa rodzajnika, bo w domyśle chodzi o „godziny są...”.",
+    "Przysłówki częstotliwości — sempre, spesso, a volte, mai — zwykle stoją zaraz po odmienionym czasowniku, inaczej niż po polsku, gdzie mogą się swobodniej przemieszczać."
+  ],
+  grammar:{
+    rule:"Podawanie godziny i miejsce przysłówka",
+    examples:[
+      ["che ora è?","która godzina?"],
+      ["sono le tre","jest trzecia"],["è l'una","jest pierwsza"],
+      ["alle otto","o ósmej"],
+      ["vado sempre in palestra","zawsze chodzę na siłownię"],["non vado mai in palestra","nigdy nie chodzę na siłownię"]
+    ]
+  },
+  vocab:[["sempre","zawsze"],["spesso","często"],["a volte","czasami"],["raramente","rzadko"],["mai","nigdy"],["di mattina","rano"],["di pomeriggio","po południu"],["di sera","wieczorem"]],
+  exercises:[
+    {type:"mcq",prompt:"Dlaczego mówi się „è l'una” (nie „sono l'una”) dla pierwszej godziny?",options:["To wyjątek bez powodu","„Una” jest w l.poj., więc bierze è, nie sono","Bo to nieformalne"],answer:1,explain:"Wszystkie inne godziny są w l.mn. (le due, le tre...) i używają sono; pierwsza godzina używa è."},
+    {type:"mcq",prompt:"Gdzie zwykle stoi „spesso” (często)?",options:["Przed podmiotem","Zaraz po odmienionym czasowniku","Tylko na samym końcu"],answer:1,explain:"Przysłówki częstotliwości zwykle stoją bezpośrednio po odmienionym czasowniku: vado spesso al cinema."},
+    {type:"fill",prompt:"Przetłumacz: „nigdy”",answer:"mai",explain:"Mai = nigdy, często razem z non: non... mai."},
+    {type:"fill",prompt:"Uzupełnij: „___ le otto.” (Jest ósma.)",answer:"sono",explain:"Sono le otto — godziny w l.mn. biorą sono."}
+  ]
+},
+{
+  id:14, cefr:"A1/A2", theme:"Zwierzęta", title:"Gli animali",
+  sub:"Słownictwo o zwierzętach i przyimki miejsca",
+  theory:[
+    "Nazwy zwierząt to przydatne ćwiczenie słownictwa, bo obejmują wyraźnie oba rodzaje i naturalnie łączą się z przyimkami miejsca — opisywanie, gdzie jest zwierzę, pomaga zapamiętać in, su, sotto i davanti a.",
+    "Przyimki miejsca po włosku często łączą się z rodzajnikami (a + il → al), co zobaczysz częściej wraz z wydłużaniem zdań."
+  ],
+  grammar:{
+    rule:"Przyimki miejsca",
+    examples:[
+      ["il gatto è sul tavolo","kot jest na stole (su + il = sul)"],
+      ["il cane è sotto la sedia","pies jest pod krzesłem"],
+      ["l'uccello è nel giardino","ptak jest w ogrodzie (in + il = nel)"],
+      ["il pesce è davanti a te","ryba jest przed tobą"]
+    ]
+  },
+  vocab:[["il gatto","kot"],["il cane","pies"],["l'uccello","ptak"],["il pesce","ryba"],["il cavallo","koń"],["la mucca","krowa"],["il coniglio","królik"],["sotto / sopra","pod / nad"]],
+  exercises:[
+    {type:"mcq",prompt:"„Sul tavolo” to skrócenie od:",options:["su + il","su + la","in + il"],answer:0,explain:"Su + il ściąga się do sul, tak jak a + il → al."},
+    {type:"mcq",prompt:"Jakie zwierzę to „il coniglio”?",options:["Koń","Królik","Krowa"],answer:1,explain:"Il coniglio = królik."},
+    {type:"fill",prompt:"Przetłumacz: „pies jest pod stołem” (użyj sotto + tavolo)",answer:"il cane è sotto il tavolo",explain:"Sotto nie musi ściągać się z rodzajnikiem tak jak su i in."},
+    {type:"fill",prompt:"Przetłumacz: „ptak”",answer:"l'uccello",explain:"L'uccello — rzeczownik męski zaczynający się na samogłoskę, więc il zmienia się w l'."}
+  ]
+},
+{
+  id:15, cefr:"A2", theme:"Rutyna dnia", title:"Il tempo e le stagioni",
+  sub:"Wyrażenia o pogodzie i cztery pory roku",
+  theory:[
+    "Pogoda po włosku często używa fare („robić\") bezosobowo: fa caldo, fa freddo — dosłownie „robi gorąco/zimno\". Inne wyrażenia pogodowe używają c'è (piove to osobny, nieregularny czasownik dla „pada deszcz\").",
+    "Pory roku łączą się z przyimkiem in dla trzech z nich, ale in inverno też działa dla zimy — usłyszysz oba wzorce."
+  ],
+  grammar:{
+    rule:"Pogoda z fare oraz pory roku",
+    examples:[
+      ["fa caldo","jest gorąco"],["fa freddo","jest zimno"],["c'è il sole","jest słonecznie"],["piove","pada deszcz"],
+      ["in primavera","wiosną"],["in estate","latem"],["in autunno","jesienią"],["in inverno","zimą"]
+    ]
+  },
+  vocab:[["il tempo","pogoda"],["il sole","słońce"],["la pioggia","deszcz"],["la neve","śnieg"],["il vento","wiatr"],["primavera","wiosna"],["estate","lato"],["autunno / inverno","jesień / zima"]],
+  exercises:[
+    {type:"mcq",prompt:"„Fa caldo” dosłownie znaczy:",options:["Robi gorąco → jest gorąco","Jest ciepłokrwiste","Będzie gorąco"],answer:0,explain:"Fare używa się bezosobowo w wielu wyrażeniach pogodowych."},
+    {type:"mcq",prompt:"Która to pora roku: „estate”?",options:["Zima","Wiosna","Lato"],answer:2,explain:"Estate = lato."},
+    {type:"fill",prompt:"Przetłumacz: „pada deszcz”",answer:"piove",explain:"Piove to nieregularna forma czasownika używana specjalnie dla deszczu."},
+    {type:"fill",prompt:"Uzupełnij: „___ inverno fa molto freddo.” (Zimą jest bardzo zimno.)",answer:"in",explain:"In inverno = zimą."}
+  ]
+},
+{
+  id:16, cefr:"A2", theme:"Podróże", title:"Viaggiare",
+  sub:"Słownictwo o transporcie i andare + a/in",
+  theory:[
+    "Andare („iść/jechać\") jest nieregularny, ale niezbędny do podróżowania. Łączy się z in dla większości pojazdów (in treno, in macchina), ale z a dla celów osiąganych pieszo lub nazwanych jako miejsce (a piedi, a Roma).",
+    "Ten podział a/in bywa mylący, bo nie przekłada się prosto na polskie „do” — warto zapamiętać częste połączenia wprost, zamiast tłumaczyć słowo po słowie."
+  ],
+  grammar:{
+    rule:"Andare (iść/jechać) + a / in",
+    examples:[
+      ["vado in treno","jadę pociągiem"],["vado in macchina","jadę samochodem"],
+      ["vado a piedi","idę pieszo"],["vado a Roma","jadę do Rzymu"],["vado in Italia","jadę do Włoch (kraje biorą in)"]
+    ]
+  },
+  vocab:[["il treno","pociąg"],["l'aereo","samolot"],["la macchina","samochód"],["l'autobus","autobus"],["la valigia","walizka"],["il biglietto","bilet"],["la stazione","dworzec"],["l'aeroporto","lotnisko"]],
+  exercises:[
+    {type:"mcq",prompt:"„Vado in treno” znaczy:",options:["Idę do pociągu","Jadę pociągiem","Wchodzę na dworzec"],answer:1,explain:"In + pojazd opisuje środek transportu: in treno = pociągiem."},
+    {type:"mcq",prompt:"Co jest poprawne dla „jadę do Rzymu”?",options:["Vado in Roma","Vado a Roma","Vado di Roma"],answer:1,explain:"Miasta biorą a: vado a Roma. Kraje zwykle biorą in: vado in Italia."},
+    {type:"fill",prompt:"Przetłumacz: „walizka”",answer:"la valigia",explain:"La valigia = walizka."},
+    {type:"fill",prompt:"Uzupełnij: „Noi ___ a piedi.” (Idziemy pieszo.) — użyj andare",answer:"andiamo",explain:"Noi andiamo = my idziemy, pierwsza osoba l.mn. czasownika andare."}
+  ]
+},
+{
+  id:17, cefr:"A2", theme:"Podróże", title:"Chiedere indicazioni",
+  sub:"Pytanie o drogę i tryb rozkazujący (forma tu)",
+  theory:[
+    "Pytanie o drogę i rozumienie wskazówek opiera się na małym, ale bardzo przydatnym zestawie zwrotów oraz na trybie rozkazującym — formie polecenia, używanej gdy ktoś mówi Ci, żeby skręcić, iść prosto lub kontynuować.",
+    "Nieformalny (tu) tryb rozkazujący dla regularnych czasowników -are jest identyczny z formą trzeciej osoby czasu teraźniejszego (gira → gira), co ułatwia rozpoznanie."
+  ],
+  grammar:{
+    rule:"Nieformalny tryb rozkazujący (podawanie wskazówek)",
+    examples:[
+      ["gira a destra","skręć w prawo"],["gira a sinistra","skręć w lewo"],
+      ["vai dritto","idź prosto"],["continua fino al semaforo","idź dalej aż do świateł"],
+      ["dov'è la stazione?","gdzie jest dworzec?"]
+    ]
+  },
+  vocab:[["a destra","w prawo"],["a sinistra","w lewo"],["dritto","prosto"],["vicino a","blisko"],["lontano da","daleko od"],["l'angolo","róg"],["il semaforo","światła"],["dov'è...?","gdzie jest...?"]],
+  exercises:[
+    {type:"mcq",prompt:"„Gira a sinistra” znaczy:",options:["Skręć w prawo","Skręć w lewo","Idź prosto"],answer:1,explain:"A sinistra = w lewo. A destra to „w prawo”."},
+    {type:"mcq",prompt:"„Dov'è la stazione?” znaczy:",options:["Czym jest dworzec?","Gdzie jest dworzec?","Kiedy jest dworzec?"],answer:1,explain:"Dov'è...? = Gdzie jest...?, skrócenie od dove + è."},
+    {type:"fill",prompt:"Przetłumacz: „idź prosto”",answer:"vai dritto",explain:"Vai dritto — nieformalny tryb rozkazujący od andare + dritto."},
+    {type:"fill",prompt:"Przetłumacz: „blisko”",answer:"vicino a",explain:"Vicino a = blisko; lontano da = daleko od."}
+  ]
+},
+{
+  id:18, cefr:"A2", theme:"Podstawy gramatyki", title:"Il passato con avere",
+  sub:"Passato prossimo z avere (czasowniki regularne)",
+  theory:[
+    "Passato prossimo to najczęstszy włoski czas przeszły w codziennej rozmowie, mniej więcej odpowiadający polskiemu „mówiłem” czy „powiedziałem”. To czas złożony: forma avere lub essere plus imiesłów przeszły głównego czasownika.",
+    "Większość czasowników używa avere. Regularne imiesłowy przeszłe zależą od grupy czasownika: -are kończy się na -ato, -ere na -uto, -ire na -ito."
+  ],
+  grammar:{
+    rule:"Passato prossimo z avere",
+    examples:[
+      ["ho parlato","mówiłem/mówiłam (-are → -ato)"],
+      ["hai creduto","wierzyłeś/wierzyłaś (-ere → -uto)"],
+      ["ha finito","on/ona skończył/a (-ire → -ito)"],
+      ["abbiamo mangiato la pizza","zjedliśmy pizzę"]
+    ]
+  },
+  vocab:[["ieri","wczoraj"],["la settimana scorsa","w zeszłym tygodniu"],["già","już"],["non... ancora","jeszcze nie"],["mangiare → mangiato","jeść → zjedzone"],["vendere → venduto","sprzedawać → sprzedane"],["capire → capito","rozumieć → zrozumiane"],["fa (due giorni fa)","temu (dwa dni temu)"]],
+  exercises:[
+    {type:"mcq",prompt:"Jakie są dwa elementy budujące passato prossimo?",options:["Dwa czasowniki w czasie teraźniejszym","Avere/essere + imiesłów przeszły","Essere + bezokolicznik"],answer:1,explain:"Passato prossimo = avere lub essere (odmienione) + imiesłów przeszły głównego czasownika."},
+    {type:"mcq",prompt:"Jaka jest końcówka imiesłowu przeszłego dla czasowników -ere?",options:["-ato","-uto","-ito"],answer:1,explain:"Czasowniki -ere tworzą imiesłów przeszły na -uto: credere → creduto."},
+    {type:"fill",prompt:"Uzupełnij: „Ieri io ___ pasta.” (Wczoraj zjadłem/zjadłam makaron.) — użyj mangiare",answer:"ho mangiato",explain:"Ho mangiato = zjadłem/zjadłam, avere + imiesłów -ato."},
+    {type:"fill",prompt:"Podaj imiesłów przeszły od „capire”:",answer:"capito",explain:"Capire → capito, zgodnie z regularnym wzorcem -ire → -ito."}
+  ]
+},
+{
+  id:19, cefr:"A2", theme:"Podstawy gramatyki", title:"Il passato con essere",
+  sub:"Passato prossimo z essere (czasowniki ruchu/stanu)",
+  theory:[
+    "Mniejsza grupa czasowników — głównie opisujących ruch lub zmianę stanu, jak andare („iść\") i nascere („urodzić się\") — tworzy passato prossimo z essere zamiast avere. Kluczowa różnica: z essere imiesłów przeszły musi zgadzać się rodzajem i liczbą z podmiotem, tak jak przymiotnik.",
+    "To ten sam wzorzec zgodności, który już poznałaś/eś przy przymiotnikach, zastosowany do samego imiesłowu."
+  ],
+  grammar:{
+    rule:"Passato prossimo z essere — zgodność imiesłowu",
+    examples:[
+      ["sono andato","poszedłem"],["sono andata","poszłam"],
+      ["è partito","on wyjechał"],["è partita","ona wyjechała"],
+      ["siamo arrivati","przyjechaliśmy (r. m./mieszana grupa)"],["sono arrivate","przyjechały (r. ż. l.mn.)"]
+    ]
+  },
+  vocab:[["andare → andato/a","iść → poszedł/poszła"],["partire → partito/a","wyjeżdżać → wyjechał/a"],["arrivare → arrivato/a","przyjeżdżać → przyjechał/a"],["tornare → tornato/a","wracać → wrócił/a"],["nascere → nato/a","urodzić się → urodzony/a"],["uscire → uscito/a","wychodzić → wyszedł/wyszła"],["venire → venuto/a","przychodzić → przyszedł/a"],["stare → stato/a","zostać/być → został/a"]],
+  exercises:[
+    {type:"mcq",prompt:"Co jest szczególnego w imiesłowie przeszłym z essere?",options:["Nigdy się nie zmienia","Zgadza się z podmiotem jak przymiotnik","Zawsze jest w rodzaju męskim"],answer:1,explain:"Z essere imiesłów zgadza się rodzajem i liczbą z podmiotem: sono andato vs. sono andata."},
+    {type:"mcq",prompt:"Kobieta mówiąca „wyjechałam” powie:",options:["sono partito","sono partita","ho partito"],answer:1,explain:"Partire używa essere, a podmiot żeński potrzebuje imiesłowu żeńskiego: sono partita."},
+    {type:"fill",prompt:"Uzupełnij dla grupy kobiet: „Loro ___ arrivate ieri.” (Przyjechały wczoraj.)",answer:"sono",explain:"Sono arrivate = one przyjechały, essere + imiesłów żeński l.mn."},
+    {type:"fill",prompt:"Podaj imiesłów przeszły od „nascere” (urodzić się), forma męska:",answer:"nato",explain:"Nascere → nato/a, nieregularny, ale bardzo częsty imiesłów."}
+  ]
+},
+{
+  id:20, cefr:"A2", theme:"Podstawy gramatyki", title:"Uno sguardo al futuro",
+  sub:"Powtórka oraz wprowadzenie do czasu przyszłego prostego",
+  theory:[
+    "Ten ostatni poziom łączy trzy grupy czasowników w jeszcze jednym czasie: futuro semplice, używanym do planów, przewidywań i obietnic. Regularne tworzenie jest proste: weź bezokolicznik, odrzuć końcowe -e i dodaj końcówki czasu przyszłego (czasowniki -are dodatkowo zmieniają a na e).",
+    "Z tym czasem, dodanym do essere, avere i passato prossimo, które już poznałaś/eś, masz teraz podstawowy zestaw narzędzi do opisywania teraźniejszości, przeszłości i przyszłości — wszystko, co ćwiczyłaś/eś przy zakupach, jedzeniu, rutynie, zwierzętach i podróżach, możesz teraz umieścić w czasie."
+  ],
+  grammar:{
+    rule:"Futuro semplice — wzorzec regularny",
+    examples:[
+      ["parlerò","będę mówić (parlare: a→e)"],["prenderò","wezmę"],["partirò","wyjadę"],
+      ["domani parlerò con lei","jutro porozmawiam z nią"],
+      ["il prossimo anno andrò in Italia","w przyszłym roku pojadę do Włoch"]
+    ]
+  },
+  vocab:[["domani","jutro"],["la prossima settimana","w przyszłym tygodniu"],["il prossimo anno","w przyszłym roku"],["presto","wkrótce"],["forse","może"],["sicuramente","na pewno"],["il futuro","przyszłość"],["il passato","przeszłość"]],
+  exercises:[
+    {type:"mcq",prompt:"Co się dzieje z czasownikami -are przy tworzeniu czasu przyszłego?",options:["Nic się nie zmienia","A zmienia się na e przed końcówką","Podwaja się spółgłoskę"],answer:1,explain:"Parlare → parler-, z a→e, a potem dodaje się końcówki: parlerò."},
+    {type:"mcq",prompt:"„Il prossimo anno andrò in Italia” znaczy:",options:["W zeszłym roku pojechałem do Włoch","W przyszłym roku pojadę do Włoch","Nigdy nie jeżdżę do Włoch"],answer:1,explain:"Il prossimo anno = w przyszłym roku, andrò = pojadę (nieregularny czas przyszły od andare)."},
+    {type:"fill",prompt:"Przetłumacz: „jutro”",answer:"domani",explain:"Domani = jutro, jeden z najczęstszych wyznaczników czasu przyszłego."},
+    {type:"fill",prompt:"Uzupełnij: „Domani io ___ con il treno.” (Jutro wyjadę pociągiem.) — użyj partire",answer:"partirò",explain:"Partirò = wyjadę, regularny czas przyszły od partire."}
+  ]
+}
+];
+
+/* ============ STAN ============ */
+const STORAGE_KEY = "impara-italiano-progress-pl";
+let progress = {};
+try{ progress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ progress = {}; }
+let currentLevel = 1;
+
+function saveProgress(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }catch(e){}
+}
+function isLevelDone(id){
+  const lvl = LEVELS.find(l=>l.id===id);
+  if(!lvl) return false;
+  const done = progress[id];
+  return done && done.length === lvl.exercises.length && done.every(Boolean);
+}
+
+/* ============ RENDER: SIDEBAR ============ */
+function renderSidebar(){
+  const nav = document.getElementById("levelNav");
+  nav.innerHTML = "";
+  LEVELS.forEach(lvl=>{
+    const btn = document.createElement("button");
+    btn.className = "level-btn" + (lvl.id===currentLevel ? " active":"") + (isLevelDone(lvl.id) ? " done":"");
+    btn.innerHTML = `<span class="num">${String(lvl.id).padStart(2,'0')}</span><span>${lvl.title}</span><span class="check">✓</span>`;
+    btn.addEventListener("click", ()=>{ goToLevel(lvl.id); document.getElementById("sidebar").classList.remove("open"); });
+    nav.appendChild(btn);
+  });
+  updateOverallProgress();
+}
+
+function updateOverallProgress(){
+  const doneCount = LEVELS.filter(l=>isLevelDone(l.id)).length;
+  const pct = Math.round((doneCount / LEVELS.length) * 100);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressPct").textContent = pct + "%";
+}
+
+/* ============ RENDER: MAIN ============ */
+function renderLevel(id){
+  const lvl = LEVELS.find(l=>l.id===id);
+  const main = document.getElementById("main");
+  if(!progress[id]) progress[id] = new Array(lvl.exercises.length).fill(false);
+
+  let html = `
+  <div class="level-header">
+    <div class="level-meta">
+      <span class="tag cefr">${lvl.cefr}</span>
+      <span class="tag">${lvl.theme}</span>
+    </div>
+    <h1 class="level-title">Poziom ${lvl.id} — ${lvl.title}</h1>
+    <p class="level-sub">${lvl.sub}</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-label"><span class="dot"></span>Teoria</h2>
+    <div class="theory">${lvl.theory.map(p=>`<p>${p}</p>`).join("")}</div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-label"><span class="dot"></span>Gramatyka</h2>
+    <div class="grammar-box">
+      <p class="grammar-rule">${lvl.grammar.rule}</p>
+      <ul class="grammar-examples">
+        ${lvl.grammar.examples.map(ex=>`<li>${ex[0]} <span class="en">— ${ex[1]}</span></li>`).join("")}
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-label"><span class="dot"></span>Słownictwo</h2>
+    <div class="vocab-grid">
+      ${lvl.vocab.map(v=>`<div class="vocab-item"><span class="it">${v[0]}</span><span class="en">${v[1]}</span></div>`).join("")}
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-label"><span class="dot"></span>Ćwiczenia</h2>
+    ${lvl.exercises.map((ex,i)=>renderExercise(lvl,ex,i)).join("")}
+  </div>
+
+  <div class="level-nav-footer">
+    <button class="nav-arrow-btn" id="prevBtn" ${lvl.id===1?"disabled":""}>← Poprzedni poziom</button>
+    <button class="nav-arrow-btn" id="nextBtn" ${lvl.id===LEVELS.length?"disabled":""}>Następny poziom →</button>
+  </div>
+  `;
+  main.innerHTML = html;
+  window.scrollTo({top:0, behavior:"instant" in window ? "instant":"auto"});
+
+  lvl.exercises.forEach((ex,i)=> wireExercise(lvl, ex, i));
+
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  if(prevBtn) prevBtn.addEventListener("click", ()=> goToLevel(lvl.id-1));
+  if(nextBtn) nextBtn.addEventListener("click", ()=> goToLevel(lvl.id+1));
+}
+
+function renderExercise(lvl, ex, i){
+  const exId = `l${lvl.id}e${i}`;
+  if(ex.type === "mcq"){
+    return `
+    <div class="exercise" id="${exId}">
+      <p class="exercise-num">Ćwiczenie ${i+1} — wybór</p>
+      <p class="exercise-prompt">${ex.prompt}</p>
+      <div class="options">
+        ${ex.options.map((opt,oi)=>`
+          <label class="option" data-idx="${oi}">
+            <input type="radio" name="${exId}" value="${oi}"> <span>${opt}</span>
+          </label>`).join("")}
+      </div>
+      <button class="check-btn" data-ex="${exId}">Sprawdź odpowiedź</button>
+      <div class="feedback" id="${exId}-fb"></div>
+    </div>`;
+  } else {
+    return `
+    <div class="exercise" id="${exId}">
+      <p class="exercise-num">Ćwiczenie ${i+1} — uzupełnij lukę</p>
+      <p class="exercise-prompt">${ex.prompt}</p>
+      <div class="fill-row">
+        <input type="text" id="${exId}-input" placeholder="Wpisz odpowiedź po włosku" autocomplete="off">
+        <button class="check-btn" data-ex="${exId}">Sprawdź odpowiedź</button>
+      </div>
+      <div class="feedback" id="${exId}-fb"></div>
+    </div>`;
+  }
+}
+
+function wireExercise(lvl, ex, i){
+  const exId = `l${lvl.id}e${i}`;
+  const container = document.getElementById(exId);
+  const btn = container.querySelector(".check-btn");
+  const fb = document.getElementById(exId+"-fb");
+
+  if(ex.type === "mcq"){
+    const options = container.querySelectorAll(".option");
+    options.forEach(opt=>{
+      opt.addEventListener("click", ()=>{
+        options.forEach(o=>o.classList.remove("selected"));
+        opt.classList.add("selected");
+      });
+    });
+    btn.addEventListener("click", ()=>{
+      const checked = container.querySelector("input[type=radio]:checked");
+      if(!checked){ return; }
+      const idx = parseInt(checked.value,10);
+      const correct = idx === ex.answer;
+      options.forEach((o,oi)=>{
+        o.classList.remove("correct","incorrect");
+        if(oi === ex.answer) o.classList.add("correct");
+        else if(oi === idx && !correct) o.classList.add("incorrect");
+      });
+      showFeedback(fb, correct, ex.explain);
+      markDone(lvl.id, i, correct);
+    });
+  } else {
+    const input = document.getElementById(exId+"-input");
+    btn.addEventListener("click", ()=>{
+      const val = (input.value || "").trim().toLowerCase().replace(/[.!?]/g,"");
+      const target = ex.answer.toLowerCase();
+      const correct = val === target;
+      showFeedback(fb, correct, ex.explain, correct ? null : ex.answer);
+      markDone(lvl.id, i, correct);
+    });
+    input.addEventListener("keydown", (e)=>{ if(e.key==="Enter") btn.click(); });
+  }
+}
+
+function showFeedback(fb, correct, explain, correctAnswer){
+  fb.className = "feedback show " + (correct ? "good":"bad");
+  const head = correct ? "Brawo! 🎉" : (correctAnswer ? `Niezupełnie — poprawna odpowiedź: „${correctAnswer}”` : "Niezupełnie.");
+  fb.innerHTML = `${head}<span class="explain">${explain}</span>`;
+}
+
+function markDone(levelId, exIndex, correct){
+  if(!progress[levelId]) progress[levelId] = [];
+  progress[levelId][exIndex] = correct;
+  saveProgress();
+  renderSidebar();
+}
+
+function goToLevel(id){
+  if(id < 1 || id > LEVELS.length) return;
+  currentLevel = id;
+  renderLevel(id);
+  renderSidebar();
+}
+
+/* ============ MOBILE TOGGLE ============ */
+document.getElementById("mobileToggle").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.toggle("open");
+});
+
+/* ============ INIT ============ */
+renderSidebar();
+renderLevel(currentLevel);
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# zależności i artefakty
+node_modules/
+dist/
+*.log
+
+# środowisko
+.env
+.env.local
+
+# systemowe
+.DS_Store
+Thumbs.db
+
+# edytory
+.vscode/
+.idea/
+*.swp
+
+# testy przeglądarkowe
+.playwright-cli/
+test-results/
+playwright-report/

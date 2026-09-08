@@ -22,6 +22,16 @@
   var LOCALE = { pl: "pl-PL", en: "en-US" };
   var FALLBACK = "en";
 
+  /**
+   * Języki wyjaśnień. Nazwa zawsze w tym języku, którego dotyczy (endonim):
+   * przełącznik ma być czytelny dla kogoś, kto nie rozumie języka bieżącego.
+   * Nowy język = jeden wpis tutaj plus katalog data/i18n/<code>/.
+   */
+  var LANGS = [
+    { code: "pl", flag: "🇵🇱", name: "Polski" },
+    { code: "en", flag: "🇺🇸", name: "English" }
+  ];
+
   /* lang -> klucz („lesson:a1-u01-l1") -> łatka */
   var store = {};
 
@@ -222,6 +232,7 @@
     set: setLang,
     missing: missing,
     locale: locale,
+    LANGS: LANGS,
     get lang() { return current; }
   };
 

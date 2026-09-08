@@ -39,6 +39,15 @@ LINGUAI.addUI("pl", {
   /* skrót, bo kafelek jest wąski — nie odmienia się przez liczbę */
   "stats.points": "pkt",
 
+  /* ---------------- Wybór języka wyjaśnień ---------------- */
+  "lang.group": "Język wyjaśnień",
+  "lang.partial": {
+    one: "Nie udało się wczytać {n} pliku — część kursu została w poprzednim języku.",
+    few: "Nie udało się wczytać {n} plików — część kursu została w poprzednim języku.",
+    many: "Nie udało się wczytać {n} plików — część kursu została w poprzednim języku.",
+    other: "Nie udało się wczytać {n} plików — część kursu została w poprzednim języku."
+  },
+
   /* ---------------- Dostępność ---------------- */
   "a11y.listen": "Posłuchaj",
   "a11y.listenTo": "Posłuchaj {what}",

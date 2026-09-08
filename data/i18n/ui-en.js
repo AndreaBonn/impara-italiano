@@ -38,6 +38,13 @@ LINGUAI.addUI("en", {
   /* abbreviated, the tile is narrow — does not inflect */
   "stats.points": "pts",
 
+  /* ---------------- Explanation language picker ---------------- */
+  "lang.group": "Explanation language",
+  "lang.partial": {
+    one: "Couldn't load {n} file — part of the course stayed in the previous language.",
+    other: "Couldn't load {n} files — part of the course stayed in the previous language."
+  },
+
   /* ---------------- Accessibility ---------------- */
   "a11y.listen": "Listen",
   "a11y.listenTo": "Listen to {what}",

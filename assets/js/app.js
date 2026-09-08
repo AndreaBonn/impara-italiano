@@ -101,12 +101,48 @@
     }
   }
 
+
+  /* ---------------- Język wyjaśnień ---------------- */
+  /** Rysuje przełącznik z I18n.LANGS. Nazwa języka zostaje w endonimie. */
+  function renderLangPicker() {
+    var box = document.getElementById("langPicker");
+    if (!box) return;
+    box.setAttribute("aria-label", I18n.t("lang.group"));
+    box.innerHTML = I18n.LANGS.map(function (l) {
+      return '<button type="button" class="rail__lang-btn" data-lang="' + l.code + '"' +
+        ' aria-label="' + Core.esc(l.name) + '" title="' + Core.esc(l.name) + '"' +
+        ' aria-pressed="' + (l.code === I18n.lang) + '">' +
+        '<span aria-hidden="true">' + l.flag + "</span></button>";
+    }).join("");
+    box.querySelectorAll("[data-lang]").forEach(function (b) {
+      b.addEventListener("click", function () { switchLang(b.getAttribute("data-lang")); });
+    });
+  }
+
+  /**
+   * Zmiana języka bez przeładowania: dociągamy brakujące nakładki, nakładamy je
+   * na te same obiekty i przerysowujemy bieżący widok.
+   */
+  function switchLang(lang) {
+    if (lang === Core.state.settings.lang) return;
+    Core.setLanguage(lang, function (missing) {
+      I18n.set(lang);
+      applyTheme(Core.state.settings.theme || "light");
+      renderLangPicker();
+      App.refreshRail();
+      render(current.route, current.params);
+      // milczące niepowodzenie zostawiłoby część kursu w poprzednim języku
+      if (missing.length) Core.toast(I18n.t("lang.partial", { n: missing.length }));
+    });
+  }
+
   /* ---------------- Start ---------------- */
   function boot() {
     Core.load();
     I18n.set(Core.state.settings.lang);
     LINGUAI.applyStrings(Core.state.settings.lang);
     applyTheme(Core.state.settings.theme || "light");
+    renderLangPicker();
     App.refreshRail();
 
     document.querySelectorAll(".rail__item").forEach(function (b) {

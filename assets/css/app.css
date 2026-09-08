@@ -175,6 +175,20 @@ button{font:inherit;color:inherit;}
 .rail__flag{font-size:1.05rem;}
 .rail__tag{margin:0;font-size:.78rem;opacity:.96;font-weight:500;letter-spacing:.01em;}
 
+/* wybór języka wyjaśnień: 44 px celu dotykowego, stan przez aria-pressed */
+.rail__lang{display:flex;gap:6px;margin-top:12px;}
+.rail__lang-btn{
+  min-width:44px;min-height:44px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  background:oklch(0 0 0 / .16);border:1px solid oklch(1 0 0 / .30);
+  border-radius:var(--r-m);font-size:1.15rem;line-height:1;cursor:pointer;
+  transition:background .16s ease, border-color .16s ease;
+}
+.rail__lang-btn:hover{background:oklch(0 0 0 / .28);}
+.rail__lang-btn[aria-pressed="true"]{
+  background:oklch(0.99 0.008 60);border-color:transparent;box-shadow:var(--shadow-s);
+}
+
 .rail__stats{
   margin:0 16px 14px;padding:12px 14px;
   /* nakładka ciemna, nie jasna: rozjaśnienie tła obniżyłoby kontrast białego tekstu */

@@ -233,6 +233,9 @@
     missing: missing,
     locale: locale,
     LANGS: LANGS,
+    // wystawione, żeby scripts/parity.mjs czytał mapę stąd zamiast ją powielać:
+    // dwie kopie rozjechałyby się przy pierwszym nowym języku
+    LOCALE: LOCALE,
     get lang() { return current; }
   };
 

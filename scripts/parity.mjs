@@ -22,6 +22,15 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const I18N = join(ROOT, "data", "i18n");
 const REFERENCE = "pl";
 
+/** Mapa kod → locale czytana z silnika, żeby nie mieć drugiej kopii. */
+function engineLocales() {
+  const sandbox = { window: {}, console, Intl, document: { documentElement: { setAttribute() {} }, querySelectorAll: () => [] } };
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(readFileSync(join(ROOT, "assets", "js", "i18n.js"), "utf8"), sandbox, { filename: "i18n.js" });
+  return sandbox.I18n.LOCALE;
+}
+
 /* ---------------- Wczytanie nakładek jednego języka ---------------- */
 
 function loadLang(lang) {
@@ -35,6 +44,49 @@ function loadLang(lang) {
     vm.runInContext(readFileSync(join(dir, f), "utf8"), sandbox, { filename: `${lang}/${f}` });
   }
   return bag;
+}
+
+/* ---------------- Napisy interfejsu: data/i18n/ui-<lang>.js ---------------- */
+
+function loadUI(lang) {
+  const path = join(I18N, `ui-${lang}.js`);
+  if (!existsSync(path)) return null;
+  const bag = {};
+  const sandbox = { window: {}, console, LINGUAI: { addUI(_l, map) { Object.assign(bag, map); } } };
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(readFileSync(path, "utf8"), sandbox, { filename: `ui-${lang}.js` });
+  return bag;
+}
+
+/**
+ * Kategorie liczby mnogiej wymagane przez CLDR dla danego locale.
+ * Angielski ma dwie, polski cztery, hiszpański i francuski trzy.
+ * Nakładka skopiowana z angielskiej przechodzi milczkiem: brakującą
+ * kategorię `plural()` podmienia na `other`, więc wychodzi „1 dni".
+ */
+function pluralCategories(locale) {
+  return new Intl.PluralRules(locale).resolvedOptions().pluralCategories;
+}
+
+function checkUI(lang, locale, ref, out) {
+  const bag = loadUI(lang);
+  if (!bag) { out.push(`ui-${lang}.js: brak pliku`); return; }
+  const refKeys = Object.keys(ref).sort();
+  refKeys.filter(k => !(k in bag)).forEach(k => out.push(`ui.${k}: brak klucza`));
+  Object.keys(bag).filter(k => !(k in ref)).forEach(k => out.push(`ui.${k}: klucz nadmiarowy`));
+
+  const needed = pluralCategories(locale);
+  refKeys.filter(k => k in bag).forEach(k => {
+    const isPluralRef = ref[k] && typeof ref[k] === "object";
+    const isPluralHere = bag[k] && typeof bag[k] === "object";
+    if (isPluralRef !== isPluralHere) {
+      out.push(`ui.${k}: ${isPluralRef ? "formy liczby" : "napis"} w ${REFERENCE}, ${isPluralHere ? "formy liczby" : "napis"} tutaj`);
+      return;
+    }
+    if (!isPluralRef) return;
+    needed.filter(c => !(c in bag[k])).forEach(c => out.push(`ui.${k}: brak formy „${c}" wymaganej przez ${locale}`));
+  });
 }
 
 /* ---------------- Kształt: klucze i długości, bez treści ---------------- */
@@ -85,6 +137,8 @@ if (!existsSync(join(I18N, REFERENCE))) {
 
 const ref = loadLang(REFERENCE);
 const refKeys = Object.keys(ref).sort();
+const refUI = loadUI(REFERENCE);
+const LOCALES = engineLocales();
 let bad = 0;
 
 for (const lang of langs) {
@@ -94,6 +148,9 @@ for (const lang of langs) {
   refKeys.filter(k => !(k in bag)).forEach(k => problems.push(`${k}: brak całego wpisu`));
   Object.keys(bag).filter(k => !(k in ref)).forEach(k => problems.push(`${k}: wpis nadmiarowy`));
   refKeys.filter(k => k in bag).forEach(k => diff(shape(ref[k]), shape(bag[k]), k, problems));
+
+  if (!LOCALES[lang]) problems.push(`ui-${lang}.js: brak wpisu w LOCALE w assets/js/i18n.js`);
+  else checkUI(lang, LOCALES[lang], refUI, problems);
 
   const covered = refKeys.filter(k => k in bag).length;
   console.log(`\n=== ${lang} ===  ${covered}/${refKeys.length} wpisów, ${problems.length} różnic`);

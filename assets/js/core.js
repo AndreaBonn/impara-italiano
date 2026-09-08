@@ -442,6 +442,8 @@
     loadScripts(paths, function (failed) {
       markI18n(paths, failed);
       global.LINGUAI.applyStrings(lang);
+      // reindex jeszcze raz: addUnits zbudował indeks, zanim nakładka wpisała tłumaczenia
+      reindex();
       // częściowe niepowodzenie nie blokuje poziomu: liczy się, czy cokolwiek się wczytało
       var got = (lv.units || []).length > 0;
       registry.loaded[code] = got ? true : "error";

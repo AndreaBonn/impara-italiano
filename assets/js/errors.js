@@ -164,10 +164,110 @@
     return { lesson: found.lesson, unit: found.unit, level: found.level, ex: found.lesson.exercises[i], index: i };
   }
 
+  /* ---------------- Talia ---------------- */
+
+  /**
+   * Ile poprawnych odpowiedzi z rzędu wyprowadza kartę z quaderno.
+   *
+   * Dwie, czyli odstępy 1 dzień i 3 dni z SM-2, a potem koniec. To jest
+   * decyzja produktowa (C1 w § 7.6 planu), nie fakt wynikający z kodu:
+   * przy niższym progu quaderno pustoszeje szybciej, niż uczeń się uczy,
+   * przy wyższym zamienia się w drugą talię fiszek.
+   */
+  var GRADUATE_REPS = 2;
+
+  /** Ocena z odpowiedzi boolowskiej na skalę SM-2. */
+  function quality(ok) { return ok ? 5 : 2; }
+
+  function bag() { return global.Core.state.errors; }
+
+  /** Który tag opisuje to ćwiczenie: własny, a jak nie ma — pierwszy z lekcji. */
+  function tagFor(lesson, ex) {
+    if (ex && ex.tag) return ex.tag;
+    return (lesson.tags || [])[0] || null;
+  }
+
+  /**
+   * Odnotowuje odpowiedź na ćwiczeniu lekcji.
+   *
+   * Dobra odpowiedź na ćwiczeniu, którego nie ma w quaderno, nie zakłada
+   * karty: zbiór ma trzymać to, czego uczeń NIE umie. Dobra odpowiedź na
+   * karcie istniejącej posuwa ją do przodu, bo poprawne wykonanie w toku
+   * lekcji liczy się tak samo jak w powtórce.
+   */
+  function record(lesson, index, ok) {
+    var ex = (lesson.exercises || [])[index];
+    if (!ex) return null;
+    var key = keyOf(lesson, index);
+    var deck = bag();
+    var card = deck[key];
+
+    if (!card && ok) return null;
+    if (!card) {
+      card = deck[key] = {
+        kind: "authored",
+        tag: tagFor(lesson, ex),
+        srcId: lesson.id,
+        ef: 2.5, reps: 0, interval: 0, due: Date.now(), lapses: 0, ts: Date.now()
+      };
+    }
+    global.Core.schedule(card, quality(ok));
+    var out = withKey(key, card);
+    if (ok && card.reps >= GRADUATE_REPS) delete deck[key];
+    global.Core.save();
+    return out;
+  }
+
+  /** Ocena karty w powtórce. Zwraca {card, graduated}. */
+  function grade(key, ok) {
+    var deck = bag();
+    var card = deck[key];
+    if (!card) return null;
+    global.Core.schedule(card, quality(ok));
+    var graduated = ok && card.reps >= GRADUATE_REPS;
+    if (graduated) delete deck[key];
+    global.Core.save();
+    return { card: withKey(key, card), graduated: graduated };
+  }
+
+  function withKey(key, card) {
+    var out = { key: key };
+    Object.keys(card).forEach(function (k) { out[k] = card[k]; });
+    return out;
+  }
+
+  /** Karty, których termin już minął, najpilniejsze na czele. */
+  function due(limit) {
+    var now = Date.now(), deck = bag(), out = [];
+    Object.keys(deck).forEach(function (k) {
+      if (deck[k].due <= now) out.push(withKey(k, deck[k]));
+    });
+    out.sort(function (a, b) { return a.due - b.due; });
+    return limit ? out.slice(0, limit) : out;
+  }
+
+  function dueCount() { return due().length; }
+
+  /** Wszystkie karty pogrupowane po zagadnieniu — do widoku „na czym stoję". */
+  function byTag() {
+    var deck = bag(), out = {};
+    Object.keys(deck).forEach(function (k) {
+      var t = deck[k].tag || "?";
+      (out[t] || (out[t] = [])).push(withKey(k, deck[k]));
+    });
+    return out;
+  }
+
   Errors.sigOf = sigOf;
   Errors.keysIn = keysIn;
   Errors.keyOf = keyOf;
   Errors.locate = locate;
+  Errors.record = record;
+  Errors.grade = grade;
+  Errors.due = due;
+  Errors.dueCount = dueCount;
+  Errors.byTag = byTag;
+  Errors.GRADUATE_REPS = GRADUATE_REPS;
 
   global.Errors = Errors;
 

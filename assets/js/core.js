@@ -336,22 +336,34 @@
     return any.length ? card.tr[any[0]] : "";
   }
 
-  function gradeCard(key, q) {
-    var c = state.srs[key];
-    if (!c) return null;
+  /**
+   * Harmonogram SM-2 na dowolnej karcie: {ef, reps, interval, due, lapses}.
+   *
+   * Wydzielony z gradeCard, bo quaderno błędów (errors.js) prowadzi drugą
+   * talię tymi samymi regułami. Dwie kopie tej arytmetyki rozjechałyby się
+   * przy pierwszej zmianie progu — i to po cichu, bo obie dalej działają.
+   */
+  function schedule(c, q) {
     if (q < 3) {
       c.reps = 0;
       c.interval = 0;
-      c.lapses += 1;
+      c.lapses = (c.lapses || 0) + 1;
       c.due = Date.now() + 10 * 60000;   // powtórka w tej samej sesji, za 10 min
     } else {
-      c.reps += 1;
+      c.reps = (c.reps || 0) + 1;
       if (c.reps === 1) c.interval = 1;
       else if (c.reps === 2) c.interval = 3;
       else c.interval = Math.round(c.interval * c.ef);
       c.ef = Math.max(1.3, c.ef + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
       c.due = Date.now() + c.interval * DAY;
     }
+    return c;
+  }
+
+  function gradeCard(key, q) {
+    var c = state.srs[key];
+    if (!c) return null;
+    schedule(c, q);
     save();
     return c;
   }
@@ -720,7 +732,8 @@
     norm: norm, stripAccents: stripAccents, levenshtein: levenshtein,
     similarity: similarity, checkOpen: checkOpen,
     today: today, touchDay: touchDay,
-    cardKey: cardKey, addCard: addCard, cardTr: cardTr, gradeCard: gradeCard,
+    cardKey: cardKey, addCard: addCard, cardTr: cardTr,
+    schedule: schedule, gradeCard: gradeCard,
     dueCards: dueCards, dueCount: dueCount,
     lessonState: lessonState, isLessonDone: isLessonDone,
     recordLesson: recordLesson, recordAnswer: recordAnswer,

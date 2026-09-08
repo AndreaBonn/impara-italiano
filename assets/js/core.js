@@ -16,6 +16,7 @@
     levels: [],          // [{code, cefrLabel, dataFiles, name, desc, units}]
     byCode: {},          // code -> level
     lessonIndex: {},     // lessonId -> {lesson, unit, level}
+    vocabIndex: {},      // norm(włoski) -> tłumaczenie w bieżącym języku
     loaded: {}           // code -> true
   };
 
@@ -227,10 +228,25 @@
   }
 
   /** Tłumaczenie fiszki w bieżącym języku, z zejściem na jakiekolwiek istniejące. */
+  /**
+   * Tłumaczenie fiszki w bieżącym języku. Trzy źródła, w tej kolejności:
+   * 1. glosa zapisana w fiszce,
+   * 2. słownik wczytanego kursu — fiszka dodana po polsku ma tu pokazać
+   *    angielskie znaczenie, gdy uczeń przełączy język, bez czekania na
+   *    ponowne przerobienie lekcji,
+   * 3. jakakolwiek glosa fiszki, bo pusty wiersz jest gorszy niż obcy.
+   *
+   * Wynik z kursu NIE jest zapisywany do fiszki: gdyby nakładki danego języka
+   * jeszcze nie było, zapisalibyśmy polski tekst pod kluczem „en" na stałe.
+   */
   function cardTr(card) {
     if (!card || !card.tr) return "";
     var lang = state.settings.lang;
     if (card.tr[lang]) return card.tr[lang];
+
+    var fromCourse = registry.vocabIndex[norm(card.it)];
+    if (fromCourse) return fromCourse;
+
     var any = Object.keys(card.tr).filter(function (k) { return card.tr[k]; });
     return any.length ? card.tr[any[0]] : "";
   }
@@ -350,12 +366,17 @@
 
   function reindex() {
     registry.lessonIndex = {};
+    registry.vocabIndex = {};
+    function note(l, u, lv) {
+      registry.lessonIndex[l.id] = { lesson: l, unit: u, level: lv };
+      (l.vocab || []).forEach(function (v) {
+        if (v.it && v.tr) registry.vocabIndex[norm(v.it)] = v.tr;
+      });
+    }
     registry.levels.forEach(function (lv) {
       (lv.units || []).forEach(function (u) {
-        (u.lessons || []).forEach(function (l) {
-          registry.lessonIndex[l.id] = { lesson: l, unit: u, level: lv };
-        });
-        if (u.test) registry.lessonIndex[u.test.id] = { lesson: u.test, unit: u, level: lv };
+        (u.lessons || []).forEach(function (l) { note(l, u, lv); });
+        if (u.test) note(u.test, u, lv);
       });
     });
   }
@@ -451,6 +472,7 @@
     loadScripts(paths, function (failed) {
       markI18n(paths, failed);
       global.LINGUAI.applyStrings(lang);
+      reindex();   // słownik fiszek musi wskazywać na glosy w nowym języku
       cb && cb(failed);
     });
   }

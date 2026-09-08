@@ -28,6 +28,20 @@
       lessons: {},        // id -> {score, total, done, ts, attempts}
       srs: {},            // cardKey (sam włoski) -> {it, tr:{lang->napis}, src, ef, reps, interval, due, lapses}
       saved: {},          // cardKey -> true (słówka „do zapamiętania")
+
+      /* Silnik adaptacyjny. Kontenery są DOKŁADANE, nie migrowane:
+         load() nakłada zapis na te wartości domyślne, więc starszy
+         profil dostaje je puste sam z siebie. Numer schematu zostaje
+         przy 2 — podniesienie jest zarezerwowane na zmianę ZNACZENIA
+         istniejącego pola, tak jak przy v1 → v2, a tutaj nic nie
+         zmienia znaczenia. Bump zamiast tego odrzuciłby każdy plik
+         wyeksportowany przez ucznia do tej pory. */
+      errors: {},         // klucz ćwiczenia -> karta błędu
+      gsrs: {},           // id zagadnienia z GRAMMAR_REF -> harmonogram
+      drills: {},         // id generatora -> licznik podejść
+      session: {},        // skład i postęp dzisiejszej sesji
+      writing: {},        // id zadania -> wypracowanie ucznia
+      placement: null,    // wynik testu poziomującego, dopóki go nie ma
       streak: { count: 0, lastDay: null, best: 0 },
       xp: 0,
       minutes: 0,

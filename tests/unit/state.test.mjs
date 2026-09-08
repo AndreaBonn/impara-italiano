@@ -57,6 +57,42 @@ describe("merge", () => {
   });
 });
 
+describe("kontenery silnika adaptacyjnego", () => {
+  const NOWE = ["errors", "gsrs", "drills", "session", "writing"];
+
+  test("profil zapisany przed zmianą dostaje je puste, bez migracji", () => {
+    const box = loadEngine({ seed: { [KEY]: saved({ xp: 40, lessons: { "a1-u01-l1": { done: true } } }) } });
+    box.Core.load();
+
+    assert.equal(box.Core.state.schema, SCHEMA, "numer schematu się nie rusza");
+    assert.equal(box.Core.state.xp, 40, "postępy przechodzą nietknięte");
+    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true);
+    NOWE.forEach(k => pusty(box.Core.state[k], `${k} startuje pusty`));
+    assert.equal(box.Core.state.placement, null, "brak testu poziomującego to null, nie obiekt");
+  });
+
+  test("zawartość kontenerów przeżywa zapis i odczyt", () => {
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.state.errors["klucz-1"] = { kind: "authored", tag: "g-presente", lapses: 1 };
+    box.Core.state.gsrs["g-presente"] = { ef: 2.5, reps: 1, interval: 1, due: 123 };
+    box.Core.save();
+    box.flush();
+
+    const zapis = box.stored(KEY);
+    assert.equal(zapis.errors["klucz-1"].tag, "g-presente");
+    assert.equal(zapis.gsrs["g-presente"].interval, 1);
+  });
+
+  test("czyszczenie postępów opróżnia je razem z resztą", () => {
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.state.errors["klucz-1"] = { kind: "authored" };
+    box.Core.resetState();
+    pusty(box.Core.state.errors, "quaderno errori znika razem z postępami");
+  });
+});
+
 describe("load", () => {
   test("pusty magazyn zostawia stan domyślny", () => {
     const box = loadEngine();

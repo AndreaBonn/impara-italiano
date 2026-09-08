@@ -372,14 +372,13 @@
     var due = Core.dueCards(30);
     if (!due.length) {
       var total = Object.keys(Core.state.srs).length;
-      set(pageHead("Powtórki", "Nic do powtórzenia 🌿",
-        total ? "Wszystkie " + total + " fiszek jest w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji."
-              : "Twoja talia jest pusta. Oznacz słówka gwiazdką ⭐ w dowolnej lekcji, a wrócą tu we właściwym momencie.") +
-        '<div class="empty"><h3>System powtórek</h3><p>Fiszki wracają w rosnących odstępach (1 → 3 → 7 → 16 dni…), zależnie od tego, jak pewnie odpowiadasz. To algorytm SM-2, ten sam co w Anki.</p></div>');
+      set(pageHead(t("nav.review"), t("srs.nothingDue"),
+        total ? t("srs.allResting", { n: total }) : t("srs.deckEmpty")) +
+        empty(t("srs.howTitle"), t("srs.howText")));
       return;
     }
 
-    set(pageHead("Powtórki", "Do powtórzenia dziś: " + due.length, "Odpowiadaj na głos albo w myślach, potem oceń szczerze — od tego zależy, kiedy fiszka wróci.") +
+    set(pageHead(t("nav.review"), t("srs.dueToday", { n: due.length }), t("srs.gradeHonestly")) +
       '<div id="srsBox"></div>');
 
     var i = 0, right = 0;
@@ -387,9 +386,9 @@
       var box = document.getElementById("srsBox");
       if (i >= due.length) {
         box.innerHTML = '<div class="summary"><div class="summary__score">' + right + "/" + due.length + "</div>" +
-          '<p class="summary__msg">Sesja powtórek zakończona.</p>' +
-          '<div class="summary__acts"><button class="btn btn--primary js-more">Kolejna partia</button>' +
-          '<button class="btn btn--ghost js-path">Ścieżka nauki</button></div></div>';
+          '<p class="summary__msg">' + t("srs.sessionDone") + "</p>" +
+          '<div class="summary__acts"><button class="btn btn--primary js-more">' + t("srs.nextBatch") + "</button>" +
+          '<button class="btn btn--ghost js-path">' + t("nav.path") + "</button></div></div>";
         box.querySelector(".js-more").addEventListener("click", function () { App.go("ripasso"); });
         box.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
         App.refreshRail();
@@ -397,17 +396,17 @@
       }
       var c = due[i];
       box.innerHTML = '<div class="exq">' +
-        '<p class="exq__num">Fiszka ' + (i + 1) + " z " + due.length + "</p>" +
+        '<p class="exq__num">' + esc(t("srs.cardOf", { i: i + 1, n: due.length })) + "</p>" +
         '<p class="exq__prompt" style="font-size:1.3rem">' + esc(c.pl) + "</p>" +
-        '<p class="exq__sub">Jak to powiesz po włosku?</p>' +
-        '<div class="field-row"><input type="text" class="field js-in" placeholder="Po włosku" autocomplete="off" spellcheck="false">' +
-        '<button class="btn btn--primary js-show">Sprawdź</button></div>' +
+        '<p class="exq__sub">' + t("srs.howInItalian") + "</p>" +
+        '<div class="field-row"><input type="text" class="field js-in" placeholder="' + esc(t("srs.ph")) + '" autocomplete="off" spellcheck="false">' +
+        '<button class="btn btn--primary js-show">' + t("ex.check") + "</button></div>" +
         '<div class="fb" role="status"></div>' +
         '<div class="js-grade" style="margin-top:14px;display:none;gap:8px;flex-wrap:wrap">' +
-        '<button class="btn btn--ghost btn--sm" data-q="0">Nie pamiętam</button>' +
-        '<button class="btn btn--ghost btn--sm" data-q="3">Z trudem</button>' +
-        '<button class="btn btn--green btn--sm" data-q="4">Dobrze</button>' +
-        '<button class="btn btn--green btn--sm" data-q="5">Łatwo</button></div></div>';
+        '<button class="btn btn--ghost btn--sm" data-q="0">' + t("srs.grade0") + "</button>" +
+        '<button class="btn btn--ghost btn--sm" data-q="3">' + t("srs.grade3") + "</button>" +
+        '<button class="btn btn--green btn--sm" data-q="4">' + t("srs.grade4") + "</button>" +
+        '<button class="btn btn--green btn--sm" data-q="5">' + t("srs.grade5") + "</button></div></div>";
 
       var input = box.querySelector(".js-in");
       var fb = box.querySelector(".fb");
@@ -417,8 +416,8 @@
       function reveal() {
         var res = Core.checkOpen(input.value, [c.it], false);
         fb.className = "fb is-on " + (res.ok ? "fb--ok" : "fb--ko");
-        fb.innerHTML = (res.ok ? "Dobrze! " : "Poprawnie: ") + "<b>" + esc(c.it) + "</b>" +
-          ' <button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="Posłuchaj">🔊</button>';
+        fb.innerHTML = t(res.ok ? "srs.right" : "srs.wrong") + " <b>" + esc(c.it) + "</b>" +
+          ' <button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button>';
         Ex.wireSpeakers(fb);
         Audio2.speak(c.it);
         grade.style.display = "flex";
@@ -446,10 +445,9 @@
     var all = global.CONVERSATIONS || [];
     if (params && params.id) return runConversation(all.filter(function (c) { return c.id === params.id; })[0]);
 
-    set(pageHead("Mówienie", "Rozmowy na głos",
-      "Aplikacja mówi po włosku, Ty odpowiadasz do mikrofonu. Scenariusze z prawdziwego życia — bar, sklep, dworzec, rozmowa o pracę.") +
+    set(pageHead(t("talk.kicker"), t("nav.talk"), t("talk.intro")) +
       (Audio2.sttSupported ? "" :
-        '<div class="callout callout--trap"><b>Uwaga:</b> Twoja przeglądarka nie obsługuje rozpoznawania mowy. Rozmowy zadziałają w trybie pisanym. Pełne mówienie działa w Chrome, Edge i Safari 16+.</div>') +
+        '<div class="callout callout--trap"><b>' + t("talk.noSttLabel") + "</b> " + t("talk.noStt") + "</div>") +
       '<div class="stack">' + all.map(function (c) {
         var p = Core.lessonState("conv-" + c.id);
         return '<button class="list-row" data-conv="' + esc(c.id) + '" style="text-align:left;cursor:pointer;width:100%">' +
@@ -465,9 +463,9 @@
   };
 
   function runConversation(conv) {
-    if (!conv) { set('<div class="empty"><h3>Nie znaleziono rozmowy</h3></div>'); return; }
+    if (!conv) { set(empty(t("talk.notFound"))); return; }
 
-    set('<button class="btn btn--ghost btn--sm js-back" style="margin-bottom:18px">← Wszystkie rozmowy</button>' +
+    set('<button class="btn btn--ghost btn--sm js-back" style="margin-bottom:18px">' + t("talk.backToList") + "</button>" +
       pageHead(conv.cefr + " · " + conv.title, conv.titleIt, conv.setting) +
       '<div class="card"><div class="dlg js-dlg"></div><div class="js-turn" style="margin-top:20px"></div></div>');
 
@@ -482,7 +480,7 @@
       d.className = "dlg__line" + (mine ? " dlg__line--b" : "");
       d.innerHTML = '<div class="dlg__who" aria-hidden="true">' + (mine ? "🙋" : esc(conv.icon)) + "</div>" +
         '<div class="dlg__bubble"><span class="dlg__it">' + esc(it) +
-        ' <button type="button" class="say-btn" data-say="' + esc(it) + '" aria-label="Posłuchaj">🔊</button></span>' +
+        ' <button type="button" class="say-btn" data-say="' + esc(it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button></span>' +
         (pl ? '<span class="dlg__pl">' + esc(pl) + "</span>" : "") + "</div>";
       dlg.appendChild(d);
       Ex.wireSpeakers(d);
@@ -491,28 +489,29 @@
 
     function step() {
       if (i >= conv.turns.length) return finishConv();
-      var t = conv.turns[i];
-      if (t.sp !== "TY") {
-        bubble(t.it, t.tr, false);
+      var turnData = conv.turns[i];
+      if (turnData.sp !== "TY") {
+        bubble(turnData.it, turnData.tr, false);
         i++;
-        Audio2.speak(t.it, { onend: function () { setTimeout(step, 260); } });
+        Audio2.speak(turnData.it, { onend: function () { setTimeout(step, 260); } });
         return;
       }
-      renderTurn(t);
+      renderTurn(turnData);
     }
 
-    function renderTurn(t) {
+    // parametr nazywa się turnData, nie t: `t` to helper tłumaczeń w tym pliku
+    function renderTurn(turnData) {
       turns++;
-      var accepted = t.accept || [t.it];
+      var accepted = turnData.accept || [turnData.it];
       turn.innerHTML =
         '<div class="voice-box">' +
-        '<p style="font-weight:600;margin:0 0 4px">Twoja kolej: ' + esc(t.task) + "</p>" +
-        '<p class="voice-pl" style="margin-bottom:14px">Podpowiedź: <i>' + esc(t.hintIt || accepted[0]) + "</i></p>" +
-        (Audio2.sttSupported ? '<button type="button" class="mic js-mic" aria-label="Mów">🎤</button><p class="voice-heard js-heard">Kliknij i powiedz po włosku.</p>' : "") +
+        '<p style="font-weight:600;margin:0 0 4px">' + esc(t("talk.yourTurn", { task: turnData.task })) + "</p>" +
+        '<p class="voice-pl" style="margin-bottom:14px">' + t("ex.hintLabel", { hint: "<i>" + esc(turnData.hintIt || accepted[0]) + "</i>" }) + "</p>" +
+        (Audio2.sttSupported ? '<button type="button" class="mic js-mic" aria-label="' + esc(t("talk.speak")) + '">🎤</button><p class="voice-heard js-heard">' + t("talk.tapAndSpeak") + "</p>" : "") +
         '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-        '<input type="text" class="field js-in" style="max-width:340px" placeholder="…albo wpisz odpowiedź" autocomplete="off" spellcheck="false">' +
-        '<button class="btn btn--primary js-send">Wyślij</button>' +
-        '<button class="btn btn--quiet js-skip">Pokaż odpowiedź</button></div></div>';
+        '<input type="text" class="field js-in" style="max-width:340px" placeholder="' + esc(t("talk.orType")) + '" autocomplete="off" spellcheck="false">' +
+        '<button class="btn btn--primary js-send">' + t("talk.send") + "</button>" +
+        '<button class="btn btn--quiet js-skip">' + t("talk.reveal") + "</button></div></div>";
 
       var heard = turn.querySelector(".js-heard");
       var input = turn.querySelector(".js-in");
@@ -523,8 +522,8 @@
         var ok = best >= 0.72;
         if (ok) score++;
         Core.recordAnswer(ok);
-        bubble(ok ? text : accepted[0], t.tr || "", true);
-        if (!ok) Core.toast("Model odpowiedzi: " + accepted[0]);
+        bubble(ok ? text : accepted[0], turnData.tr || "", true);
+        if (!ok) Core.toast(t("talk.modelAnswer", { answer: accepted[0] }));
         turn.innerHTML = "";
         i++;
         setTimeout(step, 420);
@@ -533,22 +532,22 @@
       if (Audio2.sttSupported) {
         var mic = turn.querySelector(".js-mic");
         mic.addEventListener("click", function () {
-          heard.textContent = "Słucham…";
+          heard.textContent = t("ex.stt.listening");
           mic.classList.add("is-rec");
           Audio2.listen({
             oninterim: function (x) { heard.innerHTML = "…" + esc(x); },
-            onerror: function (e) { mic.classList.remove("is-rec"); heard.textContent = e === "not-allowed" ? "Zezwól na mikrofon w przeglądarce." : "Nie udało się. Spróbuj jeszcze raz."; },
+            onerror: function (e) { mic.classList.remove("is-rec"); heard.textContent = t(e === "not-allowed" ? "ex.stt.denied" : "ex.stt.failed"); },
             onend: function (text) {
               mic.classList.remove("is-rec");
-              if (!text) { heard.textContent = "Nic nie usłyszałam."; return; }
-              heard.innerHTML = "Usłyszałam: <b>" + esc(text) + "</b>";
+              if (!text) { heard.textContent = t("ex.stt.nothing"); return; }
+              heard.innerHTML = t("ex.stt.heard", { text: "<b>" + esc(text) + "</b>" });
               setTimeout(function () { accept(text); }, 500);
             }
           });
         });
       }
       turn.querySelector(".js-send").addEventListener("click", function () {
-        if (!input.value.trim()) { Core.toast("Napisz albo powiedz odpowiedź."); return; }
+        if (!input.value.trim()) { Core.toast(t("talk.emptyAnswer")); return; }
         accept(input.value.trim());
       });
       input.addEventListener("keydown", function (e) { if (e.key === "Enter") turn.querySelector(".js-send").click(); });
@@ -562,9 +561,9 @@
       Core.recordLesson("conv-" + conv.id, score, Math.max(turns, 1), 0);
       App.refreshRail();
       turn.innerHTML = '<div class="summary"><div class="summary__score">' + score + "/" + turns + "</div>" +
-        '<p class="summary__msg">' + esc(conv.closing || "Rozmowa zakończona. Powtórz ją za kilka dni — płynność bierze się z powtarzania.") + "</p>" +
-        '<div class="summary__acts"><button class="btn btn--primary js-again">Jeszcze raz</button>' +
-        '<button class="btn btn--ghost js-list">Inne rozmowy</button></div></div>';
+        '<p class="summary__msg">' + esc(conv.closing || t("talk.defaultClosing")) + "</p>" +
+        '<div class="summary__acts"><button class="btn btn--primary js-again">' + t("talk.again") + "</button>" +
+        '<button class="btn btn--ghost js-list">' + t("talk.others") + "</button></div></div>";
       turn.querySelector(".js-again").addEventListener("click", function () { App.go("conversazione", { id: conv.id }); });
       turn.querySelector(".js-list").addEventListener("click", function () { App.go("conversazione"); });
     }
@@ -581,7 +580,7 @@
       var a = null;
       ref.forEach(function (sec) { (sec.items || []).forEach(function (it) { if (it.id === params.id) a = { sec: sec, it: it }; }); });
       if (a) {
-        set('<button class="btn btn--ghost btn--sm js-back" style="margin-bottom:18px">← Spis treści</button>' +
+        set('<button class="btn btn--ghost btn--sm js-back" style="margin-bottom:18px">' + t("gram.backToIndex") + "</button>" +
           pageHead(a.sec.title + " · " + a.it.cefr, a.it.title, a.it.sub || "") +
           '<div class="card"><div class="prose">' + a.it.body + "</div></div>");
         el().querySelector(".js-back").addEventListener("click", function () { App.go("grammatica"); });
@@ -589,8 +588,7 @@
       }
     }
 
-    set(pageHead("Materiały", "Gramatyka od A do Z",
-      "Pełny sylabus gramatyczny A1 → C2, uporządkowany tematycznie. Zaglądaj tu, kiedy coś w lekcji wymaga szerszego wyjaśnienia.") +
+    set(pageHead(t("gram.kicker"), t("gram.title"), t("gram.intro")) +
       ref.map(function (sec) {
         return '<section style="margin-bottom:30px"><h2 style="font-size:1.24rem;margin-bottom:12px">' + esc(sec.title) + "</h2>" +
           '<div class="stack">' + (sec.items || []).map(function (it) {

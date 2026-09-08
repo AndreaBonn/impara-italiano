@@ -154,6 +154,51 @@ LINGUAI.addUI("en", {
   "ex.stt.denied": "Microphone access denied. Allow it in your browser settings.",
   "ex.stt.failed": "Recording failed. Try again.",
   "ex.stt.nothing": "I didn't catch anything. Try again.",
-  "ex.stt.heard": "I heard: {text}"
+  "ex.stt.heard": "I heard: {text}",
+
+  /* ---------------- Review (SRS) ---------------- */
+  "srs.nothingDue": "Nothing to review 🌿",
+  "srs.allResting": "All {n} cards are resting. Come back tomorrow, or star new words inside a lesson.",
+  "srs.deckEmpty": "Your deck is empty. Star ⭐ a word in any lesson and it will come back here at the right moment.",
+  "srs.howTitle": "How review works",
+  "srs.howText": "Cards come back at growing intervals (1 → 3 → 7 → 16 days…), depending on how confidently you answer. It is the SM-2 algorithm, the same one Anki uses.",
+  "srs.dueToday": "Due today: {n}",
+  "srs.gradeHonestly": "Answer out loud or in your head, then grade yourself honestly — that decides when the card comes back.",
+  "srs.sessionDone": "Review session finished.",
+  "srs.nextBatch": "Next batch",
+  "srs.cardOf": "Card {i} of {n}",
+  "srs.howInItalian": "How do you say it in Italian?",
+  "srs.ph": "In Italian",
+  "srs.right": "Correct!",
+  "srs.wrong": "The answer is:",
+  "srs.grade0": "No idea",
+  "srs.grade3": "With effort",
+  "srs.grade4": "Got it",
+  "srs.grade5": "Easy",
+
+  /* ---------------- Speaking practice ---------------- */
+  "talk.kicker": "Speaking",
+  "talk.intro": "The app speaks Italian, you answer into the mic. Real situations — the bar, a store, the train station, a job interview.",
+  "talk.noSttLabel": "Heads up:",
+  "talk.noStt": "Your browser doesn't support speech recognition. Conversations will work in typing mode. Full speaking works in Chrome, Edge and Safari 16+.",
+  "talk.notFound": "Conversation not found",
+  "talk.backToList": "← All conversations",
+  "talk.yourTurn": "Your turn: {task}",
+  "talk.speak": "Speak",
+  "talk.tapAndSpeak": "Tap and say it in Italian.",
+  "talk.orType": "…or type your answer",
+  "talk.send": "Send",
+  "talk.reveal": "Show the answer",
+  "talk.modelAnswer": "Model answer: {answer}",
+  "talk.emptyAnswer": "Type or say your answer.",
+  "talk.defaultClosing": "Conversation over. Run it again in a few days — fluency comes from repetition.",
+  "talk.again": "Once more",
+  "talk.others": "Other conversations",
+
+  /* ---------------- Grammar ---------------- */
+  "gram.backToIndex": "← Contents",
+  "gram.kicker": "Reference",
+  "gram.title": "Grammar from A to Z",
+  "gram.intro": "The full A1 → C2 grammar syllabus, arranged by topic. Come here when something in a lesson needs a wider explanation."
 
 });

@@ -157,6 +157,51 @@ LINGUAI.addUI("pl", {
   "ex.stt.denied": "Brak zgody na mikrofon. Zezwól w ustawieniach przeglądarki.",
   "ex.stt.failed": "Nie udało się nagrać. Spróbuj ponownie.",
   "ex.stt.nothing": "Nic nie usłyszałam. Spróbuj jeszcze raz.",
-  "ex.stt.heard": "Usłyszałam: {text}"
+  "ex.stt.heard": "Usłyszałam: {text}",
+
+  /* ---------------- Powtórki (SRS) ---------------- */
+  "srs.nothingDue": "Nic do powtórzenia 🌿",
+  "srs.allResting": "Wszystkie {n} fiszek jest w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji.",
+  "srs.deckEmpty": "Twoja talia jest pusta. Oznacz słówka gwiazdką ⭐ w dowolnej lekcji, a wrócą tu we właściwym momencie.",
+  "srs.howTitle": "System powtórek",
+  "srs.howText": "Fiszki wracają w rosnących odstępach (1 → 3 → 7 → 16 dni…), zależnie od tego, jak pewnie odpowiadasz. To algorytm SM-2, ten sam co w Anki.",
+  "srs.dueToday": "Do powtórzenia dziś: {n}",
+  "srs.gradeHonestly": "Odpowiadaj na głos albo w myślach, potem oceń szczerze — od tego zależy, kiedy fiszka wróci.",
+  "srs.sessionDone": "Sesja powtórek zakończona.",
+  "srs.nextBatch": "Kolejna partia",
+  "srs.cardOf": "Fiszka {i} z {n}",
+  "srs.howInItalian": "Jak to powiesz po włosku?",
+  "srs.ph": "Po włosku",
+  "srs.right": "Dobrze!",
+  "srs.wrong": "Poprawnie:",
+  "srs.grade0": "Nie pamiętam",
+  "srs.grade3": "Z trudem",
+  "srs.grade4": "Dobrze",
+  "srs.grade5": "Łatwo",
+
+  /* ---------------- Rozmowy na głos ---------------- */
+  "talk.kicker": "Mówienie",
+  "talk.intro": "Aplikacja mówi po włosku, Ty odpowiadasz do mikrofonu. Scenariusze z prawdziwego życia — bar, sklep, dworzec, rozmowa o pracę.",
+  "talk.noSttLabel": "Uwaga:",
+  "talk.noStt": "Twoja przeglądarka nie obsługuje rozpoznawania mowy. Rozmowy zadziałają w trybie pisanym. Pełne mówienie działa w Chrome, Edge i Safari 16+.",
+  "talk.notFound": "Nie znaleziono rozmowy",
+  "talk.backToList": "← Wszystkie rozmowy",
+  "talk.yourTurn": "Twoja kolej: {task}",
+  "talk.speak": "Mów",
+  "talk.tapAndSpeak": "Kliknij i powiedz po włosku.",
+  "talk.orType": "…albo wpisz odpowiedź",
+  "talk.send": "Wyślij",
+  "talk.reveal": "Pokaż odpowiedź",
+  "talk.modelAnswer": "Model odpowiedzi: {answer}",
+  "talk.emptyAnswer": "Napisz albo powiedz odpowiedź.",
+  "talk.defaultClosing": "Rozmowa zakończona. Powtórz ją za kilka dni — płynność bierze się z powtarzania.",
+  "talk.again": "Jeszcze raz",
+  "talk.others": "Inne rozmowy",
+
+  /* ---------------- Gramatyka ---------------- */
+  "gram.backToIndex": "← Spis treści",
+  "gram.kicker": "Materiały",
+  "gram.title": "Gramatyka od A do Z",
+  "gram.intro": "Pełny sylabus gramatyczny A1 → C2, uporządkowany tematycznie. Zaglądaj tu, kiedy coś w lekcji wymaga szerszego wyjaśnienia."
 
 });

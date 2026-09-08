@@ -232,14 +232,14 @@
         '<button class="btn btn--ghost btn--sm js-play-all">' + t("lesson.playAll") + "</button>" +
         '<button class="btn btn--ghost btn--sm js-save-all">' + t("lesson.saveAll") + "</button></div>" +
         '<div class="vocab-grid">' + L.vocab.map(function (v, i) {
-          var key = Core.cardKey(v.it, v.tr);
+          var key = Core.cardKey(v.it);
           var saved = !!Core.state.srs[key];
           return '<div class="vocab-card">' +
             '<button type="button" class="say-btn" data-say="' + esc(v.it) + '" aria-label="' + esc(t("a11y.listenTo", { what: v.it })) + '">🔊</button>' +
             '<span class="vocab-card__txt"><span class="vocab-card__it">' + esc(v.it) + "</span>" +
             '<span class="vocab-card__pl">' + esc(v.tr) + "</span>" +
             (v.ex ? '<span class="vocab-card__ex">' + esc(v.ex) + "</span>" : "") + "</span>" +
-            '<button type="button" class="vocab-card__star js-star" data-it="' + esc(v.it) + '" data-pl="' + esc(v.tr) + '" ' +
+            '<button type="button" class="vocab-card__star js-star" data-it="' + esc(v.it) + '" data-tr="' + esc(v.tr) + '" ' +
             'aria-pressed="' + saved + '" aria-label="' + esc(t("lesson.addToReview")) + '">' + (saved ? "★" : "☆") + "</button></div>";
         }).join("") + "</div></section>");
     }
@@ -289,13 +289,13 @@
 
     el().querySelectorAll(".js-star").forEach(function (b) {
       b.addEventListener("click", function () {
-        var it = b.getAttribute("data-it"), pl = b.getAttribute("data-pl");
-        var key = Core.cardKey(it, pl);
+        var it = b.getAttribute("data-it"), tr = b.getAttribute("data-tr");
+        var key = Core.cardKey(it);
         if (Core.state.srs[key]) {
           delete Core.state.srs[key]; Core.save();
           b.setAttribute("aria-pressed", "false"); b.textContent = "☆";
         } else {
-          Core.addCard(it, pl, L.id);
+          Core.addCard(it, tr, L.id);
           b.setAttribute("aria-pressed", "true"); b.textContent = "★";
         }
         App.refreshRail();
@@ -397,7 +397,7 @@
       var c = due[i];
       box.innerHTML = '<div class="exq">' +
         '<p class="exq__num">' + esc(t("srs.cardOf", { i: i + 1, n: due.length })) + "</p>" +
-        '<p class="exq__prompt" style="font-size:1.3rem">' + esc(c.pl) + "</p>" +
+        '<p class="exq__prompt" style="font-size:1.3rem">' + esc(Core.cardTr(c)) + "</p>" +
         '<p class="exq__sub">' + t("srs.howInItalian") + "</p>" +
         '<div class="field-row"><input type="text" class="field js-in" placeholder="' + esc(t("srs.ph")) + '" autocomplete="off" spellcheck="false">' +
         '<button class="btn btn--primary js-show">' + t("ex.check") + "</button></div>" +
@@ -683,9 +683,9 @@
           '<div class="stack" id="lexList">' + cards.map(function (c) {
             var days = Math.round((c.due - now) / 86400000);
             var when = c.due <= now ? t("lex.today") : (days <= 1 ? t("lex.tomorrow") : t("lex.inDays", { n: days }));
-            return '<div class="list-row" data-t="' + esc((c.it + " " + c.pl).toLowerCase()) + '">' +
+            return '<div class="list-row" data-t="' + esc((c.it + " " + Core.cardTr(c)).toLowerCase()) + '">' +
               '<button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button>' +
-              '<span class="list-row__main"><b>' + esc(c.it) + "</b><span>" + esc(c.pl) + "</span></span>" +
+              '<span class="list-row__main"><b>' + esc(c.it) + "</b><span>" + esc(Core.cardTr(c)) + "</span></span>" +
               '<span class="chip">' + esc(when) + "</span>" +
               '<button type="button" class="btn btn--quiet btn--sm js-del" data-k="' + esc(c.key) + '">' + t("lex.delete") + "</button></div>";
           }).join("") + "</div>"

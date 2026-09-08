@@ -5,12 +5,15 @@
 (function (global) {
   "use strict";
 
-  var STORE_KEY = "linguai.italiano.pl.v1";
-  var SCHEMA = 1;
+  var STORE_KEY = "linguai.italiano.v2";
+  var SCHEMA = 2;
+
+  /* Klucz sprzed rozdzielenia języków: czytany raz, przy migracji. */
+  var STORE_KEY_V1 = "linguai.italiano.pl.v1";
 
   /* ---------------- Rejestr kursu ---------------- */
   var registry = {
-    levels: [],          // [{code, namePl, ...}]
+    levels: [],          // [{code, cefrLabel, dataFiles, name, desc, units}]
     byCode: {},          // code -> level
     lessonIndex: {},     // lessonId -> {lesson, unit, level}
     loaded: {}           // code -> true
@@ -22,7 +25,7 @@
       schema: SCHEMA,
       createdAt: Date.now(),
       lessons: {},        // id -> {score, total, done, ts, attempts}
-      srs: {},            // cardKey -> {ef, reps, interval, due, lapses, it, pl, src}
+      srs: {},            // cardKey (sam włoski) -> {it, tr:{lang->napis}, src, ef, reps, interval, due, lapses}
       saved: {},          // cardKey -> true (słówka „do zapamiętania")
       streak: { count: 0, lastDay: null, best: 0 },
       xp: 0,
@@ -45,12 +48,48 @@
   function load() {
     try {
       var raw = global.localStorage.getItem(STORE_KEY);
-      if (!raw) return;
-      var parsed = JSON.parse(raw);
-      if (parsed && parsed.schema === SCHEMA) {
-        state = merge(defaultState(), parsed);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.schema === SCHEMA) state = merge(defaultState(), parsed);
+        return;
       }
+      var old = global.localStorage.getItem(STORE_KEY_V1);
+      if (old) { state = migrateV1(JSON.parse(old)); save(); }
     } catch (e) { /* pierwsza wizyta lub zablokowany storage */ }
+  }
+
+  /**
+   * v1 → v2. W v1 fiszka była kluczowana włoskim RAZEM z polskim tłumaczeniem,
+   * więc zmiana języka wyjaśnień osierociłaby całą talię. W v2 kluczem jest sam
+   * włoski, a tłumaczenia siedzą w podobiekcie tr, po jednym na język.
+   *
+   * Postępy lekcji, passa, XP i statystyki przechodzą bez zmian: id lekcji są
+   * neutralne językowo, więc nauka nie zaczyna się od zera.
+   */
+  function migrateV1(old) {
+    var next = merge(defaultState(), old);
+    next.schema = SCHEMA;
+    next.settings.lang = "pl";        // v1 istniał tylko po polsku
+    next.srs = {};
+
+    Object.keys(old.srs || {}).forEach(function (oldKey) {
+      var c = old.srs[oldKey];
+      if (!c || !c.it) return;
+      var key = cardKey(c.it);
+      var card = {
+        it: c.it, tr: { pl: c.pl || "" }, src: c.src || "",
+        ef: c.ef, reps: c.reps, interval: c.interval, due: c.due, lapses: c.lapses
+      };
+      // dwie fiszki v1 o tym samym włoskim schodzą się w jedną: zostaje pilniejsza,
+      // ze swoją własną glosą; glosa przegranej wchodzi tylko w puste miejsce
+      var prev = next.srs[key];
+      if (!prev) { next.srs[key] = card; return; }
+      var win = card.due < prev.due ? card : prev;
+      var lose = win === card ? prev : card;
+      if (!win.tr.pl && lose.tr.pl) win.tr.pl = lose.tr.pl;
+      next.srs[key] = win;
+    });
+    return next;
   }
 
   var saveTimer = null;
@@ -167,15 +206,33 @@
      ------------------------------------------------------- */
   var DAY = 86400000;
 
-  function cardKey(it, pl) { return norm(it) + "|" + norm(pl); }
+  /** Klucz fiszki: sam włoski. Tłumaczenie zależy od języka i nie może go współtworzyć. */
+  function cardKey(it) { return norm(it); }
 
-  function addCard(it, pl, src) {
-    var k = cardKey(it, pl);
-    if (!state.srs[k]) {
-      state.srs[k] = { it: it, pl: pl, src: src || "", ef: 2.5, reps: 0, interval: 0, due: Date.now(), lapses: 0 };
-      save();
+  /**
+   * Dokłada fiszkę albo — jeśli już jest — tylko tłumaczenie w bieżącym języku.
+   * Dzięki temu uczeń, który przełączy się na angielski, nie gubi harmonogramu
+   * powtórek: ta sama karta zyskuje drugą glosę.
+   */
+  function addCard(it, tr, src) {
+    var k = cardKey(it);
+    var lang = state.settings.lang;
+    var card = state.srs[k];
+    if (!card) {
+      card = state.srs[k] = { it: it, tr: {}, src: src || "", ef: 2.5, reps: 0, interval: 0, due: Date.now(), lapses: 0 };
     }
+    if (tr && card.tr[lang] !== tr) { card.tr[lang] = tr; }
+    save();
     return k;
+  }
+
+  /** Tłumaczenie fiszki w bieżącym języku, z zejściem na jakiekolwiek istniejące. */
+  function cardTr(card) {
+    if (!card || !card.tr) return "";
+    var lang = state.settings.lang;
+    if (card.tr[lang]) return card.tr[lang];
+    var any = Object.keys(card.tr).filter(function (k) { return card.tr[k]; });
+    return any.length ? card.tr[any[0]] : "";
   }
 
   function gradeCard(key, q) {
@@ -313,10 +370,44 @@
     reindex();
   }
 
+  /** Wstrzykuje skrypty po kolei (s.async = false trzyma kolejność). */
+  function loadScripts(paths, cb) {
+    var i = 0, failed = [];
+    function next() {
+      if (i >= paths.length) { cb(failed); return; }
+      var s = document.createElement("script");
+      var src = paths[i++];
+      s.src = src;
+      s.async = false;
+      s.onload = next;
+      s.onerror = function () { failed.push(src); next(); };
+      document.head.appendChild(s);
+    }
+    next();
+  }
+
+  /* Pliki tekstów wczytane już dla danego języka: "lang/plik.js" -> true */
+  var i18nLoaded = {};
+
+  var I18N_DIR = "data/i18n/";
+
+  function i18nPaths(lang, files) {
+    return files.filter(function (f) { return !i18nLoaded[lang + "/" + f]; })
+      .map(function (f) { return I18N_DIR + lang + "/" + f; });
+  }
+
+  /** Zapamiętuje tylko to, co naprawdę się wczytało: nieudane ma być ponowione. */
+  function markI18n(paths, failed) {
+    paths.forEach(function (p) {
+      if (p.indexOf(I18N_DIR) !== 0 || failed.indexOf(p) >= 0) return;
+      i18nLoaded[p.slice(I18N_DIR.length)] = true;
+    });
+  }
+
   /**
    * Ładuje pliki danych poziomu na żądanie (działa też z file://).
    * Najpierw warstwa neutralna, potem teksty w języku ucznia — kolejność
-   * trzyma s.async = false, a scalenie idzie dopiero po wczytaniu obu.
+   * trzyma loadScripts, a scalenie idzie dopiero po wczytaniu obu.
    */
   function loadLevelData(code, cb) {
     var lv = registry.byCode[code];
@@ -325,28 +416,43 @@
     registry.loaded[code] = "loading";
 
     var lang = state.settings.lang;
-    var paths = files.map(function (f) { return "data/core/" + f; })
-      .concat(files.map(function (f) { return "data/i18n/" + lang + "/" + f; }));
+    var paths = files.map(function (f) { return "data/core/" + f; }).concat(i18nPaths(lang, files));
 
-    var i = 0, failed = false;
-    function next() {
-      if (i >= paths.length) {
-        global.LINGUAI.applyStrings(lang);
-        // częściowe niepowodzenie nie blokuje poziomu: liczy się, czy cokolwiek się wczytało
-        var got = (lv.units || []).length > 0;
-        registry.loaded[code] = got ? true : "error";
-        if (failed && got) console.warn("[LinguAI] Część plików poziomu " + code + " nie wczytała się.");
-        cb && cb(got);
-        return;
-      }
-      var s = document.createElement("script");
-      s.src = paths[i++];
-      s.async = false;
-      s.onload = next;
-      s.onerror = function () { failed = true; next(); };
-      document.head.appendChild(s);
-    }
-    next();
+    loadScripts(paths, function (failed) {
+      markI18n(paths, failed);
+      global.LINGUAI.applyStrings(lang);
+      // częściowe niepowodzenie nie blokuje poziomu: liczy się, czy cokolwiek się wczytało
+      var got = (lv.units || []).length > 0;
+      registry.loaded[code] = got ? true : "error";
+      if (failed.length && got) console.warn("[LinguAI] Nie wczytano: " + failed.join(", "));
+      cb && cb(got);
+    });
+  }
+
+  /* Pliki tekstów wczytywane od razu przy starcie, niezależne od poziomu. */
+  var EAGER_FILES = ["curriculum-index.js", "conversations.js", "grammar-reference.js"];
+
+  /**
+   * Zmienia język wyjaśnień. Warstwa neutralna zostaje w pamięci taka, jaka jest:
+   * dociągamy tylko brakujące nakładki i nakładamy je na te same obiekty, bo
+   * scalanie jest idempotentne. Stąd brak przeładowania strony.
+   *
+   * cb(missing) — lista plików, których nie udało się wczytać. Niepusta oznacza,
+   * że część kursu została w poprzednim języku; wywołujący ma to pokazać, nie zignorować.
+   */
+  function setLanguage(lang, cb) {
+    var files = EAGER_FILES.slice();
+    registry.levels.forEach(function (lv) {
+      if (registry.loaded[lv.code] === true) files = files.concat(lv.dataFiles || []);
+    });
+    state.settings.lang = lang;
+    save();
+    var paths = i18nPaths(lang, files);
+    loadScripts(paths, function (failed) {
+      markI18n(paths, failed);
+      global.LINGUAI.applyStrings(lang);
+      cb && cb(failed);
+    });
   }
 
   /* ---------------- Import / eksport ---------------- */
@@ -404,12 +510,13 @@
     norm: norm, stripAccents: stripAccents, levenshtein: levenshtein,
     similarity: similarity, checkOpen: checkOpen,
     today: today, touchDay: touchDay,
-    cardKey: cardKey, addCard: addCard, gradeCard: gradeCard,
+    cardKey: cardKey, addCard: addCard, cardTr: cardTr, gradeCard: gradeCard,
     dueCards: dueCards, dueCount: dueCount,
     lessonState: lessonState, isLessonDone: isLessonDone,
     recordLesson: recordLesson, recordAnswer: recordAnswer,
     unitProgress: unitProgress, levelProgress: levelProgress, nextLesson: nextLesson,
-    registerLevel: registerLevel, addUnits: addUnits, getLesson: getLesson, loadLevelData: loadLevelData,
+    registerLevel: registerLevel, addUnits: addUnits, getLesson: getLesson,
+    loadLevelData: loadLevelData, setLanguage: setLanguage,
     exportState: exportState, importState: importState, resetState: resetState,
     toast: toast, esc: esc, seededShuffle: seededShuffle
   };

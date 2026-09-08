@@ -50,7 +50,7 @@ LINGUAI.addUnits("B2", [
             gaps: [["dicessi"], ["venissi"]]
           },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["sembrava che non ci fosse nessuno"] },
+          { t: "trans", dir: "toIt", a: ["sembrava che non ci fosse nessuno"] },
           { t: "listen", it: "Non sapevo che avessi già finito il progetto." },
           { t: "speak", it: "Pensavo che fosse più facile di così." }
         ]
@@ -98,7 +98,7 @@ LINGUAI.addUnits("B2", [
             text: "Era strano che non {{1}} (arrivare) ancora e che nessuno {{2}} (avvisare) nulla.",
             gaps: [["fossero arrivati"], ["avesse avvisato"]]
           },
-          { t: "trans", dir: "pl-it", a: ["speravo che mi avrebbe chiamato"] },
+          { t: "trans", dir: "toIt", a: ["speravo che mi avrebbe chiamato"] },
           { t: "mcq", a: 1 },
           { t: "listen", it: "Temevo che avessimo sbagliato strada e che fosse troppo tardi." },
           { t: "speak", it: "Credevo che avesse già risposto alla mia mail." }
@@ -145,7 +145,7 @@ LINGUAI.addUnits("B2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["verrò a meno che non succeda un imprevisto", "verrò, a meno che non succeda un imprevisto"]
           },
           {
@@ -226,7 +226,7 @@ LINGUAI.addUnits("B2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["che faresti se vincessi alla lotteria", "cosa faresti se vincessi alla lotteria"]
           },
           { t: "mcq", a: 2 },
@@ -274,7 +274,7 @@ LINGUAI.addUnits("B2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["nel caso in cui piovesse ci vediamo al bar", "se piovesse ci vediamo al bar"]
           },
           {
@@ -327,7 +327,7 @@ LINGUAI.addUnits("B2", [
             text: "Se solo {{1}} (sapere, io) prima, non {{2}} (firmare, io) quel contratto.",
             gaps: [["avessi saputo"], ["avrei firmato"]]
           },
-          { t: "trans", dir: "pl-it", a: ["con il senno di poi è stato un errore"] },
+          { t: "trans", dir: "toIt", a: ["con il senno di poi è stato un errore"] },
           {
             t: "match",
             pairs: [
@@ -418,7 +418,7 @@ LINGUAI.addUnits("B2", [
             text: "Il progetto {{1}} stato approvato ieri, ma il modulo {{2}} ancora firmato.",
             gaps: [["è"], ["va"]]
           },
-          { t: "trans", dir: "pl-it", a: ["la riunione è stata rimandata dal direttore"] },
+          { t: "trans", dir: "toIt", a: ["la riunione è stata rimandata dal direttore"] },
           { t: "mcq", a: 1 },
           { t: "listen", it: "Le domande vanno consegnate entro il quindici del mese." },
           { t: "speak", it: "Il documento è stato approvato e va firmato entro venerdì." }
@@ -465,7 +465,7 @@ LINGUAI.addUnits("B2", [
             text: "Dante {{1}} (nascere) nel 1265 e {{2}} (morire) nel 1321.",
             gaps: [["nacque"], ["morì"]]
           },
-          { t: "trans", dir: "pl-it", a: ["l'italia divenne una repubblica nel 1946"] },
+          { t: "trans", dir: "toIt", a: ["l'italia divenne una repubblica nel 1946"] },
           { t: "listen", it: "Uscì di casa quella sera e non tornò mai più." },
           { t: "speak", it: "Fu allora che capii di aver sbagliato." }
         ]
@@ -509,7 +509,7 @@ LINGUAI.addUnits("B2", [
             text: "{{1}} (dopo / leggere) il contratto, ho firmato. {{2}} (prima di / rispondere), ci ho pensato.",
             gaps: [["dopo aver letto"], ["prima di rispondere"]]
           },
-          { t: "trans", dir: "pl-it", a: ["tornando a casa ho incontrato giulia"] },
+          { t: "trans", dir: "toIt", a: ["tornando a casa ho incontrato giulia"] },
           {
             t: "order",
             tokens: ["Finito", "il", "lavoro,", "siamo", "usciti", "tutti"],
@@ -532,7 +532,7 @@ LINGUAI.addUnits("B2", [
         { t: "fill", a: ["presi"] },
         { t: "mcq", a: 1 },
         { t: "fill", a: ["tornando"] },
-        { t: "trans", dir: "pl-it", a: ["le domande vanno consegnate entro venerdì"] },
+        { t: "trans", dir: "toIt", a: ["le domande vanno consegnate entro venerdì"] },
         { t: "listen", it: "Il progetto fu approvato nel 1998 e venne realizzato in tre anni." },
         { t: "speak", it: "Dopo aver letto il contratto, ho deciso di non firmare." }
       ]
@@ -590,7 +590,7 @@ LINGUAI.addUnits("B2", [
             text: "Il {{1}} d'acquisto si è ridotto e la {{2}} giovanile resta alta.",
             gaps: [["potere"], ["disoccupazione"]]
           },
-          { t: "trans", dir: "pl-it", a: ["il decreto è stato approvato con modifiche"] },
+          { t: "trans", dir: "toIt", a: ["il decreto è stato approvato con modifiche"] },
           {
             t: "order",
             tokens: ["Il", "divario", "tra", "Nord", "e", "Sud", "si", "è", "ampliato"],
@@ -649,7 +649,7 @@ LINGUAI.addUnits("B2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["temo che i tempi siano troppo lunghi", "temo che sia troppo lento"]
           },
           {
@@ -707,7 +707,7 @@ LINGUAI.addUnits("B2", [
             text: "{{1}} vero che i costi sono alti, {{2}} va considerato il risparmio a lungo termine.",
             gaps: [["è"], ["però", "tuttavia"]]
           },
-          { t: "trans", dir: "pl-it", a: ["mi sembra una generalizzazione"] },
+          { t: "trans", dir: "toIt", a: ["mi sembra una generalizzazione"] },
           {
             t: "dialogue",
             lines: [
@@ -764,7 +764,7 @@ LINGUAI.addUnits("B2", [
         { t: "fill", a: ["fosse"] },
         {
           t: "trans",
-          dir: "pl-it",
+          dir: "toIt",
           a: [
             "è vero che i costi sono alti va però considerato il risparmio",
             "è vero che i costi sono alti, tuttavia va considerato il risparmio"

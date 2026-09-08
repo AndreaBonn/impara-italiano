@@ -50,7 +50,7 @@ LINGUAI.addUnits("B1", [
             text: "Spero che tutto {{1}} (andare) bene e che voi {{2}} (essere) contenti.",
             gaps: [["vada"], ["siate"]]
           },
-          { t: "trans", dir: "pl-it", a: ["voglio che tu mi dica la verità"] },
+          { t: "trans", dir: "toIt", a: ["voglio che tu mi dica la verità"] },
           { t: "listen", it: "Credo che sia meglio rimandare la riunione." },
           { t: "speak", it: "Penso che tu abbia ragione su questo punto." }
         ]
@@ -96,7 +96,7 @@ LINGUAI.addUnits("B1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["benché piova usciamo lo stesso", "nonostante piova usciamo lo stesso"]
           },
           { t: "mcq", a: 1 },
@@ -141,7 +141,7 @@ LINGUAI.addUnits("B1", [
             text: "Mi dispiace che tu non {{1}} (potere) venire e che {{2}} (perdere, tu) la festa.",
             gaps: [["sia potuto", "sia potuta"], ["abbia perso"]]
           },
-          { t: "trans", dir: "pl-it", a: ["non credo che l'abbiano fatto apposta"] },
+          { t: "trans", dir: "toIt", a: ["non credo che l'abbiano fatto apposta"] },
           { t: "mcq", a: 1 },
           {
             t: "match",
@@ -197,7 +197,7 @@ LINGUAI.addUnits("B1", [
             t: "match",
             pairs: [{ it: "appunto" }, { it: "insomma" }, { it: "dipende" }, { it: "esagerare" }]
           },
-          { t: "trans", dir: "pl-it", a: ["non sono del tutto d'accordo con questa opinione"] },
+          { t: "trans", dir: "toIt", a: ["non sono del tutto d'accordo con questa opinione"] },
           {
             t: "cloze",
             text: "{{1}} me il problema è un altro. Ho l'impressione che non ci {{2}} (capire, noi).",
@@ -299,7 +299,7 @@ LINGUAI.addUnits("B1", [
             text: "— Mi presti la macchina? — Sì, {{1}} presto volentieri. — E le chiavi? — {{2}} do subito.",
             gaps: [["te la"], ["te le"]]
           },
-          { t: "trans", dir: "pl-it", a: ["puoi spiegarmelo", "puoi spiegarmelo?", "me lo puoi spiegare"] },
+          { t: "trans", dir: "toIt", a: ["puoi spiegarmelo", "puoi spiegarmelo?", "me lo puoi spiegare"] },
           { t: "fill", a: ["a"] },
           { t: "order", tokens: ["Te", "le", "mando", "domani"], a: ["te le mando domani"] },
           { t: "listen", it: "Gliel'ho spiegato tre volte, ma non l'ha capito." },
@@ -348,7 +348,7 @@ LINGUAI.addUnits("B1", [
             text: "Quanto {{1}} metti per arrivare? — {{2}} vogliono venti minuti in metro.",
             gaps: [["ci"], ["ci"]]
           },
-          { t: "trans", dir: "pl-it", a: ["di vini non me ne intendo", "non me ne intendo di vini"] },
+          { t: "trans", dir: "toIt", a: ["di vini non me ne intendo", "non me ne intendo di vini"] },
           { t: "mcq", a: 0 },
           { t: "listen", it: "Ci vuole molta pazienza, ma alla fine ce la facciamo." },
           { t: "speak", it: "Non ce la faccio a finire tutto oggi." }
@@ -395,7 +395,7 @@ LINGUAI.addUnits("B1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["il motivo per cui ti scrivo è semplice", "il motivo per cui scrivo è semplice"]
           },
           {
@@ -510,7 +510,7 @@ LINGUAI.addUnits("B1", [
             pairs: [{ it: "l'anagrafe" }, { it: "lo sportello" }, { it: "rilasciare" }, { it: "il modulo" }]
           },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["devo prendere la residenza in questo comune"] },
+          { t: "trans", dir: "toIt", a: ["devo prendere la residenza in questo comune"] },
           {
             t: "cloze",
             text: "Buongiorno, vorrei {{1}} il codice fiscale. Ho già preso l'{{2}} online.",
@@ -563,7 +563,7 @@ LINGUAI.addUnits("B1", [
           { t: "fill", a: ["vincolo"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["come posso disdire il contratto", "come posso disdire il contratto?"]
           },
           {
@@ -645,7 +645,7 @@ LINGUAI.addUnits("B1", [
           { t: "mcq", a: 1 },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: [
               "il prodotto è arrivato danneggiato chiedo il rimborso",
               "il prodotto è arrivato danneggiato, chiedo il rimborso"
@@ -709,7 +709,7 @@ LINGUAI.addUnits("B1", [
           { t: "fill", a: ["periodo"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["quanti giorni di ferie sono previsti", "quanti giorni di ferie sono previsti?"]
           },
           {
@@ -794,7 +794,7 @@ LINGUAI.addUnits("B1", [
             gaps: [["dopo"], ["avrebbe"]]
           },
           { t: "match", pairs: [{ it: "oggi" }, { it: "ieri" }, { it: "domani" }, { it: "qui" }] },
-          { t: "trans", dir: "pl-it", a: ["mi ha detto di non preoccuparmi"] },
+          { t: "trans", dir: "toIt", a: ["mi ha detto di non preoccuparmi"] },
           { t: "listen", it: "Ha spiegato che aveva già provato più volte senza successo." },
           { t: "speak", it: "Mi ha detto che sarebbe arrivato il giorno dopo." }
         ]
@@ -847,7 +847,7 @@ LINGUAI.addUnits("B1", [
             text: "Secondo fonti interne, l'azienda {{1}} già deciso, ma il portavoce ha {{2}} la notizia.",
             gaps: [["avrebbe"], ["smentito"]]
           },
-          { t: "trans", dir: "pl-it", a: ["la riforma è stata approvata la settimana scorsa"] },
+          { t: "trans", dir: "toIt", a: ["la riforma è stata approvata la settimana scorsa"] },
           { t: "listen", it: "Secondo il quotidiano, il governo avrebbe già preparato la risposta." },
           { t: "speak", it: "L'articolo sostiene che il problema sia strutturale." }
         ]
@@ -947,7 +947,7 @@ LINGUAI.addUnits("B1", [
             text: "{{1}} che il lavoro ibrido {{2}} (essere) la soluzione migliore. {{3}} riduce i costi. Tuttavia dipende dal settore.",
             gaps: [["ritengo", "penso", "credo"], ["sia"], ["anzitutto", "inoltre"]]
           },
-          { t: "trans", dir: "pl-it", a: ["va detto però che dipende dall'organizzazione"] },
+          { t: "trans", dir: "toIt", a: ["va detto però che dipende dall'organizzazione"] },
           {
             t: "order",
             tokens: [
@@ -984,7 +984,7 @@ LINGUAI.addUnits("B1", [
         { t: "mcq", a: 1 },
         { t: "mcq", a: 1 },
         { t: "fill", a: ["in conclusione"] },
-        { t: "trans", dir: "pl-it", a: ["non credo che abbiano capito il problema"] },
+        { t: "trans", dir: "toIt", a: ["non credo che abbiano capito il problema"] },
         { t: "listen", it: "Mi ha detto che sarebbe passato il giorno dopo, ma non è venuto." },
         { t: "speak", it: "Ritengo che sia una soluzione valida, anche se non perfetta." }
       ]

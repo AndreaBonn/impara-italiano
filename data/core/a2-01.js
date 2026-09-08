@@ -51,7 +51,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["prima fumavo adesso ho smesso", "prima fumavo, adesso ho smesso"]
           },
           { t: "listen", it: "Da bambino giocavo a calcio ogni pomeriggio." },
@@ -101,7 +101,7 @@ LINGUAI.addUnits("A2", [
           { t: "mcq", a: 1 },
           { t: "mcq", a: 1 },
           { t: "multi", a: [0, 2, 4] },
-          { t: "trans", dir: "pl-it", a: ["non sapevo che abitavi qui", "non sapevo che abitassi qui"] },
+          { t: "trans", dir: "toIt", a: ["non sapevo che abitavi qui", "non sapevo che abitassi qui"] },
           {
             t: "cloze",
             text: "{{1}} (essere) una giornata fredda. {{2}} (piovere) e io non {{3}} (avere) l'ombrello. All'improvviso {{4}} (arrivare) l'autobus.",
@@ -154,7 +154,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["non ci sono più i negozi di una volta", "non ci sono più i negozi di un tempo"]
           },
           {
@@ -213,7 +213,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["ti ricordi quando siamo andati in sicilia", "ti ricordi quando siamo andati in sicilia?"]
           },
           {
@@ -309,7 +309,7 @@ LINGUAI.addUnits("A2", [
               { it: "convalidare" }
             ]
           },
-          { t: "trans", dir: "pl-it", a: ["devo cambiare treno", "devo cambiare treno?", "devo cambiare?"] },
+          { t: "trans", dir: "toIt", a: ["devo cambiare treno", "devo cambiare treno?", "devo cambiare?"] },
           {
             t: "dialogue",
             lines: [
@@ -438,7 +438,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["la colazione è inclusa", "la colazione è inclusa?", "la colazione è compresa"]
           },
           {
@@ -515,7 +515,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["quando avrò finito il lavoro ti chiamerò", "quando avrò finito il lavoro, ti chiamerò"]
           },
           { t: "mcq", a: 1 },
@@ -545,7 +545,7 @@ LINGUAI.addUnits("A2", [
         { t: "fill", a: ["binario"] },
         { t: "fill", a: ["funziona"] },
         { t: "fill", a: ["avrò finito"] },
-        { t: "trans", dir: "pl-it", a: ["ho una prenotazione per tre notti"] },
+        { t: "trans", dir: "toIt", a: ["ho una prenotazione per tre notti"] },
         { t: "listen", it: "Il volo per Varsavia parte dal gate B12 con venti minuti di ritardo." },
         { t: "speak", it: "Vorrei un biglietto di sola andata per Bologna." }
       ]
@@ -594,7 +594,7 @@ LINGUAI.addUnits("A2", [
             text: "— Compri il giornale? — Sì, {{1}} compro. — E le riviste? — No, non {{2}} compro.",
             gaps: [["lo"], ["le"]]
           },
-          { t: "trans", dir: "pl-it", a: ["non lo conosco"] },
+          { t: "trans", dir: "toIt", a: ["non lo conosco"] },
           { t: "multi", a: [0, 1] },
           { t: "order", tokens: ["Mi", "aspetti", "cinque", "minuti?"], a: ["mi aspetti cinque minuti"] },
           { t: "listen", it: "Le chiavi non le trovo, forse le ho lasciate in ufficio." },
@@ -639,7 +639,7 @@ LINGUAI.addUnits("A2", [
             text: "La mail? L'ho gia spedit{{1}}. Le foto? Non le ho ancora guardat{{2}}.",
             gaps: [["a"], ["e"]]
           },
-          { t: "trans", dir: "pl-it", a: ["l'ho conosciuta a roma"] },
+          { t: "trans", dir: "toIt", a: ["l'ho conosciuta a roma"] },
           { t: "multi", a: [0, 2] },
           {
             t: "order",
@@ -689,7 +689,7 @@ LINGUAI.addUnits("A2", [
             text: "Ho scritto a Giulia: {{1}} ho mandato una mail. Marco non risponde, {{2}} telefono domani.",
             gaps: [["le"], ["gli"]]
           },
-          { t: "trans", dir: "pl-it", a: ["voglio parlargli oggi", "gli voglio parlare oggi"] },
+          { t: "trans", dir: "toIt", a: ["voglio parlargli oggi", "gli voglio parlare oggi"] },
           {
             t: "match",
             pairs: [
@@ -737,7 +737,7 @@ LINGUAI.addUnits("A2", [
           { t: "fill", a: ["parli"] },
           { t: "fill", a: ["dimmi"] },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["non ti preoccupare", "non preoccuparti"] },
+          { t: "trans", dir: "toIt", a: ["non ti preoccupare", "non preoccuparti"] },
           {
             t: "cloze",
             text: "Ciao! {{1}} sapere a che ora arrivi e {{2}} un messaggio quando parti.",
@@ -763,7 +763,7 @@ LINGUAI.addUnits("A2", [
         { t: "fill", a: ["dimmi"] },
         {
           t: "trans",
-          dir: "pl-it",
+          dir: "toIt",
           a: ["non ti preoccupare ci penso io", "non ti preoccupare, ci penso io"]
         },
         { t: "listen", it: "L'ho vista ieri e le ho parlato del progetto." },
@@ -815,7 +815,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["mi fa male la gola da tre giorni", "ho mal di gola da tre giorni"]
           },
           {
@@ -875,7 +875,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["da quanto tempo ha questi sintomi", "da quanto tempo ha questi sintomi?"]
           },
           {
@@ -955,7 +955,7 @@ LINGUAI.addUnits("A2", [
           { t: "fill", a: ["potresti"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["dovresti riposare qualche giorno", "dovresti riposare per qualche giorno"]
           },
           {
@@ -1012,7 +1012,7 @@ LINGUAI.addUnits("A2", [
           { t: "mcq", a: 1 },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["cerco di dormire almeno sette ore", "sto cercando di dormire almeno sette ore"]
           },
           {
@@ -1046,7 +1046,7 @@ LINGUAI.addUnits("A2", [
         },
         {
           t: "trans",
-          dir: "pl-it",
+          dir: "toIt",
           a: ["mi fa male la gola da due giorni", "ho mal di gola da due giorni"]
         },
         { t: "listen", it: "Prenda una pastiglia due volte al giorno dopo i pasti." },

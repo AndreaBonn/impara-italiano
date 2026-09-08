@@ -115,7 +115,7 @@ LINGUAI.addUnits("A1", [
             ]
           },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["quanto costa questa borsa", "quanto costa questa borsa?"] },
+          { t: "trans", dir: "toIt", a: ["quanto costa questa borsa", "quanto costa questa borsa?"] },
           {
             t: "order",
             tokens: ["Posso", "provare", "quella", "giacca?"],
@@ -173,7 +173,7 @@ LINGUAI.addUnits("A1", [
           { t: "fill", a: ["quanto"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["posso pagare con la carta", "posso pagare con la carta?", "si può pagare con la carta"]
           },
           { t: "mcq", a: 0 },
@@ -226,7 +226,7 @@ LINGUAI.addUnits("A1", [
           { t: "multi", a: [0, 2] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["è troppo caro grazie", "costa troppo grazie", "è troppo caro, grazie"]
           },
           { t: "cloze", text: "Ci sono molt{{1}} negozi, ma sono molt{{2}} cari.", gaps: [["i"], ["o"]] },
@@ -259,7 +259,7 @@ LINGUAI.addUnits("A1", [
         { t: "mcq", a: 1 },
         { t: "mcq", a: 1 },
         { t: "fill", a: ["molte"] },
-        { t: "trans", dir: "pl-it", a: ["posso provare questa camicia", "posso provare questa camicia?"] },
+        { t: "trans", dir: "toIt", a: ["posso provare questa camicia", "posso provare questa camicia?"] },
         {
           t: "order",
           tokens: ["Quanto", "costano", "quelle", "scarpe?"],
@@ -308,7 +308,7 @@ LINGUAI.addUnits("A1", [
           { t: "fill", a: ["ci alziamo"] },
           { t: "fill", a: ["alzarmi"] },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["mi vesto in fretta"] },
+          { t: "trans", dir: "toIt", a: ["mi vesto in fretta"] },
           {
             t: "cloze",
             text: "{{1}} sveglio alle sei e mezza, poi {{2}} alzo e {{3}} la doccia.",
@@ -364,7 +364,7 @@ LINGUAI.addUnits("A1", [
               { it: "sono le sette meno dieci" }
             ]
           },
-          { t: "trans", dir: "pl-it", a: ["a che ora apre il negozio", "a che ora apre il negozio?"] },
+          { t: "trans", dir: "toIt", a: ["a che ora apre il negozio", "a che ora apre il negozio?"] },
           {
             t: "cloze",
             text: "— Che ore {{1}}? — {{2}} le undici meno un quarto. — Sono {{3}} ritardo!",
@@ -414,7 +414,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           { t: "fill", a: ["dobbiamo"] },
           { t: "mcq", a: 0 },
-          { t: "trans", dir: "pl-it", a: ["posso pagare con la carta", "posso pagare con la carta?"] },
+          { t: "trans", dir: "toIt", a: ["posso pagare con la carta", "posso pagare con la carta?"] },
           {
             t: "cloze",
             text: "Non {{1}} venire stasera, {{2}} lavorare fino a tardi.",
@@ -460,7 +460,7 @@ LINGUAI.addUnits("A1", [
             t: "match",
             pairs: [{ it: "sempre" }, { it: "raramente" }, { it: "a volte" }, { it: "ogni giorno" }]
           },
-          { t: "trans", dir: "pl-it", a: ["non prendo mai il taxi", "non prendo mai un taxi"] },
+          { t: "trans", dir: "toIt", a: ["non prendo mai il taxi", "non prendo mai un taxi"] },
           {
             t: "cloze",
             text: "{{1}} lunedì vado in palestra, ma {{2}} vado {{3}} il fine settimana.",
@@ -548,7 +548,7 @@ LINGUAI.addUnits("A1", [
             text: "La farmacia è {{1}} angolo, vicino {{2}} banca, di fronte {{3}} chiesa.",
             gaps: [["all'"], ["alla"], ["alla"]]
           },
-          { t: "trans", dir: "pl-it", a: ["torno dalla stazione", "vengo dalla stazione"] },
+          { t: "trans", dir: "toIt", a: ["torno dalla stazione", "vengo dalla stazione"] },
           {
             t: "order",
             tokens: ["La", "chiave", "della", "macchina", "è", "sul", "tavolo"],
@@ -640,7 +640,7 @@ LINGUAI.addUnits("A1", [
             text: "{{1}} dritto fino al semaforo, poi {{2}} a destra. La banca è {{3}} alla farmacia.",
             gaps: [["vada", "vai"], ["giri", "gira"], ["di fronte", "accanto"]]
           },
-          { t: "trans", dir: "pl-it", a: ["scusi dov'è la farmacia", "scusi, dov'è la farmacia?"] },
+          { t: "trans", dir: "toIt", a: ["scusi dov'è la farmacia", "scusi, dov'è la farmacia?"] },
           {
             t: "dialogue",
             lines: [
@@ -719,7 +719,7 @@ LINGUAI.addUnits("A1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["non c'è nessuno alla reception", "non c'è nessuno in reception"]
           },
           {
@@ -817,7 +817,7 @@ LINGUAI.addUnits("A1", [
           { t: "fill", a: ["prenotare"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["il conto per favore", "il conto, per favore", "posso avere il conto"]
           },
           {
@@ -887,7 +887,7 @@ LINGUAI.addUnits("A1", [
           { t: "fill", a: ["allergica"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: [
               "per me una carbonara per favore",
               "per me una carbonara, per favore",
@@ -974,7 +974,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["quanti caffè bevi al giorno ne bevo tre", "quanti caffè bevi al giorno? ne bevo tre."]
           },
           {
@@ -1029,7 +1029,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["possiamo avere il conto", "possiamo avere il conto?", "il conto per favore"]
           },
           { t: "fill", a: ["offro"] },
@@ -1084,7 +1084,7 @@ LINGUAI.addUnits("A1", [
         { t: "fill", a: ["prenotare"] },
         { t: "fill", a: ["ne"] },
         { t: "fill", a: ["allergica"] },
-        { t: "trans", dir: "pl-it", a: ["il conto per favore", "il conto, per favore"] },
+        { t: "trans", dir: "toIt", a: ["il conto per favore", "il conto, per favore"] },
         {
           t: "match",
           pairs: [{ it: "alla romana" }, { it: "offro io" }, { it: "squisito" }, { it: "da bere" }]

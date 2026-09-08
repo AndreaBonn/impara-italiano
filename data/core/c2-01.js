@@ -52,7 +52,7 @@ LINGUAI.addUnits("C2", [
             text: "I documenti {{1}} il requisito vanno allegati all'istanza dai soggetti {{2}}.",
             gaps: [["attestanti"], ["richiedenti"]]
           },
-          { t: "trans", dir: "pl-it", a: ["le somme risultanti dal bilancio sono state verificate"] },
+          { t: "trans", dir: "toIt", a: ["le somme risultanti dal bilancio sono state verificate"] },
           { t: "listen", it: "Gli aventi diritto riceveranno una comunicazione entro trenta giorni." },
           { t: "speak", it: "Un discorso convincente, ma privo di dati concreti." }
         ]
@@ -97,7 +97,7 @@ LINGUAI.addUnits("C2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["una volta ricevuta la conferma potrà partire", "ricevuta la conferma potrà partire"]
           },
           {
@@ -160,7 +160,7 @@ LINGUAI.addUnits("C2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["questo capitolo va riscritto", "questo capitolo va riscritto interamente"]
           },
           { t: "listen", it: "Mi accingo a illustrare i risultati della ricerca." },
@@ -234,7 +234,7 @@ LINGUAI.addUnits("C2", [
             text: "{{1}} della città sono antiche, ma {{2}} di casa mia sono sottili.",
             gaps: [["le mura"], ["i muri"]]
           },
-          { t: "trans", dir: "pl-it", a: ["il cane rosicchia gli ossi"] },
+          { t: "trans", dir: "toIt", a: ["il cane rosicchia gli ossi"] },
           { t: "listen", it: "Le dita erano gelate e le ossa mi facevano male." },
           { t: "speak", it: "Ha finalmente raccolto i frutti del suo lavoro." }
         ]
@@ -279,7 +279,7 @@ LINGUAI.addUnits("C2", [
             text: "{{1}} di regione sono venti; {{2}} sono state svuotate durante la notte.",
             gaps: [["i capoluoghi"], ["le casseforti"]]
           },
-          { t: "trans", dir: "pl-it", a: ["gli asciugamani puliti sono nell'armadio"] },
+          { t: "trans", dir: "toIt", a: ["gli asciugamani puliti sono nell'armadio"] },
           { t: "listen", it: "I capireparto hanno chiesto un incontro con la direzione." },
           { t: "speak", it: "Ha scritto tre capolavori in meno di dieci anni." }
         ]
@@ -327,7 +327,7 @@ LINGUAI.addUnits("C2", [
             text: "Le risorse {{1}} sono in calo e il traffico {{2}} è aumentato.",
             gaps: [["idriche"], ["urbano"]]
           },
-          { t: "trans", dir: "pl-it", a: ["che tempaccio"] },
+          { t: "trans", dir: "toIt", a: ["che tempaccio"] },
           { t: "listen", it: "Le risorse idriche del Paese sono in calo da anni." },
           { t: "speak", it: "Abitiamo in una casetta appena fuori città." }
         ]
@@ -401,7 +401,7 @@ LINGUAI.addUnits("C2", [
             text: "Bravo, {{1}} quello che ci mancava. Diciamo che non è andata {{2}}.",
             gaps: [["giusto", "proprio"], ["benissimo"]]
           },
-          { t: "trans", dir: "pl-it", a: ["non senza difficoltà siamo arrivati in fondo"] },
+          { t: "trans", dir: "toIt", a: ["non senza difficoltà siamo arrivati in fondo"] },
           { t: "mcq", a: 1 },
           { t: "listen", it: "Diciamo che non è andata proprio benissimo, per usare un eufemismo." },
           { t: "speak", it: "Un problemino da due milioni di euro, niente di che." }
@@ -450,7 +450,7 @@ LINGUAI.addUnits("C2", [
             text: "{{1}}, non ne ho idea. Comunque non è {{2}} facile come sembra.",
             gaps: [["boh"], ["mica"]]
           },
-          { t: "trans", dir: "pl-it", a: ["dai non prendertela", "dai, non te la prendere"] },
+          { t: "trans", dir: "toIt", a: ["dai non prendertela", "dai, non te la prendere"] },
           { t: "listen", it: "Boh, era tipo mezzanotte, non è mica facile ricordarsi." },
           { t: "speak", it: "Non è mica facile come sembra, credimi." }
         ]
@@ -498,7 +498,7 @@ LINGUAI.addUnits("C2", [
             text: "Il contratto è {{1}} facto già scaduto e la pratica risulta ancora {{2}} itinere.",
             gaps: [["de"], ["in"]]
           },
-          { t: "trans", dir: "pl-it", a: ["si segnala altresì che il termine è perentorio"] },
+          { t: "trans", dir: "toIt", a: ["si segnala altresì che il termine è perentorio"] },
           { t: "listen", it: "La riunione è stata rinviata sine die per motivi tecnici." },
           { t: "speak", it: "Il contributo viene erogato una tantum, previa domanda." }
         ]
@@ -522,7 +522,7 @@ LINGUAI.addUnits("C2", [
         { t: "mcq", a: 1 },
         { t: "mcq", a: 1 },
         { t: "fill", a: ["altresì"] },
-        { t: "trans", dir: "pl-it", a: ["la pratica è ancora in itinere ed è stata rinviata sine die"] },
+        { t: "trans", dir: "toIt", a: ["la pratica è ancora in itinere ed è stata rinviata sine die"] },
         { t: "speak", it: "Vista la situazione, il progetto va rivisto interamente prima della scadenza." }
       ]
     }

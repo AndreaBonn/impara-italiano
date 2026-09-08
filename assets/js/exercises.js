@@ -10,47 +10,36 @@
   "use strict";
 
   var esc = Core.esc;
+  var t = function (k, v) { return I18n.t(k, v); };
 
-  var LABEL = {
-    mcq: "wybór",
-    multi: "wybór wielokrotny",
-    fill: "uzupełnij lukę",
-    cloze: "uzupełnij tekst",
-    trans: "tłumaczenie",
-    order: "ułóż zdanie",
-    match: "połącz w pary",
-    conj: "odmiana",
-    gender: "rodzajnik",
-    listen: "ze słuchu",
-    speak: "wymowa",
-    dialogue: "rozmowa",
-    truefalse: "prawda / fałsz"
-  };
+  /** Nazwa typu ćwiczenia — klucz słownika, nie napis. */
+  function label(type) { return t("ex.type." + type); }
 
   function head(idx, ex) {
-    return '<p class="exq__num">Ćwiczenie ' + (idx + 1) + ' · ' + esc(LABEL[ex.t] || ex.t) + '</p>';
+    return '<p class="exq__num">' + esc(t("ex.num", { n: idx + 1, type: label(ex.t) })) + "</p>";
   }
 
-  function sayBtn(text, label) {
+  function sayBtn(text, aria) {
     return '<button type="button" class="say-btn" data-say="' + esc(text) + '" ' +
-      'aria-label="' + esc(label || ("Posłuchaj: " + text)) + '">🔊</button>';
+      'aria-label="' + esc(aria || t("a11y.listenTo", { what: text })) + '">🔊</button>';
   }
 
   function feedbackBox() { return '<div class="fb" role="status"></div>'; }
 
   function checkBtn(txt) {
-    return '<button type="button" class="btn btn--primary js-check">' + esc(txt || "Sprawdź") + '</button>';
+    return '<button type="button" class="btn btn--primary js-check">' + esc(txt || t("ex.check")) + '</button>';
   }
 
   /** Wspólne zakończenie ćwiczenia. */
   function finish(root, ok, why, correctText, onDone) {
     var fb = root.querySelector(".fb");
     var btn = root.querySelector(".js-check");
-    if (btn) { btn.disabled = true; btn.textContent = ok ? "Dobrze ✓" : "Sprawdzone"; }
+    if (btn) { btn.disabled = true; btn.textContent = t(ok ? "ex.done.ok" : "ex.done.checked"); }
     root.classList.add(ok ? "exq--ok" : "exq--ko");
     if (fb) {
       fb.className = "fb is-on " + (ok ? "fb--ok" : "fb--ko");
-      var headTxt = ok ? "Brawo! 🎉" : (correctText ? "Poprawnie: „" + correctText + "”" : "Jeszcze nie.");
+      var headTxt = ok ? t("ex.bravo")
+        : (correctText ? t("ex.correctIs", { answer: correctText }) : t("ex.notYet"));
       fb.innerHTML = esc(headTxt) + (why ? '<span class="fb__why">' + why + "</span>" : "");
     }
     Core.recordAnswer(ok);
@@ -66,7 +55,7 @@
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + (ex.q || "") + (ex.say ? " " + sayBtn(ex.say) : "") + "</p>" +
       (ex.sub ? '<p class="exq__sub">' + esc(ex.sub) + "</p>" : "") +
-      '<div class="opts" role="radiogroup" aria-label="Odpowiedzi">' +
+      '<div class="opts" role="radiogroup" aria-label="' + esc(t("ex.answersGroup")) + '">' +
       opts.map(function (o, k) {
         return '<label class="opt" data-orig="' + o.i + '">' +
           '<input type="radio" name="' + name + '" value="' + o.i + '"><span>' + o.txt + "</span></label>";
@@ -83,7 +72,7 @@
       });
       root.querySelector(".js-check").addEventListener("click", function () {
         var sel = root.querySelector('input[name="' + name + '"]:checked');
-        if (!sel) { Core.toast("Wybierz odpowiedź."); return; }
+        if (!sel) { Core.toast(t("ex.pickOne")); return; }
         var chosen = parseInt(sel.value, 10);
         var ok = chosen === ex.a;
         labels.forEach(function (l) {
@@ -104,7 +93,7 @@
     var opts = Core.seededShuffle(ex.opts.map(function (o, i) { return { txt: o, i: i }; }), seed + "m" + idx);
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + (ex.q || "") + "</p>" +
-      '<p class="exq__sub">Zaznacz wszystkie poprawne odpowiedzi.</p>' +
+      '<p class="exq__sub">' + t("ex.multiHint") + "</p>" +
       '<div class="opts">' + opts.map(function (o) {
         return '<label class="opt" data-orig="' + o.i + '"><input type="checkbox" value="' + o.i + '"><span>' + o.txt + "</span></label>";
       }).join("") + "</div>" + checkBtn() + feedbackBox() + "</div>";
@@ -120,7 +109,7 @@
       root.querySelector(".js-check").addEventListener("click", function () {
         var chosen = [];
         root.querySelectorAll('input[type=checkbox]:checked').forEach(function (c) { chosen.push(parseInt(c.value, 10)); });
-        if (!chosen.length) { Core.toast("Zaznacz przynajmniej jedną odpowiedź."); return; }
+        if (!chosen.length) { Core.toast(t("ex.pickAtLeastOne")); return; }
         var want = ex.a.slice().sort().join(",");
         var got = chosen.slice().sort().join(",");
         var ok = want === got;
@@ -140,12 +129,12 @@
     var accepted = Array.isArray(ex.a) ? ex.a : [ex.a];
     var isTrans = ex.t === "trans";
     var ph = isTrans
-      ? (ex.dir === "it-pl" ? "Napisz po polsku" : "Napisz po włosku")
-      : "Wpisz odpowiedź";
+      ? t(ex.dir === "toBase" ? "ex.ph.toBase" : "ex.ph.toIt")
+      : t("ex.ph.answer");
 
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + (ex.q || "") + (ex.say ? " " + sayBtn(ex.say) : "") + "</p>" +
-      (ex.hint ? '<p class="exq__sub">Podpowiedź: ' + esc(ex.hint) + "</p>" : "") +
+      (ex.hint ? '<p class="exq__sub">' + esc(t("ex.hintLabel", { hint: ex.hint })) + "</p>" : "") +
       '<div class="field-row"><input type="text" class="field js-in" placeholder="' + esc(ph) + '" autocomplete="off" autocapitalize="off" spellcheck="false">' +
       checkBtn() + "</div>" + feedbackBox() + "</div>";
 
@@ -160,7 +149,7 @@
           tries++;
           var fb = root.querySelector(".fb");
           fb.className = "fb is-on fb--ko";
-          fb.innerHTML = "Prawie! Sprawdź pisownię (literówka lub akcent).";
+          fb.innerHTML = esc(t("ex.almost"));
           return;
         }
         finish(root, res.ok, ex.why, res.ok ? null : accepted[0], onDone);
@@ -182,7 +171,7 @@
         'style="display:inline-block;width:auto;min-width:130px;max-width:220px;margin:2px 4px;" autocomplete="off" spellcheck="false">';
     }
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">' + (ex.q || "Uzupełnij luki.") + "</p>" +
+      '<p class="exq__prompt">' + (ex.q || t("ex.cloze.prompt")) + "</p>" +
       (ex.tr ? '<p class="exq__sub">' + esc(ex.tr) + "</p>" : "") +
       '<p style="font-size:1.04rem;line-height:2.3;">' + htmlBody + "</p>" +
       checkBtn() + feedbackBox() + "</div>";
@@ -208,15 +197,15 @@
   function buildOrder(ex, idx, seed) {
     var tokens = Core.seededShuffle(ex.tokens.slice(), seed + "o" + idx);
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">Ułóż zdanie po włosku:</p>' +
+      '<p class="exq__prompt">' + t("ex.order.prompt") + "</p>" +
       '<p class="exq__sub">' + esc(ex.tr || "") + "</p>" +
       // rola „group" jest konieczna: div bez roli nie może nieść aria-label (WCAG 4.1.2)
-      '<div class="tok-target js-target" role="group" aria-label="Twoje zdanie"></div>' +
+      '<div class="tok-target js-target" role="group" aria-label="' + esc(t("ex.order.yourSentence")) + '"></div>' +
       '<div class="tok-bank js-bank">' + tokens.map(function (t) {
         return '<button type="button" class="tok">' + esc(t) + "</button>";
       }).join("") + "</div>" +
       '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">' + checkBtn() +
-      '<button type="button" class="btn btn--ghost btn--sm js-clear">Wyczyść</button></div>' +
+      '<button type="button" class="btn btn--ghost btn--sm js-clear">' + t("ex.order.clear") + "</button></div>" +
       feedbackBox() + "</div>";
 
     function wire(root, onDone) {
@@ -240,7 +229,7 @@
       });
       root.querySelector(".js-check").addEventListener("click", function () {
         var built = Array.prototype.map.call(target.querySelectorAll(".tok"), function (b) { return b.textContent; }).join(" ");
-        if (!built.trim()) { Core.toast("Ułóż zdanie z klocków."); return; }
+        if (!built.trim()) { Core.toast(t("ex.order.empty")); return; }
         var accepted = Array.isArray(ex.a) ? ex.a : [ex.a];
         var res = Core.checkOpen(built, accepted, false);
         finish(root, res.ok, ex.why, res.ok ? null : accepted[0], onDone);
@@ -254,7 +243,7 @@
     var left = ex.pairs.map(function (p, i) { return { t: p.it, i: i }; });
     var right = Core.seededShuffle(ex.pairs.map(function (p, i) { return { t: p.tr, i: i }; }), seed + "r" + idx);
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">' + esc(ex.q || "Połącz włoskie wyrażenia z polskimi odpowiednikami.") + "</p>" +
+      '<p class="exq__prompt">' + esc(ex.q || t("ex.match.prompt")) + "</p>" +
       '<div class="match-grid"><div class="match-col js-l">' +
       left.map(function (o) { return '<button type="button" class="match-btn" data-side="l" data-i="' + o.i + '">' + esc(o.t) + "</button>"; }).join("") +
       '</div><div class="match-col js-r">' +
@@ -278,7 +267,7 @@
             sel.classList.add("is-ok"); b.classList.add("is-ok");
             matched++;
             if (matched === total) {
-              finish(root, errors === 0, ex.why || (errors ? "Liczba pomyłek: " + errors + "." : ""), null, onDone);
+              finish(root, errors === 0, ex.why || (errors ? t("ex.match.mistakes", { n: errors }) : ""), null, onDone);
             }
           } else {
             errors++;
@@ -307,7 +296,7 @@
     }).join("");
 
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">Odmień: <b style="color:var(--rosa-deep)">' + esc(ex.verb) + "</b> — " + esc(tenseLabel) + "</p>" +
+      '<p class="exq__prompt">' + t("ex.conj.prompt", { verb: '<b style="color:var(--rosa-deep)">' + esc(ex.verb) + "</b>", tense: esc(tenseLabel) }) + "</p>" +
       (ex.tr ? '<p class="exq__sub">' + esc(ex.tr) + "</p>" : "") +
       '<div class="conj-grid">' + rows + "</div>" +
       '<div style="margin-top:14px">' + checkBtn() + "</div>" + feedbackBox() + "</div>";
@@ -334,7 +323,7 @@
     var items = Core.seededShuffle(ex.items.slice(), seed + "g" + idx);
     var opts = ex.opts || ["il", "lo", "la", "l'", "i", "gli", "le"];
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">' + esc(ex.q || "Dopasuj właściwy rodzajnik.") + "</p>" +
+      '<p class="exq__prompt">' + esc(ex.q || t("ex.gender.prompt")) + "</p>" +
       '<div class="stack">' + items.map(function (it, i) {
         return '<div class="field-row" data-row="' + i + '">' +
           '<select class="field js-sel" data-i="' + i + '" style="max-width:130px;">' +
@@ -366,11 +355,11 @@
   /* ═══════════════ LISTEN (dyktando) ═══════════════ */
   function buildListen(ex, idx) {
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">Posłuchaj i zapisz, co słyszysz.</p>' +
+      '<p class="exq__prompt">' + t("ex.listen.prompt") + "</p>" +
       '<div class="voice-box" style="text-align:left">' +
-      '<button type="button" class="btn btn--green js-play">🔊 Odtwórz</button> ' +
-      '<button type="button" class="btn btn--ghost btn--sm js-slow">🐢 Wolniej</button>' +
-      '<div style="margin-top:14px"><input type="text" class="field js-in" placeholder="Zapisz po włosku" autocomplete="off" spellcheck="false"></div>' +
+      '<button type="button" class="btn btn--green js-play">' + t("ex.listen.play") + "</button> " +
+      '<button type="button" class="btn btn--ghost btn--sm js-slow">' + t("ex.listen.slow") + "</button>" +
+      '<div style="margin-top:14px"><input type="text" class="field js-in" placeholder="' + esc(t("ex.listen.ph")) + '" autocomplete="off" spellcheck="false"></div>' +
       "</div>" +
       '<div style="margin-top:14px">' + checkBtn() + "</div>" + feedbackBox() + "</div>";
 
@@ -393,18 +382,17 @@
   function buildSpeak(ex, idx) {
     var supported = Audio2.sttSupported;
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">Powiedz na głos po włosku:</p>' +
+      '<p class="exq__prompt">' + t("ex.speak.prompt") + "</p>" +
       '<div class="voice-box">' +
       '<p class="voice-target">' + esc(ex.it) + " " + sayBtn(ex.it) + "</p>" +
       '<p class="voice-pl">' + esc(ex.tr || "") + "</p>" +
       (supported
-        ? '<button type="button" class="mic js-mic" aria-label="Nagraj wypowiedź">🎤</button>' +
-          '<p class="voice-heard js-heard">Kliknij mikrofon i przeczytaj zdanie.</p>'
-        : '<p class="voice-heard">Twoja przeglądarka nie obsługuje rozpoznawania mowy. ' +
-          'Posłuchaj wzoru, powtórz na głos, a potem przepisz zdanie z pamięci.</p>' +
-          '<input type="text" class="field js-in" placeholder="Przepisz zdanie" autocomplete="off" spellcheck="false">') +
+        ? '<button type="button" class="mic js-mic" aria-label="' + esc(t("ex.speak.mic")) + '">🎤</button>' +
+          '<p class="voice-heard js-heard">' + t("ex.speak.hint") + "</p>"
+        : '<p class="voice-heard">' + t("ex.speak.noStt") + "</p>" +
+          '<input type="text" class="field js-in" placeholder="' + esc(t("ex.speak.ph")) + '" autocomplete="off" spellcheck="false">') +
       "</div>" +
-      '<div style="margin-top:14px">' + checkBtn(supported ? "Zalicz" : "Sprawdź") + "</div>" +
+      '<div style="margin-top:14px">' + checkBtn(supported ? t("ex.speak.pass") : t("ex.check")) + "</div>" +
       feedbackBox() + "</div>";
 
     function wire(root, onDone) {
@@ -415,21 +403,19 @@
         var rec = null;
         mic.addEventListener("click", function () {
           if (mic.classList.contains("is-rec")) { rec && rec.abort(); mic.classList.remove("is-rec"); return; }
-          heard.textContent = "Słucham…";
+          heard.textContent = t("ex.stt.listening");
           mic.classList.add("is-rec");
           rec = Audio2.listen({
             oninterim: function (t) { heard.innerHTML = "…" + esc(t); },
             onerror: function (err) {
               mic.classList.remove("is-rec");
-              heard.textContent = err === "not-allowed"
-                ? "Brak zgody na mikrofon. Zezwól w ustawieniach przeglądarki."
-                : "Nie udało się nagrać. Spróbuj ponownie.";
+              heard.textContent = t(err === "not-allowed" ? "ex.stt.denied" : "ex.stt.failed");
             },
             onend: function (text, alts) {
               mic.classList.remove("is-rec");
-              if (!text) { heard.textContent = "Nic nie usłyszałam. Spróbuj jeszcze raz."; return; }
+              if (!text) { heard.textContent = t("ex.stt.nothing"); return; }
               score = Audio2.scoreSpeech(text, alts, ex.it);
-              heard.innerHTML = 'Usłyszałam: <b>' + esc(text) + '</b><br><span class="voice-score" style="color:' +
+              heard.innerHTML = t("ex.stt.heard", { text: "<b>" + esc(text) + "</b>" }) + '<br><span class="voice-score" style="color:' +
                 (score >= 80 ? "var(--ok)" : score >= 60 ? "var(--oro-deep)" : "var(--ko)") + '">' + score + "%</span>";
             }
           });
@@ -438,10 +424,9 @@
       root.querySelector(".js-check").addEventListener("click", function () {
         var ok, why;
         if (supported) {
-          if (score < 0) { Core.toast("Najpierw nagraj wypowiedź."); return; }
+          if (score < 0) { Core.toast(t("ex.speak.recordFirst")); return; }
           ok = score >= 70;
-          why = ok ? "Wymowa rozpoznana poprawnie." :
-            "Rozpoznanie mowy bywa surowe dla obcego akcentu — posłuchaj wzoru i spróbuj jeszcze raz w spokojnym tempie.";
+          why = t(ok ? "ex.speak.ok" : "ex.speak.retry");
         } else {
           var res = Core.checkOpen(root.querySelector(".js-in").value, [ex.it], false);
           ok = res.ok; why = ex.why || "";
@@ -456,7 +441,7 @@
   function buildDialogue(ex, idx) {
     // ex.lines: [{sp:"A"|"TY", it, pl, choices?:[...], a?:int}]
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">' + esc(ex.q || "Posłuchaj i odpowiedz.") + "</p>" +
+      '<p class="exq__prompt">' + esc(ex.q || t("ex.dialogue.prompt")) + "</p>" +
       (ex.setting ? '<p class="exq__sub">' + esc(ex.setting) + "</p>" : "") +
       '<div class="dlg js-dlg"></div>' +
       '<div class="js-turn" style="margin-top:16px"></div>' +
@@ -479,7 +464,8 @@
       function step() {
         if (i >= ex.lines.length) {
           turn.innerHTML = "";
-          finish(root, mistakes === 0, mistakes ? "Pomyłki: " + mistakes + ". Przeczytaj dialog jeszcze raz na głos." : (ex.why || "Cała rozmowa poprawna."), null, onDone);
+          finish(root, mistakes === 0,
+            mistakes ? t("ex.dialogue.mistakes", { n: mistakes }) : (ex.why || t("ex.dialogue.allOk")), null, onDone);
           return;
         }
         var line = ex.lines[i];
@@ -491,7 +477,8 @@
           return;
         }
         // tura ucznia
-        turn.innerHTML = '<p style="font-weight:600;margin-bottom:8px">Twoja kolej — ' + esc(line.tr || "wybierz odpowiedź") + '</p>' +
+        turn.innerHTML = '<p style="font-weight:600;margin-bottom:8px">' +
+          esc(t("ex.dialogue.yourTurn", { task: line.tr || t("ex.dialogue.pickAnswer") })) + "</p>" +
           '<div class="opts">' + line.choices.map(function (c, k) {
             return '<button type="button" class="opt js-ch" data-k="' + k + '"><span>' + esc(c) + "</span></button>";
           }).join("") + "</div>";
@@ -529,10 +516,10 @@
 
   function build(ex, idx, seed) {
     if (ex.t === "truefalse" && !ex.opts) {
-      ex = Object.assign({}, ex, { opts: ["Prawda (vero)", "Fałsz (falso)"], shuffle: false });
+      ex = Object.assign({}, ex, { opts: [t("ex.truefalse.true"), t("ex.truefalse.false")], shuffle: false });
     }
     var b = BUILDERS[ex.t];
-    if (!b) return { html: '<div class="exq">Nieznany typ ćwiczenia: ' + esc(ex.t) + "</div>", wire: function () {} };
+    if (!b) return { html: '<div class="exq">' + esc(t("ex.unknownType", { t: ex.t })) + "</div>", wire: function () {} };
     return b(ex, idx, seed || "s");
   }
 
@@ -549,6 +536,6 @@
     });
   }
 
-  global.Ex = { build: build, wireSpeakers: wireSpeakers, LABEL: LABEL };
+  global.Ex = { build: build, wireSpeakers: wireSpeakers, label: label };
 
 })(window);

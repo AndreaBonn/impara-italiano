@@ -53,7 +53,7 @@ LINGUAI.addUnits("A1", [
             ]
           },
           { t: "mcq", a: 2 },
-          { t: "trans", dir: "pl-it", a: ["il mio capo è molto esigente"] },
+          { t: "trans", dir: "toIt", a: ["il mio capo è molto esigente"] },
           {
             t: "cloze",
             text: "{{1}} mio fratello lavora con {{2}} miei genitori.",
@@ -110,7 +110,7 @@ LINGUAI.addUnits("A1", [
             text: "Mio padre {{1}} alto e {{2}} i capelli grigi. {{3}} gli occhiali.",
             gaps: [["è"], ["ha"], ["porta"]]
           },
-          { t: "trans", dir: "pl-it", a: ["ha i capelli lunghi e ricci"] },
+          { t: "trans", dir: "toIt", a: ["ha i capelli lunghi e ricci"] },
           {
             t: "order",
             tokens: ["Com'è", "tua", "sorella?", "È", "bassa", "e", "sportiva"],
@@ -157,7 +157,7 @@ LINGUAI.addUnits("A1", [
             t: "match",
             pairs: [{ it: "simpatico" }, { it: "generoso" }, { it: "socievole" }, { it: "tranquillo" }]
           },
-          { t: "trans", dir: "pl-it", a: ["secondo me è una persona tranquilla"] },
+          { t: "trans", dir: "toIt", a: ["secondo me è una persona tranquilla"] },
           {
             t: "cloze",
             text: "Il mio coinquilino è {{1}} me una persona molto {{2}}: parla con tutti.",
@@ -206,7 +206,7 @@ LINGUAI.addUnits("A1", [
           { t: "fill", a: ["di"] },
           { t: "fill", a: ["migliore"] },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["milano è più cara di bologna", "milano è più caro di bologna"] },
+          { t: "trans", dir: "toIt", a: ["milano è più cara di bologna", "milano è più caro di bologna"] },
           {
             t: "cloze",
             text: "Roma è più grande {{1}} Firenze, ma è più facile parlare {{2}} scrivere in italiano.",
@@ -284,7 +284,7 @@ LINGUAI.addUnits("A1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["ti va di andare al cinema stasera", "ti va di andare al cinema stasera?"]
           },
           {
@@ -359,7 +359,7 @@ LINGUAI.addUnits("A1", [
             text: "Domani {{1}} freddo, {{2}} vento e nel pomeriggio {{3}}.",
             gaps: [["fa"], ["c'è", "ce"], ["piove"]]
           },
-          { t: "trans", dir: "pl-it", a: ["che tempo fa a roma", "che tempo fa a roma?"] },
+          { t: "trans", dir: "toIt", a: ["che tempo fa a roma", "che tempo fa a roma?"] },
           {
             t: "order",
             tokens: ["In", "inverno", "a", "Milano", "c'è", "spesso", "nebbia"],
@@ -405,7 +405,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["non posso parlare sto guidando", "non posso parlare, sto guidando"]
           },
           {
@@ -465,7 +465,7 @@ LINGUAI.addUnits("A1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["mi è piaciuto molto te lo consiglio", "mi è piaciuto molto, te lo consiglio"]
           },
           { t: "mcq", a: 1 },
@@ -551,7 +551,7 @@ LINGUAI.addUnits("A1", [
             text: "Sabato {{1}} visto un film e poi {{2}} mangiato fuori. Domenica non {{3}} fatto niente.",
             gaps: [["ho"], ["ho"], ["ho"]]
           },
-          { t: "trans", dir: "pl-it", a: ["non ho capito puoi ripetere", "non ho capito, puoi ripetere?"] },
+          { t: "trans", dir: "toIt", a: ["non ho capito puoi ripetere", "non ho capito, puoi ripetere?"] },
           { t: "listen", it: "La settimana scorsa abbiamo visitato Firenze." },
           { t: "speak", it: "Ieri sera ho letto un libro molto interessante." }
         ]
@@ -639,7 +639,7 @@ LINGUAI.addUnits("A1", [
             text: "Sabato {{1}} fatto la spesa, {{2}} sono andata in palestra e la sera {{3}} usciti con amici.",
             gaps: [["ho"], ["poi"], ["siamo"]]
           },
-          { t: "trans", dir: "pl-it", a: ["non ho ancora finito"] },
+          { t: "trans", dir: "toIt", a: ["non ho ancora finito"] },
           {
             t: "order",
             tokens: ["Alla", "fine", "siamo", "tornati", "a", "casa", "tardi"],

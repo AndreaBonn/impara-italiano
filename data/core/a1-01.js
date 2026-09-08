@@ -56,7 +56,7 @@ LINGUAI.addUnits("A1", [
           { t: "fill", a: ["sono"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["sono dalla polonia", "sono della polonia", "vengo dalla polonia"]
           },
           {
@@ -225,7 +225,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           { t: "conj", verb: "stare", tense: "pres", persons: [0, 1, 2, 4] },
           { t: "fill", a: ["state"] },
-          { t: "trans", dir: "pl-it", a: ["sto bene grazie e tu", "sto bene, grazie. e tu?"] },
+          { t: "trans", dir: "toIt", a: ["sto bene grazie e tu", "sto bene, grazie. e tu?"] },
           {
             t: "dialogue",
             lines: [
@@ -266,7 +266,7 @@ LINGUAI.addUnits("A1", [
         { t: "multi", a: [0, 2, 3] },
         {
           t: "trans",
-          dir: "pl-it",
+          dir: "toIt",
           a: ["un'acqua per favore", "vorrei un'acqua", "un acqua per favore", "dell'acqua per favore"]
         },
         { t: "order", tokens: ["Gli", "studenti", "sono", "al", "bar"], a: ["gli studenti sono al bar"] },
@@ -370,7 +370,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           { t: "fill", a: ["93"] },
           { t: "fill", a: ["'"] },
-          { t: "trans", dir: "pl-it", a: ["quanti anni hai", "quanti anni hai?"] },
+          { t: "trans", dir: "toIt", a: ["quanti anni hai", "quanti anni hai?"] },
           {
             t: "match",
             pairs: [{ it: "ho sete" }, { it: "ho sonno" }, { it: "ho paura" }, { it: "ho ragione" }]
@@ -427,7 +427,7 @@ LINGUAI.addUnits("A1", [
               { it: "operaio", a: "l'" }
             ]
           },
-          { t: "trans", dir: "pl-it", a: ["che lavoro fai", "che lavoro fai?", "che cosa fai nella vita"] },
+          { t: "trans", dir: "toIt", a: ["che lavoro fai", "che lavoro fai?", "che cosa fai nella vita"] },
           {
             t: "match",
             pairs: [
@@ -480,7 +480,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           { t: "fill", a: ["abitano"] },
           { t: "fill", a: ["non"] },
-          { t: "trans", dir: "pl-it", a: ["cerchiamo un appartamento a roma", "cerchiamo casa a roma"] },
+          { t: "trans", dir: "toIt", a: ["cerchiamo un appartamento a roma", "cerchiamo casa a roma"] },
           { t: "multi", a: [0, 2, 3, 4] },
           { t: "order", tokens: ["Non", "lavoro", "il", "sabato"], a: ["non lavoro il sabato"] },
           { t: "listen", it: "Studio italiano da tre mesi." },
@@ -504,7 +504,7 @@ LINGUAI.addUnits("A1", [
           text: "{{1}} polacca, {{2}} a Verona e {{3}} l'insegnante.",
           gaps: [["sono"], ["abito"], ["faccio"]]
         },
-        { t: "trans", dir: "pl-it", a: ["non parlo italiano", "non parlo l'italiano"] },
+        { t: "trans", dir: "toIt", a: ["non parlo italiano", "non parlo l'italiano"] },
         { t: "listen", it: "Ho ventisette anni e cerco lavoro." },
         { t: "speak", it: "Mi chiamo Anna e faccio la giornalista." }
       ]
@@ -551,7 +551,7 @@ LINGUAI.addUnits("A1", [
           { t: "fill", a: ["piacciono"] },
           { t: "mcq", a: 1 },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["mi piace cucinare"] },
+          { t: "trans", dir: "toIt", a: ["mi piace cucinare"] },
           {
             t: "match",
             pairs: [{ it: "mi piace" }, { it: "ti piace" }, { it: "le piace" }, { it: "ci piace" }]
@@ -599,7 +599,7 @@ LINGUAI.addUnits("A1", [
           { t: "fill", a: ["c'è", "ce"] },
           { t: "fill", a: ["ci sono"] },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["prendo una birra e tu", "io prendo una birra e tu"] },
+          { t: "trans", dir: "toIt", a: ["prendo una birra e tu", "io prendo una birra e tu"] },
           { t: "multi", a: [0, 2, 4] },
           { t: "order", tokens: ["Non", "vedo", "il", "cameriere"], a: ["non vedo il cameriere"] },
           { t: "listen", it: "C'è un tavolo libero per due persone?" },
@@ -640,7 +640,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           { t: "fill", a: ["capiamo"] },
           { t: "fill", a: ["finiscono"] },
-          { t: "trans", dir: "pl-it", a: ["preferisco un tavolo fuori", "preferisco un tavolo all'aperto"] },
+          { t: "trans", dir: "toIt", a: ["preferisco un tavolo fuori", "preferisco un tavolo all'aperto"] },
           { t: "multi", a: [0, 2, 4] },
           { t: "order", tokens: ["Non", "capisco,", "può", "ripetere?"], a: ["non capisco può ripetere"] },
           { t: "listen", it: "Preferisco partire domani mattina presto." },
@@ -696,7 +696,7 @@ LINGUAI.addUnits("A1", [
           { t: "mcq", a: 1 },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["vorrei mezzo litro di latte", "mezzo litro di latte per favore"]
           },
           {
@@ -751,7 +751,7 @@ LINGUAI.addUnits("A1", [
             { it: "mele", a: "delle" }
           ]
         },
-        { t: "trans", dir: "pl-it", a: ["preferisco il vino bianco", "preferisco vino bianco"] },
+        { t: "trans", dir: "toIt", a: ["preferisco il vino bianco", "preferisco vino bianco"] },
         { t: "listen", it: "Ci sono delle olive e del formaggio." },
         { t: "speak", it: "Mi piace molto l'aperitivo italiano." }
       ]

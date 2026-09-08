@@ -49,7 +49,7 @@ LINGUAI.addUnits("C1", [
             text: "In Italia {{1}} mangia bene, ma {{2}} lavorano troppe ore.",
             gaps: [["si"], ["si"]]
           },
-          { t: "trans", dir: "pl-it", a: ["ci si abitua a tutto"] },
+          { t: "trans", dir: "toIt", a: ["ci si abitua a tutto"] },
           { t: "listen", it: "Si è discusso a lungo, ma non si è arrivati a nessuna conclusione." },
           { t: "speak", it: "Quando si è giovani, si sottovaluta il tempo." }
         ]
@@ -102,7 +102,7 @@ LINGUAI.addUnits("C1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["è solo un semplice malinteso", "non è che un semplice malinteso"]
           },
           { t: "mcq", a: 1 },
@@ -165,7 +165,7 @@ LINGUAI.addUnits("C1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["è un acerrimo avversario di questa riforma", "è un avversario acerrimo di questa riforma"]
           },
           { t: "listen", it: "Era bagnato fradicio e stanco morto, ma sorrideva." },
@@ -252,7 +252,7 @@ LINGUAI.addUnits("C1", [
             text: "Non {{1}} la sento di guidare, {{2}} ne vado a piedi.",
             gaps: [["me"], ["me"]]
           },
-          { t: "trans", dir: "pl-it", a: ["ce l'hai con me per qualcosa", "ce l'hai con me?"] },
+          { t: "trans", dir: "toIt", a: ["ce l'hai con me per qualcosa", "ce l'hai con me?"] },
           { t: "listen", it: "Se n'è andato senza salutare nessuno." },
           { t: "speak", it: "Me la cavo abbastanza bene, ma non me ne intendo davvero." }
         ]
@@ -298,7 +298,7 @@ LINGUAI.addUnits("C1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["questo capitolo va ancora rivisto", "questo capitolo è ancora da rivedere"]
           },
           {
@@ -360,7 +360,7 @@ LINGUAI.addUnits("C1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["facciamo il punto della situazione e mettiamo tutto nero su bianco"]
           },
           { t: "listen", it: "Non ci piove: la decisione va presa entro oggi." },
@@ -447,7 +447,7 @@ LINGUAI.addUnits("C1", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["si comunica che l'ufficio resterà chiuso", "vi informiamo che l'ufficio resterà chiuso"]
           },
           { t: "mcq", a: 1 },
@@ -499,7 +499,7 @@ LINGUAI.addUnits("C1", [
             text: "Standardowo: „Non ricordo quella storia.” Z dislokacją: Quella storia, non {{1}} {{2}} ricordo.",
             gaps: [["me"], ["la"]]
           },
-          { t: "trans", dir: "pl-it", a: ["a roma non ci sono mai stato", "a roma non ci sono mai stata"] },
+          { t: "trans", dir: "toIt", a: ["a roma non ci sono mai stato", "a roma non ci sono mai stata"] },
           { t: "multi", a: [0, 1, 3] },
           { t: "listen", it: "Quella storia lì, non me la ricordo proprio." },
           { t: "speak", it: "Il caffè lo prendo dopo, adesso non mi va." }
@@ -552,7 +552,7 @@ LINGUAI.addUnits("C1", [
             text: "La riforma è stata approvata. {{1}} decisione ha suscitato reazioni contrastanti. {{2}}, la misura andrebbe rivista.",
             gaps: [["tale", "questa"], ["di conseguenza"]]
           },
-          { t: "trans", dir: "pl-it", a: ["come vedremo il problema non è solo economico"] },
+          { t: "trans", dir: "toIt", a: ["come vedremo il problema non è solo economico"] },
           { t: "mcq", a: 1 },
           { t: "listen", it: "Quanto detto finora vale soprattutto per il settore privato." },
           { t: "speak", it: "Di conseguenza, ritengo che la misura andrebbe rivista." }
@@ -574,7 +574,7 @@ LINGUAI.addUnits("C1", [
         { t: "mcq", a: 1 },
         { t: "fill", a: ["questione"] },
         { t: "fill", a: ["acerrimo"] },
-        { t: "trans", dir: "pl-it", a: ["questi dati vanno verificati prima della pubblicazione"] },
+        { t: "trans", dir: "toIt", a: ["questi dati vanno verificati prima della pubblicazione"] },
         { t: "speak", it: "Ci si abitua a tutto, ma non ci si rassegna mai del tutto." }
       ]
     }

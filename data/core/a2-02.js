@@ -52,7 +52,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["quanto sono le spese condominiali", "a quanto ammontano le spese condominiali"]
           },
           {
@@ -112,7 +112,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["al mercato ci vado ogni sabato", "ci vado ogni sabato al mercato"]
           },
           { t: "listen", it: "Ci vogliono almeno due ore per finire il trasloco." },
@@ -165,7 +165,7 @@ LINGUAI.addUnits("A2", [
             text: "Il divano è {{1}} fronte alla finestra e la libreria è {{2}} al divano.",
             gaps: [["di"], ["accanto"]]
           },
-          { t: "trans", dir: "pl-it", a: ["l'appartamento è al terzo piano senza ascensore"] },
+          { t: "trans", dir: "toIt", a: ["l'appartamento è al terzo piano senza ascensore"] },
           {
             t: "order",
             tokens: ["Le", "finestre", "danno", "a", "sud,", "quindi", "è", "molto", "luminoso"],
@@ -228,7 +228,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["potrebbe mandare un idraulico", "potrebbe mandare un idraulico?"]
           },
           {
@@ -315,7 +315,7 @@ LINGUAI.addUnits("A2", [
             t: "match",
             pairs: [{ it: "è in riunione" }, { it: "spostare" }, { it: "disdire" }, { it: "richiamare" }]
           },
-          { t: "trans", dir: "pl-it", a: ["vorrei spostare l'appuntamento"] },
+          { t: "trans", dir: "toIt", a: ["vorrei spostare l'appuntamento"] },
           {
             t: "dialogue",
             lines: [
@@ -395,7 +395,7 @@ LINGUAI.addUnits("A2", [
           { t: "mcq", a: 1 },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: [
               "le invio in allegato il preventivo aggiornato",
               "ti invio in allegato il preventivo aggiornato"
@@ -453,7 +453,7 @@ LINGUAI.addUnits("A2", [
             text: "In questo ufficio {{1}} lavora molto e {{2}} fanno spesso straordinari.",
             gaps: [["si"], ["si"]]
           },
-          { t: "trans", dir: "pl-it", a: ["qui non si fuma"] },
+          { t: "trans", dir: "toIt", a: ["qui non si fuma"] },
           { t: "multi", a: [0, 2] },
           { t: "order", tokens: ["Ci", "si", "abitua", "in", "fretta"], a: ["ci si abitua in fretta"] },
           { t: "listen", it: "In questa azienda si lavora molto ma si guadagna bene." },
@@ -503,7 +503,7 @@ LINGUAI.addUnits("A2", [
           { t: "fill", a: ["si"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["possiamo rimandare la decisione a lunedì", "possiamo rimandare la decisione a lunedì?"]
           },
           {
@@ -564,7 +564,7 @@ LINGUAI.addUnits("A2", [
         },
         {
           t: "trans",
-          dir: "pl-it",
+          dir: "toIt",
           a: ["sono d'accordo ma ho un dubbio", "sono d'accordo, ma ho qualche dubbio"]
         },
         { t: "listen", it: "Potrebbe confermarmi l'appuntamento entro venerdì?" },
@@ -613,7 +613,7 @@ LINGUAI.addUnits("A2", [
           { t: "match", pairs: [{ it: "urodziny" }, { it: "Nowy Rok" }, { it: "awans" }, { it: "podróż" }] },
           { t: "mcq", a: 1 },
           { t: "mcq", a: 1 },
-          { t: "trans", dir: "pl-it", a: ["buone feste a te e alla tua famiglia"] },
+          { t: "trans", dir: "toIt", a: ["buone feste a te e alla tua famiglia"] },
           { t: "listen", it: "Tanti auguri di buon compleanno e buone feste!" },
           { t: "speak", it: "In bocca al lupo per l'esame! — Crepi!" }
         ]
@@ -656,7 +656,7 @@ LINGUAI.addUnits("A2", [
           },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["volentieri a che ora vi trovate", "volentieri! a che ora vi trovate?"]
           },
           {
@@ -723,7 +723,7 @@ LINGUAI.addUnits("A2", [
           { t: "mcq", a: 1 },
           { t: "mcq", a: 1 },
           { t: "fill", a: ["sud"] },
-          { t: "trans", dir: "pl-it", a: ["ogni regione ha il suo piatto tipico"] },
+          { t: "trans", dir: "toIt", a: ["ogni regione ha il suo piatto tipico"] },
           {
             t: "cloze",
             text: "Sono di {{1}} siciliana, ma vivo al nord da dieci anni. Il {{2}} lo capisco, ma non lo parlo.",
@@ -777,7 +777,7 @@ LINGUAI.addUnits("A2", [
             t: "match",
             pairs: [{ it: "finalmente" }, { it: "improvvisamente" }, { it: "con calma" }, { it: "quasi" }]
           },
-          { t: "trans", dir: "pl-it", a: ["può parlare più lentamente", "può parlare più lentamente?"] },
+          { t: "trans", dir: "toIt", a: ["può parlare più lentamente", "può parlare più lentamente?"] },
           {
             t: "cloze",
             text: "Parla {{1}} l'italiano, ma scrive ancora {{2}}. Studia {{3}} tutti i giorni.",
@@ -848,7 +848,7 @@ LINGUAI.addUnits("A2", [
           { t: "fill", a: ["a"] },
           { t: "mcq", a: 1 },
           { t: "conj", verb: "essere", tense: "futuro", persons: [0, 2, 5] },
-          { t: "trans", dir: "pl-it", a: ["mi piacerebbe lavorare all'estero per un anno"] },
+          { t: "trans", dir: "toIt", a: ["mi piacerebbe lavorare all'estero per un anno"] },
           {
             t: "cloze",
             text: "{{1}} intenzione di iscrivermi a un corso e {{2}} di superare l'esame a giugno.",
@@ -908,7 +908,7 @@ LINGUAI.addUnits("A2", [
           { t: "conj", verb: "avere", tense: "imperf", persons: [0, 2, 3] },
           { t: "conj", verb: "andare", tense: "futuro", persons: [0, 2, 5] },
           { t: "conj", verb: "volere", tense: "condizionale", persons: [0, 1, 2] },
-          { t: "trans", dir: "pl-it", a: ["vorrei chiederti un favore", "vorrei chiederti una cosa"] },
+          { t: "trans", dir: "toIt", a: ["vorrei chiederti un favore", "vorrei chiederti una cosa"] },
           { t: "listen", it: "Da piccola non mi piaceva il pesce, adesso lo adoro." },
           { t: "speak", it: "Ieri sono andata al cinema e il film mi è piaciuto molto." }
         ]
@@ -984,7 +984,7 @@ LINGUAI.addUnits("A2", [
           { t: "fill", a: ["di"] },
           {
             t: "trans",
-            dir: "pl-it",
+            dir: "toIt",
             a: ["quando avrò finito il lavoro ti chiamerò", "quando finisco il lavoro ti chiamo"]
           },
           { t: "listen", it: "Mentre tornavo a casa ho incontrato Giulia e le ho parlato del progetto." },
@@ -1013,7 +1013,7 @@ LINGUAI.addUnits("A2", [
         { t: "fill", a: ["facilmente"] },
         {
           t: "trans",
-          dir: "pl-it",
+          dir: "toIt",
           a: ["vorrei spostare l'appuntamento a giovedì", "vorrei spostare la riunione a giovedì"]
         },
         { t: "speak", it: "Ieri sono andata dal medico perché mi faceva male la gola." }

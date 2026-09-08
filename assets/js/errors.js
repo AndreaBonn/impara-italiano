@@ -258,6 +258,57 @@
     return out;
   }
 
+  /* ---------------- Przechwytywanie odpowiedzi ---------------- */
+
+  /**
+   * Owija Ex.build, żeby każda odpowiedź trafiła do quaderno.
+   *
+   * Owinięte jest samo `wire`, nie budowanie i nie żaden z trzynastu
+   * builderów: każdy z nich dalej woła swoje onDone dokładnie raz, a my
+   * dokładamy się obok. Gdyby zamiast tego każdy builder miał wołać
+   * Errors.record u siebie, byłoby trzynaście miejsc do pominięcia przy
+   * czternastym typie — i pominięcie nie dałoby żadnego objawu.
+   *
+   * `seed`, które views.js podaje jako trzeci argument, to id lekcji
+   * (views.js:313). Stąd wiadomo, do której lekcji należy ćwiczenie,
+   * bez przekazywania niczego nowego przez cały łańcuch.
+   */
+  function install(Ex) {
+    if (!Ex || Ex.recordsErrors) return false;
+    var original = Ex.build;
+
+    Ex.build = function (ex, idx, seed) {
+      var built = original(ex, idx, seed);
+      var wire = built.wire;
+      built.wire = function (root, onDone) {
+        return wire(root, function (ok) {
+          noteAnswer(ex, idx, seed, ok);
+          if (onDone) onDone(ok);
+        });
+      };
+      return built;
+    };
+
+    Ex.recordsErrors = true;
+    return true;
+  }
+
+  /**
+   * Zapis idzie tylko wtedy, gdy ćwiczenie NAPRAWDĘ jest tym, na które
+   * wskazuje seed i numer. Inaczej karta powstałaby pod cudzym kluczem —
+   * na przykład przy budowaniu ćwiczenia poza lekcją, gdzie seed jest
+   * dowolnym napisem.
+   */
+  function noteAnswer(ex, idx, seed, ok) {
+    var Core = global.Core;
+    if (!Core || typeof seed !== "string") return;
+    var found = Core.getLesson(seed);
+    if (!found) return;
+    if ((found.lesson.exercises || [])[idx] !== ex) return;
+    record(found.lesson, idx, ok);
+  }
+
+  Errors.install = install;
   Errors.sigOf = sigOf;
   Errors.keysIn = keysIn;
   Errors.keyOf = keyOf;
@@ -270,5 +321,10 @@
   Errors.GRADUATE_REPS = GRADUATE_REPS;
 
   global.Errors = Errors;
+
+  /* exercises.js jest w index.html wcześniej, więc Ex już istnieje.
+     W testach jednostkowych, gdzie wczytujemy sam silnik stanu, nie ma go
+     i install() wychodzi bez skutku — quaderno działa też bez ćwiczeń. */
+  install(global.Ex);
 
 })(window);

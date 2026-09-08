@@ -608,12 +608,11 @@
      KONIUGATOR
      ═══════════════════════════════════════════════════════════ */
   Views.coniugatore = function () {
-    set(pageHead("Narzędzie", "Odmiana czasowników",
-      "Wpisz bezokolicznik (także zwrotny, np. svegliarsi). Silnik odmienia formy regularne i ok. 45 najczęstszych nieregularnych.") +
+    set(pageHead(t("conj.kicker"), t("nav.verbs"), t("conj.intro")) +
       '<div class="card" style="margin-bottom:22px">' +
-      '<div class="field-row"><input type="text" class="field js-verb" placeholder="np. parlare, essere, capire, svegliarsi" list="verbList" autocomplete="off" spellcheck="false" style="max-width:340px">' +
-      '<button class="btn btn--primary js-go">Odmień</button></div>' +
-      '<datalist id="verbList">' + Verbs.COMMON.map(function (v) { return '<option value="' + esc(v[0]) + '">' + esc(v[1]) + "</option>"; }).join("") + "</datalist>" +
+      '<div class="field-row"><input type="text" class="field js-verb" placeholder="' + esc(t("conj.ph")) + '" list="verbList" autocomplete="off" spellcheck="false" style="max-width:340px">' +
+      '<button class="btn btn--primary js-go">' + t("conj.run") + "</button></div>" +
+      '<datalist id="verbList">' + Verbs.COMMON.map(function (v) { return '<option value="' + esc(v) + '">' + esc(t("verb." + v)) + "</option>"; }).join("") + "</datalist>" +
       '<div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap">' +
       ["essere", "avere", "fare", "andare", "capire", "svegliarsi", "mangiare", "potere"].map(function (v) {
         return '<button class="btn btn--ghost btn--sm js-quick" data-v="' + v + '">' + v + "</button>";
@@ -625,28 +624,29 @@
       var v = (input.value || "").trim().toLowerCase();
       if (!v) return;
       if (!/^[a-zàèéìòù]+(are|ere|ire|rre|rsi|arsi|ersi|irsi)$/.test(v)) {
-        document.getElementById("conjOut").innerHTML = '<div class="empty"><h3>To nie wygląda na bezokolicznik</h3><p>Bezokolicznik kończy się na -are, -ere, -ire (albo -rsi dla zwrotnych).</p></div>';
+        document.getElementById("conjOut").innerHTML = empty(t("conj.notInfinitive"), t("conj.notInfinitiveHint"));
         return;
       }
-      var t = Verbs.fullTable(v);
-      var m = t._meta;
+      // nie `t`: tak nazywa się helper tłumaczeń w tym pliku
+      var table = Verbs.fullTable(v);
+      var m = table._meta;
       var out = '<div class="meta-row">' +
         '<span class="chip chip--cefr">' + esc(m.gruppo) + "</span>" +
         '<span class="chip">ausiliare: ' + esc(m.ausiliare) + "</span>" +
         '<span class="chip chip--green">participio: ' + esc(m.participio) + "</span>" +
         '<span class="chip">gerundio: ' + esc(m.gerundio) + "</span>" +
-        (m.irregolare ? '<span class="chip chip--gold">nieregularny</span>' : '<span class="chip chip--green">regularny</span>') +
-        (m.riflessivo ? '<span class="chip chip--gold">zwrotny</span>' : "") + "</div>" +
+        '<span class="chip ' + (m.irregolare ? "chip--gold" : "chip--green") + '">' + t(m.irregolare ? "conj.irregular" : "conj.regular") + "</span>" +
+        (m.riflessivo ? '<span class="chip chip--gold">' + t("conj.reflexive") + "</span>" : "") + "</div>" +
         '<div class="grid-2">' + Verbs.TENSES.map(function (tn) {
-          var forms = t[tn.key];
+          var forms = table[tn.key];
           if (!forms || !forms.filter(Boolean).length) return "";
           // tabela zawsze w kontenerze przewijalnym: bez tego przy 320 px strona przewija się w poziomie
           return '<div class="card"><h3 style="font-size:1rem;margin-bottom:2px">' + esc(tn.labelIt) + "</h3>" +
-            '<p style="font-size:.8rem;color:var(--ink-soft);margin-bottom:10px">' + esc(tn.labelPl) + "</p>" +
+            '<p style="font-size:.8rem;color:var(--ink-soft);margin-bottom:10px">' + esc(t("tense." + tn.key)) + "</p>" +
             '<div class="table-wrap"><table class="gt"><tbody>' + forms.map(function (f, k) {
               if (!f) return "";
               return "<tr><td>" + esc(Verbs.PERSONS[k]) + '</td><td class="it">' + esc(f) +
-                ' <button type="button" class="say-btn" data-say="' + esc(f) + '" aria-label="Posłuchaj">🔊</button></td></tr>';
+                ' <button type="button" class="say-btn" data-say="' + esc(f) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button></td></tr>';
             }).join("") + "</tbody></table></div></div>";
         }).join("") + "</div>";
       var box = document.getElementById("conjOut");
@@ -673,23 +673,23 @@
     var now = Date.now();
     var learned = cards.filter(function (c) { return c.reps >= 3; }).length;
 
-    set(pageHead("Słownictwo", "Mój słownik", "Wszystkie słówka oznaczone gwiazdką. Sortowanie według terminu następnej powtórki.") +
+    set(pageHead(t("lex.kicker"), t("nav.lexicon"), t("lex.intro")) +
       '<div class="grid-2" style="margin-bottom:24px">' +
-      '<div class="stat-card"><b>' + cards.length + "</b><span>fiszek w talii</span></div>" +
-      '<div class="stat-card"><b>' + learned + "</b><span>utrwalonych (3+ powtórki)</span></div>" +
-      '<div class="stat-card"><b>' + Core.dueCount() + "</b><span>czeka na dziś</span></div></div>" +
+      '<div class="stat-card"><b>' + cards.length + "</b><span>" + esc(t("lex.inDeck")) + "</span></div>" +
+      '<div class="stat-card"><b>' + learned + "</b><span>" + esc(t("lex.learned")) + "</span></div>" +
+      '<div class="stat-card"><b>' + Core.dueCount() + "</b><span>" + esc(t("lex.dueToday")) + "</span></div></div>" +
       (cards.length
-        ? '<div class="field-row" style="margin-bottom:14px"><input type="text" class="field js-filter" placeholder="Szukaj po włosku lub po polsku" style="max-width:340px"></div>' +
+        ? '<div class="field-row" style="margin-bottom:14px"><input type="text" class="field js-filter" placeholder="' + esc(t("lex.searchPh")) + '" style="max-width:340px"></div>' +
           '<div class="stack" id="lexList">' + cards.map(function (c) {
             var days = Math.round((c.due - now) / 86400000);
-            var when = c.due <= now ? "dziś" : (days <= 1 ? "jutro" : "za " + days + " dni");
+            var when = c.due <= now ? t("lex.today") : (days <= 1 ? t("lex.tomorrow") : t("lex.inDays", { n: days }));
             return '<div class="list-row" data-t="' + esc((c.it + " " + c.pl).toLowerCase()) + '">' +
-              '<button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="Posłuchaj">🔊</button>' +
+              '<button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button>' +
               '<span class="list-row__main"><b>' + esc(c.it) + "</b><span>" + esc(c.pl) + "</span></span>" +
               '<span class="chip">' + esc(when) + "</span>" +
-              '<button type="button" class="btn btn--quiet btn--sm js-del" data-k="' + esc(c.key) + '">Usuń</button></div>';
+              '<button type="button" class="btn btn--quiet btn--sm js-del" data-k="' + esc(c.key) + '">' + t("lex.delete") + "</button></div>";
           }).join("") + "</div>"
-        : '<div class="empty"><h3>Talia jest pusta</h3><p>W każdej lekcji kliknij ⭐ przy słówku, żeby wpadło tutaj i do powtórek.</p></div>'));
+        : empty(t("lex.empty"), t("lex.emptyHint"))));
 
     var filter = el().querySelector(".js-filter");
     if (filter) filter.addEventListener("input", function () {
@@ -713,35 +713,37 @@
     var s = Core.state;
     var acc = (s.stats.correct + s.stats.wrong) ? Math.round(100 * s.stats.correct / (s.stats.correct + s.stats.wrong)) : 0;
 
+    // skróty dni bierzemy z Intl, nie z tablicy: inaczej każdy język wymaga własnej
+    var weekday = new Intl.DateTimeFormat(I18n.locale(), { weekday: "short" });
     var days = [];
     for (var d = 13; d >= 0; d--) {
       var dt = new Date(Date.now() - d * 86400000);
       var key = dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
-      days.push({ key: key, v: s.stats.days[key] || 0, label: ["nd", "pn", "wt", "śr", "cz", "pt", "sb"][dt.getDay()] });
+      days.push({ key: key, v: s.stats.days[key] || 0, label: weekday.format(dt) });
     }
     var max = Math.max.apply(null, days.map(function (x) { return x.v; }).concat([1]));
 
-    set(pageHead("Statystyki", "Twoje postępy", "Wszystko liczone lokalnie, w Twojej przeglądarce. Nic nie wychodzi na zewnątrz.") +
+    set(pageHead(t("prog.kicker"), t("prog.title"), t("prog.intro")) +
       '<div class="grid-2" style="margin-bottom:28px">' +
-      '<div class="stat-card"><b>' + s.streak.count + "</b><span>dni z rzędu (rekord: " + s.streak.best + ")</span></div>" +
-      '<div class="stat-card"><b>' + s.stats.lessonsDone + "</b><span>ukończonych lekcji</span></div>" +
-      '<div class="stat-card"><b>' + acc + "%</b><span>skuteczność odpowiedzi</span></div>" +
-      '<div class="stat-card"><b>' + s.xp + "</b><span>punktów</span></div></div>" +
+      '<div class="stat-card"><b>' + s.streak.count + "</b><span>" + esc(t("prog.streak", { best: s.streak.best })) + "</span></div>" +
+      '<div class="stat-card"><b>' + s.stats.lessonsDone + "</b><span>" + esc(t("prog.lessonsDone")) + "</span></div>" +
+      '<div class="stat-card"><b>' + acc + "%</b><span>" + esc(t("prog.accuracy")) + "</span></div>" +
+      '<div class="stat-card"><b>' + s.xp + "</b><span>" + esc(t("prog.points")) + "</span></div></div>" +
 
-      '<h2 style="font-size:1.2rem;margin-bottom:12px">Ostatnie dwa tygodnie</h2>' +
+      '<h2 style="font-size:1.2rem;margin-bottom:12px">' + t("prog.lastTwoWeeks") + "</h2>" +
       '<div class="card" style="margin-bottom:28px"><div style="display:flex;gap:6px;align-items:flex-end;height:130px">' +
       days.map(function (x) {
         var h = Math.max(4, Math.round(100 * x.v / max));
         return '<div style="flex:1;text-align:center">' +
-          '<div title="' + x.v + ' odpowiedzi" style="height:' + h + 'px;background:' + (x.v ? "var(--salvia-deep)" : "var(--line)") + ';border-radius:6px 6px 0 0"></div>' +
+          '<div title="' + esc(t("prog.answers", { n: x.v })) + '" style="height:' + h + 'px;background:' + (x.v ? "var(--salvia-deep)" : "var(--line)") + ';border-radius:6px 6px 0 0"></div>' +
           '<span style="font-size:.68rem;color:var(--ink-faint)">' + x.label + "</span></div>";
       }).join("") + "</div></div>" +
 
-      '<h2 style="font-size:1.2rem;margin-bottom:12px">Poziomy</h2><div class="stack">' +
+      '<h2 style="font-size:1.2rem;margin-bottom:12px">' + t("prog.levels") + '</h2><div class="stack">' +
       Core.registry.levels.map(function (lv) {
         var p = Core.levelProgress(lv);
         return '<div class="list-row"><span class="chip chip--cefr">' + esc(lv.code) + "</span>" +
-          '<span class="list-row__main"><b>' + esc(lv.name) + "</b><span>" + p.done + " z " + p.total + " lekcji</span></span>" +
+          '<span class="list-row__main"><b>' + esc(lv.name) + "</b><span>" + esc(t("prog.ofLessons", { done: p.done, total: p.total })) + "</span></span>" +
           '<span style="flex:0 0 120px"><span class="level-pill__bar"><i style="width:' + pct(p.pct) + '%"></i></span></span>' +
           '<span class="chip">' + pct(p.pct) + "%</span></div>";
       }).join("") + "</div>");
@@ -750,44 +752,51 @@
   /* ═══════════════════════════════════════════════════════════
      USTAWIENIA
      ═══════════════════════════════════════════════════════════ */
+  /** Wiersz tabeli „wsparcie przeglądarki". */
+  function supportRow(name, note, ok, chip) {
+    return '<div class="list-row"><span class="list-row__main"><b>' + esc(name) + "</b><span>" + esc(note) +
+      '</span></span><span class="chip ' + (ok ? "chip--green" : "") + '">' + esc(chip) + "</span></div>";
+  }
+
   Views.impostazioni = function () {
     var st = Core.state.settings;
     var voices = Audio2.italianVoices();
 
-    set(pageHead("Konfiguracja", "Ustawienia", "Głos, tempo mowy, kopia postępów.") +
-      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:14px">Mowa</h3>' +
+    set(pageHead(t("set.kicker"), t("nav.settings"), t("set.intro")) +
+      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:14px">' + t("set.speech") + "</h3>" +
       '<div class="stack">' +
-      '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">Źródło głosu</span>' +
+      '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' + t("set.voiceSource") + "</span>" +
       '<select class="field js-source" style="max-width:420px">' +
       '<option value="natural"' + (st.voiceSource !== "system" ? " selected" : "") + (Audio2.naturalAvailable ? "" : " disabled") + '>' +
-      'Nagrania lektorskie' + (Audio2.naturalAvailable ? " (" + Audio2.naturalCount + " zdań)" : " — niewygenerowane") + "</option>" +
-      '<option value="system"' + (st.voiceSource === "system" ? " selected" : "") + ">Głos systemowy (Web Speech API)</option>" +
+      t("set.recorded") + (Audio2.naturalAvailable ? " (" + t("set.sentences", { n: Audio2.naturalCount }) + ")" : " — " + t("set.notBuilt")) + "</option>" +
+      '<option value="system"' + (st.voiceSource === "system" ? " selected" : "") + ">" + t("set.systemVoice") + "</option>" +
       "</select>" +
       '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:6px">' +
-      (Audio2.naturalAvailable
-        ? "Zdania kursu czyta lektor neuronowy. Formy z odmiany czasowników, których nie ma w nagraniach, wracają automatycznie do głosu systemowego."
-        : "Nagrania nie zostały wygenerowane — uruchom <code>scripts/build_audio.py</code>.") +
+      t(Audio2.naturalAvailable ? "set.recordedHint" : "set.notBuiltHint") +
       "</span></label>" +
-      '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">Tempo mowy: <b class="js-rate-v">' + st.rate + "×</b></span>" +
+      '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' + t("set.rate") + ' <b class="js-rate-v">' + st.rate + "×</b></span>" +
       '<input type="range" class="js-rate" min="0.6" max="1.4" step="0.05" value="' + st.rate + '" style="width:100%;max-width:420px;accent-color:var(--rosa-deep)"></label>' +
-      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-autoplay"' + (st.autoplay ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>Automatycznie odtwarzaj nagrania w ćwiczeniach</span></label>' +
-      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-strict"' + (st.strictAccents ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>Wymagaj akcentów (perché, è, città…)</span></label>' +
-      '<button class="btn btn--ghost btn--sm js-test" style="align-self:flex-start">🔊 Test głosu</button>' +
+      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-autoplay"' + (st.autoplay ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("set.autoplay") + "</span></label>" +
+      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-strict"' + (st.strictAccents ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("set.strictAccents") + "</span></label>" +
+      '<button class="btn btn--ghost btn--sm js-test" style="align-self:flex-start">' + t("set.testVoice") + "</button>" +
       "</div></div>" +
 
-      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">Kopia postępów</h3>' +
-      '<p style="color:var(--ink-soft);font-size:.9rem">Postępy siedzą w pamięci tej przeglądarki. Wyeksportuj plik, jeśli zmieniasz komputer albo czyścisz dane.</p>' +
+      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.backup") + "</h3>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem">' + t("set.backupHint") + "</p>" +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
-      '<button class="btn btn--green btn--sm js-export">⬇ Eksportuj</button>' +
-      '<label class="btn btn--ghost btn--sm" style="cursor:pointer">⬆ Importuj<input type="file" accept="application/json" class="js-import" hidden></label>' +
-      '<button class="btn btn--ghost btn--sm js-reset" style="color:var(--ko);border-color:var(--ko)">Wyczyść wszystko</button></div></div>' +
+      '<button class="btn btn--green btn--sm js-export">' + t("set.export") + "</button>" +
+      '<label class="btn btn--ghost btn--sm" style="cursor:pointer">' + t("set.import") + '<input type="file" accept="application/json" class="js-import" hidden></label>' +
+      '<button class="btn btn--ghost btn--sm js-reset" style="color:var(--ko);border-color:var(--ko)">' + t("set.reset") + "</button></div></div>" +
 
-      '<div class="card"><h3 style="font-size:1.05rem;margin-bottom:6px">Wsparcie przeglądarki</h3>' +
+      '<div class="card"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.support") + "</h3>" +
       '<div class="stack" style="font-size:.92rem">' +
-      '<div class="list-row"><span class="list-row__main"><b>Nagrania lektorskie</b><span>Isabella (główny) i Giuseppe (rozmówca)</span></span><span class="chip ' + (Audio2.naturalAvailable ? "chip--green" : "") + '">' + (Audio2.naturalAvailable ? Audio2.naturalCount + " zdań" : "brak") + "</span></div>" +
-      '<div class="list-row"><span class="list-row__main"><b>Synteza systemowa (TTS)</b><span>tryb awaryjny i odmiana czasowników</span></span><span class="chip ' + (Audio2.ttsSupported ? "chip--green" : "") + '">' + (Audio2.ttsSupported ? "działa" : "brak") + "</span></div>" +
-      '<div class="list-row"><span class="list-row__main"><b>Rozpoznawanie mowy (STT)</b><span>ćwiczenia mówione</span></span><span class="chip ' + (Audio2.sttSupported ? "chip--green" : "") + '">' + (Audio2.sttSupported ? "działa" : "brak — tryb pisany") + "</span></div>" +
-      '<div class="list-row"><span class="list-row__main"><b>Głosy włoskie w systemie</b><span>używane tylko w trybie awaryjnym</span></span><span class="chip">' + voices.length + "</span></div>" +
+      supportRow(t("set.recorded"), t("set.voicesUsed"), Audio2.naturalAvailable,
+                 Audio2.naturalAvailable ? t("set.sentences", { n: Audio2.naturalCount }) : t("set.absent")) +
+      supportRow(t("set.tts"), t("set.ttsUse"), Audio2.ttsSupported,
+                 t(Audio2.ttsSupported ? "set.works" : "set.absent")) +
+      supportRow(t("set.stt"), t("set.sttUse"), Audio2.sttSupported,
+                 t(Audio2.sttSupported ? "set.works" : "set.absentTyping")) +
+      supportRow(t("set.italianVoices"), t("set.fallbackOnly"), false, String(voices.length)) +
       "</div></div>");
 
     var src = el().querySelector(".js-source");
@@ -808,7 +817,7 @@
       var blob = new Blob([Core.exportState()], { type: "application/json" });
       var a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "impara-italiano-postepy-" + Core.today() + ".json";
+      a.download = "impara-italiano-" + I18n.lang + "-" + Core.today() + ".json";
       a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
     });
@@ -817,14 +826,14 @@
       if (!f) return;
       var fr = new FileReader();
       fr.onload = function () {
-        try { Core.importState(fr.result); Core.toast("Postępy wczytane.", "ok"); App.refreshRail(); App.go("progressi"); }
-        catch (err) { Core.toast("Nie udało się wczytać pliku."); }
+        try { Core.importState(fr.result); Core.toast(t("set.imported"), "ok"); App.refreshRail(); App.go("progressi"); }
+        catch (err) { Core.toast(t("set.importFailed")); }
       };
       fr.readAsText(f);
     });
     el().querySelector(".js-reset").addEventListener("click", function () {
-      if (!global.confirm("Na pewno? Wszystkie postępy, fiszki i statystyki zostaną skasowane.")) return;
-      Core.resetState(); App.refreshRail(); Core.toast("Wyczyszczone."); App.go("percorso");
+      if (!global.confirm(t("set.resetConfirm"))) return;
+      Core.resetState(); App.refreshRail(); Core.toast(t("set.resetDone")); App.go("percorso");
     });
   };
 

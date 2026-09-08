@@ -59,7 +59,7 @@
     saveTimer = global.setTimeout(function () {
       saveTimer = null;
       try { global.localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-      catch (e) { Core.toast("Nie udało się zapisać postępów (pamięć przeglądarki)."); }
+      catch (e) { Core.toast(global.I18n.t("core.saveFailed")); }
     }, 180);
   }
 

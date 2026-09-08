@@ -409,21 +409,22 @@
     return out;
   }
 
+  /* Nazwa w języku ucznia nie stoi tutaj: to klucz tense.<key> w słowniku. */
   var TENSES = [
-    { key: "pres",        labelIt: "Indicativo presente",       labelPl: "Czas teraźniejszy",              kind: "simple" },
-    { key: "passPross",   labelIt: "Passato prossimo",          labelPl: "Czas przeszły złożony",          kind: "comp", aux: "pres" },
-    { key: "imperf",      labelIt: "Imperfetto",                labelPl: "Imperfekt",                      kind: "simple" },
-    { key: "trapPross",   labelIt: "Trapassato prossimo",       labelPl: "Czas zaprzeszły",                kind: "comp", aux: "imperf" },
-    { key: "futuro",      labelIt: "Futuro semplice",           labelPl: "Czas przyszły prosty",           kind: "simple" },
-    { key: "futAnt",      labelIt: "Futuro anteriore",          labelPl: "Czas przyszły uprzedni",         kind: "comp", aux: "futuro" },
-    { key: "remoto",      labelIt: "Passato remoto",            labelPl: "Czas przeszły odległy",          kind: "simple" },
-    { key: "condizionale",labelIt: "Condizionale presente",     labelPl: "Tryb warunkowy teraźniejszy",    kind: "simple" },
-    { key: "condPass",    labelIt: "Condizionale passato",      labelPl: "Tryb warunkowy przeszły",        kind: "comp", aux: "condizionale" },
-    { key: "cong",        labelIt: "Congiuntivo presente",      labelPl: "Tryb łączący teraźniejszy",      kind: "simple" },
-    { key: "congPass",    labelIt: "Congiuntivo passato",       labelPl: "Tryb łączący przeszły",          kind: "comp", aux: "cong" },
-    { key: "congImp",     labelIt: "Congiuntivo imperfetto",    labelPl: "Tryb łączący imperfekt",         kind: "simple" },
-    { key: "congTrap",    labelIt: "Congiuntivo trapassato",    labelPl: "Tryb łączący zaprzeszły",        kind: "comp", aux: "congImp" },
-    { key: "imper",       labelIt: "Imperativo",                labelPl: "Tryb rozkazujący",               kind: "simple" }
+    { key: "pres",        labelIt: "Indicativo presente", kind: "simple" },
+    { key: "passPross",   labelIt: "Passato prossimo", kind: "comp", aux: "pres" },
+    { key: "imperf",      labelIt: "Imperfetto", kind: "simple" },
+    { key: "trapPross",   labelIt: "Trapassato prossimo", kind: "comp", aux: "imperf" },
+    { key: "futuro",      labelIt: "Futuro semplice", kind: "simple" },
+    { key: "futAnt",      labelIt: "Futuro anteriore", kind: "comp", aux: "futuro" },
+    { key: "remoto",      labelIt: "Passato remoto", kind: "simple" },
+    { key: "condizionale",labelIt: "Condizionale presente", kind: "simple" },
+    { key: "condPass",    labelIt: "Condizionale passato", kind: "comp", aux: "condizionale" },
+    { key: "cong",        labelIt: "Congiuntivo presente", kind: "simple" },
+    { key: "congPass",    labelIt: "Congiuntivo passato", kind: "comp", aux: "cong" },
+    { key: "congImp",     labelIt: "Congiuntivo imperfetto", kind: "simple" },
+    { key: "congTrap",    labelIt: "Congiuntivo trapassato", kind: "comp", aux: "congImp" },
+    { key: "imper",       labelIt: "Imperativo", kind: "simple" }
   ];
 
   function conjugate(inf, tenseKey, gender) {
@@ -447,29 +448,19 @@
     return out;
   }
 
-  /* ---------------- Lista czasowników do przeglądania ---------------- */
+  /* ---------------- Lista czasowników do przeglądania ----------------
+     Same bezokoliczniki: znaczenie zależy od języka ucznia i siedzi
+     w słowniku interfejsu pod kluczem verb.<bezokolicznik>. */
   var COMMON = [
-    ["essere", "być"], ["avere", "mieć"], ["fare", "robić"], ["dire", "mówić / powiedzieć"],
-    ["andare", "iść / jechać"], ["venire", "przychodzić"], ["stare", "być / czuć się"],
-    ["dare", "dawać"], ["sapere", "wiedzieć / umieć"], ["potere", "móc"], ["volere", "chcieć"],
-    ["dovere", "musieć"], ["vedere", "widzieć"], ["parlare", "mówić / rozmawiać"],
-    ["mangiare", "jeść"], ["bere", "pić"], ["prendere", "brać"], ["mettere", "kłaść"],
-    ["leggere", "czytać"], ["scrivere", "pisać"], ["capire", "rozumieć"], ["finire", "kończyć"],
-    ["preferire", "woleć"], ["dormire", "spać"], ["partire", "wyjeżdżać"], ["aprire", "otwierać"],
-    ["chiudere", "zamykać"], ["comprare", "kupować"], ["pagare", "płacić"], ["cercare", "szukać"],
-    ["lavorare", "pracować"], ["studiare", "uczyć się"], ["giocare", "grać"], ["viaggiare", "podróżować"],
-    ["conoscere", "znać"], ["credere", "wierzyć"], ["vivere", "żyć"], ["nascere", "urodzić się"],
-    ["morire", "umierać"], ["piacere", "podobać się"], ["rimanere", "zostawać"], ["uscire", "wychodzić"],
-    ["salire", "wchodzić / wsiadać"], ["scendere", "schodzić / wysiadać"], ["tenere", "trzymać"],
-    ["scegliere", "wybierać"], ["perdere", "tracić / gubić"], ["vincere", "wygrywać"],
-    ["correre", "biegać"], ["chiedere", "pytać / prosić"], ["rispondere", "odpowiadać"],
-    ["decidere", "decydować"], ["spegnere", "gasić / wyłączać"], ["tradurre", "tłumaczyć"],
-    ["svegliarsi", "budzić się"], ["alzarsi", "wstawać"], ["lavarsi", "myć się"],
-    ["vestirsi", "ubierać się"], ["chiamarsi", "nazywać się"], ["divertirsi", "bawić się"],
-    ["annoiarsi", "nudzić się"], ["arrabbiarsi", "złościć się"], ["innamorarsi", "zakochać się"],
-    ["ricordarsi", "pamiętać"], ["dimenticare", "zapominać"], ["aiutare", "pomagać"],
-    ["arrivare", "przyjeżdżać"], ["tornare", "wracać"], ["entrare", "wchodzić"],
-    ["diventare", "stawać się"], ["riuscire", "udawać się"], ["succedere", "zdarzać się"]
+    "essere", "avere", "fare", "dire", "andare", "venire", "stare", "dare", "sapere", "potere",
+    "volere", "dovere", "vedere", "parlare", "mangiare", "bere", "prendere", "mettere", "leggere",
+    "scrivere", "capire", "finire", "preferire", "dormire", "partire", "aprire", "chiudere", "comprare",
+    "pagare", "cercare", "lavorare", "studiare", "giocare", "viaggiare", "conoscere", "credere",
+    "vivere", "nascere", "morire", "piacere", "rimanere", "uscire", "salire", "scendere", "tenere",
+    "scegliere", "perdere", "vincere", "correre", "chiedere", "rispondere", "decidere", "spegnere",
+    "tradurre", "svegliarsi", "alzarsi", "lavarsi", "vestirsi", "chiamarsi", "divertirsi", "annoiarsi",
+    "arrabbiarsi", "innamorarsi", "ricordarsi", "dimenticare", "aiutare", "arrivare", "tornare",
+    "entrare", "diventare", "riuscire", "succedere"
   ];
 
   global.Verbs = {

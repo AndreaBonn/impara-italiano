@@ -206,3 +206,50 @@ per non fermarsi: `plan.md` § 7.6, C1-C6. Sono `assets/js/errors.js` (soglia di
 potatura), `views-train.js` (composizione della sessione), `writing.js` (scala di
 valutazione), `placement.js` (punto di taglio), `data/core/readings.js` (numero di testi del
 primo taglio). La revisione guarda lì, non 50 giorni di diff.
+
+---
+
+## Stato di avanzamento
+
+Aggiornato durante l'implementazione. Una riga per task chiuso o deliberatamente saltato.
+
+### FT - chiusa
+
+| ID | Esito | Prova |
+|---|---|---|
+| TT01 | fatto | `package.json`, `@playwright/test` 1.63.0 unica dev dependency, `node_modules/` non tracciato |
+| TT02 | fatto | `tests/unit/_harness.mjs`, `node:vm` come in `validate.mjs`, più tempo e `localStorage` sostituibili |
+| TT03 | fatto | `scripts/serve.mjs` + `playwright.config.js`; provato servendo un file, riscrivendolo e rileggendo i byte nuovi |
+| TT04 | fatto | `tests/unit/state.test.mjs`; rete provata per mutazione su `merge`, `importState` e `save`, ognuna ripristinata identica |
+| TT05 | fatto | `tests/dom/exercises.spec.js`, 13 tipi; con un doppio `onDone` iniettato 13 test su 17 diventano rossi |
+| TT06 | fatto | baseline in `CLAUDE.md` § Kontrola jakości |
+
+**Nota su TT01.** `node --test <directory>` su Node 24 risolve il percorso come modulo e fallisce:
+lo script usa un glob esplicito. Il verify "esce 0 a suite vuota" non è soddisfacibile come scritto,
+perché `node --test` tratta l'assenza di file di test come errore; è stato soddisfatto dal primo
+test reale, in TT02.
+
+### F0 - chiusa
+
+| ID | Esito | Prova |
+|---|---|---|
+| T001 | fatto | sei contenitori additivi, `SCHEMA` resta 2 |
+| T002 | fatto | scala `MIGRATIONS`, accetta `schema <= SCHEMA`, rifiuta sopra |
+| T003 | **saltato di proposito** | vedi sotto |
+| T005 | fatto | rosso prima del fix su due vettori su tre, verde dopo; guardia in `merge()`, non in `importState()` |
+| T006 | fatto | `validateImport` per tipo di campo, tetto a 8 MB prima del parse |
+| T007 | fatto | potatura errors → drills, mai lezioni né wypracowania; banner `role="alert"` che resta |
+| T008 | fatto | 45 test unit, 22 DOM, tutti verdi |
+
+**T003 saltato.** Il gate `check-migration.mjs` doveva verificare quattro fatti: schema 2 accettato,
+99 rifiutato, chiave v1 migrata, prototipo non inquinato. Tutti e quattro sono già coperti da
+`tests/unit/state.test.mjs` e `tests/unit/state-security.test.mjs`, che girano in `npm test`, cioè
+nel gate che chiude ogni fase. Il task è stato scritto quando non era ancora deciso se ci sarebbe
+stato un runner (assunzione A8, sciolta dopo). Scrivere adesso uno script che riasserisce le stesse
+quattro cose crea una seconda fonte di verità che diverge alla prima modifica, in cambio di un
+secondo punto d'ingresso per la CI che `npm test` già offre.
+
+**Scostamento in F0 rispetto al piano:** tre chiavi UI nuove (`core.saveBlocked`,
+`core.storagePruned`, `core.noticeDismiss`) in cinque lingue, che la matrice § 5 non prevedeva per
+questa fase. Sono richieste dal verify di T007 (avviso non effimero) e sostituiscono
+`core.saveFailed`, rimasta orfana. Saldo netto: +2 chiavi per lingua.

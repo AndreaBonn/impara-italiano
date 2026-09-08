@@ -139,8 +139,8 @@
   /* ---------------- Start ---------------- */
   function boot() {
     Core.load();
-    I18n.set(Core.state.settings.lang);
-    LINGUAI.applyStrings(Core.state.settings.lang);
+    var lang = Core.state.settings.lang;
+    I18n.set(lang);
     applyTheme(Core.state.settings.theme || "light");
     renderLangPicker();
     App.refreshRail();
@@ -161,7 +161,16 @@
       if (e.key === "Escape") { Audio2.stop(); closeRail(); }
     });
 
-    // Wczytaj dane poziomu, do którego uczeń wraca, a potem renderuj.
+    // Teksty w języku ucznia dociągamy zawsze: index.html nie zna wybranego języka.
+    Core.setLanguage(lang, function (missing) {
+      if (missing.length) Core.toast(I18n.t("lang.partial", { n: missing.length }));
+      startRouting();
+    });
+    Core.touchDay();
+  }
+
+  /** Pierwsze renderowanie: poziom, do którego uczeń wraca. */
+  function startRouting() {
     var d = decode(global.location.hash);
     var wanted = d.params.level || guessLevel(d);
     if (wanted) {
@@ -171,7 +180,6 @@
     } else {
       onHashChange();
     }
-    Core.touchDay();
     App.refreshRail();
   }
 

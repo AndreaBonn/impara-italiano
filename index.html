@@ -75,10 +75,9 @@
 <script src="data/core/curriculum-index.js"></script>
 <script src="data/core/grammar-reference.js"></script>
 <script src="data/core/conversations.js"></script>
-<!-- teksty w języku ucznia; app.js scala je zaraz po starcie -->
-<script src="data/i18n/pl/curriculum-index.js"></script>
-<script src="data/i18n/pl/grammar-reference.js"></script>
-<script src="data/i18n/pl/conversations.js"></script>
+<!-- Nakładek NIE ma tutaj celowo: wpisany tu język byłby wyróżniony,
+     a uczeń z innym zapisanym w ustawieniach zobaczyłby puste pola.
+     app.js dociąga je na starcie, według Core.state.settings.lang. -->
 
 <!-- ══════════ START ══════════ -->
 <script src="assets/js/app.js"></script>

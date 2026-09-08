@@ -201,8 +201,8 @@
       '<p class="exq__sub">' + esc(ex.tr || "") + "</p>" +
       // rola „group" jest konieczna: div bez roli nie może nieść aria-label (WCAG 4.1.2)
       '<div class="tok-target js-target" role="group" aria-label="' + esc(t("ex.order.yourSentence")) + '"></div>' +
-      '<div class="tok-bank js-bank">' + tokens.map(function (t) {
-        return '<button type="button" class="tok">' + esc(t) + "</button>";
+      '<div class="tok-bank js-bank">' + tokens.map(function (tok) {
+        return '<button type="button" class="tok">' + esc(tok) + "</button>";
       }).join("") + "</div>" +
       '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">' + checkBtn() +
       '<button type="button" class="btn btn--ghost btn--sm js-clear">' + t("ex.order.clear") + "</button></div>" +
@@ -288,7 +288,7 @@
     var forms = Verbs.conjugate(ex.verb, ex.tense || "pres");
     // tryb rozkazujący nie ma formy „io" — pomijamy osoby bez formy
     var which = (ex.persons || [0, 1, 2, 3, 4, 5]).filter(function (p) { return !!forms[p]; });
-    var tenseLabel = (Verbs.TENSES.filter(function (t) { return t.key === (ex.tense || "pres"); })[0] || {}).labelIt;
+    var tenseLabel = (Verbs.TENSES.filter(function (x) { return x.key === (ex.tense || "pres"); })[0] || {}).labelIt;
 
     var rows = which.map(function (p) {
       return '<label for="c' + idx + "_" + p + '">' + esc(Verbs.PERSONS[p]) + "</label>" +
@@ -406,7 +406,7 @@
           heard.textContent = t("ex.stt.listening");
           mic.classList.add("is-rec");
           rec = Audio2.listen({
-            oninterim: function (t) { heard.innerHTML = "…" + esc(t); },
+            oninterim: function (partial) { heard.innerHTML = "…" + esc(partial); },
             onerror: function (err) {
               mic.classList.remove("is-rec");
               heard.textContent = t(err === "not-allowed" ? "ex.stt.denied" : "ex.stt.failed");

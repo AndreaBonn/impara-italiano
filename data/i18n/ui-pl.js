@@ -179,6 +179,47 @@ LINGUAI.addUI("pl", {
   "srs.howText": "Fiszki wracają w rosnących odstępach (1 → 3 → 7 → 16 dni…), zależnie od tego, jak pewnie odpowiadasz. To algorytm SM-2, ten sam co w Anki.",
   "srs.dueToday": "Do powtórzenia dziś: {n}",
   "srs.gradeHonestly": "Odpowiadaj na głos albo w myślach, potem oceń szczerze — od tego zależy, kiedy fiszka wróci.",
+  /* ---------------- Powtórki: zakładki ---------------- */
+  "review.title": "Wracamy do tego, co się chwieje",
+  "review.intro": "Dwie talie. Fiszki to słówka, które sam oznaczyłeś. Błędy zbierają się same, z zadań, w których się potknąłeś.",
+  "review.tabsLabel": "Rodzaj powtórki",
+  "review.tabCards": "Fiszki",
+  "review.tabErrors": "Błędy",
+
+  /* ---------------- Quaderno błędów ---------------- */
+  "err.emptyTitle": "Nie ma jeszcze czego powtarzać",
+  "err.emptyText": "Za każdym razem, gdy pomylisz się w ćwiczeniu, zadanie wraca tutaj — dokładnie to samo, nie podobne. Wystarczą dwie poprawne odpowiedzi z rzędu, żeby wyszło z obiegu.",
+  "err.byTag": "Na czym się potykasz",
+  "err.cardsIn": { one: "{n} zadanie", few: "{n} zadania", many: "{n} zadań", other: "{n} zadań" },
+  "err.dueNow": "na teraz: {n}",
+  "err.resting": "w spoczynku",
+  "err.dueTitle": {
+    one: "Jedno zadanie czeka na powtórkę",
+    few: "{n} zadania czekają na powtórkę",
+    many: "{n} zadań czeka na powtórkę",
+    other: "{n} zadań czeka na powtórkę"
+  },
+  "err.dueText": "To te same ćwiczenia, w których się pomyliłeś, z tej samej lekcji.",
+  "err.start": "Zacznij powtórkę",
+  "err.restingTitle": {
+    one: "Jedno zadanie w spoczynku",
+    few: "{n} zadania w spoczynku",
+    many: "{n} zadań w spoczynku",
+    other: "{n} zadań w spoczynku"
+  },
+  "err.restingText": "Wrócą, gdy przyjdzie ich termin. Odstępy rosną tak samo jak przy fiszkach.",
+  "err.progress": "Zadanie {i} z {n}",
+  "err.fromLesson": "z lekcji: {lesson}",
+  "err.next": "Dalej",
+  "err.done": "Powtórka błędów zakończona.",
+  "err.gone": {
+    one: "Jedno zadanie zmieniło się w kursie i jego karta została usunięta.",
+    few: "{n} zadania zmieniły się w kursie i ich karty zostały usunięte.",
+    many: "{n} zadań zmieniło się w kursie i ich karty zostały usunięte.",
+    other: "{n} zadań zmieniło się w kursie i ich karty zostały usunięte."
+  },
+  "err.again": "Jeszcze raz",
+
   "srs.sessionDone": "Sesja powtórek zakończona.",
   "srs.nextBatch": "Kolejna partia",
   "srs.cardOf": "Fiszka {i} z {n}",

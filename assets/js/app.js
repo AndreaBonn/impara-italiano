@@ -71,7 +71,8 @@
         stat(s.stats.lessonsDone, "stats.lessons") +
         stat(s.xp, "stats.points");
     }
-    var due = Core.dueCount();
+    // odznaka liczy obie talie: fiszki i quaderno błędów mieszkają w tej samej zakładce
+    var due = Core.dueCount() + Errors.dueCount();
     var badge = document.getElementById("dueBadge");
     if (badge) {
       badge.hidden = due === 0;

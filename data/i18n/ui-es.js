@@ -181,6 +181,44 @@ LINGUAI.addUI("es", {
   "srs.howText": "Las tarjetas vuelven a intervalos cada vez más largos (1 → 3 → 7 → 16 días…), según la seguridad con la que respondas. Es el algoritmo SM-2, el mismo que usa Anki.",
   "srs.dueToday": "Para hoy: {n}",
   "srs.gradeHonestly": "Responde en voz alta o mentalmente y luego puntúate con sinceridad: de eso depende cuándo vuelve la tarjeta.",
+  /* ---------------- Repaso: pestañas ---------------- */
+  "review.title": "Volvemos a lo que aún cojea",
+  "review.intro": "Dos barajas. Las tarjetas son palabras que marcaste tú. Los fallos se juntan solos, con los ejercicios en los que te equivocaste.",
+  "review.tabsLabel": "Tipo de repaso",
+  "review.tabCards": "Tarjetas",
+  "review.tabErrors": "Fallos",
+
+  /* ---------------- Cuaderno de fallos ---------------- */
+  "err.emptyTitle": "Todavía no hay nada que repetir",
+  "err.emptyText": "Cada vez que falles un ejercicio, ese ejercicio vuelve aquí: el mismo, no uno parecido. Con dos aciertos seguidos sale de circulación.",
+  "err.byTag": "Dónde tropiezas",
+  "err.cardsIn": { one: "{n} ejercicio", many: "{n} ejercicios", other: "{n} ejercicios" },
+  "err.dueNow": "para ahora: {n}",
+  "err.resting": "en reposo",
+  "err.dueTitle": {
+    one: "Un ejercicio te está esperando",
+    many: "{n} ejercicios te están esperando",
+    other: "{n} ejercicios te están esperando"
+  },
+  "err.dueText": "Son los ejercicios que fallaste, de la lección de la que salieron.",
+  "err.start": "Empezar el repaso",
+  "err.restingTitle": {
+    one: "Un ejercicio en reposo",
+    many: "{n} ejercicios en reposo",
+    other: "{n} ejercicios en reposo"
+  },
+  "err.restingText": "Vuelven cuando les toque. Los intervalos crecen igual que con las tarjetas.",
+  "err.progress": "Ejercicio {i} de {n}",
+  "err.fromLesson": "de: {lesson}",
+  "err.next": "Siguiente",
+  "err.done": "Repaso de fallos terminado.",
+  "err.gone": {
+    one: "Un ejercicio cambió en el curso y su tarjeta se ha eliminado.",
+    many: "{n} ejercicios cambiaron en el curso y sus tarjetas se han eliminado.",
+    other: "{n} ejercicios cambiaron en el curso y sus tarjetas se han eliminado."
+  },
+  "err.again": "Otra vez",
+
   "srs.sessionDone": "Sesión de repaso terminada.",
   "srs.nextBatch": "Siguiente tanda",
   "srs.cardOf": "Tarjeta {i} de {n}",

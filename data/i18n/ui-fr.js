@@ -181,6 +181,44 @@ LINGUAI.addUI("fr", {
   "srs.howText": "Les cartes reviennent à des intervalles de plus en plus longs (1 → 3 → 7 → 16 jours…), selon l'assurance de ta réponse. C'est l'algorithme SM-2, celui d'Anki.",
   "srs.dueToday": "Pour aujourd'hui : {n}",
   "srs.gradeHonestly": "Réponds à voix haute ou dans ta tête, puis note-toi honnêtement : c'est ce qui décide du retour de la carte.",
+  /* ---------------- Révisions : onglets ---------------- */
+  "review.title": "On revient sur ce qui vacille encore",
+  "review.intro": "Deux paquets. Les cartes sont les mots que tu as marqués toi-même. Les erreurs s'accumulent toutes seules, à partir des exercices ratés.",
+  "review.tabsLabel": "Type de révision",
+  "review.tabCards": "Cartes",
+  "review.tabErrors": "Erreurs",
+
+  /* ---------------- Carnet d'erreurs ---------------- */
+  "err.emptyTitle": "Rien à refaire pour l'instant",
+  "err.emptyText": "Chaque fois que tu rates un exercice, cet exercice revient ici : le même, pas un exercice voisin. Deux bonnes réponses d'affilée et il sort du circuit.",
+  "err.byTag": "Où tu butes",
+  "err.cardsIn": { one: "{n} exercice", many: "{n} exercices", other: "{n} exercices" },
+  "err.dueNow": "à faire : {n}",
+  "err.resting": "au repos",
+  "err.dueTitle": {
+    one: "Un exercice t'attend",
+    many: "{n} exercices t'attendent",
+    other: "{n} exercices t'attendent"
+  },
+  "err.dueText": "Ce sont les exercices que tu as ratés, dans la leçon d'où ils viennent.",
+  "err.start": "Commencer la révision",
+  "err.restingTitle": {
+    one: "Un exercice au repos",
+    many: "{n} exercices au repos",
+    other: "{n} exercices au repos"
+  },
+  "err.restingText": "Ils reviennent à leur échéance. Les intervalles grandissent comme pour les cartes.",
+  "err.progress": "Exercice {i} sur {n}",
+  "err.fromLesson": "de : {lesson}",
+  "err.next": "Suivant",
+  "err.done": "Révision des erreurs terminée.",
+  "err.gone": {
+    one: "Un exercice a changé dans le cours, sa carte a été supprimée.",
+    many: "{n} exercices ont changé dans le cours, leurs cartes ont été supprimées.",
+    other: "{n} exercices ont changé dans le cours, leurs cartes ont été supprimées."
+  },
+  "err.again": "Encore une fois",
+
   "srs.sessionDone": "Session de révision terminée.",
   "srs.nextBatch": "Série suivante",
   "srs.cardOf": "Carte {i} sur {n}",

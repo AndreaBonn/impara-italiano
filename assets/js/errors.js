@@ -218,16 +218,21 @@
     return out;
   }
 
-  /** Ocena karty w powtórce. Zwraca {card, graduated}. */
-  function grade(key, ok) {
+  /**
+   * Usuwa kartę, której ćwiczenia już nie ma.
+   *
+   * Powtórka pokazuje PRAWDZIWE ćwiczenie z lekcji, a nie osobną fiszkę
+   * z własną oceną — dzięki temu aktualizacja idzie tą samą drogą, co
+   * odpowiedź w toku lekcji, i nie ma drugiego miejsca do utrzymania.
+   * Kiedy jednak treść ćwiczenia zmieniła się w kursie, locate() nie
+   * znajduje niczego i karta nie ma czego pokazać: wtedy odchodzi tędy.
+   */
+  function drop(key) {
     var deck = bag();
-    var card = deck[key];
-    if (!card) return null;
-    global.Core.schedule(card, quality(ok));
-    var graduated = ok && card.reps >= GRADUATE_REPS;
-    if (graduated) delete deck[key];
+    if (!deck[key]) return false;
+    delete deck[key];
     global.Core.save();
-    return { card: withKey(key, card), graduated: graduated };
+    return true;
   }
 
   function withKey(key, card) {
@@ -314,7 +319,7 @@
   Errors.keyOf = keyOf;
   Errors.locate = locate;
   Errors.record = record;
-  Errors.grade = grade;
+  Errors.drop = drop;
   Errors.due = due;
   Errors.dueCount = dueCount;
   Errors.byTag = byTag;

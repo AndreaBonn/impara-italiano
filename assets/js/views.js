@@ -368,18 +368,54 @@
   /* ═══════════════════════════════════════════════════════════
      POWTÓRKI (SRS)
      ═══════════════════════════════════════════════════════════ */
-  Views.ripasso = function () {
+  /**
+   * Powtórki mają dwie zakładki: fiszki ze słownictwa i quaderno błędów.
+   * Zakładka siedzi w adresie (`#/ripasso?tab=errori`), więc da się do
+   * niej wrócić i podlinkować ją; stan w zmiennej modułu ginąłby przy
+   * każdym przejściu na inną trasę.
+   */
+  Views.ripasso = function (params) {
+    var tab = (params && params.tab) === "errori" ? "errori" : "carte";
+    var nCards = Core.dueCards().length;
+    var nErr = Errors.dueCount();
+
+    function zakladka(id, label, n) {
+      return '<button type="button" class="tab js-tab" data-tab="' + id + '"' +
+        (tab === id ? ' aria-current="true"' : "") + ">" + esc(label) +
+        (n ? ' <span class="tab__n">' + n + "</span>" : "") + "</button>";
+    }
+
+    set(pageHead(t("nav.review"), t("review.title"), t("review.intro")) +
+      '<div class="tabs" role="group" aria-label="' + esc(t("review.tabsLabel")) + '">' +
+      zakladka("carte", t("review.tabCards"), nCards) +
+      zakladka("errori", t("review.tabErrors"), nErr) +
+      '</div><div id="ripassoBody"></div>');
+
+    el().querySelectorAll(".js-tab").forEach(function (b) {
+      b.addEventListener("click", function () {
+        App.go("ripasso", { tab: b.getAttribute("data-tab") });
+      });
+    });
+
+    var body = document.getElementById("ripassoBody");
+    if (tab === "errori") Train.errorPanel(body);
+    else fiszki(body);
+  };
+
+  /** Zakładka fiszek: to, czym Powtórki były do tej pory. */
+  function fiszki(host) {
     var due = Core.dueCards(30);
     if (!due.length) {
       var total = Object.keys(Core.state.srs).length;
-      set(pageHead(t("nav.review"), t("srs.nothingDue"),
-        total ? t("srs.allResting", { n: total }) : t("srs.deckEmpty")) +
-        empty(t("srs.howTitle"), t("srs.howText")));
+      host.innerHTML = '<p class="exq__sub" style="margin-bottom:14px">' +
+        esc(total ? t("srs.allResting", { n: total }) : t("srs.deckEmpty")) + "</p>" +
+        empty(t("srs.howTitle"), t("srs.howText"));
       return;
     }
 
-    set(pageHead(t("nav.review"), t("srs.dueToday", { n: due.length }), t("srs.gradeHonestly")) +
-      '<div id="srsBox"></div>');
+    host.innerHTML = '<p class="exq__sub" style="margin-bottom:14px">' +
+      esc(t("srs.dueToday", { n: due.length })) + " · " + esc(t("srs.gradeHonestly")) + "</p>" +
+      '<div id="srsBox"></div>';
 
     var i = 0, right = 0;
     function card() {
@@ -436,7 +472,7 @@
       });
     }
     card();
-  };
+  }
 
   /* ═══════════════════════════════════════════════════════════
      ROZMOWY NA GŁOS

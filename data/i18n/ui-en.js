@@ -174,6 +174,41 @@ LINGUAI.addUI("en", {
   "srs.howText": "Cards come back at growing intervals (1 → 3 → 7 → 16 days…), depending on how confidently you answer. It is the SM-2 algorithm, the same one Anki uses.",
   "srs.dueToday": "Due today: {n}",
   "srs.gradeHonestly": "Answer out loud or in your head, then grade yourself honestly — that decides when the card comes back.",
+  /* ---------------- Review: tabs ---------------- */
+  "review.title": "Back to whatever is still wobbling",
+  "review.intro": "Two decks. Cards are words you starred yourself. Mistakes collect on their own, from the exercises you got wrong.",
+  "review.tabsLabel": "Kind of review",
+  "review.tabCards": "Cards",
+  "review.tabErrors": "Mistakes",
+
+  /* ---------------- Mistake notebook ---------------- */
+  "err.emptyTitle": "Nothing to redo yet",
+  "err.emptyText": "Every time you get an exercise wrong, that exercise comes back here — the same one, not a similar one. Two correct answers in a row and it retires.",
+  "err.byTag": "Where you keep slipping",
+  "err.cardsIn": { one: "{n} exercise", other: "{n} exercises" },
+  "err.dueNow": "due now: {n}",
+  "err.resting": "resting",
+  "err.dueTitle": {
+    one: "One exercise is waiting for you",
+    other: "{n} exercises are waiting for you"
+  },
+  "err.dueText": "These are the exercises you got wrong, from the lesson they came from.",
+  "err.start": "Start reviewing",
+  "err.restingTitle": {
+    one: "One exercise is resting",
+    other: "{n} exercises are resting"
+  },
+  "err.restingText": "They come back when they are due. The intervals grow the same way the flashcards do.",
+  "err.progress": "Exercise {i} of {n}",
+  "err.fromLesson": "from: {lesson}",
+  "err.next": "Next",
+  "err.done": "Mistake review finished.",
+  "err.gone": {
+    one: "One exercise changed in the course, so its card was removed.",
+    other: "{n} exercises changed in the course, so their cards were removed."
+  },
+  "err.again": "Go again",
+
   "srs.sessionDone": "Review session finished.",
   "srs.nextBatch": "Next batch",
   "srs.cardOf": "Card {i} of {n}",

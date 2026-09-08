@@ -179,6 +179,41 @@ LINGUAI.addUI("de", {
   "srs.howText": "Karten kommen in wachsenden Abständen zurück (1 → 3 → 7 → 16 Tage…), je nachdem, wie sicher du antwortest. Das ist der SM-2-Algorithmus, derselbe wie bei Anki.",
   "srs.dueToday": "Heute fällig: {n}",
   "srs.gradeHonestly": "Antworte laut oder im Kopf und bewerte dich dann ehrlich — davon hängt ab, wann die Karte wiederkommt.",
+  /* ---------------- Wiederholen: Reiter ---------------- */
+  "review.title": "Zurück zu dem, was noch wackelt",
+  "review.intro": "Zwei Stapel. Karten sind Wörter, die du selbst markiert hast. Fehler sammeln sich von allein, aus den Übungen, die schiefgegangen sind.",
+  "review.tabsLabel": "Art der Wiederholung",
+  "review.tabCards": "Karten",
+  "review.tabErrors": "Fehler",
+
+  /* ---------------- Fehlerheft ---------------- */
+  "err.emptyTitle": "Noch nichts zu wiederholen",
+  "err.emptyText": "Jedes Mal, wenn du eine Übung falsch machst, kommt genau diese Übung hierher zurück, nicht eine ähnliche. Zwei richtige Antworten hintereinander, und sie ist erledigt.",
+  "err.byTag": "Wo du stolperst",
+  "err.cardsIn": { one: "{n} Übung", other: "{n} Übungen" },
+  "err.dueNow": "jetzt fällig: {n}",
+  "err.resting": "ruht",
+  "err.dueTitle": {
+    one: "Eine Übung wartet auf dich",
+    other: "{n} Übungen warten auf dich"
+  },
+  "err.dueText": "Das sind die Übungen, die du falsch hattest, aus der Lektion, aus der sie stammen.",
+  "err.start": "Wiederholung starten",
+  "err.restingTitle": {
+    one: "Eine Übung ruht",
+    other: "{n} Übungen ruhen"
+  },
+  "err.restingText": "Sie kommen zurück, wenn sie dran sind. Die Abstände wachsen wie bei den Karten.",
+  "err.progress": "Übung {i} von {n}",
+  "err.fromLesson": "aus: {lesson}",
+  "err.next": "Weiter",
+  "err.done": "Fehlerwiederholung beendet.",
+  "err.gone": {
+    one: "Eine Übung hat sich im Kurs geändert, ihre Karte wurde entfernt.",
+    other: "{n} Übungen haben sich im Kurs geändert, ihre Karten wurden entfernt."
+  },
+  "err.again": "Noch einmal",
+
   "srs.sessionDone": "Wiederholung beendet.",
   "srs.nextBatch": "Nächste Runde",
   "srs.cardOf": "Karte {i} von {n}",

@@ -87,11 +87,15 @@ describe("zapis błędu", () => {
   });
 });
 
+/* Powtórka pokazuje prawdziwe ćwiczenie z lekcji, więc jej wynik wchodzi
+   tą samą drogą, co odpowiedź w toku lekcji: przez record(). Nie ma
+   osobnej oceny do utrzymania i nie ma dwóch miejsc, które mogą się
+   rozjechać. Stąd wszystkie testy progu idą przez record(). */
 describe("wychodzenie z obiegu (C1: dwie poprawne z rzędu)", () => {
   test("pierwsza poprawna zostawia kartę, z odstępem jednego dnia", () => {
     const box = silnik();
     const klucz = box.sandbox.Errors.record(LEKCJA, 0, false).key;
-    const c = box.sandbox.Errors.grade(klucz, true).card;
+    const c = box.sandbox.Errors.record(LEKCJA, 0, true);
     assert.equal(c.reps, 1);
     assert.equal(c.interval, 1);
     assert.ok(box.Core.state.errors[klucz], "karta nadal w obiegu");
@@ -100,33 +104,28 @@ describe("wychodzenie z obiegu (C1: dwie poprawne z rzędu)", () => {
   test("druga poprawna z rzędu wyprowadza kartę z quaderno", () => {
     const box = silnik();
     const klucz = box.sandbox.Errors.record(LEKCJA, 0, false).key;
-    box.sandbox.Errors.grade(klucz, true);
-    const wynik = box.sandbox.Errors.grade(klucz, true);
-    assert.equal(wynik.graduated, true);
+    box.sandbox.Errors.record(LEKCJA, 0, true);
+    box.sandbox.Errors.record(LEKCJA, 0, true);
     assert.equal(box.Core.state.errors[klucz], undefined, "karta opuściła quaderno");
   });
 
   test("pomyłka w środku zeruje serię, karta zostaje", () => {
     const box = silnik();
     const klucz = box.sandbox.Errors.record(LEKCJA, 0, false).key;
-    box.sandbox.Errors.grade(klucz, true);
-    box.sandbox.Errors.grade(klucz, false);
+    box.sandbox.Errors.record(LEKCJA, 0, true);
+    box.sandbox.Errors.record(LEKCJA, 0, false);
     const c = box.Core.state.errors[klucz];
     assert.equal(c.reps, 0);
     assert.equal(c.lapses, 2);
     assert.ok(box.Core.state.errors[klucz]);
   });
 
-  test("poprawna odpowiedź w toku lekcji też posuwa kartę do przodu", () => {
+  test("karta bez ćwiczenia odchodzi przez drop", () => {
     const box = silnik();
     const klucz = box.sandbox.Errors.record(LEKCJA, 0, false).key;
-    box.sandbox.Errors.record(LEKCJA, 0, true);
-    assert.equal(box.Core.state.errors[klucz].reps, 1);
-  });
-
-  test("ocena nieznanego klucza nie wywraca się", () => {
-    const box = silnik();
-    assert.equal(box.sandbox.Errors.grade("nie-ma-takiej", true), null);
+    assert.equal(box.sandbox.Errors.drop(klucz), true);
+    assert.equal(box.Core.state.errors[klucz], undefined);
+    assert.equal(box.sandbox.Errors.drop("nie-ma-takiej"), false);
   });
 });
 

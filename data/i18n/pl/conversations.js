@@ -2,7 +2,7 @@
    Teksty w języku ucznia (pl) do data/core/conversations.js
    Klucze odsyłają do id z warstwy neutralnej; tablice łączą się
    po indeksie, więc ich długość musi się zgadzać z core.
-   Sprawdza to gate parzystości w scripts/validate.mjs.
+   Sprawdza to gate parzystości w scripts/parity.mjs.
    ============================================================ */
 LINGUAI.addStrings("pl", {
   "conv:bar-mattina": {

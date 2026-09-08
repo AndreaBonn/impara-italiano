@@ -2,7 +2,7 @@
    Teksty w języku ucznia (pl) do data/core/a1-02.js
    Klucze odsyłają do id z warstwy neutralnej; tablice łączą się
    po indeksie, więc ich długość musi się zgadzać z core.
-   Sprawdza to gate parzystości w scripts/validate.mjs.
+   Sprawdza to gate parzystości w scripts/parity.mjs.
    ============================================================ */
 LINGUAI.addStrings("pl", {
   "unit:a1-u04": { title: "Moda i rozmiary", grammarNote: "przymiotniki · kolory · questo/quello" },

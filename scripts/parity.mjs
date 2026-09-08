@@ -21,6 +21,11 @@ import vm from "node:vm";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const I18N = join(ROOT, "data", "i18n");
 const REFERENCE = "pl";
+/* Ile różnic wypisać. Liczy się zawsze wszystkie; to jest tylko próg
+   czytelności listy. PARITY_MAX=0 wypisuje wszystko. */
+const MAX_SHOWN = process.env.PARITY_MAX === undefined
+  ? 40
+  : (Number(process.env.PARITY_MAX) || Infinity);
 
 /** Mapa kod → locale czytana z silnika, żeby nie mieć drugiej kopii. */
 function engineLocales() {
@@ -91,6 +96,25 @@ function checkUI(lang, locale, ref, out) {
 
 /* ---------------- Kształt: klucze i długości, bez treści ---------------- */
 
+/**
+ * Pola kopiowane w całości, nie łączone po indeksie.
+ * `applyStrings` podmienia `theory` jednym przypisaniem (`copy` w i18n.js),
+ * więc krótsza albo inaczej zbudowana tablica nie tworzy cichej dziury:
+ * lekcja po prostu pokazuje bloki z nakładki. A ponieważ CLAUDE.md wymaga,
+ * żeby blok `{contrast}` pisać od nowa dla każdego języka, liczba i rodzaj
+ * bloków MUSZĄ się różnić — Niemcowi trzeba powiedzieć co innego niż Polakowi
+ * i w innym miejscu. Porównywanie ich kształtu zgłaszałoby jako błąd to,
+ * czego kurs wymaga. Sprawdzana zostaje obecność samego klucza.
+ */
+const FREE_FIELDS = ["theory"];
+
+function withoutFreeFields(entry) {
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) return entry;
+  const out = {};
+  Object.keys(entry).forEach(k => { out[k] = FREE_FIELDS.includes(k) ? "<wolne>" : entry[k]; });
+  return out;
+}
+
 function shape(v) {
   if (Array.isArray(v)) return { n: v.length, items: v.map(shape) };
   if (v && typeof v === "object") {
@@ -101,9 +125,15 @@ function shape(v) {
   return typeof v;
 }
 
-/** Zbiera różnice kształtu, ze ścieżką do miejsca. */
+/**
+ * Zbiera różnice kształtu, ze ścieżką do miejsca.
+ * Zbiera WSZYSTKIE: przycięcie należy do wypisywania (na końcu pliku),
+ * nie do zbierania. Wcześniej ta funkcja przerywała pracę po czterdziestu
+ * problemach, więc dopóki brakowało czterdziestu wpisów, różnice kształtu
+ * w istniejących wpisach nie były w ogóle sprawdzane — a licznik pokazywał
+ * równo tyle, ile brakujących wpisów, i wyglądał na czysty.
+ */
 function diff(a, b, path, out) {
-  if (out.length >= 40) return out;
   const ta = a && typeof a === "object" && "n" in a && "items" in a;
   const tb = b && typeof b === "object" && "n" in b && "items" in b;
 
@@ -147,7 +177,8 @@ for (const lang of langs) {
 
   refKeys.filter(k => !(k in bag)).forEach(k => problems.push(`${k}: brak całego wpisu`));
   Object.keys(bag).filter(k => !(k in ref)).forEach(k => problems.push(`${k}: wpis nadmiarowy`));
-  refKeys.filter(k => k in bag).forEach(k => diff(shape(ref[k]), shape(bag[k]), k, problems));
+  refKeys.filter(k => k in bag)
+    .forEach(k => diff(shape(withoutFreeFields(ref[k])), shape(withoutFreeFields(bag[k])), k, problems));
 
   if (!LOCALES[lang]) problems.push(`ui-${lang}.js: brak wpisu w LOCALE w assets/js/i18n.js`);
   else checkUI(lang, LOCALES[lang], refUI, problems);
@@ -156,8 +187,8 @@ for (const lang of langs) {
   console.log(`\n=== ${lang} ===  ${covered}/${refKeys.length} wpisów, ${problems.length} różnic`);
   if (problems.length) {
     bad++;
-    problems.slice(0, 40).forEach(p => console.log("  x " + p));
-    if (problems.length > 40) console.log(`  … i ${problems.length - 40} więcej`);
+    problems.slice(0, MAX_SHOWN).forEach(p => console.log("  x " + p));
+    if (problems.length > MAX_SHOWN) console.log(`  … i ${problems.length - MAX_SHOWN} więcej`);
   } else {
     console.log("  OK — kształt zgodny z " + REFERENCE);
   }

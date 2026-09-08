@@ -253,3 +253,49 @@ secondo punto d'ingresso per la CI che `npm test` già offre.
 `core.storagePruned`, `core.noticeDismiss`) in cinque lingue, che la matrice § 5 non prevedeva per
 questa fase. Sono richieste dal verify di T007 (avviso non effimero) e sostituiscono
 `core.saveFailed`, rimasta orfana. Saldo netto: +2 chiavi per lingua.
+
+### F1 - chiusa
+
+| ID | Esito | Prova |
+|---|---|---|
+| T010 | fatto | convenzione `tags`/`tag` in `CLAUDE.md` § Podział pola na warstwy |
+| T011 | fatto | gate in `validate.mjs`; provato con tag inventato e con tag mancante |
+| T012-T015 | fatto | 150 lezioni taggate, 42 id di `GRAMMAR_REF`, zero polacco fuori dagli header |
+| T016 | fatto | chiave `lessonId#firma#gemello`; 1514 chiavi, 0 collisioni, invariata passando a tedesco |
+| T017 | fatto | gate più forte del previsto: ogni chiave *ritorna* al proprio esercizio, non solo "non collide" |
+| T018 | fatto | store con `kind`, soglia C1 = 2 corrette di fila; SM-2 estratto in `Core.schedule` |
+| T019 | fatto | wrap di `Ex.build`; togliendolo 2 test DOM diventano rossi; nessun doppio conteggio |
+| T020 | fatto | scheda dentro `ripasso`, stato nell'URL, ri-render dell'esercizio originale |
+| T021 | fatto | 22 chiavi × 5 lingue; `parity.mjs` ha rifiutato es/fr finché mancava la categoria `many` |
+| T022 | fatto | vedi sotto |
+| T023 | fatto | 72 test unit, 39 DOM |
+
+**Scoperta che ha cambiato T016 rispetto al piano.** La decisione D2 (chiave = solo hash del
+contenuto core) non regge sui dati reali: al livello neutro un `mcq` è tutto `{ t: "mcq", a: 1 }`,
+perché domanda e opzioni stanno nella nakładka, e in `a1-u01-l1` ce ne sono **due identici**. La
+chiave è quindi `lessonId#firma#occorrenza`. Effetto voluto: se la treść di un esercizio cambia,
+la carta smette di risolversi invece di puntare in silenzio al vicino.
+
+**T020, deviazione dal piano.** La ripetizione ri-renderizza l'esercizio vero invece di mostrare
+una carta autovalutata. Conseguenza: `Errors.grade`, previsto dal piano, resta senza chiamanti ed
+è stato sostituito da `Errors.drop`, che copre l'unico caso che il pannello non sa mostrare (carta
+il cui esercizio non esiste più). Un solo punto di aggiornamento dello scheduling invece di due.
+
+**T022, QA di fase.**
+
+| Controllo | Esito |
+|---|---|
+| `npm run test:all` | 72 unit + 39 DOM, verdi |
+| `validate.mjs` × 5 lingue | OK |
+| `parity.mjs` | OK, 241/241 in tutte e 4 le nakładki |
+| axe-core, chiaro e scuro | 0 violazioni |
+| overflow orizzontale 320/375/1280 | nessuno |
+| apertura da `file://` | funziona, 0 errori in console |
+| render osservato a 375 e 1280, chiaro e scuro | fatto |
+| `a11y-gate verify_states` | **inconcludente, difetto dello strumento** |
+
+`verify_states` riporta 39 violazioni e sono tutte artefatti: legge `oklch(0.31 0.035 350)` come
+tripla RGB e stampa canali impossibili (`350`, `0.985`). È la trappola già annotata in
+`docs/REPORT_ATTIVITA.md`. Sostituito da `tests/dom/contrast.spec.js`, che fa convertire il colore
+al browser via canvas: quello ha trovato due difetti veri (contatore a 2.58:1, bordo della scheda
+inattiva a 1.58:1), entrambi corretti.

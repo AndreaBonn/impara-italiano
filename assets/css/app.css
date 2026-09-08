@@ -641,6 +641,21 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
   animation:toastIn .25s ease;max-width:320px;
 }
 .toast--ok{border-color:var(--ok);}
+/* Komunikat, który zostaje: utrata danych nie ma znikać po trzech sekundach.
+   Szerokość liczona od okna, nie stała: przy 320 px stała 360 px kładła
+   ramkę na samej krawędzi ekranu, bez marginesu. */
+.toast--stuck{
+  border-color:var(--ko);position:relative;font-weight:500;
+  max-width:min(360px, calc(100vw - 40px));padding-right:54px;
+}
+/* 44 px, nie mniej: to jest cel dotykowy na telefonie, a nie ikonka do trafiania paznokciem. */
+.toast__x{
+  position:absolute;top:50%;right:4px;transform:translateY(-50%);
+  width:44px;height:44px;line-height:1;
+  border:0;background:none;color:var(--ink-soft);font-size:1.25rem;cursor:pointer;border-radius:var(--r-s);
+}
+.toast__x:hover{background:var(--paper-3);color:var(--ink);}
+.toast__x:focus-visible{outline:3px solid var(--rosa-deep);outline-offset:2px;}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 
 /* ══════════════════ RESPONSIVE ══════════════════ */

@@ -307,7 +307,9 @@ LINGUAI.addUI("es", {
   "set.importFailed": "No se ha podido leer el archivo.",
   "set.resetConfirm": "¿Seguro? Se borrarán todo el progreso, las tarjetas y las estadísticas.",
   "set.resetDone": "Borrado.",
-  "core.saveFailed": "No se ha podido guardar tu progreso (almacenamiento del navegador).",
+  "core.saveBlocked": "El almacenamiento del navegador está lleno: tu progreso ya no se guarda. Expórtalo en Ajustes y libera espacio.",
+  "core.storagePruned": "Se acabó el espacio: se han eliminado las tarjetas de repaso más antiguas para conservar tu progreso en las lecciones.",
+  "core.noticeDismiss": "Cerrar aviso",
 
   /* ---------------- Significado de los verbos en el conjugador ---------------- */
   "verb.essere": "ser / estar",

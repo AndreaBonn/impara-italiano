@@ -300,7 +300,9 @@ LINGUAI.addUI("en", {
   "set.importFailed": "Could not read the file.",
   "set.resetConfirm": "Are you sure? All progress, cards and statistics will be erased.",
   "set.resetDone": "Erased.",
-  "core.saveFailed": "Could not save your progress (browser storage).",
+  "core.saveBlocked": "Browser storage is full, so your progress is no longer being saved. Export it in Settings and free up some space.",
+  "core.storagePruned": "Storage ran out, so the oldest review cards were dropped to keep your lesson progress.",
+  "core.noticeDismiss": "Dismiss message",
 
   /* ---------------- Verb meanings in the conjugator datalist ---------------- */
   "verb.essere": "to be",

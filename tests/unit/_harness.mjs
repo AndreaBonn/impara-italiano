@@ -78,14 +78,29 @@ function makeClock() {
   };
 }
 
-/** Minimalny DOM: tyle, ile dotyka core.js (toast) i nic więcej. */
-function makeDocument(toasts) {
+/**
+ * Minimalny DOM: tyle, ile dotyka core.js (toast i komunikat trwały).
+ *
+ * `toasts` zbiera same napisy — do prostych sprawdzeń. `notices` trzyma
+ * elementy z klasą i atrybutami, bo przy pełnej pamięci różnica między
+ * komunikatem znikającym po trzech sekundach a takim, który zostaje,
+ * JEST tym, co się testuje.
+ */
+function makeDocument(toasts, notices) {
   function makeEl() {
+    const attrs = {};
     const el = {
-      className: "", textContent: "", children: [],
-      appendChild(c) { el.children.push(c); return c; },
-      remove() {},
-      setAttribute() {}, removeAttribute() {},
+      className: "", textContent: "", innerHTML: "", children: [], attrs,
+      appendChild(c) { el.children.push(c); c.parent = el; return c; },
+      remove() {
+        if (!el.parent) return;
+        const i = el.parent.children.indexOf(el);
+        if (i >= 0) el.parent.children.splice(i, 1);
+      },
+      setAttribute(k, v) { attrs[k] = String(v); },
+      getAttribute(k) { return attrs[k] === undefined ? null : attrs[k]; },
+      removeAttribute(k) { delete attrs[k]; },
+      addEventListener() {},
       querySelector() { return null; }, querySelectorAll() { return []; }
     };
     return el;
@@ -93,10 +108,12 @@ function makeDocument(toasts) {
   const stack = makeEl();
   stack.appendChild = function (c) {
     stack.children.push(c);
+    c.parent = stack;
     toasts.push(c.textContent);
+    notices.push(c);
     return c;
   };
-  return {
+  const document = {
     documentElement: { setAttribute() {}, getAttribute() { return null; } },
     getElementById(id) { return id === "toastStack" ? stack : null; },
     createElement() { return makeEl(); },
@@ -104,6 +121,7 @@ function makeDocument(toasts) {
     querySelector() { return null; },
     addEventListener() {}
   };
+  return { document: document, stack: stack };
 }
 
 /**
@@ -121,6 +139,7 @@ export function loadEngine(options) {
   const storage = opts.storage || makeStorage();
   const clock = makeClock();
   const toasts = [];
+  const notices = [];
   const warnings = [];
 
   if (opts.seed) {
@@ -148,12 +167,15 @@ export function loadEngine(options) {
   sandbox.window = sandbox;
   sandbox.self = sandbox;
   sandbox.globalThis = sandbox;
-  sandbox.document = makeDocument(toasts);
+  const dom = makeDocument(toasts, notices);
+  sandbox.document = dom.document;
 
   vm.createContext(sandbox);
 
   const box = {
-    sandbox, storage, clock, toasts, warnings,
+    sandbox, storage, clock, toasts, notices, warnings,
+    /** Co nadal wisi na ekranie po upływie czasu — bez znikających toastów. */
+    visible() { return dom.stack.children.map(c => c.textContent); },
     /** Wykonuje kolejny plik silnika w tej samej piaskownicy. */
     run(rel) {
       vm.runInContext(readFileSync(join(ROOT, rel), "utf8"), sandbox, { filename: rel });

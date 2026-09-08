@@ -107,13 +107,66 @@
     return next;
   }
 
+  /**
+   * Co ustępuje miejsca, gdy pamięć się kończy — i w jakiej kolejności.
+   *
+   * Wymienione jest wyłącznie to, co wraca samo przy dalszej nauce.
+   * Postępów lekcji, passy, XP, statystyk i ustawień tu nie ma i nie ma
+   * prawa być: cały stan siedzi pod jednym kluczem, więc przed tą listą
+   * przy pełnej pamięci nie zapisywało się NIC i przepadały razem z resztą.
+   *
+   * Wypracowań też tu nie ma, choć są duże: to zdania napisane przez
+   * ucznia, jedyna treść w tym pliku, której nikt nie odtworzy.
+   *
+   * Kolejność: najpierw karty najlepiej opanowane (długa seria poprawnych,
+   * mało pomyłek, dawno dodane), bo one są najbliżej wyjścia z obiegu.
+   */
+  function pruneCandidates() {
+    var out = [];
+    Object.keys(state.errors).forEach(function (k) {
+      var c = state.errors[k] || {};
+      out.push({
+        bag: "errors", key: k,
+        score: (c.reps || 0) * 10 - (c.lapses || 0) * 5 - (c.ts || 0) / 1e12
+      });
+    });
+    Object.keys(state.drills).forEach(function (k) {
+      out.push({ bag: "drills", key: k, score: 1000 });   // same liczniki, odtwarzalne
+    });
+    return out.sort(function (a, b) { return b.score - a.score; });
+  }
+
+  var PRUNE_BATCH = 20;
+
+  /** Wyrzuca porcję najmniej potrzebnych danych. false = nie ma już czego. */
+  function pruneOnce() {
+    var cands = pruneCandidates();
+    if (!cands.length) return false;
+    var n = Math.min(PRUNE_BATCH, cands.length);
+    for (var i = 0; i < n; i++) delete state[cands[i].bag][cands[i].key];
+    return true;
+  }
+
+  function persist() {
+    var lost = false;
+    for (;;) {
+      try {
+        global.localStorage.setItem(STORE_KEY, JSON.stringify(state));
+        if (lost) notice("core.storagePruned");
+        return true;
+      } catch (e) {
+        if (!pruneOnce()) { notice("core.saveBlocked"); return false; }
+        lost = true;
+      }
+    }
+  }
+
   var saveTimer = null;
   function save() {
     if (saveTimer) return;
     saveTimer = global.setTimeout(function () {
       saveTimer = null;
-      try { global.localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-      catch (e) { Core.toast(global.I18n.t("core.saveFailed")); }
+      persist();
     }, 180);
   }
 
@@ -514,10 +567,74 @@
   /* ---------------- Import / eksport ---------------- */
   function exportState() { return JSON.stringify(state, null, 2); }
 
+  /**
+   * Schody migracji. Każdy stopień podnosi zapis o jedną wersję, więc plik
+   * z dowolnej starszej dochodzi do bieżącej, przechodząc po kolei.
+   *
+   * Dziś stopień jest jeden i to jest właśnie powód, dla którego ta tablica
+   * istnieje: polityka „nie podnosimy schematu bez zmiany znaczenia pola"
+   * trzyma się tylko wtedy, gdy import umie przyjąć starszy plik. Inaczej
+   * jest to odroczenie decyzji, a nie decyzja.
+   */
+  var MIGRATIONS = [
+    { from: 1, run: migrateV1 }
+  ];
+
+  function migrateUp(parsed) {
+    var out = parsed;
+    for (var i = 0; i < MIGRATIONS.length; i++) {
+      if (out.schema === MIGRATIONS[i].from) out = MIGRATIONS[i].run(out);
+    }
+    return out;
+  }
+
+  /* Komplet fiszek, błędów i postępów mieści się w setkach kilobajtów, a
+     localStorage i tak kończy się przy około 5 MB. Próg jest zaporą przed
+     plikiem, którego nie warto nawet parsować, nie limitem funkcjonalnym. */
+  var MAX_IMPORT_CHARS = 8 * 1024 * 1024;
+
+  /* Oczekiwany typ pól najwyższego poziomu. Pole nieobecne jest w porządku,
+     dostanie wartość domyślną z merge. Pole obecne w złym typie nie jest:
+     przejdzie import bez szmeru i wybuchnie w widoku, który po nim iteruje,
+     czyli trzy ekrany dalej i bez związku z przyczyną. */
+  var SHAPE = {
+    schema: "number", createdAt: "number", xp: "number", minutes: "number",
+    lessons: "object", srs: "object", saved: "object",
+    settings: "object", streak: "object", stats: "object",
+    errors: "object", gsrs: "object", drills: "object",
+    session: "object", writing: "object"
+  };
+
+  function typeOf(v) {
+    if (v === null) return "null";
+    return Array.isArray(v) ? "array" : typeof v;
+  }
+
+  function validateImport(parsed) {
+    if (typeOf(parsed) !== "object") throw new Error("Plik nie zawiera zapisu postępów.");
+    if (typeof parsed.schema !== "number") throw new Error("Plik bez numeru wersji.");
+    if (parsed.schema > SCHEMA) throw new Error("Plik pochodzi z nowszej wersji kursu.");
+    if (parsed.schema < 1) throw new Error("Nieznany numer wersji pliku.");
+    if (parsed.placement !== undefined && ["object", "null"].indexOf(typeOf(parsed.placement)) < 0) {
+      throw new Error("Pole placement ma zły typ.");
+    }
+    Object.keys(SHAPE).forEach(function (k) {
+      if (parsed[k] === undefined) return;
+      if (typeOf(parsed[k]) !== SHAPE[k]) throw new Error("Pole " + k + " ma zły typ w pliku.");
+    });
+  }
+
+  /**
+   * Sprawdzenie idzie w całości PRZED podmianą stanu: plik odrzucony
+   * w połowie zostawiłby ucznia z połową cudzych postępów i bez swoich.
+   */
   function importState(json) {
+    if (typeof json !== "string" || json.length > MAX_IMPORT_CHARS) {
+      throw new Error("Plik jest za duży, żeby był zapisem postępów.");
+    }
     var parsed = JSON.parse(json);
-    if (!parsed || parsed.schema !== SCHEMA) throw new Error("Nieobsługiwana wersja pliku.");
-    state = merge(defaultState(), parsed);
+    validateImport(parsed);
+    state = merge(defaultState(), migrateUp(parsed));
     save();
   }
 
@@ -540,6 +657,38 @@
     el.textContent = msg;
     stack.appendChild(el);
     global.setTimeout(function () { el.remove(); }, 3200);
+  }
+
+  /* Klucze już pokazane: ten sam komunikat nie ma się mnożyć przy każdym zapisie. */
+  var noticed = {};
+
+  /**
+   * Komunikat, który zostaje na ekranie aż do zamknięcia przez ucznia.
+   *
+   * Toast znika po 3,2 sekundy i to jest właściwe dla „zapisano" albo
+   * „wybierz odpowiedź". Utrata danych nie jest wiadomością do
+   * przeoczenia między jednym ćwiczeniem a drugim, więc idzie tędy.
+   */
+  function notice(key) {
+    if (noticed[key]) return;
+    var stack = document.getElementById("toastStack");
+    if (!stack) return;
+    noticed[key] = true;
+
+    var el = document.createElement("div");
+    el.className = "toast toast--stuck";
+    el.setAttribute("role", "alert");
+    el.textContent = global.I18n.t(key);
+
+    var x = document.createElement("button");
+    x.type = "button";
+    x.className = "toast__x";
+    x.textContent = "×";
+    x.setAttribute("aria-label", global.I18n.t("core.noticeDismiss"));
+    x.addEventListener("click", function () { el.remove(); noticed[key] = false; });
+
+    el.appendChild(x);
+    stack.appendChild(el);
   }
 
   function esc(s) {
@@ -579,7 +728,7 @@
     registerLevel: registerLevel, addUnits: addUnits, getLesson: getLesson,
     loadLevelData: loadLevelData, setLanguage: setLanguage,
     exportState: exportState, importState: importState, resetState: resetState,
-    toast: toast, esc: esc, seededShuffle: seededShuffle
+    toast: toast, notice: notice, esc: esc, seededShuffle: seededShuffle
   };
 
   global.Core = Core;

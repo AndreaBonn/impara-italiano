@@ -307,7 +307,9 @@ LINGUAI.addUI("fr", {
   "set.importFailed": "Impossible de lire le fichier.",
   "set.resetConfirm": "Tu es sûr ? Toute la progression, les cartes et les statistiques seront effacées.",
   "set.resetDone": "Effacé.",
-  "core.saveFailed": "Impossible d'enregistrer ta progression (stockage du navigateur).",
+  "core.saveBlocked": "Le stockage du navigateur est plein : ta progression n'est plus enregistrée. Exporte-la dans les Réglages et libère de la place.",
+  "core.storagePruned": "Plus de place : les cartes de révision les plus anciennes ont été supprimées pour garder ta progression dans les leçons.",
+  "core.noticeDismiss": "Fermer le message",
 
   /* ---------------- Sens des verbes dans le conjugueur ---------------- */
   "verb.essere": "être",

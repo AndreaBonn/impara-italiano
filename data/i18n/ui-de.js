@@ -305,7 +305,9 @@ LINGUAI.addUI("de", {
   "set.importFailed": "Die Datei konnte nicht gelesen werden.",
   "set.resetConfirm": "Sicher? Der gesamte Fortschritt, alle Karten und Statistiken werden gelöscht.",
   "set.resetDone": "Gelöscht.",
-  "core.saveFailed": "Dein Fortschritt konnte nicht gespeichert werden (Browserspeicher).",
+  "core.saveBlocked": "Der Browserspeicher ist voll: Dein Fortschritt wird nicht mehr gespeichert. Exportiere ihn in den Einstellungen und schaffe Platz.",
+  "core.storagePruned": "Der Speicher war voll: Die ältesten Wiederholungskarten wurden entfernt, damit dein Lernfortschritt erhalten bleibt.",
+  "core.noticeDismiss": "Meldung schließen",
 
   /* ---------------- Verbbedeutungen im Konjugator ---------------- */
   "verb.essere": "sein",

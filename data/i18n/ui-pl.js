@@ -305,7 +305,9 @@ LINGUAI.addUI("pl", {
   "set.importFailed": "Nie udało się wczytać pliku.",
   "set.resetConfirm": "Na pewno? Wszystkie postępy, fiszki i statystyki zostaną skasowane.",
   "set.resetDone": "Wyczyszczone.",
-  "core.saveFailed": "Nie udało się zapisać postępów (pamięć przeglądarki).",
+  "core.saveBlocked": "Pamięć przeglądarki jest pełna: postępy nie są już zapisywane. Wyeksportuj je w Ustawieniach i zwolnij miejsce.",
+  "core.storagePruned": "Zabrakło miejsca: najstarsze karty powtórek zostały usunięte, żeby zachować postępy lekcji.",
+  "core.noticeDismiss": "Zamknij komunikat",
 
   /* ---------------- Znaczenia czasowników w podpowiedziach koniugatora ---------------- */
   "verb.essere": "być",

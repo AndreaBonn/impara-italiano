@@ -179,18 +179,90 @@ describe("save", () => {
     box.Core.state.xp = 1;
     box.Core.save();
     assert.doesNotThrow(() => box.flush());
-    assert.deepEqual(box.toasts, ["core.saveFailed"]);
+    assert.deepEqual(box.toasts, ["core.saveBlocked"]);
   });
 
-  /* To jest defekt opisany jako R6, nie cel projektowy: przy pełnej kwocie
-     nie zapisuje się NIC, więc postępy lekcji też przepadają. F0 to zmienia;
-     tutaj zostaje zapisane, jak jest dzisiaj, żeby zmiana była widoczna. */
-  test("przy pełnej kwocie nie zapisuje się nic, łącznie z postępami lekcji", () => {
-    const box = loadEngine({ storage: makeStorage({ limit: 50 }) });
+  test("zwykły toast znika sam", () => {
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.toast("wiadomość");
+    box.flush();
+    assert.deepEqual(box.visible(), [], "toast nie zostaje na ekranie");
+  });
+});
+
+/* R6. Przed F0 przy pełnej pamięci nie zapisywało się NIC: cały stan
+   siedzi pod jednym kluczem, więc razem z fiszkami przepadały postępy
+   lekcji, czyli jedyna rzecz, której uczeń nie odtworzy. */
+describe("pełna pamięć: co ustępuje miejsca", () => {
+  /** Zapis, w którym karty błędów zajmują dużo, a postępy mało. */
+  function zapchany(limit) {
+    const box = loadEngine({ storage: makeStorage({ limit: limit }) });
+    box.Core.load();
+    box.Core.state.lessons["a1-u01-l1"] = { done: true, best: 1, score: 10, total: 10, attempts: 1, ts: 1 };
+    box.Core.state.stats.lessonsDone = 1;
+    for (let i = 0; i < 40; i++) {
+      box.Core.state.errors["klucz-" + i] = {
+        kind: "authored", tag: "g-presente", srcId: "a1-u01-l1",
+        ef: 2.5, reps: i % 5, interval: i, due: 1000 + i, lapses: 1, ts: 1000 + i,
+        wypelniacz: "x".repeat(200)
+      };
+    }
+    return box;
+  }
+
+  test("postępy lekcji zostają zapisane, karty błędów ustępują", () => {
+    const box = zapchany(4000);
+    box.Core.save();
+    box.flush();
+
+    const zapis = box.stored(KEY);
+    assert.notEqual(zapis, null, "zapis doszedł do skutku mimo braku miejsca");
+    assert.equal(zapis.lessons["a1-u01-l1"].done, true, "postęp lekcji przetrwał");
+    assert.equal(zapis.stats.lessonsDone, 1);
+    assert.ok(Object.keys(zapis.errors).length < 40, "część kart błędów wyrzucona");
+  });
+
+  test("wyrzucane są najpierw karty najlepiej opanowane", () => {
+    const box = zapchany(4000);
+    box.Core.state.errors["swieza"] = {
+      kind: "authored", tag: "g-presente", ef: 2.5, reps: 0, interval: 0,
+      due: 1, lapses: 3, ts: 9999, wypelniacz: "x".repeat(200)
+    };
+    box.Core.save();
+    box.flush();
+
+    const zostale = box.stored(KEY).errors;
+    assert.ok(zostale["swieza"], "karta z trzema pomyłkami i bez serii zostaje");
+  });
+
+  test("komunikat o utracie danych zostaje na ekranie, nie znika po chwili", () => {
+    const box = zapchany(4000);
+    box.Core.save();
+    box.flush();
+    assert.ok(box.visible().length > 0, "ostrzeżenie nadal widoczne po upływie czasu");
+  });
+
+  test("gdy nie ma już czego wyrzucić, uczeń dowiaduje się o tym wprost", () => {
+    const box = loadEngine({ storage: makeStorage({ limit: 20 }) });
     box.Core.load();
     box.Core.recordLesson("a1-u01-l1", 9, 10, 60);
     box.flush();
-    assert.equal(box.storage.getItem(KEY), null, "stan siedzi w jednym kluczu i przepada w całości");
+
+    assert.equal(box.storage.getItem(KEY), null, "naprawdę się nie zmieściło");
+    assert.ok(box.visible().length > 0, "i jest o tym trwały komunikat, nie znikający toast");
+  });
+
+  test("czyszczenie i tak nie rusza ustawień ani passy", () => {
+    const box = zapchany(4000);
+    box.Core.state.streak = { count: 12, lastDay: "2026-09-09", best: 12 };
+    box.Core.state.settings.lang = "de";
+    box.Core.save();
+    box.flush();
+
+    const zapis = box.stored(KEY);
+    assert.equal(zapis.streak.count, 12);
+    assert.equal(zapis.settings.lang, "de");
   });
 });
 
@@ -208,17 +280,61 @@ describe("importState / exportState", () => {
     assert.equal(drugi.Core.state.stats.lessonsDone, 1);
   });
 
-  test("plik z inną wersją schematu jest odrzucany", () => {
+  test("plik z przyszłości jest odrzucany", () => {
     const box = loadEngine();
     box.Core.load();
     assert.throws(() => box.Core.importState(JSON.stringify({ schema: 99, xp: 1 })));
-    assert.throws(() => box.Core.importState(JSON.stringify({ schema: 1, xp: 1 })));
   });
 
   test("plik bez pola schema jest odrzucany", () => {
     const box = loadEngine();
     box.Core.load();
     assert.throws(() => box.Core.importState(JSON.stringify({ xp: 1 })));
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: "2", xp: 1 })));
+  });
+
+  /* Zmiana wobec stanu sprzed F0: wcześniej odrzucany był KAŻDY plik
+     o innym numerze, także starszy. To zamykało drogę powrotu z kopii
+     zapasowej zrobionej przed migracją i sprawiało, że polityka „nie
+     podnosimy schematu" była odroczeniem, a nie polityką. */
+  test("starszy plik wchodzi i migruje po drodze", () => {
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.importState(JSON.stringify({
+      schema: 1,
+      xp: 55,
+      srs: { "andare|iść": { it: "andare", pl: "iść", ef: 2.5, reps: 2, interval: 3, due: 42, lapses: 0 } }
+    }));
+    assert.equal(box.Core.state.xp, 55);
+    assert.deepEqual(Object.keys(box.Core.state.srs), ["andare"], "fiszka przekluczona na sam włoski");
+    assert.equal(box.Core.state.srs.andare.tr.pl, "iść");
+    assert.equal(box.Core.state.schema, SCHEMA);
+  });
+
+  test("plik o złym kształcie odpada na wejściu, nie trzy ekrany dalej", () => {
+    const box = loadEngine();
+    box.Core.load();
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, lessons: "ciao" })));
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, srs: [1, 2, 3] })));
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: "dużo" })));
+    assert.throws(() => box.Core.importState(JSON.stringify([1, 2, 3])));
+    assert.throws(() => box.Core.importState('"tekst"'));
+  });
+
+  test("odrzucony plik nie zostawia po sobie połowy stanu", () => {
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.recordLesson("a1-u01-l1", 10, 10, 20);
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: 999, lessons: "ciao" })));
+    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "poprzedni stan nietknięty");
+    assert.notEqual(box.Core.state.xp, 999);
+  });
+
+  test("plik ponad rozmiar sensownego zapisu odpada przed parsowaniem", () => {
+    const box = loadEngine();
+    box.Core.load();
+    const ogromny = '{"schema":2,"note":"' + "x".repeat(9 * 1024 * 1024) + '"}';
+    assert.throws(() => box.Core.importState(ogromny));
   });
 });
 

@@ -58,15 +58,21 @@
 <!-- indeks nagrań musi być wczytany przed audio.js: ten czyta go przy starcie -->
 <script src="data/audio-index.js"></script>
 <script src="assets/js/core.js"></script>
+<script src="assets/js/i18n.js"></script>
 <script src="assets/js/audio.js"></script>
 <script src="assets/js/verbs.js"></script>
 <script src="assets/js/exercises.js"></script>
 <script src="assets/js/views.js"></script>
 
 <!-- ══════════ DANE ══════════ -->
-<script src="data/curriculum-index.js"></script>
-<script src="data/grammar-reference.js"></script>
-<script src="data/conversations.js"></script>
+<!-- warstwa neutralna językowo: struktura, włoski, klucze odpowiedzi -->
+<script src="data/core/curriculum-index.js"></script>
+<script src="data/core/grammar-reference.js"></script>
+<script src="data/core/conversations.js"></script>
+<!-- teksty w języku ucznia; app.js scala je zaraz po starcie -->
+<script src="data/i18n/pl/curriculum-index.js"></script>
+<script src="data/i18n/pl/grammar-reference.js"></script>
+<script src="data/i18n/pl/conversations.js"></script>
 
 <!-- ══════════ START ══════════ -->
 <script src="assets/js/app.js"></script>

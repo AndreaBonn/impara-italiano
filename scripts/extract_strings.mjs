@@ -33,12 +33,17 @@ const sandbox = {
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
+/* Czyta wyłącznie data/core: wszystko, co aplikacja wypowiada, jest po włosku
+   i leży w warstwie neutralnej. Nazwy plików nagrań nie zależą więc od tego,
+   w jakim języku uczeń czyta wyjaśnienia. */
+const CORE = join(ROOT, "data", "core");
+
 function run(file) {
-  vm.runInContext(readFileSync(join(ROOT, "data", file), "utf8"), sandbox, { filename: file });
+  vm.runInContext(readFileSync(join(CORE, file), "utf8"), sandbox, { filename: file });
 }
 
 run("curriculum-index.js");
-readdirSync(join(ROOT, "data")).filter(f => /^[abc]\d-\d+\.js$/.test(f)).sort().forEach(run);
+readdirSync(CORE).filter(f => /^[abc]\d-\d+\.js$/.test(f)).sort().forEach(run);
 run("conversations.js");
 
 /* ---------------- Zbieranie ---------------- */
@@ -72,7 +77,7 @@ function collectLesson(l) {
   if (!l) return;
   (l.vocab || []).forEach(function (v) { addP(v.it); });
   if (l.grammar && l.grammar.examples) {
-    l.grammar.examples.forEach(function (e) { addP(e[0]); });
+    l.grammar.examples.forEach(function (e) { addP(e.it); });
   }
   if (l.dialogue && l.dialogue.lines) {
     // w lekcji repliki naprzemienne: parzyste = rozmówca, nieparzyste = uczeń

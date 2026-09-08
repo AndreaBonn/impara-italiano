@@ -28,6 +28,7 @@
       xp: 0,
       minutes: 0,
       settings: {
+        lang: "pl",         // język wyjaśnień; włoski jest zawsze językiem uczonym
         theme: "light",
         voiceSource: "natural", // "natural" = nagrania Edge TTS, "system" = Web Speech API
         rate: 1,
@@ -312,15 +313,25 @@
     reindex();
   }
 
-  /** Ładuje pliki danych poziomu na żądanie (działa też z file://). */
+  /**
+   * Ładuje pliki danych poziomu na żądanie (działa też z file://).
+   * Najpierw warstwa neutralna, potem teksty w języku ucznia — kolejność
+   * trzyma s.async = false, a scalenie idzie dopiero po wczytaniu obu.
+   */
   function loadLevelData(code, cb) {
     var lv = registry.byCode[code];
-    var files = lv && (lv.dataFiles || (lv.dataFile ? [lv.dataFile] : []));
+    var files = lv && lv.dataFiles;
     if (registry.loaded[code] || !lv || !files || !files.length) { cb && cb(!!lv); return; }
     registry.loaded[code] = "loading";
+
+    var lang = state.settings.lang;
+    var paths = files.map(function (f) { return "data/core/" + f; })
+      .concat(files.map(function (f) { return "data/i18n/" + lang + "/" + f; }));
+
     var i = 0, failed = false;
     function next() {
-      if (i >= files.length) {
+      if (i >= paths.length) {
+        global.LINGUAI.applyStrings(lang);
         // częściowe niepowodzenie nie blokuje poziomu: liczy się, czy cokolwiek się wczytało
         var got = (lv.units || []).length > 0;
         registry.loaded[code] = got ? true : "error";
@@ -329,7 +340,7 @@
         return;
       }
       var s = document.createElement("script");
-      s.src = files[i++];
+      s.src = paths[i++];
       s.async = false;
       s.onload = next;
       s.onerror = function () { failed = true; next(); };

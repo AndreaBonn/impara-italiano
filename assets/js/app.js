@@ -94,6 +94,7 @@
   /* ---------------- Start ---------------- */
   function boot() {
     Core.load();
+    LINGUAI.applyStrings(Core.state.settings.lang);
     applyTheme(Core.state.settings.theme || "light");
     App.refreshRail();
 

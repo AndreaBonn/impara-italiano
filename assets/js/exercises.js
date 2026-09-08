@@ -183,7 +183,7 @@
     }
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + (ex.q || "Uzupełnij luki.") + "</p>" +
-      (ex.pl ? '<p class="exq__sub">' + esc(ex.pl) + "</p>" : "") +
+      (ex.tr ? '<p class="exq__sub">' + esc(ex.tr) + "</p>" : "") +
       '<p style="font-size:1.04rem;line-height:2.3;">' + htmlBody + "</p>" +
       checkBtn() + feedbackBox() + "</div>";
 
@@ -209,7 +209,7 @@
     var tokens = Core.seededShuffle(ex.tokens.slice(), seed + "o" + idx);
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">Ułóż zdanie po włosku:</p>' +
-      '<p class="exq__sub">' + esc(ex.pl || "") + "</p>" +
+      '<p class="exq__sub">' + esc(ex.tr || "") + "</p>" +
       // rola „group" jest konieczna: div bez roli nie może nieść aria-label (WCAG 4.1.2)
       '<div class="tok-target js-target" role="group" aria-label="Twoje zdanie"></div>' +
       '<div class="tok-bank js-bank">' + tokens.map(function (t) {
@@ -251,8 +251,8 @@
 
   /* ═══════════════ MATCH (pary) ═══════════════ */
   function buildMatch(ex, idx, seed) {
-    var left = ex.pairs.map(function (p, i) { return { t: p[0], i: i }; });
-    var right = Core.seededShuffle(ex.pairs.map(function (p, i) { return { t: p[1], i: i }; }), seed + "r" + idx);
+    var left = ex.pairs.map(function (p, i) { return { t: p.it, i: i }; });
+    var right = Core.seededShuffle(ex.pairs.map(function (p, i) { return { t: p.tr, i: i }; }), seed + "r" + idx);
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + esc(ex.q || "Połącz włoskie wyrażenia z polskimi odpowiednikami.") + "</p>" +
       '<div class="match-grid"><div class="match-col js-l">' +
@@ -308,7 +308,7 @@
 
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">Odmień: <b style="color:var(--rosa-deep)">' + esc(ex.verb) + "</b> — " + esc(tenseLabel) + "</p>" +
-      (ex.pl ? '<p class="exq__sub">' + esc(ex.pl) + "</p>" : "") +
+      (ex.tr ? '<p class="exq__sub">' + esc(ex.tr) + "</p>" : "") +
       '<div class="conj-grid">' + rows + "</div>" +
       '<div style="margin-top:14px">' + checkBtn() + "</div>" + feedbackBox() + "</div>";
 
@@ -341,8 +341,8 @@
           '<option value="">—</option>' +
           opts.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + "</option>"; }).join("") +
           "</select>" +
-          '<b style="font-size:1.02rem">' + esc(it[0]) + "</b>" +
-          '<span style="color:var(--ink-soft);font-size:.86rem">' + esc(it[2] || "") + "</span></div>";
+          '<b style="font-size:1.02rem">' + esc(it.it) + "</b>" +
+          '<span style="color:var(--ink-soft);font-size:.86rem">' + esc(it.gloss || "") + "</span></div>";
       }).join("") + "</div>" +
       '<div style="margin-top:14px">' + checkBtn() + "</div>" + feedbackBox() + "</div>";
 
@@ -351,7 +351,7 @@
         var allOk = true;
         root.querySelectorAll(".js-sel").forEach(function (sel) {
           var i = parseInt(sel.getAttribute("data-i"), 10);
-          var want = items[i][1];
+          var want = items[i].a;
           var ok = Core.norm(sel.value) === Core.norm(want);
           sel.style.borderColor = ok ? "var(--ok)" : "var(--ko)";
           if (!ok) { allOk = false; sel.value = want; }
@@ -381,7 +381,7 @@
       if (Core.state.settings.autoplay) setTimeout(function () { Audio2.speak(ex.it); }, 320);
       function go() {
         var res = Core.checkOpen(input.value, [ex.it].concat(ex.alt || []), false);
-        finish(root, res.ok, (ex.why ? ex.why + " " : "") + (ex.pl ? "<i>" + esc(ex.pl) + "</i>" : ""), res.ok ? null : ex.it, onDone);
+        finish(root, res.ok, (ex.why ? ex.why + " " : "") + (ex.tr ? "<i>" + esc(ex.tr) + "</i>" : ""), res.ok ? null : ex.it, onDone);
       }
       root.querySelector(".js-check").addEventListener("click", go);
       input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); go(); } });
@@ -396,7 +396,7 @@
       '<p class="exq__prompt">Powiedz na głos po włosku:</p>' +
       '<div class="voice-box">' +
       '<p class="voice-target">' + esc(ex.it) + " " + sayBtn(ex.it) + "</p>" +
-      '<p class="voice-pl">' + esc(ex.pl || "") + "</p>" +
+      '<p class="voice-pl">' + esc(ex.tr || "") + "</p>" +
       (supported
         ? '<button type="button" class="mic js-mic" aria-label="Nagraj wypowiedź">🎤</button>' +
           '<p class="voice-heard js-heard">Kliknij mikrofon i przeczytaj zdanie.</p>'
@@ -472,7 +472,7 @@
         d.className = "dlg__line" + (mine ? " dlg__line--b" : "");
         d.innerHTML = '<div class="dlg__who">' + (mine ? "🙋" : "🧑‍🍳") + "</div>" +
           '<div class="dlg__bubble"><span class="dlg__it">' + esc(line.it) + " " + sayBtn(line.it) + "</span>" +
-          '<span class="dlg__pl">' + esc(line.pl || "") + "</span></div>";
+          '<span class="dlg__pl">' + esc(line.tr || "") + "</span></div>";
         dlg.appendChild(d);
       }
 
@@ -491,7 +491,7 @@
           return;
         }
         // tura ucznia
-        turn.innerHTML = '<p style="font-weight:600;margin-bottom:8px">Twoja kolej — ' + esc(line.pl || "wybierz odpowiedź") + '</p>' +
+        turn.innerHTML = '<p style="font-weight:600;margin-bottom:8px">Twoja kolej — ' + esc(line.tr || "wybierz odpowiedź") + '</p>' +
           '<div class="opts">' + line.choices.map(function (c, k) {
             return '<button type="button" class="opt js-ch" data-k="' + k + '"><span>' + esc(c) + "</span></button>";
           }).join("") + "</div>";
@@ -505,7 +505,7 @@
               return;
             }
             b.classList.add("is-ok");
-            bubble({ it: line.choices[line.a], pl: line.plAnswer || "" }, true);
+            bubble({ it: line.choices[line.a], tr: line.answerTr || "" }, true);
             Audio2.speak(line.choices[line.a]);
             turn.innerHTML = "";
             i++;

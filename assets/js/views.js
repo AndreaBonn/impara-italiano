@@ -48,7 +48,7 @@
         var p = Core.levelProgress(lv);
         return '<button class="level-pill" data-level="' + esc(lv.code) + '" aria-pressed="' + (lv.code === level.code) + '">' +
           '<span class="level-pill__code">' + esc(lv.code) + "</span>" +
-          '<span class="level-pill__name">' + esc(lv.namePl) + "</span>" +
+          '<span class="level-pill__name">' + esc(lv.name) + "</span>" +
           '<span class="level-pill__bar"><i style="width:' + pct(p.pct) + '%"></i></span>' +
           "</button>";
       }).join("") + "</div>";
@@ -64,7 +64,7 @@
     }
 
     set(strip +
-      pageHead("Poziom " + level.code + " · " + level.cefrLabel, level.namePl, level.descPl) +
+      pageHead("Poziom " + level.code + " · " + level.cefrLabel, level.name, level.desc) +
       body);
 
     el().querySelectorAll(".level-pill").forEach(function (b) {
@@ -100,7 +100,7 @@
       '<div style="flex:1;min-width:220px">' +
       '<p style="font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--rosa-deep);margin:0 0 4px">Kontynuuj</p>' +
       "<h3 style=\"margin:0 0 2px\">" + esc(next.lesson.titleIt) + "</h3>" +
-      '<p style="margin:0;color:var(--ink-soft);font-size:.9rem">' + esc(next.unit.titlePl) + " · " + esc(next.lesson.titlePl) + "</p></div>" +
+      '<p style="margin:0;color:var(--ink-soft);font-size:.9rem">' + esc(next.unit.title) + " · " + esc(next.lesson.title) + "</p></div>" +
       '<button class="btn btn--primary" data-lesson="' + esc(next.lesson.id) + '">Zaczynamy →</button></div>';
   }
 
@@ -120,14 +120,14 @@
       return '<div class="' + cls + '">' +
         '<button class="node__btn" data-lesson="' + esc(l.id) + '"' + (locked ? " disabled" : "") + '>' +
         '<span class="node__dot" aria-hidden="true">' + (done ? "✓" : l._test ? "🏆" : (l.icon || (i + 1))) + "</span>" +
-        '<span class="node__txt"><b>' + esc(l.titleIt) + "</b><span>" + esc(l.titlePl) + "</span></span>" +
+        '<span class="node__txt"><b>' + esc(l.titleIt) + "</b><span>" + esc(l.title) + "</span></span>" +
         "</button></div>";
     }).join("");
 
     return '<section class="unit">' +
       '<div class="unit__head">' +
       '<div class="unit__badge" aria-hidden="true">' + esc(unit.icon || "🌸") + "</div>" +
-      '<div class="unit__titles"><h3>' + esc(unit.titleIt) + "</h3><p>" + esc(unit.titlePl) + " · " + esc(unit.grammarPl || "") + "</p></div>" +
+      '<div class="unit__titles"><h3>' + esc(unit.titleIt) + "</h3><p>" + esc(unit.title) + " · " + esc(unit.grammarNote || "") + "</p></div>" +
       '<div class="unit__count"><b>' + p.done + "/" + p.total + "</b><span>lekcji</span></div>" +
       "</div><div class=\"path\">" + nodes + "</div></section>";
   }
@@ -168,15 +168,15 @@
 
     parts.push('<div class="meta-row">' +
       '<span class="chip chip--cefr">' + esc(L.cefr || LV.code) + "</span>" +
-      '<span class="chip">' + esc(U.titlePl) + "</span>" +
-      (L.themePl ? '<span class="chip chip--green">' + esc(L.themePl) + "</span>" : "") +
+      '<span class="chip">' + esc(U.title) + "</span>" +
+      (L.theme ? '<span class="chip chip--green">' + esc(L.theme) + "</span>" : "") +
       "</div>");
 
-    parts.push('<header class="view-head"><h1>' + esc(L.titleIt) + "</h1><p>" + esc(L.titlePl) + "</p></header>");
+    parts.push('<header class="view-head"><h1>' + esc(L.titleIt) + "</h1><p>" + esc(L.title) + "</p></header>");
 
-    if (L.objectivesPl && L.objectivesPl.length) {
+    if (L.objectives && L.objectives.length) {
       parts.push('<div class="callout"><b>Po tej lekcji będziesz umieć:</b><ul style="margin:8px 0 0;padding-left:20px">' +
-        L.objectivesPl.map(function (o) { return "<li>" + esc(o) + "</li>"; }).join("") + "</ul></div>");
+        L.objectives.map(function (o) { return "<li>" + esc(o) + "</li>"; }).join("") + "</ul></div>");
     }
 
     /* --- teoria --- */
@@ -187,7 +187,7 @@
           if (b.h) return "<h4>" + esc(b.h) + "</h4>" + (b.p ? "<p>" + b.p + "</p>" : "");
           if (b.list) return "<ul>" + b.list.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>";
           if (b.trap) return '<div class="callout callout--trap"><b>Uwaga, pułapka:</b> ' + b.trap + "</div>";
-          if (b.pl) return '<div class="callout callout--pl"><b>Dla Polaków:</b> ' + b.pl + "</div>";
+          if (b.contrast) return '<div class="callout callout--pl"><b>Dla Polaków:</b> ' + b.contrast + "</div>";
           if (b.tip) return '<div class="callout"><b>Wskazówka:</b> ' + b.tip + "</div>";
           return "<p>" + (b.p || "") + "</p>";
         }).join("") + "</div></section>");
@@ -210,9 +210,9 @@
       }
       if (g.examples) {
         gh += '<ul class="ex-list">' + g.examples.map(function (e) {
-          return "<li>" + '<button type="button" class="say-btn" data-say="' + esc(e[0]) + '" aria-label="Posłuchaj">🔊</button>' +
-            '<span class="it">' + esc(e[0]) + '</span><span class="pl">' + esc(e[1]) + "</span>" +
-            (e[2] ? '<span class="nb">' + esc(e[2]) + "</span>" : "") + "</li>";
+          return "<li>" + '<button type="button" class="say-btn" data-say="' + esc(e.it) + '" aria-label="Posłuchaj">🔊</button>' +
+            '<span class="it">' + esc(e.it) + '</span><span class="pl">' + esc(e.tr) + "</span>" +
+            (e.note ? '<span class="nb">' + esc(e.note) + "</span>" : "") + "</li>";
         }).join("") + "</ul>";
       }
       gh += "</div>";
@@ -226,14 +226,14 @@
         '<button class="btn btn--ghost btn--sm js-play-all">🔊 Odsłuchaj całą listę</button>' +
         '<button class="btn btn--ghost btn--sm js-save-all">⭐ Dodaj wszystko do powtórek</button></div>' +
         '<div class="vocab-grid">' + L.vocab.map(function (v, i) {
-          var key = Core.cardKey(v.it, v.pl);
+          var key = Core.cardKey(v.it, v.tr);
           var saved = !!Core.state.srs[key];
           return '<div class="vocab-card">' +
             '<button type="button" class="say-btn" data-say="' + esc(v.it) + '" aria-label="Posłuchaj ' + esc(v.it) + '">🔊</button>' +
             '<span class="vocab-card__txt"><span class="vocab-card__it">' + esc(v.it) + "</span>" +
-            '<span class="vocab-card__pl">' + esc(v.pl) + "</span>" +
+            '<span class="vocab-card__pl">' + esc(v.tr) + "</span>" +
             (v.ex ? '<span class="vocab-card__ex">' + esc(v.ex) + "</span>" : "") + "</span>" +
-            '<button type="button" class="vocab-card__star js-star" data-it="' + esc(v.it) + '" data-pl="' + esc(v.pl) + '" ' +
+            '<button type="button" class="vocab-card__star js-star" data-it="' + esc(v.it) + '" data-pl="' + esc(v.tr) + '" ' +
             'aria-pressed="' + saved + '" aria-label="Dodaj do powtórek">' + (saved ? "★" : "☆") + "</button></div>";
         }).join("") + "</div></section>");
     }
@@ -247,14 +247,14 @@
             '<div class="dlg__who" aria-hidden="true">' + esc(ln.who || (i % 2 ? "🙋" : "🧑")) + "</div>" +
             '<div class="dlg__bubble"><span class="dlg__it">' + esc(ln.it) +
             ' <button type="button" class="say-btn" data-say="' + esc(ln.it) + '" aria-label="Posłuchaj">🔊</button></span>' +
-            '<span class="dlg__pl">' + esc(ln.pl) + "</span></div></div>";
+            '<span class="dlg__pl">' + esc(ln.tr) + "</span></div></div>";
         }).join("") + "</div></section>");
     }
 
     /* --- kultura --- */
     if (L.culture) {
-      parts.push('<section class="step"><h2 class="step__label">' + esc(L.culture.titlePl || "Okiem Włocha") + "</h2>" +
-        '<div class="card" style="border-color:var(--line-mint)"><div class="prose">' + L.culture.textPl + "</div></div></section>");
+      parts.push('<section class="step"><h2 class="step__label">' + esc(L.culture.title || "Okiem Włocha") + "</h2>" +
+        '<div class="card" style="border-color:var(--line-mint)"><div class="prose">' + L.culture.text + "</div></div></section>");
     }
 
     /* --- ćwiczenia --- */
@@ -275,7 +275,7 @@
 
     var saveAll = el().querySelector(".js-save-all");
     if (saveAll) saveAll.addEventListener("click", function () {
-      (L.vocab || []).forEach(function (v) { Core.addCard(v.it, v.pl, L.id); });
+      (L.vocab || []).forEach(function (v) { Core.addCard(v.it, v.tr, L.id); });
       el().querySelectorAll(".js-star").forEach(function (b) { b.setAttribute("aria-pressed", "true"); b.textContent = "★"; });
       Core.toast("Dodano " + (L.vocab || []).length + " słówek do powtórek.", "ok");
     });
@@ -323,7 +323,7 @@
 
     if (!ok && L.vocab) {
       // błąd → dorzuć słówka lekcji do powtórek, żeby wróciły
-      L.vocab.slice(0, 4).forEach(function (v) { Core.addCard(v.it, v.pl, L.id); });
+      L.vocab.slice(0, 4).forEach(function (v) { Core.addCard(v.it, v.tr, L.id); });
     }
 
     if (session.answered >= session.total) {
@@ -447,7 +447,7 @@
         var p = Core.lessonState("conv-" + c.id);
         return '<button class="list-row" data-conv="' + esc(c.id) + '" style="text-align:left;cursor:pointer;width:100%">' +
           '<span style="font-size:1.6rem">' + esc(c.icon) + "</span>" +
-          '<span class="list-row__main"><b>' + esc(c.titleIt) + "</b><span>" + esc(c.titlePl) + "</span></span>" +
+          '<span class="list-row__main"><b>' + esc(c.titleIt) + "</b><span>" + esc(c.title) + "</span></span>" +
           '<span class="chip chip--cefr">' + esc(c.cefr) + "</span>" +
           (p ? '<span class="chip chip--green">✓</span>' : "") + "</button>";
       }).join("") + "</div>");
@@ -461,7 +461,7 @@
     if (!conv) { set('<div class="empty"><h3>Nie znaleziono rozmowy</h3></div>'); return; }
 
     set('<button class="btn btn--ghost btn--sm js-back" style="margin-bottom:18px">← Wszystkie rozmowy</button>' +
-      pageHead(conv.cefr + " · " + conv.titlePl, conv.titleIt, conv.settingPl) +
+      pageHead(conv.cefr + " · " + conv.title, conv.titleIt, conv.setting) +
       '<div class="card"><div class="dlg js-dlg"></div><div class="js-turn" style="margin-top:20px"></div></div>');
 
     el().querySelector(".js-back").addEventListener("click", function () { Audio2.stop(); App.go("conversazione"); });
@@ -486,7 +486,7 @@
       if (i >= conv.turns.length) return finishConv();
       var t = conv.turns[i];
       if (t.sp !== "TY") {
-        bubble(t.it, t.pl, false);
+        bubble(t.it, t.tr, false);
         i++;
         Audio2.speak(t.it, { onend: function () { setTimeout(step, 260); } });
         return;
@@ -499,7 +499,7 @@
       var accepted = t.accept || [t.it];
       turn.innerHTML =
         '<div class="voice-box">' +
-        '<p style="font-weight:600;margin:0 0 4px">Twoja kolej: ' + esc(t.taskPl) + "</p>" +
+        '<p style="font-weight:600;margin:0 0 4px">Twoja kolej: ' + esc(t.task) + "</p>" +
         '<p class="voice-pl" style="margin-bottom:14px">Podpowiedź: <i>' + esc(t.hintIt || accepted[0]) + "</i></p>" +
         (Audio2.sttSupported ? '<button type="button" class="mic js-mic" aria-label="Mów">🎤</button><p class="voice-heard js-heard">Kliknij i powiedz po włosku.</p>' : "") +
         '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
@@ -516,7 +516,7 @@
         var ok = best >= 0.72;
         if (ok) score++;
         Core.recordAnswer(ok);
-        bubble(ok ? text : accepted[0], t.pl || "", true);
+        bubble(ok ? text : accepted[0], t.tr || "", true);
         if (!ok) Core.toast("Model odpowiedzi: " + accepted[0]);
         turn.innerHTML = "";
         i++;
@@ -555,7 +555,7 @@
       Core.recordLesson("conv-" + conv.id, score, Math.max(turns, 1), 0);
       App.refreshRail();
       turn.innerHTML = '<div class="summary"><div class="summary__score">' + score + "/" + turns + "</div>" +
-        '<p class="summary__msg">' + esc(conv.closingPl || "Rozmowa zakończona. Powtórz ją za kilka dni — płynność bierze się z powtarzania.") + "</p>" +
+        '<p class="summary__msg">' + esc(conv.closing || "Rozmowa zakończona. Powtórz ją za kilka dni — płynność bierze się z powtarzania.") + "</p>" +
         '<div class="summary__acts"><button class="btn btn--primary js-again">Jeszcze raz</button>' +
         '<button class="btn btn--ghost js-list">Inne rozmowy</button></div></div>';
       turn.querySelector(".js-again").addEventListener("click", function () { App.go("conversazione", { id: conv.id }); });
@@ -575,7 +575,7 @@
       ref.forEach(function (sec) { (sec.items || []).forEach(function (it) { if (it.id === params.id) a = { sec: sec, it: it }; }); });
       if (a) {
         set('<button class="btn btn--ghost btn--sm js-back" style="margin-bottom:18px">← Spis treści</button>' +
-          pageHead(a.sec.titlePl + " · " + a.it.cefr, a.it.titlePl, a.it.subPl || "") +
+          pageHead(a.sec.title + " · " + a.it.cefr, a.it.title, a.it.sub || "") +
           '<div class="card"><div class="prose">' + a.it.body + "</div></div>");
         el().querySelector(".js-back").addEventListener("click", function () { App.go("grammatica"); });
         return;
@@ -585,11 +585,11 @@
     set(pageHead("Materiały", "Gramatyka od A do Z",
       "Pełny sylabus gramatyczny A1 → C2, uporządkowany tematycznie. Zaglądaj tu, kiedy coś w lekcji wymaga szerszego wyjaśnienia.") +
       ref.map(function (sec) {
-        return '<section style="margin-bottom:30px"><h2 style="font-size:1.24rem;margin-bottom:12px">' + esc(sec.titlePl) + "</h2>" +
+        return '<section style="margin-bottom:30px"><h2 style="font-size:1.24rem;margin-bottom:12px">' + esc(sec.title) + "</h2>" +
           '<div class="stack">' + (sec.items || []).map(function (it) {
             return '<button class="list-row" data-gram="' + esc(it.id) + '" style="text-align:left;cursor:pointer;width:100%">' +
               '<span class="chip chip--cefr">' + esc(it.cefr) + "</span>" +
-              '<span class="list-row__main"><b>' + esc(it.titlePl) + "</b><span>" + esc(it.subPl || "") + "</span></span>" +
+              '<span class="list-row__main"><b>' + esc(it.title) + "</b><span>" + esc(it.sub || "") + "</span></span>" +
               "<span aria-hidden=\"true\">→</span></button>";
           }).join("") + "</div></section>";
       }).join(""));
@@ -736,7 +736,7 @@
       Core.registry.levels.map(function (lv) {
         var p = Core.levelProgress(lv);
         return '<div class="list-row"><span class="chip chip--cefr">' + esc(lv.code) + "</span>" +
-          '<span class="list-row__main"><b>' + esc(lv.namePl) + "</b><span>" + p.done + " z " + p.total + " lekcji</span></span>" +
+          '<span class="list-row__main"><b>' + esc(lv.name) + "</b><span>" + p.done + " z " + p.total + " lekcji</span></span>" +
           '<span style="flex:0 0 120px"><span class="level-pill__bar"><i style="width:' + pct(p.pct) + '%"></i></span></span>' +
           '<span class="chip">' + pct(p.pct) + "%</span></div>";
       }).join("") + "</div>");

@@ -38,24 +38,28 @@ const sandbox = {
   }
 };
 sandbox.window = sandbox;
+sandbox.Core = { registry: { levels } };
 vm.createContext(sandbox);
 
-function run(file) {
-  const src = readFileSync(join(ROOT, "data", file), "utf8");
+function run(path) {
   try {
-    vm.runInContext(src, sandbox, { filename: file });
+    vm.runInContext(readFileSync(join(ROOT, path), "utf8"), sandbox, { filename: path });
   } catch (e) {
-    errors.push(`${file}: ${e.message}`);
+    errors.push(`${path}: ${e.message}`);
   }
 }
 
-run("curriculum-index.js");
-const dataFiles = readdirSync(join(ROOT, "data"))
+/* Język wyjaśnień do sprawdzenia:  node scripts/validate.mjs [pl|en] */
+const LANG = process.argv[2] || "pl";
+
+run("assets/js/i18n.js");
+const dataFiles = readdirSync(join(ROOT, "data", "core"))
   .filter(f => /^[abc]\d-\d+\.js$/.test(f))
   .sort();
-dataFiles.forEach(run);
-run("conversations.js");
-run("grammar-reference.js");
+const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js"];
+ALL.forEach(f => run(join("data", "core", f)));
+ALL.forEach(f => run(join("data", "i18n", LANG, f)));
+sandbox.LINGUAI.applyStrings(LANG);
 
 /* ---------------- Walidacja ---------------- */
 const ids = new Map();
@@ -100,7 +104,7 @@ function checkExercise(ex, where) {
   }
   if (ex.t === "gender") {
     if (!Array.isArray(ex.items) || !ex.items.length) errors.push(`${where}: gender bez items`);
-    else ex.items.forEach(it => { if (!it[1]) errors.push(`${where}: gender — brak poprawnej formy dla „${it[0]}”`); });
+    else ex.items.forEach(it => { if (!it.a) errors.push(`${where}: gender — brak poprawnej formy dla „${it.it}”`); });
   }
   if (ex.t === "listen" && !ex.it) errors.push(`${where}: listen bez tekstu włoskiego`);
   if (ex.t === "speak" && !ex.it) errors.push(`${where}: speak bez tekstu włoskiego`);
@@ -117,11 +121,11 @@ function checkLesson(l, lv, unit) {
   if (ids.has(l.id)) errors.push(`Duplikat id lekcji: ${l.id}`);
   ids.set(l.id, true);
   if (!l.titleIt) errors.push(`${l.id}: brak titleIt`);
-  if (!l.titlePl) errors.push(`${l.id}: brak titlePl`);
+  if (!l.title) errors.push(`${l.id}: brak title`);
   nLessons++;
   (l.vocab || []).forEach(v => {
     nVocab++;
-    if (!v.it || !v.pl) errors.push(`${l.id}: pozycja słownika bez it/pl`);
+    if (!v.it || !v.tr) errors.push(`${l.id}: pozycja słownika bez it/tr`);
   });
   const ex = l.exercises || [];
   if (!ex.length) warnings.push(`${l.id}: brak ćwiczeń`);

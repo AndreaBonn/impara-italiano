@@ -209,7 +209,7 @@ LINGUAI.addStrings("pl", {
         p: "Włoski jest hojny w komplementach (<em>bravissimo, gentilissima</em>), ale krytykę osoby zwykle łagodzi: zamiast <em>è antipatico</em> częściej usłyszysz <em>è un po' particolare</em> albo <em>non è il mio tipo</em>."
       },
       {
-        pl: "Fałszywi przyjaciele wobec polskiego: <em>simpatico</em> (zabawny, nie „sympatyczny”), <em>gentile</em> (uprzejmy, nie „delikatny”), <em>bravo</em> (zdolny, nie „brawo!” jako okrzyk)."
+        contrast: "Fałszywi przyjaciele wobec polskiego: <em>simpatico</em> (zabawny, nie „sympatyczny”), <em>gentile</em> (uprzejmy, nie „delikatny”), <em>bravo</em> (zdolny, nie „brawo!” jako okrzyk)."
       }
     ],
     grammar: {

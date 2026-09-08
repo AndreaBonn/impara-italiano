@@ -123,6 +123,19 @@ function splitGrammar(g, where) {
   return { core, tr };
 }
 
+/**
+ * W bloku teorii klucz „pl" znaczy „a po polsku jest inaczej", nie „tekst polski".
+ * W nakładce angielskiej ta nazwa myli, więc blok nazywa się „contrast".
+ */
+function renameContrast(theory) {
+  return theory.map(b => {
+    if (!b || typeof b !== "object" || b.pl === undefined) return b;
+    const out = {};
+    Object.keys(b).forEach(k => { out[k === "pl" ? "contrast" : k] = b[k]; });
+    return out;
+  });
+}
+
 function splitLesson(L) {
   const where = `lekcja ${L.id}`;
   const { core, tr } = split(L, {
@@ -130,6 +143,7 @@ function splitLesson(L) {
     tr: { titlePl: "title", themePl: "theme", objectivesPl: "objectives", theory: "theory" },
     skip: ["grammar", "vocab", "dialogue", "culture", "exercises"]
   }, where);
+  if (tr.theory) tr.theory = renameContrast(tr.theory);
 
   if (L.grammar) {
     const g = splitGrammar(L.grammar, `${where}/gramatyka`);

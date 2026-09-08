@@ -126,7 +126,7 @@ LINGUAI.addStrings("pl", {
         p: "Po wyrażeniach pewności: <em>so che, è certo che, è vero che, è chiaro che, siccome, poiché</em>. Uwaga na <em>perché</em>: w znaczeniu „bo” idzie z indicativo, w znaczeniu „aby” z congiuntivo (<em>te lo dico perché tu <b>capisca</b></em>)."
       },
       {
-        pl: "Polski oddaje część tych zdań trybem przypuszczającym („żebyś powiedział”), część zwykłym oznajmującym („myślę, że jest”). Dlatego intuicja z polskiego nie wystarcza — trzeba nauczyć się listy wyzwalaczy."
+        contrast: "Polski oddaje część tych zdań trybem przypuszczającym („żebyś powiedział”), część zwykłym oznajmującym („myślę, że jest”). Dlatego intuicja z polskiego nie wystarcza — trzeba nauczyć się listy wyzwalaczy."
       }
     ],
     grammar: {

@@ -87,10 +87,20 @@ function backExercise(ex) {
   return o;
 }
 
+function backTheory(theory) {
+  return theory.map(b => {
+    if (!b || typeof b !== "object" || b.contrast === undefined) return b;
+    const out = {};
+    Object.keys(b).forEach(k => { out[k === "contrast" ? "pl" : k] = b[k]; });
+    return out;
+  });
+}
+
 function backLesson(L) {
   const o = {
     ...rename(L, { id: "id", cefr: "cefr", titleIt: "titleIt", title: "titlePl", theme: "themePl", objectives: "objectivesPl", theory: "theory" })
   };
+  if (o.theory) o.theory = backTheory(o.theory);
   if (L.grammar) {
     const g = rename(L.grammar, { title: "title", note: "note", table: "table" });
     if (L.grammar.examples) g.examples = L.grammar.examples.map(e => tuple(e.it, e.tr, e.note));

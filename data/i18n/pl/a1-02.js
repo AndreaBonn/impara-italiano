@@ -123,7 +123,7 @@ LINGUAI.addStrings("pl", {
         p: "Kiedy stoi <b>przed rzeczownikiem</b>, <em>quello</em> przybiera formy równoległe do <em>il / lo / la / i / gli / le</em>: <em>quel cappotto, quello zaino, quell'amico, quei pantaloni, quegli stivali, quella gonna, quelle scarpe</em>. Kiedy stoi samodzielnie (bez rzeczownika), ma zwykłe cztery formy: <em>Prendo quello.</em>"
       },
       {
-        pl: "Polskie „ten / tamten” działa podobnie, ale nie zmienia się w zależności od pierwszej głoski następnego słowa. To właśnie <em>quello</em> sprawia najwięcej kłopotu — traktuj je jak rodzajnik, nie jak przymiotnik."
+        contrast: "Polskie „ten / tamten” działa podobnie, ale nie zmienia się w zależności od pierwszej głoski następnego słowa. To właśnie <em>quello</em> sprawia najwięcej kłopotu — traktuj je jak rodzajnik, nie jak przymiotnik."
       }
     ],
     grammar: {
@@ -419,7 +419,7 @@ LINGUAI.addStrings("pl", {
         p: "<em><b>Mi</b> sveglio alle sette.</em> Nigdy „sveglio mi”. Wyjątkiem jest bezokolicznik i tryb rozkazujący, gdzie zaimek doczepia się na końcu: <em>devo alzar<b>mi</b></em>, <em>svegliati!</em>"
       },
       {
-        pl: "Polskie „się” jest jedno dla wszystkich osób; włoski ma sześć różnych zaimków. „Budzę się” to <em>mi sveglio</em>, ale „budzimy się” to <em>ci svegliamo</em> — zaimek zmienia się razem z osobą."
+        contrast: "Polskie „się” jest jedno dla wszystkich osób; włoski ma sześć różnych zaimków. „Budzę się” to <em>mi sveglio</em>, ale „budzimy się” to <em>ci svegliamo</em> — zaimek zmienia się razem z osobą."
       },
       {
         h: "Niektóre czasowniki są zwrotne tylko po włosku",
@@ -674,7 +674,7 @@ LINGUAI.addStrings("pl", {
         p: "Piszemy je małą literą, są rodzaju męskiego z wyjątkiem <em>la domenica</em>. Bez rodzajnika oznaczają konkretny dzień (<em>lunedì vado a Roma</em> — w ten poniedziałek), z rodzajnikiem — powtarzalność (<em>il lunedì vado in palestra</em> — w poniedziałki)."
       },
       {
-        pl: "Ta różnica („w poniedziałek” kontra „w poniedziałki”) po polsku wymaga liczby mnogiej, po włosku — tylko rodzajnika. Drobna rzecz, a zmienia sens całego zdania."
+        contrast: "Ta różnica („w poniedziałek” kontra „w poniedziałki”) po polsku wymaga liczby mnogiej, po włosku — tylko rodzajnika. Drobna rzecz, a zmienia sens całego zdania."
       }
     ],
     grammar: {
@@ -869,7 +869,7 @@ LINGUAI.addStrings("pl", {
         trap: "<em>A piedi</em> („pieszo”) łamie regułę środków transportu — bo pieszo się nie „jedzie”. Zapamiętaj jako wyjątek."
       },
       {
-        pl: "Polskie „do” obsługuje wszystko: do Rzymu, do banku, do lekarza. Włoski rozdziela to na trzy przyimki. Nie próbuj tłumaczyć słowo w słowo — ucz się całych połączeń."
+        contrast: "Polskie „do” obsługuje wszystko: do Rzymu, do banku, do lekarza. Włoski rozdziela to na trzy przyimki. Nie próbuj tłumaczyć słowo w słowo — ucz się całych połączeń."
       }
     ],
     grammar: {

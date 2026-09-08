@@ -24,7 +24,7 @@ LINGUAI.addStrings("pl", {
         p: "<strong>Ciao</strong> znaczy jednocześnie „cześć” i „pa”, ale używa się go tylko z osobami, do których mówisz <em>tu</em>: znajomi, rówieśnicy, rodzina, młodzi barmani. Do kelnera po pięćdziesiątce, do urzędnika, do właścicielki sklepu, którą widzisz pierwszy raz — <strong>buongiorno</strong>. Wejście z „ciao” do apteki brzmi tak, jak polskie „siema” w banku."
       },
       {
-        pl: "W polskim „dzień dobry” działa cały dzień. Po włosku ta jedna forma nie wystarczy — musisz wybrać porę. To najczęstszy błąd Polaków w pierwszym tygodniu we Włoszech."
+        contrast: "W polskim „dzień dobry” działa cały dzień. Po włosku ta jedna forma nie wystarczy — musisz wybrać porę. To najczęstszy błąd Polaków w pierwszym tygodniu we Włoszech."
       },
       {
         h: "Essere — czasownik, bez którego nie zbudujesz zdania",
@@ -159,7 +159,7 @@ LINGUAI.addStrings("pl", {
         p: "Rzeczowniki zakończone akcentowaną samogłoską (<em>la città</em>, <em>il caffè</em>) oraz zapożyczenia (<em>il bar</em>, <em>lo sport</em>, <em>il film</em>) mają tę samą formę w liczbie pojedynczej i mnogiej. Liczbę rozpoznasz wtedy tylko po rodzajniku: <em>la città → le città</em>."
       },
       {
-        pl: "Polski ma rodzaj nijaki i skomplikowaną deklinację; włoski nie ma przypadków w ogóle. Relacje, które polski wyraża końcówką („kawy”, „kawie”), włoski wyraża przyimkiem: <em>del caffè</em>, <em>al caffè</em>."
+        contrast: "Polski ma rodzaj nijaki i skomplikowaną deklinację; włoski nie ma przypadków w ogóle. Relacje, które polski wyraża końcówką („kawy”, „kawie”), włoski wyraża przyimkiem: <em>del caffè</em>, <em>al caffè</em>."
       }
     ],
     grammar: {
@@ -367,7 +367,7 @@ LINGUAI.addStrings("pl", {
         p: "O tym, jak się czujesz, mówi się przez <strong>stare</strong>, nie przez <em>essere</em>. <em>Come stai?</em> → <em>Sto bene</em>. Zdanie „sono bene” jest błędem, którego Włoch nigdy nie powie. <em>Stare</em> obsługuje też miejsce i stan trwały: <em>Sto a casa</em> (jestem/zostaję w domu)."
       },
       {
-        pl: "Polskie „jak się masz” tłumaczymy odruchowo przez „mieć” — po włosku to zawsze <em>stare</em>. Zapamiętaj parę: <b>come stai / sto bene</b>."
+        contrast: "Polskie „jak się masz” tłumaczymy odruchowo przez „mieć” — po włosku to zawsze <em>stare</em>. Zapamiętaj parę: <b>come stai / sto bene</b>."
       }
     ],
     grammar: {
@@ -698,7 +698,7 @@ LINGUAI.addStrings("pl", {
         p: "Formy takie jak <em>l'avvocata</em>, <em>la sindaca</em>, <em>la ministra</em> są dziś normą w prasie i dokumentach, choć jeszcze dwadzieścia lat temu budziły spór. W mowie potocznej usłyszysz też starsze <em>l'avvocato</em> o kobiecie. Obie wersje spotkasz w praktyce."
       },
       {
-        pl: "Polskie „pracuję jako…” ma odpowiednik <em>lavoro come…</em>, ale Włosi znacznie częściej mówią po prostu <em>faccio il/la…</em>"
+        contrast: "Polskie „pracuję jako…” ma odpowiednik <em>lavoro come…</em>, ale Włosi znacznie częściej mówią po prostu <em>faccio il/la…</em>"
       }
     ],
     grammar: {
@@ -905,7 +905,7 @@ LINGUAI.addStrings("pl", {
         p: "Skoro podmiotem jest rzecz, to ona decyduje o liczbie: <em>mi piace <b>il</b> caffè</em> (jedna rzecz) kontra <em>mi piacciono <b>gli</b> spaghetti</em> (wiele rzeczy). Przed bezokolicznikiem zawsze liczba pojedyncza: <em>mi piace viaggiare</em>."
       },
       {
-        pl: "Polski ma dokładnie ten sam mechanizm w czasowniku „podobać się”: „podoba mi się film”, „podobają mi się filmy”. Jeśli oprzesz włoskie zdanie na polskim „podoba mi się” zamiast na „lubię”, przestaniesz się mylić."
+        contrast: "Polski ma dokładnie ten sam mechanizm w czasowniku „podobać się”: „podoba mi się film”, „podobają mi się filmy”. Jeśli oprzesz włoskie zdanie na polskim „podoba mi się” zamiast na „lubię”, przestaniesz się mylić."
       },
       {
         h: "Kto lubi: mi, ti, gli, le…",
@@ -1190,7 +1190,7 @@ LINGUAI.addStrings("pl", {
         p: "Zamiast rodzajnika cząstkowego można użyć <strong>un po' di</strong> („trochę”) albo miary: <em>un chilo di, un etto di, mezzo litro di</em>. W przeczeniu rodzajnik cząstkowy zwykle znika: <em>non ho pane</em>, nie „non ho del pane”."
       },
       {
-        pl: "Polski dopełniacz cząstkowy („kup chleba”, nie „kup chleb”) robi dokładnie to samo, tylko końcówką zamiast przyimkiem. To dobra kotwica: gdzie po polsku powiesz „chleba”, po włosku będzie <em>del pane</em>."
+        contrast: "Polski dopełniacz cząstkowy („kup chleba”, nie „kup chleb”) robi dokładnie to samo, tylko końcówką zamiast przyimkiem. To dobra kotwica: gdzie po polsku powiesz „chleba”, po włosku będzie <em>del pane</em>."
       },
       {
         tip: "<b>Un etto</b> to 100 gramów i jest podstawową jednostką przy ladzie: <em>due etti di prosciutto</em> = 200 g szynki."

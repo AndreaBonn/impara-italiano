@@ -32,7 +32,7 @@ LINGUAI.addStrings("pl", {
         ]
       },
       {
-        pl: "Polski oddaje tę różnicę aspektem czasownika: „chodziłem” (imperfetto) kontra „poszedłem” (passato prossimo). To dobra kotwica — jeśli po polsku użyłbyś czasownika niedokonanego, po włosku prawdopodobnie potrzebujesz imperfetto."
+        contrast: "Polski oddaje tę różnicę aspektem czasownika: „chodziłem” (imperfetto) kontra „poszedłem” (passato prossimo). To dobra kotwica — jeśli po polsku użyłbyś czasownika niedokonanego, po włosku prawdopodobnie potrzebujesz imperfetto."
       }
     ],
     grammar: {

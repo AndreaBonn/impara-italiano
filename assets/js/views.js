@@ -826,7 +826,9 @@
       if (!f) return;
       var fr = new FileReader();
       fr.onload = function () {
-        try { Core.importState(fr.result); Core.toast(t("set.imported"), "ok"); App.refreshRail(); App.go("progressi"); }
+        // applyLang, nie samo refreshRail: plik niesie własny język i motyw,
+        // a bez ich nałożenia interfejs zostaje w poprzednim języku aż do przeładowania
+        try { Core.importState(fr.result); Core.toast(t("set.imported"), "ok"); App.applyLang(Core.state.settings.lang); App.go("progressi"); }
         catch (err) { Core.toast(t("set.importFailed")); }
       };
       fr.readAsText(f);

@@ -191,6 +191,16 @@
    */
   function switchLang(lang) {
     if (lang === Core.state.settings.lang) return;
+    App.applyLang(lang);
+  }
+
+  /**
+   * Nakłada język i motyw ze stanu na interfejs. Osobno od switchLang, bo import
+   * pliku zmienia state.settings PRZED odświeżeniem widoku: strażnik „ten sam
+   * język" w switchLang wychodziłby wtedy od razu, zostawiając interfejs
+   * w poprzednim języku mimo poprawnie wczytanego stanu.
+   */
+  App.applyLang = function (lang) {
     Core.setLanguage(lang, function (missing) {
       I18n.set(lang);
       applyTheme(Core.state.settings.theme || "light");
@@ -200,7 +210,7 @@
       // milczące niepowodzenie zostawiłoby część kursu w poprzednim języku
       if (missing.length) Core.toast(I18n.t("lang.partial", { n: missing.length }));
     });
-  }
+  };
 
   /* ---------------- Start ---------------- */
   function boot() {

@@ -123,23 +123,41 @@ node scripts/validate.mjs en        # to samo dla nakładki angielskiej
 node scripts/parity.mjs             # czy każdy język ma ten sam kształt co polski
 node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
-python3 -m http.server 8080         # serwer do testów w przeglądarce
+node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
+npm test                            # logika silnika, node:test w piaskownicy node:vm
+npm run test:dom                    # zachowanie w przeglądarce, Playwright
+npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 ```
+
+**Zależności są wyłącznie deweloperskie.** `package.json` istnieje dla testów;
+`index.html` nie wczytuje z niego niczego, aplikacja nadal startuje z `file://`
+bez żadnego pakietu. `npm install` jest potrzebny do uruchomienia testów, nie kursu.
+
+Baseline na dzień wprowadzenia suity (do porównania, gdy coś zacznie znikać):
+32 jednostki, 150 lekcji, 1514 ćwiczeń, 1410 pozycji słownika, 10 rozmów,
+42 hasła gramatyczne, 12 typów ćwiczeń obecnych w danych (`truefalse` jest
+obsługiwany przez silnik, ale nie występuje w kursie).
+Suity: 29 testów jednostkowych, 17 testów DOM, wszystkie zielone.
 
 `parity.mjs` jest bramką dla nowego języka. Nakładki łączą się z warstwą neutralną **po indeksie**,
 więc tablica krótsza o jeden element niczego nie wywraca: jedno ćwiczenie po cichu zostaje w
 poprzednim języku. Skrypt porównuje kształt (klucze i długości, nie treść) każdej nakładki z polską
 i kończy się kodem 1 przy różnicy.
 
-Do testów w przeglądarce lepszy jest serwer bez cache. Zwykły `http.server` trzyma stare skrypty
-mimo zmian na dysku i strona pokazuje nieprawdę:
+Do testów w przeglądarce służy `scripts/serve.mjs`, nie `python3 -m http.server`.
+Ten drugi trzyma stare skrypty mimo zmian na dysku, więc strona pokazuje nieprawdę,
+a błędu szuka się w kodzie, który już jest poprawiony. `serve.mjs` odpowiada zawsze
+z `Cache-Control: no-store` i nie wychodzi poza katalog projektu.
 
-```python
-class NoCache(http.server.SimpleHTTPRequestHandler):
-    def end_headers(self):
-        self.send_header("Cache-Control", "no-store")
-        super().end_headers()
-```
+Suity testowe pilnują dwóch rzeczy, których żaden z powyższych skryptów nie widzi:
+
+- `tests/unit/` — stan. `merge`, `load`, `save`, `importState`, harmonogram SM-2
+  i próg zaliczenia lekcji. Silnik wjeżdża do `node:vm` tym samym wzorcem, co
+  w `validate.mjs`; czas i `localStorage` są podstawione, bo `save()` jest
+  zdebouncowane na 180 ms, a pełnej kwoty nie da się wywołać inaczej.
+- `tests/dom/` — kontrakt ćwiczeń. `onDone(ok)` woła się **dokładnie raz** dla
+  każdego z 13 typów. Na tym opiera się licznik postępu: drugie wywołanie niczego
+  nie wywraca, tylko po cichu zawyża wynik.
 
 `validate.mjs` uruchamia prawdziwe pliki danych w piaskownicy `node:vm` i scala je **tym samym**
 `assets/js/i18n.js`, którego używa przeglądarka — sprawdza więc dane po scaleniu, nie ich kopię.

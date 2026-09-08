@@ -657,7 +657,12 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
     transition:transform .24s ease;box-shadow:var(--shadow-l);
   }
   .rail.is-open{transform:none;}
+  /* Zasłona pod szufladą. `display:block` z selektora klasowego bije regułę
+     przeglądarki `[hidden]{display:none}`, więc bez drugiej linijki atrybut
+     `hidden`, który ustawia closeRail(), nic nie robi: zasłona zostaje na
+     ekranie i przechwytuje wszystkie kliknięcia. */
   .rail__scrim{display:block;position:fixed;inset:0;background:oklch(0.30 0.03 350 / .45);z-index:35;}
+  .rail__scrim[hidden]{display:none;}
   .rail-toggle{
     display:grid;place-items:center;position:fixed;top:14px;left:14px;z-index:45;
     width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;

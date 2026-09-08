@@ -103,8 +103,26 @@
     }, 180);
   }
 
+  /**
+   * Klucze, których plik z zewnątrz nie ma prawa wnieść.
+   *
+   * JSON.parse robi z „__proto__" zwykłą własność obiektu, ale odczyt
+   * base["__proto__"] na zwykłym obiekcie oddaje Object.prototype —
+   * więc merge schodziłby po niej w dół i zapisywał prototyp wspólny
+   * dla całej strony. „constructor" i „prototype" domknięte tą samą
+   * regułą, żeby nie było drogi naokoło.
+   *
+   * Lista jest tablicą, nie obiektem: literał { "__proto__": true }
+   * nie tworzy własności o tej nazwie, tylko ustawia prototyp, więc
+   * strażnik zbudowany w ten sposób nie strzeże niczego.
+   */
+  var FORBIDDEN_KEYS = ["__proto__", "constructor", "prototype"];
+
+  function isForbidden(k) { return FORBIDDEN_KEYS.indexOf(k) >= 0; }
+
   function merge(base, over) {
     Object.keys(over).forEach(function (k) {
+      if (isForbidden(k)) return;
       if (over[k] && typeof over[k] === "object" && !Array.isArray(over[k]) && base[k] && typeof base[k] === "object") {
         base[k] = merge(base[k], over[k]);
       } else if (over[k] !== undefined) {

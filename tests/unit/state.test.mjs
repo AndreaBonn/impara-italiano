@@ -12,7 +12,7 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine, makeStorage } from "./_harness.mjs";
+import { loadEngine, makeStorage, probePrototype } from "./_harness.mjs";
 
 /**
  * Obiekty z piaskownicy mają prototyp z innego realm, więc deepEqual

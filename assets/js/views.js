@@ -6,6 +6,7 @@
   "use strict";
 
   var esc = Core.esc;
+  var t = function (k, v) { return I18n.t(k, v); };
   var Views = {};
   var mount = null;
 
@@ -29,6 +30,10 @@
 
   function pct(n) { return Math.round(n * 100); }
 
+  function empty(title, hint) {
+    return '<div class="empty"><h3>' + title + "</h3>" + (hint ? "<p>" + hint + "</p>" : "") + "</div>";
+  }
+
   /* ═══════════════════════════════════════════════════════════
      ŚCIEŻKA NAUKI
      ═══════════════════════════════════════════════════════════ */
@@ -36,14 +41,14 @@
 
   Views.percorso = function (params) {
     var levels = Core.registry.levels;
-    if (!levels.length) { set('<div class="empty"><h3>Brak danych kursu</h3><p>Nie udało się wczytać plików w katalogu <code>data/</code>.</p></div>'); return; }
+    if (!levels.length) { set(empty(t("path.noData"), t("path.noDataHint"))); return; }
 
     var code = (params && params.level) || activeLevel || pickStartLevel();
     activeLevel = code;
     var level = Core.registry.byCode[code] || levels[0];
 
     // grupa przycisków przełączających, nie zakładki: aria-pressed nie jest dozwolone przy role="tab"
-    var strip = '<div class="level-strip" role="group" aria-label="Poziomy CEFR">' +
+    var strip = '<div class="level-strip" role="group" aria-label="' + esc(t("path.levelsGroup")) + '">' +
       levels.map(function (lv) {
         var p = Core.levelProgress(lv);
         return '<button class="level-pill" data-level="' + esc(lv.code) + '" aria-pressed="' + (lv.code === level.code) + '">' +
@@ -56,15 +61,16 @@
     var body;
     if (!level.units || !level.units.length) {
       body = Core.registry.loaded[level.code] === "error"
-        ? '<div class="empty"><h3>Nie udało się wczytać poziomu ' + esc(level.code) + "</h3><p>Sprawdź plik <code>" + esc(level.dataFile || "") + "</code>.</p></div>"
-        : '<div class="empty"><h3>Wczytuję materiał…</h3></div>';
+        ? empty(t("path.loadError", { code: esc(level.code) }),
+                t("path.loadErrorHint", { files: esc((level.dataFiles || []).join(", ")) }))
+        : empty(t("path.loading"));
     } else {
       var next = Core.nextLesson(level);
       body = renderResume(level, next) + level.units.map(renderUnit).join("");
     }
 
     set(strip +
-      pageHead("Poziom " + level.code + " · " + level.cefrLabel, level.name, level.desc) +
+      pageHead(t("path.levelKicker", { code: level.code, cefr: level.cefrLabel }), level.name, level.desc) +
       body);
 
     el().querySelectorAll(".level-pill").forEach(function (b) {
@@ -93,15 +99,15 @@
   function renderResume(level, next) {
     if (!next) {
       return '<div class="card" style="margin-bottom:26px;border-color:var(--salvia-deep)">' +
-        "<h3 style=\"margin-bottom:6px\">Poziom " + esc(level.code) + " ukończony 🌿</h3>" +
-        "<p style=\"margin:0;color:var(--ink-soft)\">Przejdź do kolejnego poziomu albo wróć do powtórek, żeby utrwalić materiał.</p></div>";
+        '<h3 style="margin-bottom:6px">' + t("path.levelDone", { code: esc(level.code) }) + "</h3>" +
+        '<p style="margin:0;color:var(--ink-soft)">' + t("path.levelDoneHint") + "</p></div>";
     }
     return '<div class="card" style="margin-bottom:26px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;border-color:var(--rosa-mid)">' +
       '<div style="flex:1;min-width:220px">' +
-      '<p style="font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--rosa-deep);margin:0 0 4px">Kontynuuj</p>' +
+      '<p style="font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--rosa-deep);margin:0 0 4px">' + t("path.continue") + "</p>" +
       "<h3 style=\"margin:0 0 2px\">" + esc(next.lesson.titleIt) + "</h3>" +
       '<p style="margin:0;color:var(--ink-soft);font-size:.9rem">' + esc(next.unit.title) + " · " + esc(next.lesson.title) + "</p></div>" +
-      '<button class="btn btn--primary" data-lesson="' + esc(next.lesson.id) + '">Zaczynamy →</button></div>';
+      '<button class="btn btn--primary" data-lesson="' + esc(next.lesson.id) + '">' + t("path.start") + "</button></div>";
   }
 
   function renderUnit(unit) {
@@ -128,7 +134,7 @@
       '<div class="unit__head">' +
       '<div class="unit__badge" aria-hidden="true">' + esc(unit.icon || "🌸") + "</div>" +
       '<div class="unit__titles"><h3>' + esc(unit.titleIt) + "</h3><p>" + esc(unit.title) + " · " + esc(unit.grammarNote || "") + "</p></div>" +
-      '<div class="unit__count"><b>' + p.done + "/" + p.total + "</b><span>lekcji</span></div>" +
+      '<div class="unit__count"><b>' + p.done + "/" + p.total + "</b><span>" + esc(t("stats.lessons", { n: p.total })) + "</span></div>" +
       "</div><div class=\"path\">" + nodes + "</div></section>";
   }
 
@@ -145,14 +151,14 @@
       var m = /^([a-z]\d)/i.exec(params.id || "");
       var code = m ? m[1].toUpperCase() : null;
       if (code && Core.registry.byCode[code] && !Core.registry.loaded[code]) {
-        set('<div class="empty"><h3>Wczytuję materiał…</h3></div>');
+        set(empty(t("path.loading")));
         Core.loadLevelData(code, function () {
           if (Core.getLesson(params.id)) Views.lezione(params);
-          else set('<div class="empty"><h3>Nie znaleziono lekcji</h3><p>Wróć do ścieżki nauki.</p></div>');
+          else set(empty(t("lesson.notFound"), t("lesson.notFoundHint")));
         });
         return;
       }
-      set('<div class="empty"><h3>Nie znaleziono lekcji</h3><p>Wróć do ścieżki nauki.</p></div>');
+      set(empty(t("lesson.notFound"), t("lesson.notFoundHint")));
       return;
     }
     var L = found.lesson, U = found.unit, LV = found.level;
@@ -162,7 +168,7 @@
     var parts = [];
 
     parts.push('<div class="lesson-top">' +
-      '<button class="btn btn--ghost btn--sm js-back">← Ścieżka</button>' +
+      '<button class="btn btn--ghost btn--sm js-back">' + t("lesson.back") + "</button>" +
       '<div class="lesson-top__bar"><i id="lessonBar" style="width:0%"></i></div>' +
       '<span class="lesson-top__hearts" id="lessonScore">0/' + session.total + "</span></div>");
 
@@ -175,20 +181,20 @@
     parts.push('<header class="view-head"><h1>' + esc(L.titleIt) + "</h1><p>" + esc(L.title) + "</p></header>");
 
     if (L.objectives && L.objectives.length) {
-      parts.push('<div class="callout"><b>Po tej lekcji będziesz umieć:</b><ul style="margin:8px 0 0;padding-left:20px">' +
+      parts.push('<div class="callout"><b>' + t("lesson.objectives") + '</b><ul style="margin:8px 0 0;padding-left:20px">' +
         L.objectives.map(function (o) { return "<li>" + esc(o) + "</li>"; }).join("") + "</ul></div>");
     }
 
     /* --- teoria --- */
     if (L.theory && L.theory.length) {
-      parts.push('<section class="step"><h2 class="step__label">Teoria</h2><div class="prose">' +
+      parts.push('<section class="step"><h2 class="step__label">' + t("lesson.theory") + '</h2><div class="prose">' +
         L.theory.map(function (b) {
           if (typeof b === "string") return "<p>" + b + "</p>";
           if (b.h) return "<h4>" + esc(b.h) + "</h4>" + (b.p ? "<p>" + b.p + "</p>" : "");
           if (b.list) return "<ul>" + b.list.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>";
-          if (b.trap) return '<div class="callout callout--trap"><b>Uwaga, pułapka:</b> ' + b.trap + "</div>";
-          if (b.contrast) return '<div class="callout callout--pl"><b>Dla Polaków:</b> ' + b.contrast + "</div>";
-          if (b.tip) return '<div class="callout"><b>Wskazówka:</b> ' + b.tip + "</div>";
+          if (b.trap) return '<div class="callout callout--trap"><b>' + t("lesson.trapLabel") + "</b> " + b.trap + "</div>";
+          if (b.contrast) return '<div class="callout callout--pl"><b>' + t("lesson.contrastLabel") + "</b> " + b.contrast + "</div>";
+          if (b.tip) return '<div class="callout"><b>' + t("lesson.tipLabel") + "</b> " + b.tip + "</div>";
           return "<p>" + (b.p || "") + "</p>";
         }).join("") + "</div></section>");
     }
@@ -210,56 +216,56 @@
       }
       if (g.examples) {
         gh += '<ul class="ex-list">' + g.examples.map(function (e) {
-          return "<li>" + '<button type="button" class="say-btn" data-say="' + esc(e.it) + '" aria-label="Posłuchaj">🔊</button>' +
+          return "<li>" + '<button type="button" class="say-btn" data-say="' + esc(e.it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button>' +
             '<span class="it">' + esc(e.it) + '</span><span class="pl">' + esc(e.tr) + "</span>" +
             (e.note ? '<span class="nb">' + esc(e.note) + "</span>" : "") + "</li>";
         }).join("") + "</ul>";
       }
       gh += "</div>";
-      parts.push('<section class="step step--gram"><h2 class="step__label">Gramatyka</h2>' + gh + "</section>");
+      parts.push('<section class="step step--gram"><h2 class="step__label">' + t("lesson.grammar") + "</h2>" + gh + "</section>");
     }
 
     /* --- słownictwo --- */
     if (L.vocab && L.vocab.length) {
-      parts.push('<section class="step step--vocab"><h2 class="step__label">Słownictwo</h2>' +
+      parts.push('<section class="step step--vocab"><h2 class="step__label">' + t("lesson.vocab") + "</h2>" +
         '<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">' +
-        '<button class="btn btn--ghost btn--sm js-play-all">🔊 Odsłuchaj całą listę</button>' +
-        '<button class="btn btn--ghost btn--sm js-save-all">⭐ Dodaj wszystko do powtórek</button></div>' +
+        '<button class="btn btn--ghost btn--sm js-play-all">' + t("lesson.playAll") + "</button>" +
+        '<button class="btn btn--ghost btn--sm js-save-all">' + t("lesson.saveAll") + "</button></div>" +
         '<div class="vocab-grid">' + L.vocab.map(function (v, i) {
           var key = Core.cardKey(v.it, v.tr);
           var saved = !!Core.state.srs[key];
           return '<div class="vocab-card">' +
-            '<button type="button" class="say-btn" data-say="' + esc(v.it) + '" aria-label="Posłuchaj ' + esc(v.it) + '">🔊</button>' +
+            '<button type="button" class="say-btn" data-say="' + esc(v.it) + '" aria-label="' + esc(t("a11y.listenTo", { what: v.it })) + '">🔊</button>' +
             '<span class="vocab-card__txt"><span class="vocab-card__it">' + esc(v.it) + "</span>" +
             '<span class="vocab-card__pl">' + esc(v.tr) + "</span>" +
             (v.ex ? '<span class="vocab-card__ex">' + esc(v.ex) + "</span>" : "") + "</span>" +
             '<button type="button" class="vocab-card__star js-star" data-it="' + esc(v.it) + '" data-pl="' + esc(v.tr) + '" ' +
-            'aria-pressed="' + saved + '" aria-label="Dodaj do powtórek">' + (saved ? "★" : "☆") + "</button></div>";
+            'aria-pressed="' + saved + '" aria-label="' + esc(t("lesson.addToReview")) + '">' + (saved ? "★" : "☆") + "</button></div>";
         }).join("") + "</div></section>");
     }
 
     /* --- dialog --- */
     if (L.dialogue) {
-      parts.push('<section class="step"><h2 class="step__label">Dialog: ' + esc(L.dialogue.titleIt || "") + "</h2>" +
-        '<button class="btn btn--ghost btn--sm js-play-dlg" style="margin-bottom:12px">▶️ Odtwórz cały dialog</button>' +
+      parts.push('<section class="step"><h2 class="step__label">' + t("lesson.dialogue", { title: esc(L.dialogue.titleIt || "") }) + "</h2>" +
+        '<button class="btn btn--ghost btn--sm js-play-dlg" style="margin-bottom:12px">' + t("lesson.playDialogue") + "</button>" +
         '<div class="dlg">' + L.dialogue.lines.map(function (ln, i) {
           return '<div class="dlg__line' + (i % 2 ? " dlg__line--b" : "") + '">' +
             '<div class="dlg__who" aria-hidden="true">' + esc(ln.who || (i % 2 ? "🙋" : "🧑")) + "</div>" +
             '<div class="dlg__bubble"><span class="dlg__it">' + esc(ln.it) +
-            ' <button type="button" class="say-btn" data-say="' + esc(ln.it) + '" aria-label="Posłuchaj">🔊</button></span>' +
+            ' <button type="button" class="say-btn" data-say="' + esc(ln.it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button></span>' +
             '<span class="dlg__pl">' + esc(ln.tr) + "</span></div></div>";
         }).join("") + "</div></section>");
     }
 
     /* --- kultura --- */
     if (L.culture) {
-      parts.push('<section class="step"><h2 class="step__label">' + esc(L.culture.title || "Okiem Włocha") + "</h2>" +
+      parts.push('<section class="step"><h2 class="step__label">' + esc(L.culture.title || t("lesson.culture")) + "</h2>" +
         '<div class="card" style="border-color:var(--line-mint)"><div class="prose">' + L.culture.text + "</div></div></section>");
     }
 
     /* --- ćwiczenia --- */
     if (L.exercises && L.exercises.length) {
-      parts.push('<section class="step step--ex"><h2 class="step__label">Ćwiczenia</h2><div id="exWrap"></div></section>');
+      parts.push('<section class="step step--ex"><h2 class="step__label">' + t("lesson.exercises") + '</h2><div id="exWrap"></div></section>');
       parts.push('<div id="lessonEnd"></div>');
     }
 
@@ -277,7 +283,8 @@
     if (saveAll) saveAll.addEventListener("click", function () {
       (L.vocab || []).forEach(function (v) { Core.addCard(v.it, v.tr, L.id); });
       el().querySelectorAll(".js-star").forEach(function (b) { b.setAttribute("aria-pressed", "true"); b.textContent = "★"; });
-      Core.toast("Dodano " + (L.vocab || []).length + " słówek do powtórek.", "ok");
+      var n = (L.vocab || []).length;
+      Core.toast(t("lesson.savedVocab", { n: n }), "ok");
     });
 
     el().querySelectorAll(".js-star").forEach(function (b) {
@@ -335,10 +342,10 @@
 
   function renderLessonEnd(res, L, U, LV) {
     var p = res.total ? res.score / res.total : 0;
-    var msg = p === 1 ? "Bezbłędnie. Perfetto!"
-      : p >= 0.85 ? "Bardzo dobrze — materiał opanowany."
-      : p >= 0.7 ? "Zaliczone. Kilka rzeczy warto powtórzyć."
-      : "Jeszcze nie zaliczone (potrzeba 70%). Wróć do teorii i spróbuj ponownie.";
+    var msg = p === 1 ? t("lesson.end.perfect")
+      : p >= 0.85 ? t("lesson.end.great")
+      : p >= 0.7 ? t("lesson.end.pass")
+      : t("lesson.end.fail");
 
     var next = Core.nextLesson(LV);
     var box = document.getElementById("lessonEnd");
@@ -346,9 +353,9 @@
       '<div class="summary__score">' + pct(p) + "%</div>" +
       '<p class="summary__msg">' + esc(msg) + " (" + res.score + "/" + res.total + ")</p>" +
       '<div class="summary__acts">' +
-      '<button class="btn btn--ghost js-again">Powtórz lekcję</button>' +
-      (next ? '<button class="btn btn--primary js-next">Dalej: ' + esc(next.lesson.titleIt) + " →</button>" : "") +
-      '<button class="btn btn--ghost js-path">Ścieżka nauki</button>' +
+      '<button class="btn btn--ghost js-again">' + t("lesson.again") + "</button>" +
+      (next ? '<button class="btn btn--primary js-next">' + t("lesson.next", { title: esc(next.lesson.titleIt) }) + "</button>" : "") +
+      '<button class="btn btn--ghost js-path">' + t("nav.path") + "</button>" +
       "</div></div>";
 
     box.querySelector(".js-again").addEventListener("click", function () { App.go("lezione", { id: L.id }); });

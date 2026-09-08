@@ -1,0 +1,17 @@
+{
+  "name": "impara-italiano",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Static Italian course. The manifest exists for the test toolchain only: the application itself has no runtime dependency and no build step.",
+  "scripts": {
+    "test": "node --test \"tests/unit/**/*.test.mjs\"",
+    "test:dom": "playwright test",
+    "test:all": "npm test && npm run test:dom",
+    "validate": "node scripts/validate.mjs",
+    "parity": "node scripts/parity.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}

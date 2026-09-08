@@ -11,6 +11,7 @@ LINGUAI.addUnits("C1", [
     lessons: [
       {
         id: "c1-u01-l1",
+        tags: ["g-si"],
         cefr: "C1",
         titleIt: "Sei valori, una particella",
         grammar: {
@@ -56,6 +57,7 @@ LINGUAI.addUnits("C1", [
       },
       {
         id: "c1-u01-l2",
+        tags: ["g-agg-posizione"],
         cefr: "C1",
         titleIt: "Un buon medico, un medico buono",
         grammar: {
@@ -117,6 +119,7 @@ LINGUAI.addUnits("C1", [
       },
       {
         id: "c1-u01-l3",
+        tags: ["g-agg-gradi"],
         cefr: "C1",
         titleIt: "Superlativi e intensificatori",
         grammar: {
@@ -175,6 +178,7 @@ LINGUAI.addUnits("C1", [
     ],
     test: {
       id: "c1-u01-test",
+      tags: ["g-si", "g-agg-posizione"],
       cefr: "C1",
       titleIt: "Test — I valori del si",
       exercises: [
@@ -206,6 +210,7 @@ LINGUAI.addUnits("C1", [
     lessons: [
       {
         id: "c1-u02-l1",
+        tags: ["g-verbi-pronominali"],
         cefr: "C1",
         titleIt: "I verbi procomplementari",
         grammar: {
@@ -259,6 +264,7 @@ LINGUAI.addUnits("C1", [
       },
       {
         id: "c1-u02-l2",
+        tags: ["g-passivo"],
         cefr: "C1",
         titleIt: "Passivo con andare e venire",
         grammar: {
@@ -312,6 +318,7 @@ LINGUAI.addUnits("C1", [
       },
       {
         id: "c1-u02-l3",
+        tags: ["g-registri"],
         cefr: "C1",
         titleIt: "Modi di dire",
         grammar: {
@@ -370,6 +377,7 @@ LINGUAI.addUnits("C1", [
     ],
     test: {
       id: "c1-u02-test",
+      tags: ["g-verbi-pronominali", "g-passivo"],
       cefr: "C1",
       titleIt: "Test — Verbi pronominali",
       exercises: [
@@ -401,6 +409,7 @@ LINGUAI.addUnits("C1", [
     lessons: [
       {
         id: "c1-u03-l1",
+        tags: ["g-registri"],
         cefr: "C1",
         titleIt: "Burocratese",
         grammar: {
@@ -462,6 +471,7 @@ LINGUAI.addUnits("C1", [
       },
       {
         id: "c1-u03-l2",
+        tags: ["g-registri"],
         cefr: "C1",
         titleIt: "L'italiano parlato",
         grammar: {
@@ -507,6 +517,7 @@ LINGUAI.addUnits("C1", [
       },
       {
         id: "c1-u03-l3",
+        tags: ["g-connettivi"],
         cefr: "C1",
         titleIt: "Coesione e coerenza",
         grammar: {
@@ -561,6 +572,7 @@ LINGUAI.addUnits("C1", [
     ],
     test: {
       id: "c1-u03-test",
+      tags: ["g-si", "g-verbi-pronominali", "g-registri"],
       cefr: "C1",
       titleIt: "Esame finale C1",
       exercises: [

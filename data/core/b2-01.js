@@ -11,6 +11,7 @@ LINGUAI.addUnits("B2", [
     lessons: [
       {
         id: "b2-u01-l1",
+        tags: ["g-congiuntivo-imp"],
         cefr: "B2",
         titleIt: "Congiuntivo imperfetto",
         grammar: {
@@ -57,6 +58,7 @@ LINGUAI.addUnits("B2", [
       },
       {
         id: "b2-u01-l2",
+        tags: ["g-congiuntivo-imp", "g-trapassato"],
         cefr: "B2",
         titleIt: "Concordanza dei tempi",
         grammar: {
@@ -106,6 +108,7 @@ LINGUAI.addUnits("B2", [
       },
       {
         id: "b2-u01-l3",
+        tags: ["g-congiuntivo-imp", "g-connettivi"],
         cefr: "B2",
         titleIt: "Come se, magari, purché",
         grammar: {
@@ -160,6 +163,7 @@ LINGUAI.addUnits("B2", [
     ],
     test: {
       id: "b2-u01-test",
+      tags: ["g-congiuntivo-imp"],
       cefr: "B2",
       titleIt: "Test — Se fosse",
       exercises: [
@@ -183,6 +187,7 @@ LINGUAI.addUnits("B2", [
     lessons: [
       {
         id: "b2-u02-l1",
+        tags: ["g-periodo-ipotetico"],
         cefr: "B2",
         titleIt: "I tre tipi",
         grammar: {
@@ -236,6 +241,7 @@ LINGUAI.addUnits("B2", [
       },
       {
         id: "b2-u02-l2",
+        tags: ["g-periodo-ipotetico", "g-registri"],
         cefr: "B2",
         titleIt: "Varianti e registri",
         grammar: {
@@ -292,6 +298,7 @@ LINGUAI.addUnits("B2", [
       },
       {
         id: "b2-u02-l3",
+        tags: ["g-periodo-ipotetico"],
         cefr: "B2",
         titleIt: "Rimpianti e ipotesi",
         grammar: {
@@ -350,6 +357,7 @@ LINGUAI.addUnits("B2", [
     ],
     test: {
       id: "b2-u02-test",
+      tags: ["g-periodo-ipotetico"],
       cefr: "B2",
       titleIt: "Test — Periodo ipotetico",
       exercises: [
@@ -381,6 +389,7 @@ LINGUAI.addUnits("B2", [
     lessons: [
       {
         id: "b2-u03-l1",
+        tags: ["g-passivo"],
         cefr: "B2",
         titleIt: "La forma passiva",
         grammar: {
@@ -426,6 +435,7 @@ LINGUAI.addUnits("B2", [
       },
       {
         id: "b2-u03-l2",
+        tags: ["g-passato-remoto"],
         cefr: "B2",
         titleIt: "Passato remoto",
         grammar: {
@@ -472,6 +482,7 @@ LINGUAI.addUnits("B2", [
       },
       {
         id: "b2-u03-l3",
+        tags: ["g-infinito", "g-gerundio"],
         cefr: "B2",
         titleIt: "Frasi implicite",
         grammar: {
@@ -522,6 +533,7 @@ LINGUAI.addUnits("B2", [
     ],
     test: {
       id: "b2-u03-test",
+      tags: ["g-passivo", "g-passato-remoto"],
       cefr: "B2",
       titleIt: "Test — Passivo e remoto",
       exercises: [
@@ -545,6 +557,7 @@ LINGUAI.addUnits("B2", [
     lessons: [
       {
         id: "b2-u04-l1",
+        tags: ["g-connettivi"],
         cefr: "B2",
         titleIt: "Economia e lavoro",
         grammar: {
@@ -602,6 +615,7 @@ LINGUAI.addUnits("B2", [
       },
       {
         id: "b2-u04-l2",
+        tags: ["g-connettivi"],
         cefr: "B2",
         titleIt: "Ambiente e tecnologia",
         grammar: {
@@ -663,6 +677,7 @@ LINGUAI.addUnits("B2", [
       },
       {
         id: "b2-u04-l3",
+        tags: ["g-connettivi", "g-congiuntivo-pres"],
         cefr: "B2",
         titleIt: "Sostenere una posizione",
         grammar: {
@@ -745,6 +760,7 @@ LINGUAI.addUnits("B2", [
     ],
     test: {
       id: "b2-u04-test",
+      tags: ["g-congiuntivo-imp", "g-periodo-ipotetico", "g-passivo"],
       cefr: "B2",
       titleIt: "Esame finale B2",
       exercises: [

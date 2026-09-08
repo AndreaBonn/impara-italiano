@@ -11,6 +11,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u01-l1",
+        tags: ["g-presente", "g-frase"],
         cefr: "A1",
         titleIt: "Buongiorno, un caffè",
         grammar: {
@@ -71,6 +72,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u01-l2",
+        tags: ["g-nome-genere", "g-nome-plurale"],
         cefr: "A1",
         titleIt: "Maschile o femminile?",
         grammar: {
@@ -122,6 +124,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u01-l3",
+        tags: ["g-articolo-det", "g-articolo-indet"],
         cefr: "A1",
         titleIt: "Il, lo, la, un, una",
         grammar: {
@@ -184,6 +187,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u01-l4",
+        tags: ["g-presente", "g-frase"],
         cefr: "A1",
         titleIt: "Come stai?",
         grammar: {
@@ -246,6 +250,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u01-test",
+      tags: ["g-presente", "g-nome-genere", "g-articolo-det"],
       cefr: "A1",
       titleIt: "Test — Al bar",
       exercises: [
@@ -282,6 +287,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u02-l1",
+        tags: ["g-presente", "g-pron-soggetto"],
         cefr: "A1",
         titleIt: "Mi chiamo…",
         grammar: {
@@ -337,6 +343,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u02-l2",
+        tags: ["g-presente"],
         cefr: "A1",
         titleIt: "Avere e i numeri",
         grammar: {
@@ -386,6 +393,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u02-l3",
+        tags: ["g-presente", "g-nome-genere"],
         cefr: "A1",
         titleIt: "Che lavoro fai?",
         grammar: {
@@ -448,6 +456,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u02-l4",
+        tags: ["g-presente"],
         cefr: "A1",
         titleIt: "Verbi in -ARE",
         grammar: {
@@ -490,6 +499,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u02-test",
+      tags: ["g-presente", "g-pron-soggetto"],
       cefr: "A1",
       titleIt: "Test — Chi sei?",
       exercises: [
@@ -517,6 +527,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u03-l1",
+        tags: ["g-pron-indiretti", "g-frase"],
         cefr: "A1",
         titleIt: "Mi piace, mi piacciono",
         grammar: {
@@ -567,6 +578,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u03-l2",
+        tags: ["g-presente"],
         cefr: "A1",
         titleIt: "Verbi in -ERE",
         grammar: {
@@ -608,6 +620,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u03-l3",
+        tags: ["g-presente"],
         cefr: "A1",
         titleIt: "Verbi in -IRE",
         grammar: {
@@ -649,6 +662,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u03-l4",
+        tags: ["g-preposizioni", "g-articolo-det"],
         cefr: "A1",
         titleIt: "Del pane, dell'acqua",
         grammar: {
@@ -732,6 +746,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u03-test",
+      tags: ["g-presente", "g-preposizioni"],
       cefr: "A1",
       titleIt: "Test — L'aperitivo",
       exercises: [

@@ -11,6 +11,7 @@ LINGUAI.addUnits("A2", [
     lessons: [
       {
         id: "a2-u05-l1",
+        tags: ["g-articolo-indet"],
         cefr: "A2",
         titleIt: "Cerco un bilocale",
         grammar: {
@@ -72,6 +73,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u05-l2",
+        tags: ["g-ci-ne"],
         cefr: "A2",
         titleIt: "Ci vado spesso",
         grammar: {
@@ -121,6 +123,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u05-l3",
+        tags: ["g-nome-genere", "g-articolo-det"],
         cefr: "A2",
         titleIt: "Il salotto e la cucina",
         grammar: {
@@ -187,6 +190,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u05-l4",
+        tags: ["g-presente"],
         cefr: "A2",
         titleIt: "Il rubinetto perde",
         grammar: {
@@ -249,6 +253,7 @@ LINGUAI.addUnits("A2", [
     ],
     test: {
       id: "a2-u05-test",
+      tags: ["g-ci-ne", "g-nome-genere"],
       cefr: "A2",
       titleIt: "Test — Casa e quartiere",
       exercises: [
@@ -280,6 +285,7 @@ LINGUAI.addUnits("A2", [
     lessons: [
       {
         id: "a2-u06-l1",
+        tags: ["g-condizionale", "g-registri"],
         cefr: "A2",
         titleIt: "Potrebbe richiamarmi?",
         grammar: {
@@ -353,6 +359,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u06-l2",
+        tags: ["g-registri"],
         cefr: "A2",
         titleIt: "Scrivere una mail",
         grammar: {
@@ -417,6 +424,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u06-l3",
+        tags: ["g-si"],
         cefr: "A2",
         titleIt: "Qui si lavora così",
         grammar: {
@@ -462,6 +470,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u06-l4",
+        tags: ["g-connettivi"],
         cefr: "A2",
         titleIt: "In riunione",
         grammar: {
@@ -544,6 +553,7 @@ LINGUAI.addUnits("A2", [
     ],
     test: {
       id: "a2-u06-test",
+      tags: ["g-condizionale", "g-si"],
       cefr: "A2",
       titleIt: "Test — Al lavoro",
       exercises: [
@@ -579,6 +589,7 @@ LINGUAI.addUnits("A2", [
     lessons: [
       {
         id: "a2-u07-l1",
+        tags: ["g-frase"],
         cefr: "A2",
         titleIt: "Auguri!",
         grammar: {
@@ -628,6 +639,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u07-l2",
+        tags: ["g-pron-indiretti", "g-prep-verbi"],
         cefr: "A2",
         titleIt: "Ti va di venire?",
         grammar: {
@@ -697,6 +709,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u07-l3",
+        tags: ["g-registri"],
         cefr: "A2",
         titleIt: "Regioni e differenze",
         grammar: {
@@ -749,6 +762,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u07-l4",
+        tags: ["g-avverbi"],
         cefr: "A2",
         titleIt: "Lentamente, di solito",
         grammar: {
@@ -798,6 +812,7 @@ LINGUAI.addUnits("A2", [
     ],
     test: {
       id: "a2-u07-test",
+      tags: ["g-avverbi", "g-prep-verbi"],
       cefr: "A2",
       titleIt: "Test — Feste e tradizioni",
       exercises: [
@@ -824,6 +839,7 @@ LINGUAI.addUnits("A2", [
     lessons: [
       {
         id: "a2-u08-l1",
+        tags: ["g-futuro", "g-prep-verbi"],
         cefr: "A2",
         titleIt: "Ho intenzione di…",
         grammar: {
@@ -873,6 +889,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u08-l2",
+        tags: ["g-imperfetto", "g-futuro", "g-condizionale"],
         cefr: "A2",
         titleIt: "Ripasso: i tempi",
         grammar: {
@@ -923,6 +940,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u08-l3",
+        tags: ["g-pron-diretti", "g-pron-indiretti"],
         cefr: "A2",
         titleIt: "Ripasso: pronomi",
         grammar: {
@@ -964,6 +982,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u08-l4",
+        tags: ["g-imperfetto", "g-futuro", "g-condizionale"],
         cefr: "A2",
         titleIt: "Pronti per il B1",
         vocab: [
@@ -1002,6 +1021,7 @@ LINGUAI.addUnits("A2", [
     ],
     test: {
       id: "a2-u08-test",
+      tags: ["g-imperfetto", "g-futuro", "g-pron-diretti", "g-condizionale"],
       cefr: "A2",
       titleIt: "Esame finale A2",
       exercises: [

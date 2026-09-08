@@ -11,6 +11,7 @@ LINGUAI.addUnits("B1", [
     lessons: [
       {
         id: "b1-u01-l1",
+        tags: ["g-congiuntivo-pres"],
         cefr: "B1",
         titleIt: "Congiuntivo presente",
         grammar: {
@@ -57,6 +58,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u01-l2",
+        tags: ["g-congiuntivo-pres"],
         cefr: "B1",
         titleIt: "Quando serve il congiuntivo",
         grammar: {
@@ -106,6 +108,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u01-l3",
+        tags: ["g-congiuntivo-pres"],
         cefr: "B1",
         titleIt: "Congiuntivo passato",
         grammar: {
@@ -163,6 +166,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u01-l4",
+        tags: ["g-connettivi"],
         cefr: "B1",
         titleIt: "Secondo me, invece",
         grammar: {
@@ -240,6 +244,7 @@ LINGUAI.addUnits("B1", [
     ],
     test: {
       id: "b1-u01-test",
+      tags: ["g-congiuntivo-pres"],
       cefr: "B1",
       titleIt: "Test — Congiuntivo",
       exercises: [
@@ -263,6 +268,7 @@ LINGUAI.addUnits("B1", [
     lessons: [
       {
         id: "b1-u02-l1",
+        tags: ["g-pron-combinati"],
         cefr: "B1",
         titleIt: "Me lo, te la, ce ne",
         grammar: {
@@ -308,6 +314,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u02-l2",
+        tags: ["g-ci-ne"],
         cefr: "B1",
         titleIt: "Ci e ne, tutti gli usi",
         grammar: {
@@ -356,6 +363,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u02-l3",
+        tags: ["g-relativi"],
         cefr: "B1",
         titleIt: "Il libro che ho letto",
         grammar: {
@@ -409,6 +417,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u02-l4",
+        tags: ["g-frase"],
         cefr: "B1",
         titleIt: "Qualcuno, nessuno, ogni",
         grammar: {
@@ -451,6 +460,7 @@ LINGUAI.addUnits("B1", [
     ],
     test: {
       id: "b1-u02-test",
+      tags: ["g-pron-combinati", "g-relativi"],
       cefr: "B1",
       titleIt: "Test — Pronomi",
       exercises: [
@@ -474,6 +484,7 @@ LINGUAI.addUnits("B1", [
     lessons: [
       {
         id: "b1-u03-l1",
+        tags: ["g-registri"],
         cefr: "B1",
         titleIt: "Codice fiscale e residenza",
         grammar: {
@@ -522,6 +533,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u03-l2",
+        tags: ["g-registri"],
         cefr: "B1",
         titleIt: "Banca e contratti",
         grammar: {
@@ -604,6 +616,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u03-l3",
+        tags: ["g-condizionale", "g-registri"],
         cefr: "B1",
         titleIt: "Reclami e diritti",
         grammar: {
@@ -668,6 +681,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u03-l4",
+        tags: ["g-registri"],
         cefr: "B1",
         titleIt: "Lavoro e contratti",
         grammar: {
@@ -730,6 +744,7 @@ LINGUAI.addUnits("B1", [
     ],
     test: {
       id: "b1-u03-test",
+      tags: ["g-registri"],
       cefr: "B1",
       titleIt: "Test — Burocrazia",
       exercises: [
@@ -756,6 +771,7 @@ LINGUAI.addUnits("B1", [
     lessons: [
       {
         id: "b1-u04-l1",
+        tags: ["g-discorso-indiretto"],
         cefr: "B1",
         titleIt: "Ha detto che…",
         grammar: {
@@ -801,6 +817,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u04-l2",
+        tags: ["g-trapassato", "g-connettivi"],
         cefr: "B1",
         titleIt: "Leggere un articolo",
         grammar: {
@@ -854,6 +871,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u04-l3",
+        tags: ["g-connettivi"],
         cefr: "B1",
         titleIt: "Connettivi",
         grammar: {
@@ -903,6 +921,7 @@ LINGUAI.addUnits("B1", [
       },
       {
         id: "b1-u04-l4",
+        tags: ["g-congiuntivo-pres", "g-connettivi"],
         cefr: "B1",
         titleIt: "Esporre un'opinione",
         grammar: {
@@ -972,6 +991,7 @@ LINGUAI.addUnits("B1", [
     ],
     test: {
       id: "b1-u04-test",
+      tags: ["g-congiuntivo-pres", "g-pron-combinati", "g-relativi", "g-discorso-indiretto"],
       cefr: "B1",
       titleIt: "Esame finale B1",
       exercises: [

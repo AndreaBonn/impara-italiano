@@ -11,6 +11,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u08-l1",
+        tags: ["g-possessivi"],
         cefr: "A1",
         titleIt: "Mia madre, il mio capo",
         grammar: {
@@ -65,6 +66,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u08-l2",
+        tags: ["g-agg-accordo"],
         cefr: "A1",
         titleIt: "Com'è fatto?",
         grammar: {
@@ -122,6 +124,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u08-l3",
+        tags: ["g-agg-accordo"],
         cefr: "A1",
         titleIt: "Simpatico o antipatico?",
         grammar: {
@@ -174,6 +177,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u08-l4",
+        tags: ["g-agg-gradi"],
         cefr: "A1",
         titleIt: "Più alto di te",
         grammar: {
@@ -224,6 +228,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u08-test",
+      tags: ["g-possessivi", "g-agg-accordo"],
       cefr: "A1",
       titleIt: "Test — Le persone",
       exercises: [
@@ -247,6 +252,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u09-l1",
+        tags: ["g-presente", "g-preposizioni"],
         cefr: "A1",
         titleIt: "Che fai nel weekend?",
         grammar: {
@@ -319,6 +325,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u09-l2",
+        tags: ["g-frase"],
         cefr: "A1",
         titleIt: "Che tempo fa?",
         grammar: {
@@ -371,6 +378,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u09-l3",
+        tags: ["g-gerundio"],
         cefr: "A1",
         titleIt: "Sto lavorando",
         grammar: {
@@ -424,6 +432,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u09-l4",
+        tags: ["g-preposizioni", "g-presente"],
         cefr: "A1",
         titleIt: "Andiamo al cinema",
         grammar: {
@@ -486,6 +495,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u09-test",
+      tags: ["g-presente", "g-gerundio"],
       cefr: "A1",
       titleIt: "Test — Tempo libero",
       exercises: [
@@ -513,6 +523,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u10-l1",
+        tags: ["g-passato-prossimo"],
         cefr: "A1",
         titleIt: "Ho mangiato, ho visto",
         grammar: {
@@ -558,6 +569,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u10-l2",
+        tags: ["g-passato-prossimo", "g-agg-accordo"],
         cefr: "A1",
         titleIt: "Sono andato, sono andata",
         grammar: {
@@ -603,6 +615,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u10-l3",
+        tags: ["g-passato-prossimo"],
         cefr: "A1",
         titleIt: "Il mio weekend",
         grammar: {
@@ -668,6 +681,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u10-l4",
+        tags: ["g-presente", "g-nome-genere", "g-articolo-det"],
         cefr: "A1",
         titleIt: "Ripasso generale A1",
         vocab: [
@@ -716,6 +730,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u10-test",
+      tags: ["g-presente", "g-passato-prossimo", "g-articolo-det", "g-nome-genere"],
       cefr: "A1",
       titleIt: "Esame finale A1",
       exercises: [

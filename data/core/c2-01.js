@@ -11,6 +11,7 @@ LINGUAI.addUnits("C2", [
     lessons: [
       {
         id: "c2-u01-l1",
+        tags: ["g-participio"],
         cefr: "C2",
         titleIt: "Il participio presente",
         grammar: {
@@ -59,6 +60,7 @@ LINGUAI.addUnits("C2", [
       },
       {
         id: "c2-u01-l2",
+        tags: ["g-participio"],
         cefr: "C2",
         titleIt: "Participio assoluto",
         grammar: {
@@ -112,6 +114,7 @@ LINGUAI.addUnits("C2", [
       },
       {
         id: "c2-u01-l3",
+        tags: ["g-perifrasi"],
         cefr: "C2",
         titleIt: "Perifrasi verbali",
         grammar: {
@@ -170,6 +173,7 @@ LINGUAI.addUnits("C2", [
     ],
     test: {
       id: "c2-u01-test",
+      tags: ["g-participio", "g-perifrasi"],
       cefr: "C2",
       titleIt: "Test — Participi e perifrasi",
       exercises: [
@@ -193,6 +197,7 @@ LINGUAI.addUnits("C2", [
     lessons: [
       {
         id: "c2-u02-l1",
+        tags: ["g-nome-plurale", "g-nome-avanzato"],
         cefr: "C2",
         titleIt: "Le ossa e gli ossi",
         grammar: {
@@ -241,6 +246,7 @@ LINGUAI.addUnits("C2", [
       },
       {
         id: "c2-u02-l2",
+        tags: ["g-nome-avanzato"],
         cefr: "C2",
         titleIt: "I nomi composti",
         grammar: {
@@ -286,6 +292,7 @@ LINGUAI.addUnits("C2", [
       },
       {
         id: "c2-u02-l3",
+        tags: ["g-nome-avanzato"],
         cefr: "C2",
         titleIt: "Alterati e aggettivi dotti",
         grammar: {
@@ -335,6 +342,7 @@ LINGUAI.addUnits("C2", [
     ],
     test: {
       id: "c2-u02-test",
+      tags: ["g-nome-avanzato", "g-nome-plurale"],
       cefr: "C2",
       titleIt: "Test — Plurali e derivazione",
       exercises: [
@@ -361,6 +369,7 @@ LINGUAI.addUnits("C2", [
     lessons: [
       {
         id: "c2-u03-l1",
+        tags: ["g-registri"],
         cefr: "C2",
         titleIt: "Ironia e understatement",
         grammar: {
@@ -409,6 +418,7 @@ LINGUAI.addUnits("C2", [
       },
       {
         id: "c2-u03-l2",
+        tags: ["g-registri"],
         cefr: "C2",
         titleIt: "Gergo e regionalismi",
         grammar: {
@@ -457,6 +467,7 @@ LINGUAI.addUnits("C2", [
       },
       {
         id: "c2-u03-l3",
+        tags: ["g-registri"],
         cefr: "C2",
         titleIt: "Latinismi e lingua colta",
         grammar: {
@@ -506,6 +517,7 @@ LINGUAI.addUnits("C2", [
     ],
     test: {
       id: "c2-u03-test",
+      tags: ["g-registri", "g-nome-avanzato", "g-participio"],
       cefr: "C2",
       titleIt: "Esame finale C2",
       exercises: [

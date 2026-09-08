@@ -65,9 +65,12 @@ sandbox.LINGUAI.applyStrings(LANG);
 const ids = new Map();
 let nUnits = 0, nLessons = 0, nEx = 0, nVocab = 0;
 const exByType = {};
+/* {where, tag} zbierane przy lekcjach i ćwiczeniach, weryfikowane po GRAMMAR_REF */
+const usedTags = [];
 
 function checkExercise(ex, where) {
   if (!ex.t) { errors.push(`${where}: ćwiczenie bez pola t`); return; }
+  if (ex.tag !== undefined) usedTags.push({ where: `${where} tag`, tag: ex.tag });
   if (!EX_TYPES.has(ex.t)) errors.push(`${where}: nieznany typ „${ex.t}”`);
   exByType[ex.t] = (exByType[ex.t] || 0) + 1;
 
@@ -122,6 +125,15 @@ function checkLesson(l, lv, unit) {
   ids.set(l.id, true);
   if (!l.titleIt) errors.push(`${l.id}: brak titleIt`);
   if (!l.title) errors.push(`${l.id}: brak title`);
+
+  /* Tagi zagadnień: zbierane tutaj, sprawdzane niżej, bo lista poprawnych
+     id powstaje dopiero przy czytaniu GRAMMAR_REF. */
+  if (!Array.isArray(l.tags) || !l.tags.length) {
+    errors.push(`${l.id}: brak tags — quaderno błędów nie ma czym oznaczyć karty`);
+  } else {
+    l.tags.forEach(t => usedTags.push({ where: `${l.id} tags`, tag: t }));
+  }
+
   nLessons++;
   (l.vocab || []).forEach(v => {
     nVocab++;
@@ -164,6 +176,19 @@ const gramIds = new Set();
     gramIds.add(it.id);
     if (!it.body) errors.push(`Hasło ${it.id}: brak treści`);
   });
+});
+
+/* Tagi zagadnień muszą wskazywać na istniejące hasło. Wymyślony tag nie
+   jest błędem składni: karta błędu dostałaby etykietę, której nie da się
+   przetłumaczyć ani kliknąć, i widać by to było dopiero w interfejsie. */
+const tagsNieznane = new Map();
+usedTags.forEach(u => {
+  if (gramIds.has(u.tag)) return;
+  if (!tagsNieznane.has(u.tag)) tagsNieznane.set(u.tag, []);
+  tagsNieznane.get(u.tag).push(u.where);
+});
+tagsNieznane.forEach((gdzie, tag) => {
+  errors.push(`Nieznany tag „${tag}” (${gdzie.length}×, np. ${gdzie[0]}) — brak takiego hasła w GRAMMAR_REF`);
 });
 
 /* ---------------- Raport ---------------- */

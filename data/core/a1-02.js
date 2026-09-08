@@ -11,6 +11,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u04-l1",
+        tags: ["g-agg-accordo"],
         cefr: "A1",
         titleIt: "Rosso, rossa, rossi",
         grammar: {
@@ -64,6 +65,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u04-l2",
+        tags: ["g-agg-accordo", "g-agg-posizione"],
         cefr: "A1",
         titleIt: "Questo o quello?",
         grammar: {
@@ -140,6 +142,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u04-l3",
+        tags: ["g-frase"],
         cefr: "A1",
         titleIt: "Quanto costa?",
         grammar: {
@@ -192,6 +195,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u04-l4",
+        tags: ["g-avverbi", "g-agg-gradi"],
         cefr: "A1",
         titleIt: "Molto, poco, troppo",
         grammar: {
@@ -241,6 +245,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u04-test",
+      tags: ["g-agg-accordo", "g-avverbi"],
       cefr: "A1",
       titleIt: "Test — Vetrine e taglie",
       exercises: [
@@ -277,6 +282,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u05-l1",
+        tags: ["g-presente", "g-preposizioni"],
         cefr: "A1",
         titleIt: "Mi sveglio alle sette",
         grammar: {
@@ -325,6 +331,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u05-l2",
+        tags: ["g-frase", "g-preposizioni"],
         cefr: "A1",
         titleIt: "Che ore sono?",
         grammar: {
@@ -381,6 +388,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u05-l3",
+        tags: ["g-presente"],
         cefr: "A1",
         titleIt: "Posso, voglio, devo",
         grammar: {
@@ -426,6 +434,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u05-l4",
+        tags: ["g-avverbi"],
         cefr: "A1",
         titleIt: "Sempre, spesso, mai",
         grammar: {
@@ -474,6 +483,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u05-test",
+      tags: ["g-presente", "g-avverbi"],
       cefr: "A1",
       titleIt: "Test — La giornata",
       exercises: [
@@ -501,6 +511,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u06-l1",
+        tags: ["g-preposizioni", "g-articolo-det"],
         cefr: "A1",
         titleIt: "Al, del, nel, sul",
         grammar: {
@@ -560,6 +571,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u06-l2",
+        tags: ["g-presente", "g-preposizioni"],
         cefr: "A1",
         titleIt: "Andare e venire",
         grammar: {
@@ -601,6 +613,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u06-l3",
+        tags: ["g-preposizioni", "g-frase"],
         cefr: "A1",
         titleIt: "Dov'è la stazione?",
         grammar: {
@@ -682,6 +695,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u06-l4",
+        tags: ["g-frase", "g-ci-ne"],
         cefr: "A1",
         titleIt: "C'è, ci sono, non c'è",
         grammar: {
@@ -743,6 +757,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u06-test",
+      tags: ["g-preposizioni", "g-presente"],
       cefr: "A1",
       titleIt: "Test — In città",
       exercises: [
@@ -775,6 +790,7 @@ LINGUAI.addUnits("A1", [
     lessons: [
       {
         id: "a1-u07-l1",
+        tags: ["g-frase", "g-articolo-indet"],
         cefr: "A1",
         titleIt: "Un tavolo per due",
         grammar: {
@@ -856,6 +872,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u07-l2",
+        tags: ["g-pron-indiretti", "g-preposizioni"],
         cefr: "A1",
         titleIt: "Per me una carbonara",
         grammar: {
@@ -942,6 +959,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u07-l3",
+        tags: ["g-ci-ne"],
         cefr: "A1",
         titleIt: "Ne prendo due",
         grammar: {
@@ -998,6 +1016,7 @@ LINGUAI.addUnits("A1", [
       },
       {
         id: "a1-u07-l4",
+        tags: ["g-frase"],
         cefr: "A1",
         titleIt: "Il conto, per favore",
         grammar: {
@@ -1076,6 +1095,7 @@ LINGUAI.addUnits("A1", [
     ],
     test: {
       id: "a1-u07-test",
+      tags: ["g-frase", "g-ci-ne"],
       cefr: "A1",
       titleIt: "Test — A tavola",
       exercises: [

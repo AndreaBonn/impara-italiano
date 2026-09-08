@@ -11,6 +11,7 @@ LINGUAI.addUnits("A2", [
     lessons: [
       {
         id: "a2-u01-l1",
+        tags: ["g-imperfetto"],
         cefr: "A2",
         titleIt: "Da bambino abitavo…",
         grammar: {
@@ -60,6 +61,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u01-l2",
+        tags: ["g-imperfetto", "g-passato-prossimo"],
         cefr: "A2",
         titleIt: "Mentre uscivo, è squillato",
         grammar: {
@@ -116,6 +118,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u01-l3",
+        tags: ["g-imperfetto"],
         cefr: "A2",
         titleIt: "Com'era la tua città",
         grammar: {
@@ -172,6 +175,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u01-l4",
+        tags: ["g-imperfetto", "g-pron-indiretti"],
         cefr: "A2",
         titleIt: "Ti ricordi?",
         grammar: {
@@ -242,6 +246,7 @@ LINGUAI.addUnits("A2", [
     ],
     test: {
       id: "a2-u01-test",
+      tags: ["g-imperfetto", "g-passato-prossimo"],
       cefr: "A2",
       titleIt: "Test — Ieri e oggi",
       exercises: [
@@ -269,6 +274,7 @@ LINGUAI.addUnits("A2", [
     lessons: [
       {
         id: "a2-u02-l1",
+        tags: ["g-preposizioni"],
         cefr: "A2",
         titleIt: "Alla stazione",
         grammar: {
@@ -356,6 +362,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u02-l2",
+        tags: ["g-futuro"],
         cefr: "A2",
         titleIt: "Partirò domani",
         grammar: {
@@ -401,6 +408,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u02-l3",
+        tags: ["g-frase"],
         cefr: "A2",
         titleIt: "Ho una prenotazione",
         grammar: {
@@ -478,6 +486,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u02-l4",
+        tags: ["g-futuro"],
         cefr: "A2",
         titleIt: "Quando sarò arrivato",
         grammar: {
@@ -535,6 +544,7 @@ LINGUAI.addUnits("A2", [
     ],
     test: {
       id: "a2-u02-test",
+      tags: ["g-futuro"],
       cefr: "A2",
       titleIt: "Test — In viaggio",
       exercises: [
@@ -558,6 +568,7 @@ LINGUAI.addUnits("A2", [
     lessons: [
       {
         id: "a2-u03-l1",
+        tags: ["g-pron-diretti"],
         cefr: "A2",
         titleIt: "Lo, la, li, le",
         grammar: {
@@ -603,6 +614,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u03-l2",
+        tags: ["g-pron-diretti", "g-passato-prossimo"],
         cefr: "A2",
         titleIt: "L'ho vista",
         grammar: {
@@ -652,6 +664,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u03-l3",
+        tags: ["g-pron-indiretti"],
         cefr: "A2",
         titleIt: "Gli parlo, le scrivo",
         grammar: {
@@ -705,6 +718,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u03-l4",
+        tags: ["g-imperativo", "g-pron-diretti"],
         cefr: "A2",
         titleIt: "Dimmi, fammi sapere",
         grammar: {
@@ -751,6 +765,7 @@ LINGUAI.addUnits("A2", [
     ],
     test: {
       id: "a2-u03-test",
+      tags: ["g-pron-diretti", "g-pron-indiretti"],
       cefr: "A2",
       titleIt: "Test — Lo vedo, gli parlo",
       exercises: [
@@ -778,6 +793,7 @@ LINGUAI.addUnits("A2", [
     lessons: [
       {
         id: "a2-u04-l1",
+        tags: ["g-pron-indiretti"],
         cefr: "A2",
         titleIt: "Mi fa male la testa",
         grammar: {
@@ -834,6 +850,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u04-l2",
+        tags: ["g-preposizioni"],
         cefr: "A2",
         titleIt: "Dal medico",
         grammar: {
@@ -921,6 +938,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u04-l3",
+        tags: ["g-condizionale"],
         cefr: "A2",
         titleIt: "Dovresti riposare",
         grammar: {
@@ -978,6 +996,7 @@ LINGUAI.addUnits("A2", [
       },
       {
         id: "a2-u04-l4",
+        tags: ["g-avverbi"],
         cefr: "A2",
         titleIt: "Vita sana",
         grammar: {
@@ -1031,6 +1050,7 @@ LINGUAI.addUnits("A2", [
     ],
     test: {
       id: "a2-u04-test",
+      tags: ["g-condizionale", "g-pron-indiretti"],
       cefr: "A2",
       titleIt: "Test — Salute",
       exercises: [

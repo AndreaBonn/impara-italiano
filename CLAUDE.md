@@ -47,7 +47,7 @@ W nakładce siedzi to, co uczeń czyta po swojemu.
 
 | `data/core/` | `data/i18n/<lang>/` |
 |---|---|
-| `id`, `cefr`, `icon`, `titleIt` | `title`, `theme`, `objectives[]`, całe `theory[]`, całe `culture` |
+| `id`, `cefr`, `icon`, `titleIt`, `tags[]` | `title`, `theme`, `objectives[]`, całe `theory[]`, całe `culture` |
 | `grammar.examples[].it` | `grammar.title`, `note`, **cała** `table` (head i rows), `examples[].tr` i `.note` |
 | `vocab[].it`, `.ex` | `vocab[]` → `tr` |
 | `dialogue.lines[].who`, `.it` | `dialogue.lines[]` → `tr` |
@@ -62,6 +62,12 @@ Dwa miejsca wymagają uwagi:
   nie są wypowiadane, więc powielenie ich w każdym języku nic nie kosztuje po stronie nagrań.
 - **`gender.opts` zostaje w `core`**, mimo że to też `opts`. To zamknięty zbiór form włoskich,
   który musi się zgadzać z `items[].a`; wystawienie go na tłumaczenie psuje sprawdzanie.
+- **`tags` zostaje w `core`**, choć wygląda na etykietę do czytania. To tablica **id** z
+  `GRAMMAR_REF` (`g-presente`, `g-pron-diretti`, …), a nie napisów: tytuły tych haseł są już
+  przetłumaczone na pięć języków pod kluczem `ref:<id>`, więc quaderno błędów nazywa zagadnienia
+  ich słowami, nie dopisując ani jednego napisu. Każda lekcja ma co najmniej jeden tag;
+  pojedyncze ćwiczenie może dopisać `tag:` i nadpisać dziedziczenie z lekcji.
+  `validate.mjs` odrzuca lekcję bez tagów i tag, którego nie ma w `GRAMMAR_REF`.
 - **W warstwie neutralnej nie ma ani jednego słowa w języku ucznia.** Etykieta konstrukcji pisze
   się po włosku (`dopo aver + participio`, nie `+ imiesłów`), a prompt ćwiczenia po włosku
   (`Colloquiale:`, nie `Potocznie:`). Dopóki polski był jedynym językiem bazowym, taki wyciek był

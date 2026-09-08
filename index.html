@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Impara l'Italiano 🇮🇹 — kurs włoskiego od A1 do C2</title>
-<meta name="description" content="Kompletny kurs języka włoskiego po polsku: gramatyka, teoria, ćwiczenia, słuchanie i mówienie. Od A1 do poziomu native.">
+<title data-i18n="app.title">Impara l'Italiano 🇮🇹 — kurs włoskiego od A1 do C2</title>
+<meta name="description" data-i18n-content="app.description" content="Kompletny kurs języka włoskiego po polsku: gramatyka, teoria, ćwiczenia, słuchanie i mówienie. Od A1 do poziomu native.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,36 +13,37 @@
 </head>
 <body>
 
-<a class="skip-link" href="#main">Przejdź do treści</a>
+<a class="skip-link" href="#main" data-i18n="app.skipToContent">Przejdź do treści</a>
 
-<button class="rail-toggle" id="railToggle" aria-label="Otwórz menu" aria-expanded="false">
+<button class="rail-toggle" id="railToggle" data-i18n-label="app.openMenu" aria-label="Otwórz menu" aria-expanded="false">
   <span class="rail-toggle__bars" aria-hidden="true"></span>
 </button>
 
 <div class="shell">
 
   <!-- ══════════ RAIL ══════════ -->
-  <nav class="rail" id="rail" aria-label="Nawigacja główna">
+  <nav class="rail" id="rail" data-i18n-label="app.mainNav" aria-label="Nawigacja główna">
     <div class="rail__head">
+      <!-- nazwa kursu zostaje po włosku we wszystkich językach -->
       <p class="rail__brand"><span class="rail__flag" aria-hidden="true">🇮🇹</span>Impara l'Italiano</p>
-      <p class="rail__tag">Włoski po polsku · A1 → C2</p>
+      <p class="rail__tag" data-i18n="app.tagline">Włoski po polsku · A1 → C2</p>
     </div>
 
     <div class="rail__stats" id="railStats"></div>
 
     <ul class="rail__menu" id="railMenu">
-      <li><button class="rail__item" data-route="percorso"><span class="rail__ico" aria-hidden="true">🗺️</span>Ścieżka nauki</button></li>
-      <li><button class="rail__item" data-route="ripasso"><span class="rail__ico" aria-hidden="true">🔁</span>Powtórki<span class="rail__badge" id="dueBadge" hidden>0</span></button></li>
-      <li><button class="rail__item" data-route="conversazione"><span class="rail__ico" aria-hidden="true">🎙️</span>Rozmowy na głos</button></li>
-      <li><button class="rail__item" data-route="grammatica"><span class="rail__ico" aria-hidden="true">📐</span>Gramatyka</button></li>
-      <li><button class="rail__item" data-route="coniugatore"><span class="rail__ico" aria-hidden="true">🧩</span>Odmiana czasowników</button></li>
-      <li><button class="rail__item" data-route="lessico"><span class="rail__ico" aria-hidden="true">📖</span>Mój słownik</button></li>
-      <li><button class="rail__item" data-route="progressi"><span class="rail__ico" aria-hidden="true">🌸</span>Postępy</button></li>
-      <li><button class="rail__item" data-route="impostazioni"><span class="rail__ico" aria-hidden="true">⚙️</span>Ustawienia</button></li>
+      <li><button class="rail__item" data-route="percorso"><span class="rail__ico" aria-hidden="true">🗺️</span><span data-i18n="nav.path">Ścieżka nauki</span></button></li>
+      <li><button class="rail__item" data-route="ripasso"><span class="rail__ico" aria-hidden="true">🔁</span><span data-i18n="nav.review">Powtórki</span><span class="rail__badge" id="dueBadge" hidden>0</span></button></li>
+      <li><button class="rail__item" data-route="conversazione"><span class="rail__ico" aria-hidden="true">🎙️</span><span data-i18n="nav.talk">Rozmowy na głos</span></button></li>
+      <li><button class="rail__item" data-route="grammatica"><span class="rail__ico" aria-hidden="true">📐</span><span data-i18n="nav.grammar">Gramatyka</span></button></li>
+      <li><button class="rail__item" data-route="coniugatore"><span class="rail__ico" aria-hidden="true">🧩</span><span data-i18n="nav.verbs">Odmiana czasowników</span></button></li>
+      <li><button class="rail__item" data-route="lessico"><span class="rail__ico" aria-hidden="true">📖</span><span data-i18n="nav.lexicon">Mój słownik</span></button></li>
+      <li><button class="rail__item" data-route="progressi"><span class="rail__ico" aria-hidden="true">🌸</span><span data-i18n="nav.progress">Postępy</span></button></li>
+      <li><button class="rail__item" data-route="impostazioni"><span class="rail__ico" aria-hidden="true">⚙️</span><span data-i18n="nav.settings">Ustawienia</span></button></li>
     </ul>
 
     <div class="rail__foot">
-      <button class="rail__theme" id="themeToggle" aria-label="Przełącz motyw">🌙 Tryb nocny</button>
+      <button class="rail__theme" id="themeToggle" data-i18n-label="theme.toggle" aria-label="Przełącz motyw">🌙 Tryb nocny</button>
     </div>
   </nav>
 
@@ -65,6 +66,9 @@
 <script src="assets/js/views.js"></script>
 
 <!-- ══════════ DANE ══════════ -->
+<!-- słowniki interfejsu: oba języki naraz, bo przełączenie ma być natychmiastowe -->
+<script src="data/i18n/ui-pl.js"></script>
+<script src="data/i18n/ui-en.js"></script>
 <!-- warstwa neutralna językowo: struktura, włoski, klucze odpowiedzi -->
 <script src="data/core/curriculum-index.js"></script>
 <script src="data/core/grammar-reference.js"></script>

@@ -57,14 +57,19 @@
   }
 
   /* ---------------- Powłoka ---------------- */
+  /** Kafelek licznika. Forma słowa idzie za liczbą, nie odwrotnie. */
+  function stat(n, key) {
+    return '<div class="rail__stat"><b>' + n + "</b><span>" + Core.esc(I18n.t(key, { n: n })) + "</span></div>";
+  }
+
   App.refreshRail = function () {
     var s = Core.state;
     var box = document.getElementById("railStats");
     if (box) {
       box.innerHTML =
-        '<div class="rail__stat"><b>' + s.streak.count + "</b><span>dni</span></div>" +
-        '<div class="rail__stat"><b>' + s.stats.lessonsDone + "</b><span>lekcji</span></div>" +
-        '<div class="rail__stat"><b>' + s.xp + "</b><span>pkt</span></div>";
+        stat(s.streak.count, "stats.days") +
+        stat(s.stats.lessonsDone, "stats.lessons") +
+        stat(s.xp, "stats.points");
     }
     var due = Core.dueCount();
     var badge = document.getElementById("dueBadge");
@@ -88,12 +93,18 @@
   function applyTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
     var b = document.getElementById("themeToggle");
-    if (b) b.textContent = t === "dark" ? "☀️ Tryb dzienny" : "🌙 Tryb nocny";
+    // klucz siedzi w atrybucie, nie tylko w tej linijce: dzięki temu
+    // I18n.apply() przetłumaczy przycisk przy zmianie języka, bez pomocy
+    if (b) {
+      b.setAttribute("data-i18n", t === "dark" ? "theme.light" : "theme.dark");
+      b.textContent = I18n.t(b.getAttribute("data-i18n"));
+    }
   }
 
   /* ---------------- Start ---------------- */
   function boot() {
     Core.load();
+    I18n.set(Core.state.settings.lang);
     LINGUAI.applyStrings(Core.state.settings.lang);
     applyTheme(Core.state.settings.theme || "light");
     App.refreshRail();

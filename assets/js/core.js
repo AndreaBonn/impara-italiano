@@ -490,7 +490,12 @@
   }
 
   function resetState() {
+    // Ustawienia zostają: komunikat obiecuje skasowanie postępów, fiszek i statystyk,
+    // a nie języka wyjaśnień. Bez tego uczeń, który wybrał en/es/fr/de, po wyczyszczeniu
+    // dostaje interfejs po polsku, czyli w języku, którego może nie znać.
+    var keep = state.settings;
     state = defaultState();
+    state.settings = keep;
     save();
   }
 

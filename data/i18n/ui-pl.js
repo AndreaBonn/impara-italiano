@@ -52,6 +52,8 @@ LINGUAI.addUI("pl", {
   /* ---------------- Dostępność ---------------- */
   "a11y.listen": "Posłuchaj",
   "a11y.listenTo": "Posłuchaj {what}",
+  "audio.noItalianVoice": "Brak włoskiego głosu w systemie: zdanie nie zostanie odczytane. Angielski lektor czytający po włosku nauczyłby złej wymowy. Nagrania kursu działają niezależnie od tego.",
+  "audio.recordingFailed": "Nagranie jest w indeksie, ale plik się nie wczytał. Sprawdź, czy katalog audio/ jest obok index.html i czy strona jest serwowana z tego samego miejsca.",
 
   /* ---------------- Ścieżka nauki ---------------- */
   "path.noData": "Brak danych kursu",

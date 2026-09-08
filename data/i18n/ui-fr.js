@@ -55,6 +55,8 @@ LINGUAI.addUI("fr", {
   /* ---------------- Accessibilité ---------------- */
   "a11y.listen": "Écouter",
   "a11y.listenTo": "Écouter {what}",
+  "audio.noItalianVoice": "Aucune voix italienne sur ce système : la phrase ne sera pas lue. Un narrateur anglais lisant de l'italien t'apprendrait une mauvaise prononciation. Les enregistrements du cours fonctionnent indépendamment.",
+  "audio.recordingFailed": "L'enregistrement est dans l'index mais le fichier n'a pas pu être chargé. Vérifie que le dossier audio/ est bien à côté d'index.html et que la page est servie depuis le même endroit.",
 
   /* ---------------- Parcours ---------------- */
   "path.noData": "Aucune donnée de cours",

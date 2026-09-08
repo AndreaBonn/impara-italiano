@@ -122,14 +122,34 @@
     if (player) { try { player.pause(); player.currentTime = 0; } catch (e) { /* pusty player */ } }
   }
 
+  /* Ostrzeżenia pokazujemy raz na sesję: przy liście słówek poleciałyby przy każdym haśle. */
+  var warnedNoVoice = false;
+  var warnedRecording = false;
+
   function speakSystem(text, opts, token) {
     if (!synth) { opts.onend && opts.onend(); return false; }
+
+    var v = pickVoice();
+    if (!v) {
+      /*
+       * Bez głosu it-* przeglądarka NIE honoruje u.lang: bierze głos domyślny
+       * i czyta włoskie zdanie po angielsku. Dla kursu wymowy to gorsze niż cisza,
+       * bo uczeń powtarza akcent, którego się właśnie uczy nie mieć.
+       * Ta sama decyzja co przy blokadzie autoodtwarzania niżej.
+       */
+      if (!warnedNoVoice) {
+        warnedNoVoice = true;
+        try { Core.toast(I18n.t("audio.noItalianVoice")); } catch (e) { /* toast opcjonalny */ }
+      }
+      opts.onend && opts.onend();
+      return false;
+    }
+
     try {
       synth.cancel();
       var u = new global.SpeechSynthesisUtterance(text);
-      var v = pickVoice();
-      if (v) u.voice = v;
-      u.lang = (v && v.lang) || "it-IT";
+      u.voice = v;
+      u.lang = v.lang;
       u.rate = opts.rate || Core.state.settings.rate || 0.95;
       u.pitch = 1.05;
       u.onstart = function () { if (token === currentToken) opts.onstart && opts.onstart(); };
@@ -164,11 +184,27 @@
         el.onended = null; el.onerror = null;
         el.src = audioUrl(digest);
         el.playbackRate = Math.min(2, Math.max(0.5, opts.rate || Core.state.settings.rate || 1));
+        /*
+         * Brakujący plik zgłasza się DWA razy: przez el.onerror i przez odrzucenie
+         * obietnicy z play(). Bez tej flagi zdanie poleciałoby dwa razy.
+         */
+        var failed = false;
+        function onLoadFailure() {
+          if (token !== currentToken || failed) return;
+          failed = true;
+          /*
+           * Nagranie jest w indeksie, ale plik się nie wczytał: brakuje katalogu
+           * audio/, zła ścieżka albo blokada sieci. To inna awaria niż brak głosu
+           * systemowego, więc mówimy o niej osobno — inaczej diagnoza idzie w złą stronę.
+           */
+          if (!warnedRecording) {
+            warnedRecording = true;
+            try { Core.toast(I18n.t("audio.recordingFailed")); } catch (e) { /* toast opcjonalny */ }
+          }
+          speakSystem(clean, opts, token);
+        }
         el.onended = function () { if (token === currentToken) opts.onend && opts.onend(); };
-        el.onerror = function () {
-          // plik zniknął albo brak sieci przy pierwszym pobraniu — spadamy na syntezę
-          if (token === currentToken) speakSystem(clean, opts, token);
-        };
+        el.onerror = onLoadFailure;
         var p = el.play();
         if (p && typeof p.then === "function") {
           p.then(function () { if (token === currentToken) opts.onstart && opts.onstart(); })
@@ -178,7 +214,7 @@
              // schodzenie tu na syntezę systemową podmieniłoby lektora na głos robotyczny.
              // Zostajemy w ciszy — użytkownik ma przycisk odtwarzania, a jego klik jest gestem.
              if (err && err.name === "NotAllowedError") { opts.onend && opts.onend(); return; }
-             speakSystem(clean, opts, token);
+             onLoadFailure();
            });
         } else {
           opts.onstart && opts.onstart();

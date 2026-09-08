@@ -54,6 +54,8 @@ LINGUAI.addUI("de", {
   /* ---------------- Barrierefreiheit ---------------- */
   "a11y.listen": "Anhören",
   "a11y.listenTo": "{what} anhören",
+  "audio.noItalianVoice": "Auf diesem System gibt es keine italienische Stimme, deshalb wird der Satz nicht vorgelesen. Eine englische Stimme, die Italienisch liest, würde dir die falsche Aussprache beibringen. Die Kursaufnahmen sind davon nicht betroffen.",
+  "audio.recordingFailed": "Die Aufnahme steht im Index, aber die Datei konnte nicht geladen werden. Prüfe, ob der Ordner audio/ neben index.html liegt und die Seite von derselben Stelle ausgeliefert wird.",
 
   /* ---------------- Lernpfad ---------------- */
   "path.noData": "Keine Kursdaten",

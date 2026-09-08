@@ -49,6 +49,8 @@ LINGUAI.addUI("en", {
   /* ---------------- Accessibility ---------------- */
   "a11y.listen": "Listen",
   "a11y.listenTo": "Listen to {what}",
+  "audio.noItalianVoice": "No Italian voice on this system, so the sentence won't be read aloud. An English narrator reading Italian would teach you the wrong pronunciation. The course recordings work independently of this.",
+  "audio.recordingFailed": "The recording is in the index but the file could not be loaded. Check that the audio/ folder sits next to index.html and that the page is served from the same place.",
 
   /* ---------------- Learning path ---------------- */
   "path.noData": "No course data",

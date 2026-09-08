@@ -29,7 +29,10 @@
    */
   var LANGS = [
     { code: "pl", flag: "🇵🇱", name: "Polski" },
-    { code: "en", flag: "🇺🇸", name: "English" }
+    { code: "en", flag: "🇺🇸", name: "English" },
+    { code: "es", flag: "🇪🇸", name: "Español" },
+    { code: "fr", flag: "🇫🇷", name: "Français" },
+    { code: "de", flag: "🇩🇪", name: "Deutsch" }
   ];
 
   /* lang -> klucz („lesson:a1-u01-l1") -> łatka */

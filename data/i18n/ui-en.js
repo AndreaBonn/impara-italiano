@@ -40,6 +40,7 @@ LINGUAI.addUI("en", {
 
   /* ---------------- Explanation language picker ---------------- */
   "lang.group": "Explanation language",
+  "lang.current": "Explanation language: {name}",
   "lang.partial": {
     one: "Couldn't load {n} file — part of the course stayed in the previous language.",
     other: "Couldn't load {n} files — part of the course stayed in the previous language."

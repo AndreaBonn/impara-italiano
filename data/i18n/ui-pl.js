@@ -41,6 +41,7 @@ LINGUAI.addUI("pl", {
 
   /* ---------------- Wybór języka wyjaśnień ---------------- */
   "lang.group": "Język wyjaśnień",
+  "lang.current": "Język wyjaśnień: {name}",
   "lang.partial": {
     one: "Nie udało się wczytać {n} pliku — część kursu została w poprzednim języku.",
     few: "Nie udało się wczytać {n} plików — część kursu została w poprzednim języku.",

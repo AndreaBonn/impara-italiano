@@ -103,21 +103,87 @@
 
 
   /* ---------------- Język wyjaśnień ---------------- */
-  /** Rysuje przełącznik z I18n.LANGS. Nazwa języka zostaje w endonimie. */
+
+  /**
+   * Przełącznik jako lista rozwijana: widoczna jest tylko flaga bieżącego
+   * języka, reszta czeka w liście. Przy dwóch językach wystarczyłyby przyciski
+   * obok siebie, przy pięciu zajęłyby pół szerokości panelu.
+   *
+   * Wzorzec: przycisk aria-haspopup="listbox" + ul role="listbox". Nazwa języka
+   * zostaje w endonimie, bo listy szuka ktoś, kto bieżącego języka nie czyta.
+   */
   function renderLangPicker() {
     var box = document.getElementById("langPicker");
     if (!box) return;
+    var cur = I18n.LANGS.filter(function (l) { return l.code === I18n.lang; })[0] || I18n.LANGS[0];
+
     box.setAttribute("aria-label", I18n.t("lang.group"));
-    box.innerHTML = I18n.LANGS.map(function (l) {
-      return '<button type="button" class="rail__lang-btn" data-lang="' + l.code + '"' +
-        ' aria-label="' + Core.esc(l.name) + '" title="' + Core.esc(l.name) + '"' +
-        ' aria-pressed="' + (l.code === I18n.lang) + '">' +
-        '<span aria-hidden="true">' + l.flag + "</span></button>";
-    }).join("");
-    box.querySelectorAll("[data-lang]").forEach(function (b) {
-      b.addEventListener("click", function () { switchLang(b.getAttribute("data-lang")); });
+    box.innerHTML =
+      '<button type="button" class="rail__lang-btn js-lang-toggle" id="langToggle"' +
+      ' aria-haspopup="listbox" aria-expanded="false" aria-controls="langList"' +
+      ' aria-label="' + Core.esc(I18n.t("lang.current", { name: cur.name })) + '"' +
+      ' title="' + Core.esc(cur.name) + '">' +
+      '<span class="rail__lang-flag" aria-hidden="true">' + cur.flag + "</span>" +
+      '<span class="rail__lang-caret" aria-hidden="true">▾</span></button>' +
+      '<ul class="rail__lang-list" id="langList" role="listbox" hidden' +
+      ' aria-label="' + Core.esc(I18n.t("lang.group")) + '">' +
+      I18n.LANGS.map(function (l) {
+        return '<li role="option" tabindex="-1" data-lang="' + l.code + '"' +
+          ' aria-selected="' + (l.code === I18n.lang) + '" class="rail__lang-opt">' +
+          '<span aria-hidden="true">' + l.flag + "</span><span>" + Core.esc(l.name) + "</span></li>";
+      }).join("") + "</ul>";
+
+    var toggle = box.querySelector(".js-lang-toggle");
+    var list = box.querySelector(".rail__lang-list");
+    var opts = [].slice.call(list.querySelectorAll("[data-lang]"));
+
+    function open() {
+      list.hidden = false;
+      toggle.setAttribute("aria-expanded", "true");
+      var sel = list.querySelector('[aria-selected="true"]') || opts[0];
+      if (sel) sel.focus();
+    }
+    function close(focusToggle) {
+      list.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      if (focusToggle) toggle.focus();
+    }
+    function move(from, step) {
+      var i = opts.indexOf(from) + step;
+      if (i < 0) i = opts.length - 1;
+      if (i >= opts.length) i = 0;
+      opts[i].focus();
+    }
+
+    toggle.addEventListener("click", function () {
+      if (list.hidden) open(); else close(false);
+    });
+    opts.forEach(function (o) {
+      o.addEventListener("click", function () { close(false); switchLang(o.getAttribute("data-lang")); });
+      o.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); close(false); switchLang(o.getAttribute("data-lang")); }
+        else if (e.key === "ArrowDown") { e.preventDefault(); move(o, 1); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); move(o, -1); }
+        else if (e.key === "Escape") { e.preventDefault(); close(true); }
+      });
     });
   }
+
+  /**
+   * Klik poza listą zamyka. Rejestrowane raz, nie w renderLangPicker():
+   * ten biegnie przy każdej zmianie języka i dokładałby listener trzymający
+   * referencję do usuniętego już elementu.
+   */
+  document.addEventListener("click", function (e) {
+    var box = document.getElementById("langPicker");
+    if (!box || box.contains(e.target)) return;
+    var list = box.querySelector(".rail__lang-list");
+    var toggle = box.querySelector(".js-lang-toggle");
+    if (list && !list.hidden) {
+      list.hidden = true;
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+    }
+  });
 
   /**
    * Zmiana języka bez przeładowania: dociągamy brakujące nakładki, nakładamy je

@@ -60,7 +60,10 @@ function precache() {
  * a ikony PWA wczytuje system, nie parser strony.
  */
 function zasobyStrony() {
-  const html = readFileSync(join(ROOT, "index.html"), "utf8");
+  /* Komentarze wycinamy PRZED szukaniem: zakomentowany <script src> nie jest
+     wczytywany przez przeglądarkę, więc żądanie go w PRECACHE zatrzymałoby CI
+     na pliku, którego nikt nie potrzebuje. Bramka ma łapać brak, nie nadmiar. */
+  const html = readFileSync(join(ROOT, "index.html"), "utf8").replace(/<!--[\s\S]*?-->/g, "");
   const out = [];
 
   for (const m of html.matchAll(/<script\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi)) {

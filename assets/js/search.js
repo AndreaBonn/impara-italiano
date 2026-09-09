@@ -101,6 +101,11 @@
     return out.slice(0, LIMIT);
   }
 
+  /* Zapytanie krótsze niż dwa znaki nie jest szukane w ogóle. Bez własnego
+     komunikatu wyglądało jak „nic nie ma", czyli jak odpowiedź na pytanie,
+     którego nikt nie zadał. */
+  function zaKrotkie(q) { return fold(q || "").trim().length < 2; }
+
   var KIND_ROUTE = { lesson: "lezione", vocab: "lezione", grammar: "grammatica", talk: "conversazione" };
 
   function render(query) {
@@ -114,8 +119,8 @@
           "<span>" + highlight(r.sub, query) + "</span></span>" +
           '<span class="chip">' + esc(t("search.kind." + r.kind)) + "</span></button>";
       }).join("") + "</div>"
-      : '<div class="empty"><h3>' + esc(t("search.noneTitle")) + "</h3><p>" +
-        esc(t("search.noneText")) + "</p></div>";
+      : '<div class="empty"><h3>' + esc(t(zaKrotkie(query) ? "search.tooShortTitle" : "search.noneTitle")) + "</h3><p>" +
+        esc(t(zaKrotkie(query) ? "search.tooShortText" : "search.noneText")) + "</p></div>";
 
     document.getElementById("searchBody").innerHTML =
       '<p class="exq__sub" style="margin-bottom:14px">' +
@@ -154,8 +159,18 @@
     render(query);
     if (query && brakujace.length) {
       var zostalo = brakujace.length;
+      var nieudane = [];
       brakujace.forEach(function (lv) {
-        Core.loadLevelData(lv.code, function () { if (--zostalo === 0) render(query); });
+        Core.loadLevelData(lv.code, function (got) {
+          /* `got` mówi, czy poziom naprawdę się wczytał. Zignorowany, dawał
+             wyniki niepełne bez słowa: uczeń widziałby „nic nie znaleziono"
+             tam, gdzie naprawdę było „nie doczytałem połowy kursu". */
+          if (!got) nieudane.push(lv.code);
+          if (--zostalo === 0) {
+            render(query);
+            if (nieudane.length) Core.toast(t("search.partial", { levels: nieudane.join(", ") }));
+          }
+        });
       });
     }
   };

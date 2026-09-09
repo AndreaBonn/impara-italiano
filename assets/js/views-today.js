@@ -84,7 +84,8 @@
   function przebieg(s) {
     var box = document.getElementById("todayBox");
     document.querySelector(".js-start").hidden = true;
-    var dobre = 0, wszystkie = s.bledy.length + s.drille.length + s.fiszki.length;
+    var dobre = 0, zgubione = 0;
+    var wszystkie = s.bledy.length + s.drille.length + s.fiszki.length;
 
     /* Kolejka zadań: karty błędów, potem drille. Fiszki mają własny
        przebieg (inna interakcja: pokaż i oceń), więc idą osobno na końcu. */
@@ -99,8 +100,10 @@
 
       if (poz.rodzaj === "blad") {
         var gdzie = Errors.locate(poz.karta.key);
-        /* Treść ćwiczenia zmieniła się w kursie: nie ma czego pokazać. */
-        if (!gdzie) { Errors.drop(poz.karta.key); wszystkie--; i++; zadanie(); return; }
+        /* Karta bez ćwiczenia znika, ale uczeń ma o tym usłyszeć: cicha
+           strata wygląda dokładnie jak zaliczenie. Zakładka Błędy mówi to
+           samo, więc mówi to samo i tutaj. */
+        if (!gdzie) { Errors.drop(poz.karta.key); zgubione++; wszystkie--; i++; zadanie(); return; }
         ex = gdzie.ex;
         idx = gdzie.index;
         /* Ziarno musi być id lekcji, żeby owinięte Ex.build rozpoznało
@@ -153,6 +156,7 @@
       var next = nastepnaLekcja();
       box.innerHTML = '<div class="summary"><div class="summary__score">' + dobre + "/" + wszystkie + "</div>" +
         '<p class="summary__msg">' + esc(t("today.done")) + "</p>" +
+        (zgubione ? '<p class="summary__msg">' + esc(t("err.gone", { n: zgubione })) + "</p>" : "") +
         '<div class="summary__acts">' +
         (next ? '<button class="btn btn--primary js-lesson">' +
           esc(t("today.nextLesson", { lesson: next.lesson.title || next.lesson.titleIt })) + "</button>" : "") +

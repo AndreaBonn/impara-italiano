@@ -162,3 +162,11 @@ test("pasek znaków nie zasłania przycisku sprawdzania", async ({ page }) => {
   /* I naprawdę da się kliknąć: to jest właściwy dowód, nie geometria. */
   await page.locator(".exq .js-check").click({ timeout: 5000 });
 });
+
+test("zapytanie jednoznakowe mówi, że jest za krótkie", async ({ page }) => {
+  await szukaj(page, "a");
+  const naglowek = await page.locator(".empty h3").innerText();
+  await szukaj(page, "xyzqwerty");
+  const brak = await page.locator(".empty h3").innerText();
+  expect(naglowek, "za krótkie i brak wyników to dwie różne odpowiedzi").not.toBe(brak);
+});

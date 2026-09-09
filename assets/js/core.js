@@ -657,17 +657,32 @@
     return Array.isArray(v) ? "array" : typeof v;
   }
 
+  /**
+   * Błąd importu niesie KLUCZ napisu, nie gotowy tekst.
+   *
+   * Powód: ten komunikat czyta uczeń, który próbuje odzyskać kopię
+   * zapasową, a kurs mówi pięcioma językami. Zdanie wpisane tutaj po
+   * polsku dotarłoby po polsku także do Hiszpana — i to dokładnie w
+   * chwili, w której najbardziej potrzebuje zrozumieć, co poszło źle.
+   */
+  function importError(key, vars) {
+    var e = new Error(key);
+    e.key = key;
+    e.vars = vars || null;
+    return e;
+  }
+
   function validateImport(parsed) {
-    if (typeOf(parsed) !== "object") throw new Error("Plik nie zawiera zapisu postępów.");
-    if (typeof parsed.schema !== "number") throw new Error("Plik bez numeru wersji.");
-    if (parsed.schema > SCHEMA) throw new Error("Plik pochodzi z nowszej wersji kursu.");
-    if (parsed.schema < 1) throw new Error("Nieznany numer wersji pliku.");
+    if (typeOf(parsed) !== "object") throw importError("set.errNotSave");
+    if (typeof parsed.schema !== "number") throw importError("set.errNoVersion");
+    if (parsed.schema > SCHEMA) throw importError("set.errFromFuture");
+    if (parsed.schema < 1) throw importError("set.errNoVersion");
     if (parsed.placement !== undefined && ["object", "null"].indexOf(typeOf(parsed.placement)) < 0) {
-      throw new Error("Pole placement ma zły typ.");
+      throw importError("set.errBadField", { field: "placement" });
     }
     Object.keys(SHAPE).forEach(function (k) {
       if (parsed[k] === undefined) return;
-      if (typeOf(parsed[k]) !== SHAPE[k]) throw new Error("Pole " + k + " ma zły typ w pliku.");
+      if (typeOf(parsed[k]) !== SHAPE[k]) throw importError("set.errBadField", { field: k });
     });
   }
 
@@ -677,7 +692,7 @@
    */
   function importState(json) {
     if (typeof json !== "string" || json.length > MAX_IMPORT_CHARS) {
-      throw new Error("Plik jest za duży, żeby był zapisem postępów.");
+      throw importError("set.errTooBig");
     }
     var parsed = JSON.parse(json);
     validateImport(parsed);

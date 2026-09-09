@@ -48,8 +48,18 @@
        wylądowałby nisko z powodu braku danych, nie braku wiedzy. */
     var kody = Core.registry.levels.map(function (l) { return l.code; });
     var zostalo = kody.length;
+    var nieudane = [];
     kody.forEach(function (k) {
-      Core.loadLevelData(k, function () { if (--zostalo === 0) przebieg(box); });
+      Core.loadLevelData(k, function (got) {
+        /* Poziom, który się nie wczytał, wyglądałby jak poziom bez zadań,
+           czyli jak wynik testu. Uczeń dostałby niższy poziom z powodu sieci
+           i usłyszałby, że to jego wiedza. */
+        if (!got) nieudane.push(k);
+        if (--zostalo === 0) {
+          if (nieudane.length) Core.toast(t("place.loadFailed", { levels: nieudane.join(", ") }));
+          przebieg(box);
+        }
+      });
     });
   }
 

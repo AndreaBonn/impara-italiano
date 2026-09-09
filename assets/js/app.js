@@ -285,26 +285,8 @@
 
   global.App = App;
 
-  /**
-   * Rejestracja service workera — tylko po http(s).
-   *
-   * Z file:// rejestracja rzuca wyjątkiem, a otwarcie kursu z dysku jest
-   * wymogiem projektu, nie przypadkiem brzegowym: aplikacja ma działać
-   * bez serwera. Dlatego strażnik jest na protokole, a nie w try/catch,
-   * i żadna ścieżka w kodzie nie zakłada, że worker istnieje.
-   */
-  function registerWorker() {
-    if (!("serviceWorker" in global.navigator)) return;
-    if (!/^https?:$/.test(global.location.protocol)) return;
-    global.navigator.serviceWorker.register("sw.js").catch(function (err) {
-      // brak trybu offline nie psuje kursu, ale nie ma znikać po cichu
-      console.warn("[LinguAI] Service worker niezarejestrowany:", err && err.message);
-    });
-  }
-
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 
-  global.addEventListener("load", registerWorker);
 
 })(window);

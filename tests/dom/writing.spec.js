@@ -141,3 +141,45 @@ test("polecenie i lista kontrolna istnieją w pięciu językach", async ({ page 
   });
   expect(braki, JSON.stringify(braki)).toEqual({});
 });
+
+/* Import: il messaggio deve dire il PERCHÉ, e nella lingua dello studente.
+   Prima i messaggi erano polacchi hardcoded e la vista li buttava via. */
+test("errore di import dice il motivo, nella lingua giusta", async ({ page }) => {
+  await page.goto("/index.html#/impostazioni");
+  await page.waitForFunction(() => window.Core && window.I18n);
+
+  const wyniki = await page.evaluate(async () => {
+    const out = {};
+    for (const lang of ["pl", "en", "de"]) {
+      await new Promise(r => window.Core.setLanguage(lang, r));
+      window.I18n.set(lang);
+      const komunikaty = [];
+      for (const plik of [
+        JSON.stringify([1, 2, 3]),
+        JSON.stringify({ xp: 1 }),
+        JSON.stringify({ schema: 99 }),
+        JSON.stringify({ schema: 2, lessons: "ciao" })
+      ]) {
+        try { window.Core.importState(plik); komunikaty.push("BRAK BLEDU"); }
+        catch (e) { komunikaty.push(e.key ? window.I18n.t(e.key, e.vars) : "BEZ KLUCZA"); }
+      }
+      out[lang] = komunikaty;
+    }
+    return out;
+  });
+
+  for (const lang of ["pl", "en", "de"]) {
+    expect(wyniki[lang].length).toBe(4);
+    for (const m of wyniki[lang]) {
+      expect(m).not.toBe("BRAK BLEDU");
+      expect(m).not.toBe("BEZ KLUCZA");
+      expect(m, "komunikat nie może być samym kluczem").not.toMatch(/^set\./);
+      expect(m.length).toBeGreaterThan(15);
+    }
+    /* Cztery różne przyczyny, cztery różne komunikaty. */
+    expect(new Set(wyniki[lang]).size).toBeGreaterThanOrEqual(3);
+  }
+  /* I naprawdę różne między językami: nie zostają po polsku. */
+  expect(wyniki.pl[0]).not.toBe(wyniki.en[0]);
+  expect(wyniki.de[0]).not.toBe(wyniki.en[0]);
+});

@@ -875,6 +875,19 @@
       '<p style="color:var(--ink-soft);font-size:.9rem;margin:0">' + esc(t("set.retentionHint")) + "</p>" +
       "</div></div>" +
 
+      /* Talia dla innych programów. Osobna karta od kopii postępów, bo to
+         inna obietnica: kopia wraca TUTAJ z terminami, a ta wychodzi STĄD
+         bez nich. Zlanie ich w jeden przycisk kończy się importem „na
+         czysto" i utratą roku powtórek. */
+      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("anki.title") + "</h3>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem">' + esc(t("anki.hint")) + "</p>" +
+      '<p style="font-size:.9rem;font-weight:600">' + esc(t("anki.noSchedule")) + "</p>" +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
+      '<button class="btn btn--green btn--sm js-tsv-out">' + t("anki.export") + "</button>" +
+      '<label class="btn btn--ghost btn--sm" style="cursor:pointer">' + t("anki.import") +
+      '<input type="file" accept=".tsv,.txt,.csv,text/plain" class="js-tsv-in" hidden></label></div>' +
+      '<div class="js-tsv-preview" style="margin-top:14px"></div></div>' +
+
       '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.backup") + "</h3>" +
       '<p style="color:var(--ink-soft);font-size:.9rem">' + t("set.backupHint") + "</p>" +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
@@ -940,11 +953,137 @@
       };
       fr.readAsText(f);
     });
+    wireAnki();
+
     el().querySelector(".js-reset").addEventListener("click", function () {
       if (!global.confirm(t("set.resetConfirm"))) return;
       Core.resetState(); App.refreshRail(); Core.toast(t("set.resetDone")); App.go("percorso");
     });
   };
+
+  /* ═══════════════ Talia w formacie Anki ═══════════════ */
+
+  /**
+   * Eksport i import TSV, z ANTEPRIMA przed zapisem.
+   *
+   * Import bez podglądu to jedyne miejsce w kursie, w którym cudzy plik
+   * zmienia stan bezpowrotnie i po cichu. Uczeń ma najpierw zobaczyć, co
+   * się stanie — ile dojdzie, ile się zaktualizuje, ile zostanie
+   * pominiętych — i dopiero potem potwierdzić. Anulowanie nie może
+   * zostawić po sobie ani jednej zmiany.
+   */
+  function wireAnki() {
+    var root = el();
+    var podglad = root.querySelector(".js-tsv-preview");
+
+    root.querySelector(".js-tsv-out").addEventListener("click", function () {
+      var karty = Object.keys(Core.state.srs).map(function (k) {
+        var c = Core.state.srs[k];
+        return { it: c.it, tr: Core.cardTr(c), tag: (c.src || "").replace(/[\s,]+/g, "-") };
+      });
+      if (!karty.length) { Core.toast(t("anki.nothingToExport")); return; }
+      var blob = new Blob([Anki.toTsv(karty)], { type: "text/tab-separated-values" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "impara-italiano-" + Core.today() + ".tsv";
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      Core.toast(t("anki.exported", { n: karty.length }));
+    });
+
+    root.querySelector(".js-tsv-in").addEventListener("change", function (e) {
+      var f = e.target.files[0];
+      if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () { pokazPodglad(String(fr.result), podglad); };
+      fr.readAsText(f);
+      e.target.value = "";        // ten sam plik da się wybrać drugi raz
+    });
+  }
+
+  /** Co zrobi import: dojdzie, zaktualizuje się, zostanie pominięte. */
+  function policz(karty) {
+    var srs = Core.state.srs;
+    var nowe = 0, aktualizacje = 0, pominiete = 0, widziane = {};
+    karty.forEach(function (k) {
+      var klucz = Core.cardKey(k.it);
+      if (!klucz || Core.isForbidden(klucz)) { pominiete++; return; }
+      if (widziane[klucz]) { pominiete++; return; }
+      widziane[klucz] = true;
+      if (Object.prototype.hasOwnProperty.call(srs, klucz)) aktualizacje++;
+      else nowe++;
+    });
+    return { nowe: nowe, aktualizacje: aktualizacje, pominiete: pominiete };
+  }
+
+  function pokazPodglad(tekst, box) {
+    var w = Anki.fromTsv(tekst);
+    if (w.blad) {
+      box.innerHTML = '<div class="callout callout--trap"></div>';
+      box.querySelector(".callout").textContent = t(w.blad);
+      return;
+    }
+    if (!w.karty.length) {
+      box.innerHTML = "<p></p>";
+      box.querySelector("p").textContent = t("anki.emptyFile");
+      return;
+    }
+
+    var licz = policz(w.karty);
+    licz.pominiete += w.pominiete;
+
+    box.innerHTML = '<div class="card" style="margin:0">' +
+      '<p style="font-weight:600;margin:0 0 8px" class="js-sum"></p>' +
+      '<div class="stack js-rows" style="margin-bottom:12px"></div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button class="btn btn--green btn--sm js-ok">' + esc(t("anki.confirm")) + "</button>" +
+      '<button class="btn btn--ghost btn--sm js-no">' + esc(t("anki.cancel")) + "</button></div></div>";
+
+    box.querySelector(".js-sum").textContent =
+      t("anki.summary", { add: licz.nowe, upd: licz.aktualizacje, skip: licz.pominiete });
+
+    /* Pierwsze pięć wierszy, WYŁĄCZNIE przez textContent. To jest treść z
+       cudzego pliku: `esc()` by wystarczyło, ale textContent nie da się
+       użyć źle, a to jedyne miejsce, gdzie cudzy napis trafia na ekran. */
+    var lista = box.querySelector(".js-rows");
+    w.karty.slice(0, 5).forEach(function (k) {
+      var row = document.createElement("div");
+      row.className = "list-row";
+      var a = document.createElement("b");
+      a.textContent = k.it;
+      var b = document.createElement("span");
+      b.style.color = "var(--ink-soft)";
+      b.textContent = k.tr;
+      var main = document.createElement("span");
+      main.className = "list-row__main";
+      main.appendChild(a);
+      main.appendChild(b);
+      row.appendChild(main);
+      lista.appendChild(row);
+    });
+
+    box.querySelector(".js-no").addEventListener("click", function () {
+      box.innerHTML = "";
+      Core.toast(t("anki.cancelled"));
+    });
+    box.querySelector(".js-ok").addEventListener("click", function () {
+      /* Zapis pomija DOKŁADNIE to, co podgląd policzył jako pominięte.
+         Bez tego duplikat w pliku był liczony jako pominięty, a mimo to
+         nadpisywał tłumaczenie — podgląd obiecywał jedno, import robił
+         drugie, i uczeń nie miał jak zauważyć różnicy. Wygrywa pierwsze
+         wystąpienie, tak jak przy liczeniu. */
+      var dodane = 0, uzyte = {};
+      w.karty.forEach(function (k) {
+        var klucz = Core.cardKey(k.it);
+        if (!klucz || uzyte[klucz]) return;
+        uzyte[klucz] = true;
+        if (Core.addCard(k.it, k.tr, k.tag || "anki")) dodane++;
+      });
+      box.innerHTML = "";
+      App.refreshRail();
+      Core.toast(t("anki.imported", { n: dodane }));
+    });
+  }
 
   /**
    * Skorupa widoku, wystawiona dla modułów, które dokładają własne trasy

@@ -30,6 +30,7 @@ export const CORE = [
   "assets/js/text.js",
   "assets/js/notice.js",
   "assets/js/store.js",
+  "assets/js/registry.js",
   "assets/js/core.js"
 ];
 
@@ -139,15 +140,32 @@ function makeDocument(toasts, notices) {
     notices.push(c);
     return c;
   };
+
+  /**
+   * Kolejka wstrzykiwanych skryptów.
+   *
+   * registry.js dociąga dane poziomu przez <script>, nie przez fetch (kurs
+   * ma działać z file://), i cała jego logika wisi na onload/onerror. Bez
+   * tej kolejki nie da się sprawdzić ani kolejności plików, ani tego, co
+   * się dzieje, gdy jeden z nich nie wejdzie — a to jest różnica między
+   * „poziom wczytany częściowo" a „poziom w stanie error".
+   */
+  const wstrzykniete = [];
+  const czekajace = [];
+  const head = {
+    appendChild(el) { wstrzykniete.push(el.src); czekajace.push(el); return el; }
+  };
+
   const document = {
     documentElement: { setAttribute() {}, getAttribute() { return null; } },
+    head: head,
     getElementById(id) { return id === "toastStack" ? stack : null; },
     createElement() { return makeEl(); },
     querySelectorAll() { return []; },
     querySelector() { return null; },
     addEventListener() {}
   };
-  return { document: document, stack: stack };
+  return { document: document, stack: stack, wstrzykniete: wstrzykniete, czekajace: czekajace };
 }
 
 /**
@@ -225,6 +243,31 @@ export function loadEngine(options) {
       const raw = storage.getItem(key || "linguai.italiano.v2");
       return raw === null ? null : JSON.parse(raw);
     },
+
+    /** Adresy wstrzykniętych skryptów, w kolejności wstrzyknięcia. */
+    get scripts() { return dom.wstrzykniete; },
+
+    /**
+     * Rozstrzyga wszystkie oczekujące skrypty: udane albo nie.
+     *
+     * Pętla, a nie jedno przejście: loadScripts wstrzykuje NASTĘPNY plik
+     * dopiero z uchwytu poprzedniego, więc rozstrzygnięcie jednego dokłada
+     * kolejnego do kolejki.
+     *
+     * @param {string[]} [failing] adresy, które mają zgłosić błąd
+     */
+    settleScripts(failing) {
+      const zle = failing || [];
+      let guard = 0;
+      while (dom.czekajace.length) {
+        if (++guard > 500) throw new Error("settleScripts: skrypty bez końca");
+        const el = dom.czekajace.shift();
+        if (zle.indexOf(el.src) >= 0) el.onerror();
+        else el.onload();
+      }
+      return box;
+    },
+
     get Core() { return sandbox.Core; }
   };
 

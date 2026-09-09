@@ -299,3 +299,46 @@ tripla RGB e stampa canali impossibili (`350`, `0.985`). È la trappola già ann
 `docs/REPORT_ATTIVITA.md`. Sostituito da `tests/dom/contrast.spec.js`, che fa convertire il colore
 al browser via canvas: quello ha trovato due difetti veri (contatore a 2.58:1, bordo della scheda
 inattiva a 1.58:1), entrambi corretti.
+
+### F2 - chiusa
+
+| ID | Esito | Prova |
+|---|---|---|
+| T030 | fatto | `drills-lex.js`, 60 nomi / 24 aggettivi / 38 verbi, solo italiano, 216 righe |
+| T031-T037 | fatto | 7 generatori puri; tabella preposizioni 5×7 asserita per intero |
+| T038 | fatto | adattatore emette solo tipi esistenti; `say` e listen/speak vietati e testati |
+| T039 | fatto | carta `kind: "generated"`, chiave `drill:<generatore>#<seme>` |
+| T040 | fatto | rotta `allenamento` + voce di rail |
+| T041 | fatto | 31 chiavi × 5 lingue (piano ne prevedeva 16: i prompt dei 7 generatori non erano contati) |
+| T042 | fatto | determinismo e copertura verificati su 200 semi per generatore |
+| T043 | fatto | 172 test unit |
+
+**Tre errori miei trovati scrivendo le regole, prima che qualcuno ci costruisse sopra:**
+`articulate` dava `delli` invece di `degli`; il plurale dava `medichi` e `simpatichi` invece di
+`medici` e `simpatici` (eccezione delle sdrucciole in `-ico`).
+
+**Due difetti trovati guardando il render, non i test:** `Views.allenamento` chiamava
+`set`/`pageHead`/`el`, privati di `views.js`, e la rotta falliva in silenzio con fallback al
+percorso; il bottone "avanti" era visibile prima della risposta perché una classe con `display`
+batte `[hidden]` per specificità. Il secondo era già stato corretto una volta per la scrim del
+drawer: ora è una regola globale più un test che percorre **ogni** elemento con `hidden`.
+
+**Tentativo scartato:** rodaggio del PRNG contro semi adiacenti. Copertura piena con e senza,
+172 test verdi in entrambe le versioni, quindi rimosso.
+
+### F3 - chiusa
+
+| ID | Esito | Prova |
+|---|---|---|
+| T050 | fatto | `views-today.js`, rotta `oggi` + voce di rail, 171 righe |
+| composizione | fatto | 6 errori + 3 drill sull'argomento più debole + 8 fiszki + link alla lezione |
+| persistenza | fatto | `state.session = {date, score, total}` |
+| test | fatto | 6 test DOM |
+
+**Deviazione dal piano:** il runner delle fiszki è stato estratto da `views.js` e condiviso.
+Senza, la sessione del giorno sarebbe finita rimandando altrove, cioè facendo l'opposto del
+suo scopo.
+
+**Ramo rimosso perché irraggiungibile:** lo stato "oggi non c'è niente". I drill generativi sono
+sempre disponibili, quindi la sessione ha sempre di che riempire dieci minuti. Rimosse anche le
+due stringhe relative in cinque lingue.

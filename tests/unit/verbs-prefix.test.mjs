@@ -108,3 +108,30 @@ describe("verbs: imiesłowy nieregularne", () => {
     assert.equal(V.participle("dormire"), "dormito");
   });
 });
+
+describe("rozbiór na przedrostek to pisownia, nie etymologia", () => {
+  /* Bramka pokrycia lookupu nie umiała rozpoznać „restano" z czytanki.
+     Powód: „restare" wyglądało jak re + stare, więc dostawało odmianę
+     „stare" i produkowało „restanno", słowo, którego nie ma. Ten test
+     pilnuje obu stron: że wyjątek jest wyjątkiem, i że dziedziczenie
+     dla prawdziwych par prefiksowych dalej działa. */
+  test("restare odmienia się regularnie, nie jak stare", () => {
+    const V = silnik();
+    assert.deepEqual(Array.from(V.conjugate("restare", "pres")),
+      ["resto", "resti", "resta", "restiamo", "restate", "restano"]);
+    assert.equal(V.participle("restare"), "restato");
+  });
+
+  test("ottenere dziedziczy po tenere mimo zasymilowanego przedrostka", () => {
+    const V = silnik();
+    assert.deepEqual(Array.from(V.conjugate("ottenere", "pres")),
+      ["ottengo", "ottieni", "ottiene", "otteniamo", "ottenete", "ottengono"]);
+    assert.equal(V.participle("mantenere"), "mantenuto");
+  });
+
+  test("stare nadal jest nieregularne", () => {
+    const V = silnik();
+    assert.deepEqual(Array.from(V.conjugate("stare", "pres")),
+      ["sto", "stai", "sta", "stiamo", "state", "stanno"]);
+  });
+});

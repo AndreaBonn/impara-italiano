@@ -142,6 +142,8 @@
     [/gi$/, "gio"],      // orologi -> orologio
     [/ari$/, "ario"],    // proprietari -> proprietario
     [/eri$/, "erio"],    // misteri -> misterio (rzadkie, ale tanie)
+    [/che$/, "co"],      // poche -> poco, ricche -> ricco
+    [/i$/, "io"],        // negozi -> negozio, vecchi -> vecchio
     [/i$/, "o"],         // libri -> libro
     [/i$/, "e"],         // cani -> cane
     [/i$/, "a"],         // problemi -> problema

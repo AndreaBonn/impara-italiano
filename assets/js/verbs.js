@@ -393,6 +393,26 @@
     "tras", "trans", "tra", "dis", "de", "es", "ex", "re", "sor", "so", "su", "s"
   ];
 
+  /* Rozbiór na przedrostek i rdzeń jest heurystyką PISOWNI, nie etymologią,
+     więc zamknięta lista przedrostków wyżej wyklucza „mandare = m + andare",
+     ale nie wyklucza wszystkiego. Te trzy wpadły:
+
+       restare  wygląda jak re + stare i dostawało formy „stare",
+                czyli „restanno" zamiast „restano";
+       prestare to samo, ten sam rdzeń;
+       affare   nie jest nawet czasownikiem — trafia tu, bo kończy się
+                na -are, a słownik kursu odmienia wszystko z tą końcówką.
+
+     Znalezione przez bramkę pokrycia: „restano" z czytanki nie miało czego
+     rozpoznać. Lista rośnie tylko wtedy, gdy bramka znowu coś złapie. */
+  var BEZ_DZIEDZICZENIA = { restare: 1, prestare: 1, affare: 1 };
+
+  /* Przedrostek zasymilowany, którego pisownia nie pokazuje: „ottenere" to
+     ob+tenere, „mantenere" to manu+tenere. Dopisanie „ot" albo „man" do
+     listy przedrostków ściągnęłoby „mandare" na „dare", więc te rodziny
+     wskazujemy wprost. Bez tego „ottiene" wychodziło jako „ottene". */
+  var DZIEDZICZY_WPROST = { ottenere: "tenere", mantenere: "tenere", sostenere: "tenere" };
+
   var cachePrzedrostkow = {};
 
   /**
@@ -403,7 +423,14 @@
    */
   function irrOf(b) {
     if (IRR[b]) return IRR[b];
+    if (BEZ_DZIEDZICZENIA[b]) return null;
     if (Object.prototype.hasOwnProperty.call(cachePrzedrostkow, b)) return cachePrzedrostkow[b];
+
+    if (DZIEDZICZY_WPROST[b]) {
+      var rdzenWprost = DZIEDZICZY_WPROST[b];
+      cachePrzedrostkow[b] = zPrzedrostkiem(IRR[rdzenWprost], b.slice(0, b.length - rdzenWprost.length));
+      return cachePrzedrostkow[b];
+    }
 
     var wynik = null;
     for (var i = 0; i < PRZEDROSTKI.length && !wynik; i++) {

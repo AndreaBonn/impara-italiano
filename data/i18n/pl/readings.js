@@ -62,6 +62,66 @@ LINGUAI.addStrings("pl", {
     title: "Ale skąd, daj spokój",
     gloss: ["daj spokój", "żart, nabijanie się", "czuła", "nabywa się"],
     lex: ["ironia", "zapowiadać", "powściągliwy", "zdarzać się", "zdanie", "znaczyć", "martwić się", "albo", "dokładny", "przeciwieństwo", "kontekst", "pauza", "obcokrajowiec", "znaczenie", "dosłowny", "poważnie", "obraza", "wyrażenie", "zwyczaj"]
+  },
+  "read:r-a2-scontrino": {
+    title: "Ten świstek na ladzie",
+    gloss: ["wydać", "lada", "gwarancja", "wymienić", "dowód zakupu"],
+    lex: ["sklep", "sprzedawca", "barman", "agencja", "paragon", "dokument", "handlowy", "kasa", "filiżanka", "wyrzucić", "konkretny", "produkt", "zobowiązany", "świstek", "pokwitowanie", "płatność"]
+  },
+  "read:r-a2-piano-terra": {
+    title: "Pierwsze piętro to nie pierwsze",
+    gloss: ["przycisk", "półpiętro", "parter podwyższony", "warto"],
+    lex: ["winda", "rozpoznać", "litera", "zjednoczony", "stary", "piętro", "ziemia", "ulica", "wchodzić", "budynek", "kamienica", "adres", "zabytkowy", "sufit"]
+  },
+  "read:r-a2-farmacia-turno": {
+    title: "Apteka dyżurna",
+    gloss: ["dyżurny", "powieszony", "roleta", "okienko", "nocna pomoc lekarska"],
+    lex: ["apteka", "zostawać", "pozostać", "Asl (lokalna służba zdrowia)", "zamykać", "niedziela", "dyżur", "noc", "kartka", "strona internetowa", "tydzień", "miejscowość", "przypadać", "gmina", "sąsiedni", "farmaceuta", "recepta"]
+  },
+  "read:r-a2-ferie": {
+    title: "Zamknięte na urlop",
+    gloss: ["pustoszeją", "urlop", "szewc", "skróciła się"],
+    lex: ["Ferragosto (15 sierpnia)", "wokół", "pod", "odkryć", "też", "duży", "turystyczna", "ostatni", "sierpień", "wrzesień", "piekarz", "mechanik", "sieć", "supermarket", "fryzjer", "trattoria", "dzielnica", "zamknięcie", "turystyczny", "miesiąc"]
+  },
+  "read:r-b1-condominio": {
+    title: "Zebranie wspólnoty",
+    gloss: ["zebranie", "udziały w tysięcznych", "zarządca", "protokół", "najemca"],
+    lex: ["wspólnota mieszkaniowa", "zebranie", "zarządca", "bilans", "wydatek", "praca", "właściciel", "waga", "obliczać", "wielkość", "głosować", "głowa", "rachunek", "uczestniczyć", "podział", "podpisać"]
+  },
+  "read:r-b1-codice-fiscale": {
+    title: "Kod, który jest przed wszystkim",
+    gloss: ["numer podatkowy", "wyprowadza się", "zameldowanie", "sprawy urzędowe", "odwrót"],
+    lex: ["skrót", "miejsce", "uzyskać", "nieruchomy", "identyfikować", "nazwisko", "urodzenie", "karta", "telefoniczny", "zagranica", "legitymacja", "zdrowotny", "wręczyć", "krąg"]
+  },
+  "read:r-b1-convalida": {
+    title: "Skasuj przed wejściem",
+    gloss: ["skasować", "kasownik", "kierownik pociągu", "przypisany"],
+    lex: ["regionalny", "początek", "aplikacja", "przechodzić", "wsiadać", "wsunąć", "zapomnieć", "kwota", "kontrolować", "mandat", "prędkość", "miejsce", "zamieszanie", "system", "wątpliwość", "kasa biletowa", "pasażer"]
+  },
+  "read:r-b1-caffe-sospeso": {
+    title: "Kawa zawieszona",
+    gloss: ["zawieszony", "zwyczaj", "robotnicze", "tabliczka"],
+    lex: ["Neapol", "zwyczaj", "neapolitańczyk", "pieniądze", "pamięć", "dziesięciolecie", "miejscowy", "sławny", "uśmiechać się", "wyjaśniać"]
+  },
+  "read:r-b2-case-un-euro": {
+    title: "Domy za euro",
+    gloss: ["miasteczko", "rozpada się", "zobowiązanie", "ogłoszenie konkursu", "kaucja", "źle zrozumiana"],
+    lex: ["sprzedawać", "zobowiązanie", "mało", "opowiadać", "świat", "góry", "dziesiątka", "mieszkaniec", "pusty", "symboliczny", "rzeczywisty", "remontować", "termin", "ustalić", "remont", "tysiąc", "zagraniczny", "inicjatywa", "interes", "operacja", "koszt"]
+  },
+  "read:r-b2-dialetti": {
+    title: "To nie akcenty",
+    gloss: ["języki siostrzane", "językoznawca", "literacki", "zjednoczenie", "mniejszość"],
+    lex: ["dialekt", "zjednoczenie", "szkoła", "odmiana", "łacina", "rozdzielić się", "wenecjanin", "każdy", "własny", "odległość", "podobny", "hiszpański", "portugalski", "standardowy", "florencki", "wiek", "ludność", "telewizja", "starszy człowiek", "tłumaczyć"]
+  },
+  "read:r-b2-tirocinio": {
+    title: "Stage, staż, praca",
+    gloss: ["staż", "wynagrodzenie", "kwota", "składki", "szara strefa"],
+    lex: ["młody", "stage (staż)", "staż", "siła", "pozastudyjny", "kwota", "decydować", "problem", "kontynuować", "angielski", "wymawiać", "francuski", "wskazywać", "studyjny", "przewidywać", "dyplom", "minimalny", "region", "ustawa", "użycie", "firma", "pokrywać", "stanowisko", "powtarzać się", "ryzykować", "pełny", "zawód", "za darmo"]
+  },
+  "read:r-c1-due-giugno": {
+    title: "Drugi czerwca 1946",
+    gloss: ["monarchia", "Zgromadzenie Konstytucyjne", "weszła w życie", "wolny od pracy"],
+    lex: ["czerwiec", "pięćdziesiąt cztery", "Umberto (imię)", "wybierać", "republika", "głosować", "kobieta", "wybory", "krajowy", "referendum", "odbywać się", "wygrać", "sto", "głos", "wynik", "dzielić", "linia", "geograficzny", "wyraźny", "północ", "południe", "król", "Konstytucja", "styczeń", "święto"]
   }
 
 });

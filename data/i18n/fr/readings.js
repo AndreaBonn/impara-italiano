@@ -62,6 +62,66 @@ LINGUAI.addStrings("fr", {
     title: "Mais non, voyons",
     gloss: ["mais non, t'inquiète", "moquerie", "affectueuse", "s'acquiert"],
     lex: ["ironie", "annoncer", "réservé", "arriver", "phrase", "signifier", "s'inquiéter", "ou bien", "exact", "contraire", "contexte", "pause", "étranger", "sens", "littéral", "sérieusement", "offense", "expression", "habitude"]
+  },
+  "read:r-a2-scontrino": {
+    title: "Ce petit papier sur le comptoir",
+    gloss: ["délivrer", "le comptoir", "la garantie", "remplacer", "la preuve d'achat"],
+    lex: ["magasin", "commerçant", "barman", "agence", "ticket de caisse", "document", "commercial", "caisse", "petite tasse", "jeter", "concret", "produit", "obligé", "petit papier", "reçu", "paiement"]
+  },
+  "read:r-a2-piano-terra": {
+    title: "Le premier étage n'est pas le premier",
+    gloss: ["le bouton", "l'entresol", "le rez-de-chaussée surélevé", "il vaut mieux"],
+    lex: ["ascenseur", "reconnaître", "lettre", "uni", "vieux", "étage", "sol", "rue", "entrer", "bâtiment", "immeuble", "adresse", "historique", "plafond"]
+  },
+  "read:r-a2-farmacia-turno": {
+    title: "La pharmacie de garde",
+    gloss: ["de garde", "affiché", "le rideau métallique", "le guichet", "la garde médicale"],
+    lex: ["pharmacie", "rester", "demeurer", "Asl (santé locale)", "fermer", "dimanche", "tour de garde", "nuit", "feuille", "site web", "semaine", "village", "revenir à", "commune", "voisin", "pharmacien", "ordonnance"]
+  },
+  "read:r-a2-ferie": {
+    title: "Fermé pour congés",
+    gloss: ["se vident", "les congés", "le cordonnier", "s'est raccourcie"],
+    lex: ["Ferragosto (15 août)", "autour", "sous", "découvrir", "aussi", "grand", "touristique", "dernier", "août", "septembre", "boulanger", "mécanicien", "chaîne", "supermarché", "coiffeur", "trattoria", "quartier", "fermeture", "touristique", "mois"]
+  },
+  "read:r-b1-condominio": {
+    title: "L'assemblée de copropriété",
+    gloss: ["l'assemblée", "les millièmes (quotes-parts)", "le syndic", "le procès-verbal", "le locataire"],
+    lex: ["copropriété", "assemblée", "syndic", "budget", "dépense", "travaux", "propriétaire", "poids", "calculer", "taille", "voter", "tête", "compte", "participer", "répartition", "signer"]
+  },
+  "read:r-b1-codice-fiscale": {
+    title: "Le code qui passe avant tout",
+    gloss: ["le code fiscal", "se déduit", "la résidence officielle", "les démarches", "le verso"],
+    lex: ["sigle", "lieu", "obtenir", "bloqué", "identifier", "nom de famille", "naissance", "carte", "téléphonique", "étranger", "carte", "sanitaire", "remettre", "cercle"]
+  },
+  "read:r-b1-convalida": {
+    title: "Compostez avant de monter",
+    gloss: ["composter", "le composteur", "le chef de train", "attribué"],
+    lex: ["régional", "début", "appli", "passer", "monter", "insérer", "oublier", "somme", "contrôler", "amende", "vitesse", "place", "confusion", "système", "doute", "guichet", "passager"]
+  },
+  "read:r-b1-caffe-sospeso": {
+    title: "Le café suspendu",
+    gloss: ["suspendu", "la coutume", "populaires", "l'écriteau"],
+    lex: ["Naples", "coutume", "Napolitain", "argent", "mémoire", "décennie", "local", "célèbre", "sourire", "expliquer"]
+  },
+  "read:r-b2-case-un-euro": {
+    title: "Les maisons à un euro",
+    gloss: ["le village", "tombe en ruine", "l'engagement", "l'appel public", "la caution", "mal comprise"],
+    lex: ["vendre", "engagement", "peu", "raconter", "monde", "montagne", "dizaine", "habitant", "vide", "symbolique", "réel", "rénover", "délai", "fixer", "rénovation", "millier", "étranger", "initiative", "affaire", "opération", "coût"]
+  },
+  "read:r-b2-dialetti": {
+    title: "Ce ne sont pas des accents",
+    gloss: ["les langues sœurs", "le linguiste", "littéraire", "l'unification", "la minorité"],
+    lex: ["dialecte", "unification", "école", "variante", "latin", "se séparer", "vénitien", "chacun", "propre", "distance", "semblable", "espagnol", "portugais", "standard", "florentin", "siècle", "population", "télévision", "personne âgée", "traduire"]
+  },
+  "read:r-b2-tirocinio": {
+    title: "Stage, apprentissage, emploi",
+    gloss: ["le stage", "la rémunération", "le montant", "les cotisations", "la zone grise"],
+    lex: ["jeune", "stage", "stage (tirocinio)", "force", "extracurriculaire", "montant", "décider", "problème", "continuer", "anglais", "prononcer", "français", "indiquer", "curriculaire", "prévoir", "diplôme", "minimum", "région", "loi", "usage", "entreprise", "couvrir", "poste", "se répéter", "risquer", "complet", "métier", "gratuitement"]
+  },
+  "read:r-c1-due-giugno": {
+    title: "Deux juin 1946",
+    gloss: ["la monarchie", "l'Assemblée constituante", "entra en vigueur", "férié"],
+    lex: ["juin", "cinquante-quatre", "Umberto (prénom)", "choisir", "république", "voter", "femme", "élection", "national", "référendum", "se tenir", "gagner", "cent", "voix", "résultat", "diviser", "ligne", "géographique", "net", "nord", "sud", "roi", "Constitution", "janvier", "fête"]
   }
 
 });

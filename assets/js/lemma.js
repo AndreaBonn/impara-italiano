@@ -209,11 +209,30 @@
   var slownik = null;
   var znane = null;
 
+  /* Akcent toniczny zdjęty: „pèsca" ma się znaleźć, gdy uczeń dotknie
+     „pesca". Hasło słownikowe wolno zapisać z akcentem, bo tak się je
+     podaje w słowniku i tak czyta je lektor; forma w tekście akcentu nie
+     ma i mieć nie może. Bez tego aliasu jedno z dwóch by nie działało. */
+  var AKCENTY = { "à": "a", "á": "a", "è": "e", "é": "e", "ì": "i", "í": "i",
+    "ò": "o", "ó": "o", "ù": "u", "ú": "u" };
+
+  function bezAkcentow(w) {
+    return w.replace(/[àáèéìíòóùú]/g, function (c) { return AKCENTY[c] || c; });
+  }
+
+  /* Forma bez akcentu NIE staje się osobnym hasłem, tylko wskazuje na
+     kanoniczne. Pierwsza wersja dopisywała ją do słownika obok — i wtedy
+     dotknięcie „pesca" rozstrzygało się na „pesca", bo forma z tekstu jest
+     pierwszym kandydatem. Karta pokazywała wyraz bez akcentu, bez glosy i
+     bez nagrania, czyli dokładnie to, co ten alias miał naprawić. */
+  var aliasy = {};
+
   function dodajDoSlownika(zbior, s) {
     if (!s) return;
     var w = String(s).toLowerCase().replace(/[’']/g, "'").trim();
     if (!w) return;
     zbior[w] = true;
+    if (bezAkcentow(w) !== w) aliasy[bezAkcentow(w)] = w;
     /* Hasło wielowyrazowe wnosi też swoje słowa: „di solito" sprawia,
        że „solito" przestaje być ciszą. */
     if (w.indexOf(" ") >= 0) {
@@ -229,6 +248,7 @@
    */
   function zbudujSlownik(poziomy, czytanki) {
     var zbior = {};
+    aliasy = {};
     (poziomy || []).forEach(function (lv) {
       (lv.units || []).forEach(function (u) {
         (u.lessons || []).forEach(function (l) {
@@ -255,7 +275,15 @@
 
   function czyZnane(haslo) {
     if (znane) return znane(haslo);
-    return Object.prototype.hasOwnProperty.call(slownikKursu(), haslo);
+    var sl = slownikKursu();
+    return Object.prototype.hasOwnProperty.call(sl, haslo) ||
+      Object.prototype.hasOwnProperty.call(aliasy, haslo);
+  }
+
+  /** Hasło kanoniczne: „pesca" z tekstu wskazuje na słownikowe „pèsca". */
+  function kanoniczne(haslo) {
+    if (!znane) slownikKursu();
+    return aliasy[haslo] || haslo;
   }
 
   /** Unieważnia słownik i indeks: kurs dociąga poziomy leniwie. */
@@ -336,7 +364,12 @@
   function resolve(slowo) {
     var w = String(slowo).toLowerCase().replace(/[’']/g, "'");
     if (funkcyjneSet[w]) return [w];
-    return kandydaci(w).filter(czyZnane);
+    var out = [];
+    kandydaci(w).filter(czyZnane).forEach(function (h) {
+      var k = kanoniczne(h);
+      if (out.indexOf(k) < 0) out.push(k);
+    });
+    return out;
   }
 
   global.Lemma = {

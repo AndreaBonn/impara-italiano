@@ -117,3 +117,31 @@ describe("lemma: koszt", () => {
     assert.ok(ms < 2000, `budowa indeksu ${ms} ms`);
   });
 });
+
+describe("lemma: hasło z akcentem, forma z tekstu bez", () => {
+  /* Wyraz w zdaniu nie nosi akcentu tonicznego, a hasło słownikowe musi go
+     nosić, bo tak je czyta lektor: „pèsca" to owoc, „pésca" to łowienie i
+     głos je rozróżnia (zmierzone, dwa różne pliki). Alias łączy jedno z
+     drugim — i ma zwracać formę KANONICZNĄ, nie tę z tekstu, inaczej karta
+     pokazuje wyraz bez glosy i bez nagrania. */
+  test("dotknięcie formy bez akcentu daje hasło z akcentem", () => {
+    const box = loadEngine({ files: ["assets/js/verbs.js", "assets/js/lemma.js"] });
+    const L = box.sandbox.Lemma;
+    /* Ścieżką produkcyjną: słownik buduje się z READINGS, tak jak w
+       przeglądarce. Podstawienie własnego predykatu ominęłoby aliasy. */
+    box.sandbox.READINGS = [{ glossIt: [], lexIt: ["pèsca", "realtà"] }];
+    L.uzyjSlownika(null);
+    L.odswiez();
+    assert.deepEqual(zZewnatrz(L.resolve("pesca")), ["pèsca"]);
+    assert.deepEqual(zZewnatrz(L.resolve("realta")), ["realtà"]);
+  });
+
+  test("forma z akcentem nadal działa sama z siebie", () => {
+    const box = loadEngine({ files: ["assets/js/verbs.js", "assets/js/lemma.js"] });
+    const L = box.sandbox.Lemma;
+    box.sandbox.READINGS = [{ glossIt: [], lexIt: ["pèsca"] }];
+    L.uzyjSlownika(null);
+    L.odswiez();
+    assert.deepEqual(zZewnatrz(L.resolve("pèsca")), ["pèsca"]);
+  });
+});

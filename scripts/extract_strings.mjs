@@ -119,6 +119,13 @@ levels.forEach(function (lv) {
    ciągłe skleja te same pliki przez Audio2.speakSequence. */
 (sandbox.READINGS || []).forEach(function (r) {
   (r.sentences || []).forEach(addP);
+  /* Słowa czytanki: glosy autora i słownictwo dla dotknięcia w tekście.
+     Karta słowa ma przycisk 🔊, więc te napisy SĄ wypowiadane — a ten
+     skrypt chodził tylko po zdaniach, przez co wszystkie schodziły na
+     głos systemowy. Pola wypowiadane bez kolektora nie zgłaszają się
+     same: kurs po prostu mówi gorzej i nikt nie wie dlaczego. */
+  (r.glossIt || []).forEach(addP);
+  (r.lexIt || []).forEach(addP);
 });
 
 EXTRA.forEach(addP);

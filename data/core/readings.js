@@ -57,7 +57,7 @@ window.READINGS = [
       "La differenza è piccola, ma al mercato è subito evidente."
     ],
     glossIt: ["il cliente", "il sacchetto", "matura", "rovinano"],
-    lexIt: ["toccare", "fruttivendolo", "scegliere", "preparare", "pesca", "venditore", "contento", "antipatia", "delicato", "differenza", "piccolo", "evidente"],
+    lexIt: ["toccare", "fruttivendolo", "scegliere", "preparare", "pèsca", "venditore", "contento", "antipatia", "delicato", "differenza", "piccolo", "evidente"],
     questions: [
       { t: "truefalse", q: "Al mercato il cliente sceglie la frutta con le mani.", a: 1 },
       { t: "mcq", q: "Chi prepara il sacchetto?", opts: ["Il cliente", "Il fruttivendolo", "Il turista"], a: 1 },

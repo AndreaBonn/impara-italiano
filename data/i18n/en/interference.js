@@ -31,5 +31,12 @@ LINGUAI.addStrings("en", {
   "int:rumore": { looks: "rumour", mean: "noise", why: "It means NOISE. A rumour is “una voce” or “un pettegolezzo”." },
   "int:lussuria": { looks: "luxury", mean: "lust", why: "It means LUST. Luxury is “il lusso”." },
   "int:noioso": { looks: "noisy", mean: "boring", why: "It means BORING. Noisy is “rumoroso”." },
-  "int:ritenere": { looks: "retain", mean: "to believe", why: "It usually means TO BELIEVE or consider. To retain is “trattenere”." }
+  "int:ritenere": { looks: "retain", mean: "to believe", why: "It usually means TO BELIEVE or consider. To retain is “trattenere”." },
+  "int:preservativo": { looks: "preservative", mean: "condom", why: "It means CONDOM. A food preservative is “un conservante”, and the mix-up is memorable." },
+  "int:simpatico": { looks: "sympathetic", mean: "likeable, nice", why: "It means LIKEABLE or good company. Sympathetic in the sense of compassionate is “comprensivo”." },
+  "int:attitudine": { looks: "attitude", mean: "aptitude", why: "It means APTITUDE, a natural gift. Attitude in the sense of stance is “l'atteggiamento”." },
+  "int:disgrazia": { looks: "disgrace", mean: "misfortune", why: "It means MISFORTUNE, bad luck. Disgrace as shame is “la vergogna”." },
+  "int:romanzo": { looks: "romance", mean: "novel", why: "It means NOVEL, any novel. A love story is “una storia d'amore”." },
+  "int:abusivo": { looks: "abusive", mean: "unauthorised", why: "It means UNAUTHORISED, without a permit. Abusive behaviour is “violento”." },
+  "int:comprensivo": { looks: "comprehensive", mean: "understanding", why: "It means UNDERSTANDING towards someone. Comprehensive is “completo”." }
 });

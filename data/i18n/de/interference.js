@@ -31,5 +31,10 @@ LINGUAI.addStrings("de", {
   "int:limone": { looks: "Limone", mean: "Zitrone", why: "Das ist eine ZITRONE. Die Limette heißt „il lime“." },
   "int:prospetto": { looks: "Prospekt", mean: "Übersicht", why: "Das ist eine ÜBERSICHT oder Tabelle. Der Werbeprospekt heißt „il depliant“." },
   "int:piano": { looks: "Plan", mean: "Stockwerk", why: "Das ist das STOCKWERK, oder „langsam“. Der Plan heißt „il progetto“." },
-  "int:colazione": { looks: "Kollation", mean: "Frühstück", why: "Das ist das FRÜHSTÜCK. Ein Imbiss heißt „uno spuntino“." }
+  "int:colazione": { looks: "Kollation", mean: "Frühstück", why: "Das ist das FRÜHSTÜCK. Ein Imbiss heißt „uno spuntino“." },
+  "int:casa": { looks: "Kasse", mean: "Haus", why: "Das ist ein HAUS. Die Kasse im Laden heißt „la cassa“ — ein Buchstabe Unterschied." },
+  "int:preservativo": { looks: "Präservativ", mean: "Kondom", why: "Es heißt KONDOM. Ein Konservierungsmittel ist „un conservante“." },
+  "int:simpatico": { looks: "sympathisch", mean: "sympathisch", why: "Hier keine Falle: „simpatico“ heißt wirklich sympathisch. Es sind die Englischsprachigen, die stolpern." },
+  "int:attitudine": { looks: "Attitüde", mean: "Begabung", why: "Es heißt BEGABUNG. Die Haltung heißt „l'atteggiamento“." },
+  "int:salato": { looks: "Salat", mean: "salzig", why: "Es heißt SALZIG. Der Salat heißt „l'insalata“." }
 });

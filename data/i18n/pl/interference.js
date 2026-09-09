@@ -30,5 +30,10 @@ LINGUAI.addStrings("pl", {
   "int:vento": { looks: "wentyl", mean: "wiatr", why: "To WIATR. Wentyl to „la valvola”." },
   "int:piano": { looks: "plan", mean: "piętro", why: "To PIĘTRO w budynku, albo „powoli”. Plan działania to „il progetto”." },
   "int:morto": { looks: "morda", mean: "martwy", why: "To MARTWY. Nie ma nic wspólnego z „mordą”; podobieństwo jest przypadkowe i myli przy szybkim czytaniu." },
-  "int:cara": { looks: "kara", mean: "droga (w liście)", why: "To DROGA, kochana. Kara to „la punizione”." }
+  "int:cara": { looks: "kara", mean: "droga (w liście)", why: "To DROGA, kochana. Kara to „la punizione”." },
+  "int:colazione": { looks: "kolacja", mean: "śniadanie", why: "To ŚNIADANIE, pierwszy posiłek dnia. Kolacja to „la cena”, i pomyłka przestawia cały dzień." },
+  "int:pensione": { looks: "pensja", mean: "emerytura albo pensjonat", why: "To EMERYTURA, albo mały hotel. Pensja za pracę to „lo stipendio”." },
+  "int:casa": { looks: "kasa", mean: "dom", why: "To DOM. Kasa w sklepie to „la cassa”, i te dwa słowa różni jedna litera." },
+  "int:pila": { looks: "piła", mean: "bateria", why: "To BATERIA, albo stos czegoś. Piła do drewna to „la sega”." },
+  "int:presente": { looks: "prezent", mean: "teraźniejszość", why: "To TERAŹNIEJSZOŚĆ albo „obecny”. Prezent na urodziny to „il regalo”." }
 });

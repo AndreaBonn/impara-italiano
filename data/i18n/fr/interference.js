@@ -31,5 +31,11 @@ LINGUAI.addStrings("fr", {
   "int:pensione": { looks: "pension", mean: "pension de famille", why: "Ici pas de piège : les deux sens, retraite et petit hôtel, existent dans les deux langues." },
   "int:rumore": { looks: "rumeur", mean: "bruit", why: "Il veut dire BRUIT. La rumeur, c'est « una voce »." },
   "int:lussuria": { looks: "luxure", mean: "luxure", why: "Ici le français ne piège pas : « luxure » a le même sens. Le luxe, c'est « il lusso »." },
-  "int:noioso": { looks: "ennuyeux", mean: "ennuyeux", why: "Ici pas de piège : « noioso » veut bien dire ennuyeux." }
+  "int:noioso": { looks: "ennuyeux", mean: "ennuyeux", why: "Ici pas de piège : « noioso » veut bien dire ennuyeux." },
+  "int:preservativo": { looks: "préservatif", mean: "préservatif", why: "Ici le français ne piège pas : le sens est le même. Ce sont les anglophones qui se trompent." },
+  "int:simpatico": { looks: "sympathique", mean: "sympathique", why: "Ici pas de piège : « simpatico » veut bien dire sympathique. Le piège est pour les anglophones." },
+  "int:attitudine": { looks: "attitude", mean: "aptitude", why: "Il veut dire APTITUDE, un don. L'attitude au sens de posture, c'est « l'atteggiamento »." },
+  "int:disgrazia": { looks: "disgrâce", mean: "malheur", why: "Il veut dire MALHEUR, accident. La disgrâce au sens de honte, c'est « la vergogna »." },
+  "int:cava": { looks: "cave", mean: "carrière", why: "C'est une CARRIÈRE de pierre. La cave de la maison, c'est « la cantina »." },
+  "int:salato": { looks: "salade", mean: "salé", why: "Il veut dire SALÉ. La salade se dit « l'insalata »." }
 });

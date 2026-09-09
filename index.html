@@ -34,6 +34,7 @@
     <div class="rail__stats" id="railStats"></div>
 
     <ul class="rail__menu" id="railMenu">
+      <li><button class="rail__item" data-route="oggi"><span class="rail__ico" aria-hidden="true">☀️</span><span data-i18n="nav.today">Dziś</span></button></li>
       <li><button class="rail__item" data-route="percorso"><span class="rail__ico" aria-hidden="true">🗺️</span><span data-i18n="nav.path">Ścieżka nauki</span></button></li>
       <li><button class="rail__item" data-route="ripasso"><span class="rail__ico" aria-hidden="true">🔁</span><span data-i18n="nav.review">Powtórki</span><span class="rail__badge" id="dueBadge" hidden>0</span></button></li>
       <li><button class="rail__item" data-route="allenamento"><span class="rail__ico" aria-hidden="true">🎯</span><span data-i18n="nav.train">Trening</span></button></li>
@@ -75,6 +76,8 @@
 <script src="assets/js/views.js"></script>
 <!-- po views.js: dokłada zakładki treningu do już zdefiniowanych widoków -->
 <script src="assets/js/views-train.js"></script>
+<!-- po views-train.js: sesja dnia korzysta z Train.topicLabel -->
+<script src="assets/js/views-today.js"></script>
 
 <!-- ══════════ DANE ══════════ -->
 <!-- słowniki interfejsu: wszystkie języki naraz, bo przełączenie ma być natychmiastowe.

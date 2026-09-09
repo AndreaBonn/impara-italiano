@@ -417,19 +417,32 @@
       esc(t("srs.dueToday", { n: due.length })) + " · " + esc(t("srs.gradeHonestly")) + "</p>" +
       '<div id="srsBox"></div>';
 
+    runCards(document.getElementById("srsBox"), due, function (right, total) {
+      var box = document.getElementById("srsBox");
+      box.innerHTML = '<div class="summary"><div class="summary__score">' + right + "/" + total + "</div>" +
+        '<p class="summary__msg">' + t("srs.sessionDone") + "</p>" +
+        '<div class="summary__acts"><button class="btn btn--primary js-more">' + t("srs.nextBatch") + "</button>" +
+        '<button class="btn btn--ghost js-path">' + t("nav.path") + "</button></div></div>";
+      box.querySelector(".js-more").addEventListener("click", function () { App.go("ripasso"); });
+      box.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
+      App.refreshRail();
+    });
+  }
+
+  /**
+   * Przebieg talii fiszek w podanym kontenerze.
+   *
+   * Wydzielone z zakładki Powtórek, bo sesja dnia (views-today.js)
+   * potrzebuje tego samego przebiegu. Bez tego sesja kończyłaby się
+   * odesłaniem gdzie indziej, czyli tym, czemu ma zapobiegać.
+   *
+   * onFinish(dobre, wszystkie) decyduje, co pokazać na końcu: zakładka
+   * pokazuje podsumowanie talii, sesja dnia idzie do następnej części.
+   */
+  function runCards(box, due, onFinish) {
     var i = 0, right = 0;
     function card() {
-      var box = document.getElementById("srsBox");
-      if (i >= due.length) {
-        box.innerHTML = '<div class="summary"><div class="summary__score">' + right + "/" + due.length + "</div>" +
-          '<p class="summary__msg">' + t("srs.sessionDone") + "</p>" +
-          '<div class="summary__acts"><button class="btn btn--primary js-more">' + t("srs.nextBatch") + "</button>" +
-          '<button class="btn btn--ghost js-path">' + t("nav.path") + "</button></div></div>";
-        box.querySelector(".js-more").addEventListener("click", function () { App.go("ripasso"); });
-        box.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
-        App.refreshRail();
-        return;
-      }
+      if (i >= due.length) { onFinish(right, due.length); return; }
       var c = due[i];
       box.innerHTML = '<div class="exq">' +
         '<p class="exq__num">' + esc(t("srs.cardOf", { i: i + 1, n: due.length })) + "</p>" +
@@ -881,7 +894,7 @@
    * set/pageHead/el — trzy kopie tego samego, rozjeżdżające się przy
    * pierwszej zmianie nagłówka.
    */
-  Views.shell = { set: set, head: pageHead, root: el, empty: empty, pct: pct };
+  Views.shell = { set: set, head: pageHead, root: el, empty: empty, pct: pct, runCards: runCards };
 
   global.Views = Views;
 

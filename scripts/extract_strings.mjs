@@ -48,6 +48,7 @@ run("conversations.js");
 run("phonetics.js");
 run("readings.js");
 run("interference.js");
+run("cils.js");
 
 /* ---------------- Zbieranie ---------------- */
 /** primary: głos główny · other: głos rozmówcy (tylko jeśli nigdzie indziej nie występuje) */
@@ -131,6 +132,23 @@ levels.forEach(function (lv) {
      same: kurs po prostu mówi gorzej i nikt nie wie dlaczego. */
   (r.glossIt || []).forEach(addP);
   (r.lexIt || []).forEach(addP);
+});
+
+/* Symulacja egzaminu: WYPOWIADANE są tylko teksty do słuchania. Pytania,
+   polecenia i teksty do czytania uczeń czyta, tak jak na egzaminie, więc
+   nagrywanie ich byłoby trzystoma plikami, których nikt nigdy nie odtworzy.
+   Rozmówca dostaje drugi głos, jak w dialogach kursu. */
+(sandbox.CILS || []).forEach(function (sim) {
+  (sim.sezioni || []).forEach(function (sez) {
+    if (sez.id !== "ascolto") return;
+    (sez.prove || []).forEach(function (p) {
+      (p.brani || []).forEach(function (brano) {
+        (brano || []).forEach(function (r) {
+          if (r.it) (r.sp === "B" ? addO : addP)(r.it);
+        });
+      });
+    });
+  });
 });
 
 /* Fałszywi przyjaciele: samo słowo i zdanie z nim. Ćwiczenie polega na

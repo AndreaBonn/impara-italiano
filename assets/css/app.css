@@ -987,3 +987,46 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .sp-state{margin:12px 0 0;min-height:1.5em;color:var(--ink-soft);font-size:.92rem;}
 .sp-reveal{margin-top:16px;}
 .sp-it{font-family:var(--display);font-size:1.28rem;line-height:1.5;margin:12px 0 0;}
+
+/* ══════════════════ SYMULACJA EGZAMINU ══════════════════ */
+.cils-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:14px;padding:10px 14px;border:2px solid var(--line-strong);
+  border-radius:var(--r-m);background:var(--paper-2);
+}
+.cils-step{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+/* Zegar: cyfry o stałej szerokości, żeby pasek nie drgał co sekundę. */
+.cils-clock{font-variant-numeric:tabular-nums;font-size:1.3rem;font-weight:700;color:var(--ink);}
+.cils-prova{margin-bottom:18px;}
+.cils-h{font-size:1.05rem;margin:0 0 8px;}
+.cils-titolo{font-family:var(--display);font-size:1.15rem;margin:14px 0 6px;}
+.cils-consegna{font-style:italic;color:var(--ink-soft);margin:0 0 12px;}
+.cils-testo{margin:0 0 10px;line-height:1.62;}
+.cils-gap{color:var(--rosa-deep);}
+.cils-audio{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
+.cils-hint{font-size:.86rem;color:var(--ink-soft);margin:6px 0 0;}
+.cils-items{margin:14px 0 0;padding-left:22px;}
+.cils-items li{margin-bottom:12px;line-height:1.5;}
+.cils-q{display:block;margin-bottom:4px;}
+.cils-opts{display:flex;gap:16px;flex-wrap:wrap;}
+.cils-opts--col{flex-direction:column;gap:4px;}
+.cils-opts label{display:inline-flex;gap:6px;align-items:baseline;cursor:pointer;min-height:32px;}
+.cils-tracce{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.cils-traccia{display:flex;gap:8px;align-items:flex-start;line-height:1.5;cursor:pointer;}
+.cils-ta{width:100%;min-height:220px;font-family:inherit;line-height:1.6;resize:vertical;}
+.cils-count{font-size:.88rem;color:var(--ink-soft);margin:8px 0 0;}
+.cils-list{margin:0 0 14px;padding-left:22px;}
+.cils-list li{margin-bottom:4px;}
+.cils-check{list-style:none;margin:0;padding:0;}
+.cils-check li{margin-bottom:6px;line-height:1.5;}
+.cils-check label{display:flex;gap:8px;align-items:flex-start;cursor:pointer;min-height:32px;}
+.cils-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+.cils-state{margin:10px 0 0;min-height:1.4em;color:var(--ink-soft);}
+.cils-tab{width:100%;border-collapse:collapse;margin-bottom:12px;}
+.cils-tab th,.cils-tab td{text-align:left;padding:8px 0;border-bottom:1px solid var(--line);}
+.cils-tab td{font-variant-numeric:tabular-nums;}
+.cils-verdict{margin:12px 0 0;line-height:1.6;}
+/* Pochodzenie progu jest częścią wyniku, nie przypisem: ma być czytelne, */
+/* nie szare do granicy niewidzialności. */
+.cils-src{font-size:.88rem;color:var(--ink-soft);line-height:1.55;margin:10px 0 0;}
+.cils-struct{margin:0;line-height:1.6;}

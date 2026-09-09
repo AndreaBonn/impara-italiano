@@ -55,6 +55,12 @@
       drills: {},         // id generatora -> licznik podejść
       session: {},        // skład i postęp dzisiejszej sesji
       writing: {},        // id zadania -> wypracowanie ucznia
+      /* Przebiegi symulacji egzaminu. Kontener DOKŁADANY: starszy profil
+         dostaje go pustym przez merge(), więc numer schematu się nie rusza.
+         Trzymamy punkty dwóch sprawności, które symulator umie policzyć,
+         listę sekcji, w których skończył się czas, i werdykt — nie
+         odpowiedzi: te są ćwiczeniem, nie historią. */
+      cils: { runs: [] },
       placement: null,    // wynik testu poziomującego, dopóki go nie ma
       streak: { count: 0, lastDay: null, best: 0 },
       xp: 0,
@@ -831,7 +837,7 @@
     lessons: "object", srs: "object", saved: "object",
     settings: "object", streak: "object", stats: "object",
     errors: "object", drills: "object", reviews: "array",
-    session: "object", writing: "object"
+    session: "object", writing: "object", cils: "object"
   };
 
   function typeOf(v) {

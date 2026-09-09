@@ -29,6 +29,7 @@ export const CORE = [
   "assets/js/fsrs.js",
   "assets/js/text.js",
   "assets/js/notice.js",
+  "assets/js/store.js",
   "assets/js/core.js"
 ];
 

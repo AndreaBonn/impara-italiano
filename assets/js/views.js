@@ -780,13 +780,17 @@
       '<div class="stat-card"><b>' + s.xp + "</b><span>" + esc(t("prog.points")) + "</span></div></div>" +
 
       '<h2 style="font-size:1.2rem;margin-bottom:12px">' + t("prog.lastTwoWeeks") + "</h2>" +
-      '<div class="card" style="margin-bottom:28px"><div style="display:flex;gap:6px;align-items:flex-end;height:130px">' +
+      /* Czternaście kolumn ze skrótami dni nie mieści się na 375 px: skróty
+         mają własną szerokość minimalną i wypychają wykres poza ekran.
+         Zamiast ucinać etykiety, przewijamy w poziomie — to ten sam wzorzec,
+         którym owinięte są tabele odmiany. */
+      '<div class="card" style="margin-bottom:28px"><div class="table-wrap" style="border:0"><div style="display:flex;gap:6px;align-items:flex-end;height:130px;min-width:320px">' +
       days.map(function (x) {
         var h = Math.max(4, Math.round(100 * x.v / max));
         return '<div style="flex:1;text-align:center">' +
           '<div title="' + esc(t("prog.answers", { n: x.v })) + '" style="height:' + h + 'px;background:' + (x.v ? "var(--salvia-deep)" : "var(--line)") + ';border-radius:6px 6px 0 0"></div>' +
           '<span style="font-size:.68rem;color:var(--ink-faint)">' + x.label + "</span></div>";
-      }).join("") + "</div></div>" +
+      }).join("") + "</div></div></div>" +
 
       '<h2 style="font-size:1.2rem;margin-bottom:12px">' + t("prog.levels") + '</h2><div class="stack">' +
       Core.registry.levels.map(function (lv) {

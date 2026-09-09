@@ -617,3 +617,72 @@ describe("gradeCard: FSRS na talii słownictwa", () => {
     assert.equal(c.s, undefined, "żadnych pól FSRS w quaderno");
   });
 });
+
+describe("retencja: ustawienie ucznia zmienia terminy", () => {
+  function zKarta(retencja) {
+    const box = loadEngine();
+    box.Core.load();
+    if (retencja !== undefined) box.Core.state.settings.retention = retencja;
+    box.Core.addCard("mangiare", "jeść", "a1-u01-l1");
+    const key = box.Core.cardKey("mangiare");
+    /* Karta ma wyjść z kroków nauki, żeby odstęp liczył się ze stabilności,
+       a nie z minutowych kroków — inaczej test mierzyłby stałe, nie retencję. */
+    box.Core.gradeCard(key, 5);
+    box.Core.gradeCard(key, 5);
+    return box.Core.gradeCard(key, 4);
+  }
+
+  test("domyślna wartość to 0.9", () => {
+    const box = loadEngine();
+    box.Core.load();
+    assert.equal(box.Core.state.settings.retention, 0.9);
+  });
+
+  test("wyższa retencja skraca odstęp, niższa go wydłuża", () => {
+    const ostra = zKarta(0.95).interval;
+    const domyslna = zKarta(0.9).interval;
+    const luzna = zKarta(0.85).interval;
+    assert.ok(ostra < domyslna, `0.95 (${ostra}) ma być krótsze niż 0.9 (${domyslna})`);
+    assert.ok(domyslna < luzna, `0.9 (${domyslna}) ma być krótsze niż 0.85 (${luzna})`);
+  });
+
+  test("starszy profil bez tego pola dostaje wartość domyślną", () => {
+    const box = loadEngine({ seed: { [KEY]: saved({ settings: { rate: 0.8 } }) } });
+    box.Core.load();
+    assert.equal(box.Core.state.settings.retention, 0.9, "merge dokłada nowe pole");
+    assert.equal(box.Core.state.settings.rate, 0.8, "a starych nie rusza");
+  });
+});
+
+describe("ciągłość eksportu przez F1", () => {
+  test("plik sprzed FSRS wraca z tymi samymi kartami i terminami", () => {
+    /* Eksport z profilu w kształcie sprzed zmiany: ef i interval, zero
+       pól FSRS. To jest plik, który uczeń ma dziś na dysku. */
+    const przed = JSON.stringify({
+      schema: SCHEMA, xp: 55,
+      lessons: { "a1-u01-l1": { done: true } },
+      srs: {
+        "il pane": { it: "il pane", tr: { pl: "chleb" }, ef: 2.1, reps: 4, interval: 12, due: 1800000000000, lapses: 0 },
+        "mangiare": { it: "mangiare", tr: { pl: "jeść" }, ef: 2.5, reps: 1, interval: 1, due: 1700000000000, lapses: 0 }
+      }
+    });
+
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.importState(przed);
+
+    assert.equal(box.Core.state.schema, SCHEMA, "numer schematu nadal 2");
+    assert.equal(Object.keys(box.Core.state.srs).length, 2);
+    assert.equal(box.Core.state.srs["il pane"].due, 1800000000000, "termin nietknięty importem");
+    assert.equal(box.Core.state.srs["il pane"].interval, 12);
+    assert.equal(box.Core.state.srs["il pane"].s, undefined, "import nie przelicza na FSRS");
+    assert.equal(box.Core.state.xp, 55);
+
+    /* I z powrotem: to, co wyjdzie, ma się dać wczytać jeszcze raz. */
+    const znowu = loadEngine();
+    znowu.Core.load();
+    znowu.Core.importState(box.Core.exportState());
+    assert.equal(znowu.Core.state.srs["il pane"].due, 1800000000000);
+    assert.equal(znowu.Core.state.schema, SCHEMA);
+  });
+});

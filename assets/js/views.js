@@ -854,6 +854,27 @@
       '<button class="btn btn--ghost btn--sm js-test" style="align-self:flex-start">' + t("set.testVoice") + "</button>" +
       "</div></div>" +
 
+      /* Powtórki stoją między mową a kopią zapasową, bo to nadal ustawienie
+         nauki. Kopia i „wyczyść wszystko" są końcem strony celowo: to
+         działania na całym profilu, nie pokrętła do kręcenia w trakcie.
+
+         Suwak z gołą liczbą („0.87") nie znaczy dla ucznia nic, więc wybór
+         jest z trzech nazwanych progów, a zdanie pod spodem mówi o SKUTKU,
+         nie o algorytmie: nikt nie zmienia retencji, ludzie zmieniają „za
+         często mi to wraca". */
+      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.reviews") + "</h3>" +
+      '<div class="stack">' +
+      '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' + t("set.retention") + "</span>" +
+      '<select class="field js-retention" style="max-width:420px">' +
+      [["0.85", "set.retentionRelaxed"], ["0.9", "set.retentionDefault"], ["0.95", "set.retentionStrict"]]
+        .map(function (o) {
+          var wybrane = Math.abs((Core.state.settings.retention || 0.9) - parseFloat(o[0])) < 0.001;
+          return '<option value="' + o[0] + '"' + (wybrane ? " selected" : "") + ">" + esc(t(o[1])) + "</option>";
+        }).join("") +
+      "</select></label>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem;margin:0">' + esc(t("set.retentionHint")) + "</p>" +
+      "</div></div>" +
+
       '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.backup") + "</h3>" +
       '<p style="color:var(--ink-soft);font-size:.9rem">' + t("set.backupHint") + "</p>" +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
@@ -884,6 +905,14 @@
     });
     el().querySelector(".js-autoplay").addEventListener("change", function (e) { Core.state.settings.autoplay = e.target.checked; Core.save(); });
     el().querySelector(".js-strict").addEventListener("change", function (e) { Core.state.settings.strictAccents = e.target.checked; Core.save(); });
+    /* Zmiana działa od NASTĘPNEJ odpowiedzi: terminów już wyznaczonych nie
+       ruszamy. Przeliczenie całej talii przesunęłoby karty, których uczeń
+       dziś nie widzi, a on zmienił ustawienie, nie poprosił o migrację. */
+    el().querySelector(".js-retention").addEventListener("change", function (e) {
+      Core.state.settings.retention = parseFloat(e.target.value);
+      Core.save();
+      Core.toast(t("set.retentionSaved"));
+    });
     el().querySelector(".js-test").addEventListener("click", function () {
       Audio2.speak("Ciao! Sono la tua voce italiana. Andiamo a studiare insieme.");
     });

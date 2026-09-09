@@ -58,7 +58,11 @@
         rate: 1,
         autoplay: true,
         showPl: true,       // tłumaczenia widoczne od razu
-        strictAccents: false
+        strictAccents: false,
+        /* Docelowa szansa przypomnienia w chwili powtórki (FSRS).
+           Wyżej = częstsze powtórki i mniej zapominania, niżej = rzadsze
+           i więcej. 0.9 to wartość domyślna implementacji referencyjnej. */
+        retention: 0.9
       },
       stats: { correct: 0, wrong: 0, lessonsDone: 0, days: {} }
     };
@@ -481,12 +485,24 @@
     return c;
   }
 
+  /* Silnik zależy tylko od retencji, a ta zmienia się raz na ruski rok:
+     trzymamy ostatni zamiast budować go przy każdej odpowiedzi. */
+  var silnikCache = { retencja: null, silnik: null };
+
+  function silnikFsrs() {
+    var r = state.settings.retention || 0.9;
+    if (silnikCache.retencja !== r) {
+      silnikCache = { retencja: r, silnik: global.Fsrs.silnik({ retencja: r }) };
+    }
+    return silnikCache.silnik;
+  }
+
   function gradeCard(key, q) {
     var c = state.srs[key];
     if (!c) return null;
 
     naFsrs(c);
-    var wynik = global.Fsrs.powtorz(
+    var wynik = silnikFsrs().powtorz(
       typeof c.s === "number" ? c : null,
       OCENA_FSRS[q] || 3,
       Date.now()

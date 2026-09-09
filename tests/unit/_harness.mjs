@@ -160,8 +160,19 @@ export function loadEngine(options) {
     localStorage: storage,
     setTimeout: clock.setTimeout,
     clearTimeout: clock.clearTimeout,
-    /* Napisy interfejsu: test nie sprawdza tłumaczeń, tylko że klucz doszedł. */
-    I18n: { t(k) { return k; }, lang: "pl", locale() { return "pl-PL"; }, LANGS: [] },
+    /**
+     * Napisy interfejsu. Test nie sprawdza tłumaczeń, ale ZMIENNE muszą
+     * dotrzeć do wyniku: stub, który je gubi, sklejał 38 różnych zadań
+     * w cztery identyczne napisy i wyglądało to na usterkę generatora.
+     */
+    I18n: {
+      t(k, v) {
+        if (!v) return k;
+        const czesci = Object.keys(v).sort().map(n => n + "=" + v[n]);
+        return k + "(" + czesci.join(",") + ")";
+      },
+      lang: "pl", locale() { return "pl-PL"; }, LANGS: []
+    },
     Audio: function () { return { play() { return Promise.resolve(); }, pause() {} }; }
   };
   sandbox.window = sandbox;

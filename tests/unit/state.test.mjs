@@ -414,3 +414,40 @@ describe("postęp lekcji", () => {
     assert.equal(box.Core.state.stats.lessonsDone, 1, "liczy się raz");
   });
 });
+
+/* Znalezione w przeglądzie: potarcie ruszało przy KAŻDYM błędzie zapisu,
+   także wtedy, gdy magazyn jest zablokowany (tryb prywatny, polityka).
+   Tam wyrzucanie kart niczego nie naprawia, a kasuje pracę z tej sesji. */
+describe("potarcie tylko przy braku miejsca", () => {
+  function zablokowany(nazwaBledu) {
+    const storage = makeStorage();
+    storage.setItem = function () {
+      const e = new Error("odmowa");
+      e.name = nazwaBledu;
+      throw e;
+    };
+    return storage;
+  }
+
+  test("zablokowany magazyn nie kasuje kart", () => {
+    const box = loadEngine({ storage: zablokowany("SecurityError") });
+    box.Core.load();
+    for (let i = 0; i < 10; i++) box.Core.state.errors["k" + i] = { kind: "authored", reps: 3, ts: i };
+    box.Core.save();
+    box.flush();
+
+    assert.equal(Object.keys(box.Core.state.errors).length, 10, "karty nietknięte");
+    assert.deepEqual(box.toasts, ["core.saveBlocked"], "ale uczeń wie, że nie zapisano");
+  });
+
+  test("brak miejsca nadal uruchamia potarcie", () => {
+    const box = loadEngine({ storage: makeStorage({ limit: 2000 }) });
+    box.Core.load();
+    for (let i = 0; i < 40; i++) {
+      box.Core.state.errors["k" + i] = { kind: "authored", reps: 3, ts: i, w: "x".repeat(200) };
+    }
+    box.Core.save();
+    box.flush();
+    assert.ok(Object.keys(box.Core.state.errors).length < 40, "coś ustąpiło miejsca");
+  });
+});

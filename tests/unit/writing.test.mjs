@@ -161,3 +161,41 @@ describe("zapis wypracowania", () => {
     assert.equal(box.Core.state.writing["w-1"].text, "Un testo lungo del corso.");
   });
 });
+
+/* Znalezione w przeglądzie kodu, nie przez test — i tu, żeby nie wróciło. */
+describe("regresje z przeglądu", () => {
+  test("apostrof typograficzny z telefonu trafia w wymaganie", () => {
+    const box = silnik();
+    const wym = [{ any: ["secondo l'autore", "l'autore sostiene"] }];
+    /* U+2019, ten, który wstawia iOS i każdy edytor tekstu. */
+    assert.equal(znajdz(box, "Secondo l’autore la lingua evita.", wym)[0].found, true);
+    assert.equal(znajdz(box, "Secondo l'autore la lingua evita.", wym)[0].found, true);
+  });
+
+  test("apostrof działa też w drugą stronę: wymaganie krzywe, tekst prosty", () => {
+    const box = silnik();
+    assert.equal(znajdz(box, "Vado all'una.", [{ word: "all’una" }])[0].found, true);
+  });
+
+  /* Luz na końcówce miał obsłużyć „sono andata" wobec „sono andato".
+     Zastosowany do zwrotów stałych przepuszczał formy niepoprawne. */
+  test("zwrot stały nie przyjmuje przekręconej końcówki", () => {
+    const box = silnik();
+    const wym = [{ any: ["cordiali saluti"] }];
+    assert.equal(znajdz(box, "Cordiali saluti, Marco.", wym)[0].found, true);
+    assert.equal(znajdz(box, "Cordiali saluto, Marco.", wym)[0].found, false);
+    assert.equal(znajdz(box, "Cordiali salute, Marco.", wym)[0].found, false);
+  });
+
+  test("di solito nie przyjmuje di solita", () => {
+    const box = silnik();
+    const wym = [{ any: ["di solito"] }];
+    assert.equal(znajdz(box, "Di solito mi alzo presto.", wym)[0].found, true);
+    assert.equal(znajdz(box, "Di solita mi alzo presto.", wym)[0].found, false);
+  });
+
+  test("a uzgodnienie imiesłowu nadal przechodzi", () => {
+    const box = silnik();
+    assert.equal(znajdz(box, "Sono andata via.", [{ verb: "andare", tense: "passPross" }])[0].found, true);
+  });
+});

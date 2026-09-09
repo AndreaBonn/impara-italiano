@@ -22,10 +22,10 @@
 
   var Writing = {};
 
-  /** Znak w znak: małe litery i zdjęte akcenty, bez ruszania odstępów. */
-  function fold(s) {
-    return Core.stripAccents(String(s == null ? "" : s).toLowerCase());
-  }
+  /* Składanie z core.js: małe litery, ujednolicone apostrofy, zdjęte akcenty.
+     Własna kopia gubiła apostrof typograficzny, więc „secondo l’autore"
+     napisane na telefonie nigdy nie trafiało w wymaganie. */
+  var fold = Core.fold;
 
   /**
    * Formy, których szukamy dla jednego wymagania.
@@ -51,10 +51,10 @@
    * W formach prostych („parlavo") nic nie zmieniamy: tam końcówka niesie
    * osobę i podmiana byłaby zgodą na błąd.
    */
-  function wzorzec(forma) {
+  function wzorzec(forma, luzNaKoncu) {
     var f = fold(forma).trim().replace(/\s+/g, " ");
     var uciekniete = f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    if (f.indexOf(" ") >= 0) uciekniete = uciekniete.replace(/[oaie]$/, "[oaie]");
+    if (luzNaKoncu && f.indexOf(" ") >= 0) uciekniete = uciekniete.replace(/[oaie]$/, "[oaie]");
     return new RegExp("(^|[^a-zà-ù])" + uciekniete + "([^a-zà-ù]|$)");
   }
 
@@ -69,9 +69,14 @@
     var hay = fold(text || "");
     return (requires || []).map(function (req) {
       var formy = formyDla(req);
+      /* Luz na końcówce dotyczy WYŁĄCZNIE form z koniugatora, bo tylko tam
+         chodzi o uzgodnienie imiesłowu. Na zwrotach z `any` przepuszczałby
+         „cordiali saluto" i „di solita": formy niepoprawne, przyjęte jako
+         poprawne, czyli dokładnie odwrotnie niż ćwiczenie zamierza. */
+      var luz = !!req.verb;
       var trafiona = null;
       for (var i = 0; i < formy.length && !trafiona; i++) {
-        if (wzorzec(formy[i]).test(hay)) trafiona = formy[i];
+        if (wzorzec(formy[i], luz).test(hay)) trafiona = formy[i];
       }
       return {
         key: req.key || req.verb || req.word || (req.any || [])[0] || "?",

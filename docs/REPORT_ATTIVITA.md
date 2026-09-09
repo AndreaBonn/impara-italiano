@@ -169,3 +169,119 @@ konwersję OKLCH → sRGB w silniku przeglądarki: 17 par, wszystkie ≥ 4.5:1 p
   przechodzą w tryb pisany (zachowanie zaprojektowane, nie awaria).
 - Jakość syntezy zależy od głosów zainstalowanych w systemie użytkownika.
 - Postępy żyją w `localStorage` jednej przeglądarki; przenoszenie przez eksport/import.
+
+## 2026-09-09 — Motor adaptacyjny: dziewięć funkcji, które uczą się z błędów ucznia
+
+### Punkt wyjścia
+
+Kurs był liniowy: ta sama ścieżka dla każdego, żadnej pamięci o tym, co uczeń pomylił,
+żadnego sposobu na wejście w środku poziomu ani na wypełnienie dziesięciu wolnych minut
+bez decyzji. Plan, podział na zadania i ADR spisane w `specs/001-motore-adattivo/` przed
+napisaniem pierwszej linii kodu produkcyjnego, żeby pracę dało się wznowić i skontrolować
+bez odtwarzania rozmowy, która ją zaplanowała. Fazy: FT (fundament testowy), F0–F8.
+
+### Co umie teraz aplikacja
+
+| Funkcja | Zachowanie dla ucznia |
+|---|---|
+| Zeszyt błędów | Zła odpowiedź zapisuje kartę z tematem gramatycznym lekcji; dobra odpowiedź na coś, czego jeszcze nie ma w zeszycie, nie zapisuje niczego |
+| Powtórki błędów | Zakładka w widoku powtórek odtwarza prawdziwe ćwiczenie, nie kartę do samooceny; dwie poprawne odpowiedzi z rzędu zamykają kartę (SM-2, 1 i 3 dni) |
+| Trening generowany | 7 generatorów (rodzajniki, przyimki, liczby, daty, godziny, czasowniki z dwoma pomocniczymi…) tworzy nieograniczoną liczbę ćwiczeń z reguł, bez pisania i tłumaczenia każdego zdania osobno |
+| „Dziś" | Jeden przycisk: 6 kart błędów, 3 zadania generowane z najsłabszego tematu, 8 fiszek, potem kolejna lekcja — sesja nigdy nie jest pusta |
+| Plazowanie poziomu | Wyszukiwanie binarne po 6 poziomach zamiast klikania przez sto lekcji; wynik nie zapisuje się sam, tylko pokazuje ile lekcji zostałoby odznaczonych i czeka na decyzję |
+| Minimalne pary | 21 par (nonno/nono, podwojone spółgłoski, akcent, gl, c/g miękkie-twarde) uczy rozróżniania dźwięków przed poprawianiem wymowy |
+| Rozszerzone czytanie/słuchanie | 12 tekstów A1→C2 w trzech trybach: czytanie z audio zdanie po zdaniu, słuchanie z ukrytym tekstem, dyktando |
+| Produkcja pisemna | 6 zadań (kompozycje i tłumaczenia); to, co da się sprawdzić maszynowo (wymagane konstrukcje), sprawdza się naprawdę, reszta jest nazwana wprost jako niemierzalna, a nie udawana checklistą samooceny |
+| PWA offline | Obietnica z README staje się prawdziwa: nagrania w cache raz na zawsze (nazwa pliku to hash treści), kod i dane network-first, żeby zapomniany bump wersji nie zamroził ucznia na starej wersji |
+
+### Decyzje architektoniczne i ich powód
+
+- **Stan rośnie przez dodawanie, nie przez podbicie schematu.** Sześć nowych kontenerów
+  weszło do `defaultState`, `SCHEMA` zostało na 2. `load()` już scala zapis z domyślnym
+  stanem, więc profil zapisany wcześniej dostaje nowe pola puste, za darmo. Podbicie
+  numeru odrzuciłoby każdy plik JSON, który uczeń kiedykolwiek wyeksportował, w zamian za
+  migrację, która nie miałaby nic do zrobienia.
+- **Klucz karty błędu w trzech częściach**: `lessonId#sygnatura#bliźniak`. Sam hash treści
+  nie wystarcza: na warstwie neutralnej całe `mcq` to `{ t: "mcq", a: 1 }`, bo pytanie i
+  opcje żyją w nakładce językowej, a `a1-u01-l1` ma dwa identyczne takie ćwiczenia obok
+  siebie. Id lekcji broni przed kolizją między setkami ćwiczeń, sygnatura liczona tylko z
+  pól neutralnych broni przed osieroceniem karty przy zmianie języka, licznik bliźniaka
+  rozróżnia dwa identyczne ćwiczenia w tej samej lekcji. Zweryfikowane na prawdziwym
+  kursie: 1514 kluczy, 0 kolizji, każdy wraca do własnego ćwiczenia, bez zmian po
+  przełączeniu na niemiecki.
+- **Drille generowane z reguł, nie pisane.** Uczeń mylący `del` z `dello` potrzebuje
+  dwustu powtórzeń, kurs miał cztery, bo każde trzeba było napisać i przetłumaczyć na
+  pięć języków. Generator jest czystą funkcją ziarna: to samo ziarno zawsze daje to samo
+  zadanie, więc karta błędu wskazuje na (generator, ziarno) zamiast przechowywać treść.
+  Drille są tekstowe z założenia — wygenerowane zdanie nie ma wpisu w indeksie audio,
+  więc przycisk głośnika spadłby na syntezę systemową, czyli dokładnie ten mechaniczny
+  głos, którego projekt unika.
+- **Pytania o zrozumienie tekstu po włosku w warstwie neutralnej.** Sprawdzanie po
+  polsku zrozumienia włoskiego tekstu sprawdzałoby tłumaczenie, nie zrozumienie. Efekt
+  uboczny: dodanie nowego języka kosztuje zero nowych pytań.
+- **Service worker network-first** dla powłoki aplikacji i danych, cache-first tylko dla
+  nagrań (nazwa pliku = hash treści, więc bajty pod danym adresem nigdy się nie
+  zmieniają). Bez build stepu pliki nie noszą hashu w nazwie, a jedyna wersja to stała
+  ustawiana ręcznie — zapomniany bump pod cache-first zamroziłby ucznia na starym
+  kodzie bezpowrotnie i bez śladu w logu.
+
+### Błędy znalezione i naprawione
+
+- **Zanieczyszczenie prototypu sprzed tej pracy.** `JSON.parse` zamienia `"__proto__"` w
+  zwykłą własną właściwość, a odczyt `base["__proto__"]` na zwykłym obiekcie zwraca
+  `Object.prototype`. `merge()` wchodził w nią i przypisywał, więc plik postępu
+  `{"schema":2,"__proto__":{"polluted":"yes"}}` ustawiał widoczną dla każdego obiektu na
+  stronie właściwość do przeładowania. Osiągalne z przycisku importu w ustawieniach —
+  dokładnie tam, gdzie trafia plik od kogoś innego. Poprawka w `merge()`, nie w
+  `importState()`, bo `load()` dochodzi do tej samej funkcji z `localStorage`.
+- **Przy pełnym limicie miejsca nie zapisywało się nic**, łącznie z postępem lekcji.
+  Cały stan żył pod jednym kluczem `localStorage`, więc nieudany zapis tracił wszystko
+  naraz: passę, XP, statystyki i fiszki razem. Teraz `save()` odrzuca to, co uczeń
+  odrobi sam (karty błędów od najlepiej opanowanych, liczniki drilli), a zostawia to,
+  czego nie odrobi. Kompozycje pisemne celowo nie są na tej liście, mimo że są
+  największym elementem pliku — to własne zdania ucznia.
+- **`[hidden]` przegrywało z `display` klasy.** Przycisk „dalej" pokazywał się przed
+  odpowiedzią, bo klasa z własnym `display` bije regułę `[hidden]` specyficznością. Błąd
+  poprawiany już raz punktowo (scrim szuflady), teraz jedna globalna reguła plus test
+  przechodzący po każdym elemencie `[hidden]` na stronie.
+- **Minimalne pary usunięte po pomiarze, nie na oko.** Głos wymawia akcenty
+  niekonsekwentnie: `pèsca`/`pésca` dają różne pliki, ale `vènti`/`vénti` wracają
+  bajt w bajt identyczne. Cała para i cały zestaw otwarte/zamknięte `o` usunięte, bo
+  żadna z jego trzech par nie przetrwała pomiaru (`scripts/check_minpairs.py`,
+  zostawiony jako bramka).
+- **Przewijanie poziome od wykresu postępu.** Czternaście kolumn dni z etykietami dni
+  tygodnia miało własną minimalną szerokość i przy 375px spychało całą stronę 24px poza
+  ekran. Znalezione przemiataniem wszystkich tras w dwóch szerokościach i dwóch
+  motywach, nie przez lekturę widoków, które ta praca dotykała — akurat tego wykresu nie
+  dotknęła. Test regresji chodzi teraz po wszystkich czternastu trasach zamiast nazywać
+  wykres z imienia.
+
+### Bramki końcowe
+
+| Bramka | Wynik |
+|---|---|
+| `npm test` | 204 testy jednostkowe, zielone |
+| `npm run test:dom` | 111 testów DOM, zielone |
+| `validate.mjs` × 5 języków | OK |
+| `parity.mjs` | OK, 4 nakładki |
+| `build_audio.py --dry-run` | 0 brakujących, 2654 pliki, 34 MB (+2 MB) |
+| axe-core, 7 nowych widoków × 2 motywy | 0 naruszeń |
+| 16 tras × 375/1280px × jasny/ciemny | 0 błędów w konsoli |
+| Przewijanie poziome 320/375/414 | brak |
+| Otwarcie z `file://` | działa |
+
+### Ograniczenia i rzeczy niezweryfikowane
+
+- `verify_states` z pakietu a11y-gate nadal nie czyta OKLCH poprawnie (znany artefakt
+  narzędzia); kontrast mierzony osobno przez konwersję w przeglądarce (`tests/dom/contrast.spec.js`).
+  Znalazło dwa prawdziwe defekty tą drogą: badge zakładki błędów przy 2,58:1/1,59:1
+  (poprawione do 8,43:1/6,40:1) i obramowanie nieaktywnej zakładki przy 1,58:1
+  (poprawione na `--ink-faint`).
+- Zadanie T003 (osobny skrypt bramkujący migrację) świadomie pominięte: te same cztery
+  fakty pokrywają już testy jednostkowe uruchamiane w `npm test`, drugi skrypt byłby
+  drugim źródłem prawdy rozjeżdżającym się przy pierwszej zmianie.
+- Koniugator pozostaje na syntezie systemowej — generuje formy dowolne, nie da się ich
+  nagrać z wyprzedzeniem (już odnotowane w poprzedniej sesji).
+- Rozpoznawanie mowy działa w Chrome, Edge i Safari 16+; gdzie indziej ćwiczenia mówione
+  przechodzą w tryb pisany (zachowanie zaprojektowane, nie awaria).
+- `edge-tts`, na którym opiera się cała warstwa audio, jest nieoficjalnym API Microsoftu.

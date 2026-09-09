@@ -147,6 +147,14 @@
     return true;
   }
 
+  /** Czy to naprawdę brak miejsca, a nie inny powód odmowy zapisu. */
+  function brakMiejsca(e) {
+    if (!e) return false;
+    return e.name === "QuotaExceededError" ||
+      e.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+      e.code === 22 || e.code === 1014;
+  }
+
   function persist() {
     var lost = false;
     for (;;) {
@@ -155,6 +163,11 @@
         if (lost) notice("core.storagePruned");
         return true;
       } catch (e) {
+        /* Potarcie kasuje dane bezpowrotnie, więc uruchamia je WYŁĄCZNIE
+           brak miejsca. Zablokowany magazyn (tryb prywatny, polityka
+           przeglądarki) rzuca czym innym: tam wyrzucanie kart niczego nie
+           naprawia, a niszczy to, co uczeń zrobił w tej sesji. */
+        if (!brakMiejsca(e)) { notice("core.saveBlocked"); return false; }
         if (!pruneOnce()) { notice("core.saveBlocked"); return false; }
         lost = true;
       }
@@ -207,12 +220,34 @@
   }
 
   /** Normalizuje odpowiedź ucznia do porównania. */
+  /**
+   * Znaki typograficzne na maszynowe. Wymiana jest ZNAK W ZNAK, więc nie
+   * przesuwa pozycji w tekście — to jest warunek, na którym stoi
+   * podświetlanie wyników wyszukiwania (search.js).
+   *
+   * Klawiatura telefonu i edytor tekstu dają „’", nie „'". Bez tej wymiany
+   * uczeń, który wkleja albo pisze na iOS, nigdy nie trafia w „l'autore".
+   */
+  function detypo(s) {
+    return String(s == null ? "" : s)
+      .replace(/[‘’ʼ`´]/g, "'")
+      .replace(/[“”„]/g, '"');
+  }
+
+  /**
+   * Składanie do porównań: małe litery, ujednolicone apostrofy, zdjęte
+   * akcenty. Białych znaków NIE zwęża, w odróżnieniu od norm(): dzięki
+   * temu długość jest zachowana i po indeksach z tekstu złożonego można
+   * ciąć oryginał.
+   */
+  function fold(s) {
+    return stripAccents(detypo(s).toLowerCase());
+  }
+
   function norm(s, opts) {
     opts = opts || {};
-    var t = String(s == null ? "" : s)
+    var t = detypo(s)
       .toLowerCase()
-      .replace(/[‘’ʼ`´]/g, "'")
-      .replace(/[“”„]/g, '"')
       .replace(/[.,;:!?…"()\[\]]/g, " ")
       .replace(/\s*'\s*/g, "'")
       .replace(/\s+/g, " ")
@@ -729,7 +764,7 @@
     registry: registry,
     get state() { return state; },
     load: load, save: save,
-    norm: norm, stripAccents: stripAccents, levenshtein: levenshtein,
+    norm: norm, fold: fold, stripAccents: stripAccents, levenshtein: levenshtein,
     similarity: similarity, checkOpen: checkOpen,
     today: today, touchDay: touchDay,
     cardKey: cardKey, addCard: addCard, cardTr: cardTr,

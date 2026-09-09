@@ -36,9 +36,7 @@
    * źródłowym: podświetlenie ucinałoby w złym punkcie. Tu długość musi się
    * zgadzać, bo po indeksach z jednego napisu tniemy drugi.
    */
-  function fold(s) {
-    return Core.stripAccents(String(s == null ? "" : s).toLowerCase());
-  }
+  var fold = Core.fold;
 
   /**
    * Podświetlenie bez wstrzyknięcia.

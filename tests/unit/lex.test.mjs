@@ -151,3 +151,30 @@ describe("higiena leksykonu", () => {
     assert.ok(L.VERBS.length >= 30, `czasowników: ${L.VERBS.length}`);
   });
 });
+
+/* Znalezione w przeglądzie: gałąź i+samogłoska w regule LO była martwa,
+   bo test samogłoski wypadał wcześniej. W leksykonie nie ma dziś takiego
+   słowa, więc żaden istniejący test tego nie łapał. */
+describe("regresje z przeglądu", () => {
+  test("i+samogłoska bierze lo, nie l'", () => {
+    const L = lex();
+    assert.equal(L.definite("iodio", "m", false), "lo");
+    assert.equal(L.definite("iugoslavo", "m", false), "lo");
+  });
+
+  test("a zwykła samogłoska nadal bierze l'", () => {
+    const L = lex();
+    assert.equal(L.definite("amico", "m", false), "l'");
+    assert.equal(L.definite("uomo", "m", false), "l'");
+    assert.equal(L.definite("inverno", "m", false), "l'");
+    assert.equal(L.definite("esame", "m", false), "l'");
+  });
+
+  test("reszta reguły LO nietknięta", () => {
+    const L = lex();
+    [["studente","lo"],["zaino","lo"],["gnocco","lo"],["psicologo","lo"],
+     ["yogurt","lo"],["libro","il"],["cane","il"]].forEach(([w, oczek]) => {
+      assert.equal(L.definite(w, "m", false), oczek, w);
+    });
+  });
+});

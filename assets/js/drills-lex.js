@@ -70,8 +70,12 @@
       return VOWEL.test(w) ? "l'" : "la";
     }
     if (plural) return (LO.test(w) || VOWEL.test(w)) ? "gli" : "i";
-    if (VOWEL.test(w)) return "l'";
-    return LO.test(w) ? "lo" : "il";
+    /* LO sprawdzane PRZED samogłoską, bo jeden z jego warunków to i+samogłoska
+       („lo iodio"): przy odwrotnej kolejności ta gałąź była martwa i wychodziło
+       „l'iodio". Dziś w leksykonie nie ma takiego słowa — i właśnie dlatego
+       reguła musi być poprawna teraz, a nie kiedy ktoś je dopisze. */
+    if (LO.test(w)) return "lo";
+    return VOWEL.test(w) ? "l'" : "il";
   }
 
   /** Rodzajnik nieokreślony. Liczby mnogiej nie ma — tam wchodzi partitivo. */

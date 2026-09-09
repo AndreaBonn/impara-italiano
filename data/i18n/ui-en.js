@@ -682,6 +682,11 @@ LINGUAI.addUI("en", {
   "core.saveBlocked": "Browser storage is full, so your progress is no longer being saved. Export it in Settings and free up some space.",
   "core.storagePruned": "Storage ran out, so the oldest review cards were dropped to keep your lesson progress.",
   "core.noticeDismiss": "Dismiss message",
+  "core.backupDue": {
+    one: "{n} lesson finished since your last backup. The course keeps your progress in this browser only: save a copy, because cleared storage cannot be rebuilt from anything.",
+    other: "{n} lessons finished since your last backup. The course keeps your progress in this browser only: save a copy, because cleared storage cannot be rebuilt from anything."
+  },
+  "core.backupSave": "Save a copy",
 
   /* ---------------- Verb meanings in the conjugator datalist ---------------- */
   "verb.essere": "to be",

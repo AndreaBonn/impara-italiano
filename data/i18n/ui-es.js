@@ -692,6 +692,12 @@ LINGUAI.addUI("es", {
   "core.saveBlocked": "El almacenamiento del navegador está lleno: tu progreso ya no se guarda. Expórtalo en Ajustes y libera espacio.",
   "core.storagePruned": "Se acabó el espacio: se han eliminado las tarjetas de repaso más antiguas para conservar tu progreso en las lecciones.",
   "core.noticeDismiss": "Cerrar aviso",
+  "core.backupDue": {
+    one: "Has terminado {n} lección desde la última copia. El curso guarda tu progreso solo en este navegador: guarda una copia, porque una memoria borrada no se puede reconstruir.",
+    many: "Has terminado {n} lecciones desde la última copia. El curso guarda tu progreso solo en este navegador: guarda una copia, porque una memoria borrada no se puede reconstruir.",
+    other: "Has terminado {n} lecciones desde la última copia. El curso guarda tu progreso solo en este navegador: guarda una copia, porque una memoria borrada no se puede reconstruir."
+  },
+  "core.backupSave": "Guardar copia",
 
   /* ---------------- Significado de los verbos en el conjugador ---------------- */
   "verb.essere": "ser / estar",

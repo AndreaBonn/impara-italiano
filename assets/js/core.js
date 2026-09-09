@@ -82,9 +82,21 @@
            dopuścić. Kontener dokładany, schemat się nie rusza. */
         sttConsent: false
       },
-      stats: { correct: 0, wrong: 0, lessonsDone: 0, days: {} }
+      stats: { correct: 0, wrong: 0, lessonsDone: 0, days: {} },
+      /* Stan przypomnienia o kopii zapasowej. `at` to liczba ukończonych
+         lekcji w chwili ostatniego zapisania kopii, więc próg liczy się
+         od niej, a nie od początku nauki. Kontener DOKŁADANY: starszy
+         profil dostaje go zerowy przez merge i pierwsze przypomnienie
+         zobaczy po dziesięciu nowych lekcjach, a nie od razu. */
+      backup: { at: 0, ts: 0, snoozed: 0 }
     };
   };
+
+  /* Co ile UKOŃCZONYCH lekcji przypominać o kopii. Powtórzone podejście
+     do zdanej już lekcji nie liczy się: nie przybyło niczego, co można
+     stracić. Liczba trafia też do napisu przez {n}, więc zmiana tutaj
+     zmienia komunikat i nie wymaga ruszania pięciu plików z napisami. */
+  var BACKUP_EVERY = 10;
 
   var state = defaultState();
 
@@ -629,6 +641,17 @@
     if (!wasDone && state.lessons[id].done) {
       state.stats.lessonsDone += 1;
       state.xp += 20;
+      /* Bramka stoi TUTAJ, a nie w widoku końca lekcji: recordLesson woła
+         też ekran rozmów, a przy następnym widoku, który go zawoła, nie
+         ma o czym pamiętać. Ten sam wzorzec co zgoda w consent.js. */
+      if (backupDue()) {
+        notice("core.backupDue", {
+          vars: { n: lessonsSinceBackup() },
+          actionKey: "core.backupSave",
+          onAction: downloadBackup,
+          onDismiss: snoozeBackup
+        });
+      }
     }
     state.xp += score * 2;
     state.minutes += Math.round((seconds || 0) / 60);
@@ -802,6 +825,65 @@
   /* ---------------- Import / eksport ---------------- */
   function exportState() { return JSON.stringify(state, null, 2); }
 
+  /* ---------------- Kopia zapasowa ---------------- */
+
+  /**
+   * Ile lekcji uczeń ukończył od ostatniego zamknięcia sprawy: albo od
+   * zapisanej kopii, albo od odłożenia przypomnienia na później.
+   *
+   * Dwa pola, nie jedno: `at` znaczy „tyle postępów jest zabezpieczone"
+   * i przesuwa je WYŁĄCZNIE zapis kopii. Gdyby przesuwało je też
+   * zamknięcie komunikatu, kurs uznałby odłożenie na później za
+   * zrobioną kopię i skłamałby o tym, co uczeń ma na dysku.
+   */
+  function lessonsSinceBackup() {
+    var b = state.backup || {};
+    return state.stats.lessonsDone - Math.max(b.at || 0, b.snoozed || 0);
+  }
+
+  function backupDue() {
+    return lessonsSinceBackup() >= BACKUP_EVERY;
+  }
+
+  function markBackup() {
+    var b = state.backup || {};
+    state.backup = { at: state.stats.lessonsDone, ts: Date.now(), snoozed: b.snoozed || 0 };
+    save();
+  }
+
+  /**
+   * „Nie teraz": następne przypomnienie po kolejnych dziesięciu lekcjach.
+   *
+   * Bez tego zamknięcie komunikatu zdejmuje tylko blokadę powtórzeń w
+   * notice(), więc przy przekroczonym progu przypomnienie wraca po
+   * NAJBLIŻSZEJ lekcji i tak po każdej następnej. Prośba o kopię co
+   * dziesięć lekcji jest przypomnieniem, ta sama prośba co lekcję jest
+   * powodem, żeby przestać czytać komunikaty tego kursu.
+   */
+  function snoozeBackup() {
+    var b = state.backup || {};
+    state.backup = { at: b.at || 0, ts: b.ts || 0, snoozed: state.stats.lessonsDone };
+    save();
+  }
+
+  /**
+   * Zapisuje stan do pliku i przesuwa próg przypomnienia.
+   *
+   * Znacznik idzie PRZED serializacją, nie po niej: plik ma nieść już
+   * nową wartość `backup.at`. Odwrotna kolejność wypuszcza kopię ze
+   * starym znacznikiem, więc uczeń, który ją kiedyś odzyska, dostaje
+   * przypomnienie natychmiast — o kopii, którą właśnie wgrał.
+   */
+  function downloadBackup() {
+    markBackup();
+    var blob = new global.Blob([exportState()], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = global.URL.createObjectURL(blob);
+    a.download = "impara-italiano-" + global.I18n.lang + "-" + today() + ".json";
+    a.click();
+    global.setTimeout(function () { global.URL.revokeObjectURL(a.href); }, 1000);
+  }
+
   /**
    * Schody migracji. Każdy stopień podnosi zapis o jedną wersję, więc plik
    * z dowolnej starszej dochodzi do bieżącej, przechodząc po kolei.
@@ -837,7 +919,8 @@
     lessons: "object", srs: "object", saved: "object",
     settings: "object", streak: "object", stats: "object",
     errors: "object", drills: "object", reviews: "array",
-    session: "object", writing: "object", cils: "object"
+    session: "object", writing: "object", cils: "object",
+    backup: "object"
   };
 
   function typeOf(v) {
@@ -919,23 +1002,45 @@
    * „wybierz odpowiedź". Utrata danych nie jest wiadomością do
    * przeoczenia między jednym ćwiczeniem a drugim, więc idzie tędy.
    */
-  function notice(key) {
+  function notice(key, opts) {
     if (noticed[key]) return;
     var stack = document.getElementById("toastStack");
     if (!stack) return;
     noticed[key] = true;
+    var o = opts || {};
 
     var el = document.createElement("div");
     el.className = "toast toast--stuck";
     el.setAttribute("role", "alert");
-    el.textContent = global.I18n.t(key);
+    el.textContent = global.I18n.t(key, o.vars);
+
+    /* Przycisk akcji, gdy komunikat prosi ucznia o zrobienie czegoś.
+       Bez niego przypomnienie o kopii kończy się instrukcją „wejdź w
+       Ustawienia", czyli przerzuca na ucznia nawigację w chwili, w
+       której i tak zaraz zamknie komunikat. */
+    if (o.actionKey && o.onAction) {
+      var act = document.createElement("button");
+      act.type = "button";
+      act.className = "btn btn--primary toast__act";
+      act.textContent = global.I18n.t(o.actionKey);
+      act.addEventListener("click", function () {
+        o.onAction();
+        el.remove();
+        noticed[key] = false;
+      });
+      el.appendChild(act);
+    }
 
     var x = document.createElement("button");
     x.type = "button";
     x.className = "toast__x";
     x.textContent = "×";
     x.setAttribute("aria-label", global.I18n.t("core.noticeDismiss"));
-    x.addEventListener("click", function () { el.remove(); noticed[key] = false; });
+    x.addEventListener("click", function () {
+      el.remove();
+      noticed[key] = false;
+      if (o.onDismiss) o.onDismiss();
+    });
 
     el.appendChild(x);
     stack.appendChild(el);
@@ -979,6 +1084,8 @@
     registerLevel: registerLevel, addUnits: addUnits, getLesson: getLesson,
     loadLevelData: loadLevelData, setLanguage: setLanguage,
     exportState: exportState, importState: importState, resetState: resetState,
+    backupDue: backupDue, markBackup: markBackup, snoozeBackup: snoozeBackup,
+    downloadBackup: downloadBackup,
     toast: toast, notice: notice, esc: esc, seededShuffle: seededShuffle
   };
 

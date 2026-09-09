@@ -57,9 +57,13 @@ const MIERNIK = () => {
     if (!el) return null;
     const cs = getComputedStyle(el);
     const pod = tlo(el);
+    /* Kontrolka wypełniona odróżnia się tłem, nie krawędzią: WCAG 1.4.11
+       pyta, czy WIDAĆ, że to kontrolka, a nie którym pikselem to widać. */
+    const podSpodem = el.parentElement ? tlo(el.parentElement) : pod;
     return {
       tekst: ratio(srgb(cs.color, pod), srgb(pod)),
       obramowanie: ratio(srgb(cs.borderTopColor, pod), srgb(pod)),
+      wypelnienie: ratio(srgb(cs.backgroundColor, podSpodem), srgb(podSpodem)),
       wielkosc: parseFloat(cs.fontSize),
       waga: cs.fontWeight
     };
@@ -147,5 +151,41 @@ for (const theme of ["light", "dark"]) {
         .toBeGreaterThanOrEqual(TEKST);
       await page.mouse.move(0, 0);
     }
+  });
+}
+
+/* ============================================================
+   Trwały komunikat: mierzony na własnym tle, nie na tle strony.
+
+   Toast ma swoje `background`, więc czytelność jego napisu nie wynika
+   z niczego, co zmierzono wyżej — a jest to jedyne miejsce w kursie,
+   które prosi ucznia o zrobienie czegoś z jego postępami.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`komunikat o kopii: kontrast w motywie ${theme}`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html");
+    await page.waitForFunction(() => window.Core && window.I18n);
+    await page.evaluate(t => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* przejście palety */
+    await page.evaluate(() => {
+      for (let i = 0; i < 10; i++) window.Core.recordLesson("kontrast-l" + i, 10, 10, 60);
+    });
+    await page.waitForSelector(".toast--stuck");
+
+    for (const [sel, opis] of [[".toast--stuck", "napis komunikatu"],
+                               [".toast__act", "przycisk zapisania kopii"],
+                               [".toast__x", "przycisk zamknięcia"]]) {
+      const m = await page.evaluate(s => window.__kontrast(s), sel);
+      expect(m, `${opis} (${sel}) nie istnieje`).not.toBeNull();
+      expect(m.tekst, `${opis}: ${m.tekst.toFixed(2)}:1, próg ${TEKST}`)
+        .toBeGreaterThanOrEqual(TEKST);
+    }
+
+    /* Przycisk akcji ma się odcinać od tła komunikatu: ghost wychodził
+       tu 1,58:1 obramowaniem, czyli wyglądał jak podkreślony napis. */
+    const act = await page.evaluate(() => window.__kontrast(".toast__act"));
+    expect(act.wypelnienie, `tło przycisku wobec komunikatu: ${act.wypelnienie.toFixed(2)}:1`)
+      .toBeGreaterThanOrEqual(UI);
   });
 }

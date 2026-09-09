@@ -822,6 +822,14 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 }
 .toast__x:hover{background:var(--paper-3);color:var(--ink);}
 .toast__x:focus-visible{outline:3px solid var(--rosa-deep);outline-offset:2px;}
+/* Akcja w trwałym komunikacie, trzy decyzje i wszystkie z pomiaru:
+   `flex`, nie odziedziczone `inline-flex` z .btn, bo przycisk zostawał w
+   linii tekstu i margin-top wsuwał go NA ostatni wiersz zamiast wypchnąć
+   pod akapit; `fit-content`, żeby nie rozciągał się na całą szerokość;
+   klasa btn--primary, nie ghost, bo obramowanie ghosta na tle komunikatu
+   dawało 1,58:1 przy progu 3:1 (btn--sm odpada osobno: 36 px to za mały
+   cel dotykowy na telefonie). */
+.toast__act{display:flex;width:fit-content;margin-top:10px;}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 
 /* ══════════════════ RESPONSIVE ══════════════════ */

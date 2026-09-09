@@ -1,5 +1,80 @@
 # Report attività — Impara l'Italiano
 
+## 2026-09-09 — Promemoria di backup ogni dieci lezioni
+
+**Tag:** `feat` `stato` `a11y`
+
+### Punto di partenza: account e sincronizzazione, valutati e scartati
+
+La richiesta iniziale era un login con progressi sincronizzati fra dispositivi, restando su
+GitHub Pages. Il vincolo è netto: GitHub Pages serve file statici in sola lettura, quindi non
+esiste un punto in cui il browser possa depositare byte. Scrivere in un repo o in un Gist via
+API richiede un token con permesso di scrittura, e quel token finirebbe nel JavaScript che
+chiunque può leggere.
+
+Le vie praticabili passavano tutte per un servizio terzo:
+
+| Opzione | Costo reale |
+|---|---|
+| Firebase Auth + Firestore | gratis, nessuna sospensione per inattività, regole al posto di codice server |
+| Supabase | il progetto free va in pausa dopo 7 giorni di inattività, cioè proprio lo scenario di un corso personale |
+| Codice di sincronizzazione senza account (Firestore o Cloudflare KV) | nessuna email né password, ma il codice perso non si recupera |
+
+Decisione dell'utente: niente account e niente servizi esterni, i progressi restano in
+`localStorage` su un solo dispositivo.
+
+### Conseguenza: l'unica copia è quella che lo studente salva a mano
+
+Con quella scelta, l'export in Impostazioni smette di essere una comodità e diventa la sola
+rete di sicurezza. Safari cancella lo storage dopo sette giorni in cui il sito non viene
+aperto (l'eccezione è il corso installato sulla schermata home), e una pulizia dei dati di
+navigazione basta ovunque. Da qui il promemoria.
+
+### Implementazione
+
+Contenitore `backup` aggiunto allo stato, con `SCHEMA` fermo a 2 perché nessun campo esistente
+cambia significato. Due campi, non uno:
+
+- `at`: lezioni completate al momento dell'ultima copia salvata. Lo muove solo un export.
+- `snoozed`: lezioni completate quando lo studente ha chiuso l'avviso. Vale come "non ora".
+
+Tenerli separati serve a non far passare una chiusura dell'avviso per una copia fatta. Il
+controllo sta in `recordLesson`, non nella schermata di fine lezione, perché anche le
+conversazioni la chiamano: un solo passaggio obbligato invece di due punti da ricordare, come
+già fa il consenso al microfono in `Audio2.listen`.
+
+`notice()` accetta ora un'azione e un gestore di chiusura, quindi l'avviso porta il bottone che
+scarica il file invece di rimandare a Impostazioni. Il download vive in `Core.downloadBackup()`
+e lo usano entrambi i punti; imposta il marcatore prima di serializzare, altrimenti il file
+uscirebbe con un valore vecchio e chiederebbe una copia nuova appena reimportato.
+
+### Due difetti trovati dai test, non a mente
+
+| Difetto | Come è emerso |
+|---|---|
+| Chiuso l'avviso, tornava alla lezione successiva e poi a ogni lezione | test DOM sulla chiusura: `notice()` azzera il flag di deduplica, e con la soglia ancora superata l'avviso rientrava subito. Da qui il campo `snoozed` |
+| Il bottone si sovrapponeva all'ultima riga di testo a 1280 px | screenshot: `.btn` è `inline-flex`, quindi restava nel flusso del paragrafo e `margin-top` lo spingeva sopra il testo invece di staccarlo |
+
+Il gate di contrasto ha bocciato anche la prima versione del bottone: `btn--ghost` dentro
+l'avviso dava un bordo a 1.58:1 in tema chiaro e 1.80:1 in scuro, contro una soglia di 3:1.
+Sostituito con `btn--primary`, che si distingue per riempimento. Il misuratore in
+`tests/dom/contrast.spec.js` ha ora anche il campo `wypelnienie`, cioè il contrasto fra lo
+sfondo di un controllo e quello che gli sta sotto: una superficie piena non si valuta sul bordo.
+
+### Verifiche
+
+| Gate | Esito |
+|---|---|
+| `npm test` | 371 verdi |
+| `npm run test:dom` | 158 verdi, inclusi 4 nuovi sul promemoria e 2 di contrasto sull'avviso |
+| `node scripts/parity.mjs` | forma identica nelle cinque lingue |
+| `node scripts/validate.mjs` | nessun errore |
+| Render a 375 e 1280 px, temi chiaro e scuro | osservato, nessuna sovrapposizione dopo il fix |
+| Click sul bottone dell'avviso | scarica `impara-italiano-<lang>-<data>.json` e riporta la soglia a zero |
+
+Le stringhe nuove (`core.backupDue`, `core.backupSave`) sono scritte nelle cinque lingue con le
+forme plurali richieste da ciascuna, non tradotte da una sola.
+
 ## 2026-09-08 — Sostituzione della voce: da espeak-ng a lettore neurale
 
 **Tag:** `feat` `audio`

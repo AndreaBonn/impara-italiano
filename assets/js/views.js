@@ -1075,13 +1075,10 @@
     });
 
     el().querySelector(".js-place").addEventListener("click", function () { App.go("piazzamento"); });
+    /* Ten sam eksport, którym kończy się przypomnienie o kopii: gdyby
+       stał tu drugi raz, tylko jedno z dwóch miejsc przesuwałoby próg. */
     el().querySelector(".js-export").addEventListener("click", function () {
-      var blob = new Blob([Core.exportState()], { type: "application/json" });
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "impara-italiano-" + I18n.lang + "-" + Core.today() + ".json";
-      a.click();
-      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      Core.downloadBackup();
     });
     el().querySelector(".js-import").addEventListener("change", function (e) {
       var f = e.target.files[0];

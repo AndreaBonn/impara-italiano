@@ -687,6 +687,11 @@ LINGUAI.addUI("de", {
   "core.saveBlocked": "Der Browserspeicher ist voll: Dein Fortschritt wird nicht mehr gespeichert. Exportiere ihn in den Einstellungen und schaffe Platz.",
   "core.storagePruned": "Der Speicher war voll: Die ältesten Wiederholungskarten wurden entfernt, damit dein Lernfortschritt erhalten bleibt.",
   "core.noticeDismiss": "Meldung schließen",
+  "core.backupDue": {
+    one: "Seit der letzten Sicherung hast du {n} Lektion abgeschlossen. Der Kurs bewahrt deinen Fortschritt nur in diesem Browser auf: Speichere eine Kopie, denn ein geleerter Speicher lässt sich aus nichts wiederherstellen.",
+    other: "Seit der letzten Sicherung hast du {n} Lektionen abgeschlossen. Der Kurs bewahrt deinen Fortschritt nur in diesem Browser auf: Speichere eine Kopie, denn ein geleerter Speicher lässt sich aus nichts wiederherstellen."
+  },
+  "core.backupSave": "Kopie speichern",
 
   /* ---------------- Verbbedeutungen im Konjugator ---------------- */
   "verb.essere": "sein",

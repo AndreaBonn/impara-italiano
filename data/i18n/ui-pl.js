@@ -693,6 +693,13 @@ LINGUAI.addUI("pl", {
   "core.saveBlocked": "Pamięć przeglądarki jest pełna: postępy nie są już zapisywane. Wyeksportuj je w Ustawieniach i zwolnij miejsce.",
   "core.storagePruned": "Zabrakło miejsca: najstarsze karty powtórek zostały usunięte, żeby zachować postępy lekcji.",
   "core.noticeDismiss": "Zamknij komunikat",
+  "core.backupDue": {
+    one: "Od ostatniej kopii minęła {n} ukończona lekcja. Kurs trzyma postępy tylko w tej przeglądarce: zapisz kopię, bo wyczyszczonej pamięci nie ma z czego odtworzyć.",
+    few: "Od ostatniej kopii minęły {n} ukończone lekcje. Kurs trzyma postępy tylko w tej przeglądarce: zapisz kopię, bo wyczyszczonej pamięci nie ma z czego odtworzyć.",
+    many: "Od ostatniej kopii minęło {n} ukończonych lekcji. Kurs trzyma postępy tylko w tej przeglądarce: zapisz kopię, bo wyczyszczonej pamięci nie ma z czego odtworzyć.",
+    other: "Od ostatniej kopii minęło {n} ukończonych lekcji. Kurs trzyma postępy tylko w tej przeglądarce: zapisz kopię, bo wyczyszczonej pamięci nie ma z czego odtworzyć."
+  },
+  "core.backupSave": "Zapisz kopię",
 
   /* ---------------- Znaczenia czasowników w podpowiedziach koniugatora ---------------- */
   "verb.essere": "być",

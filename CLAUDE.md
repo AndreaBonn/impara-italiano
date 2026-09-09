@@ -206,6 +206,17 @@ i dokłada migracje po drodze.
 opanowane, potem liczniki drilli. Nigdy postępów lekcji ani wypracowań — tych uczeń nie
 odtworzy dalszą nauką.
 
+**Kopia zapasowa: dwa pola, nie jedno.** Kurs nie ma konta ani synchronizacji, więc jedyną
+kopią postępów jest plik, który uczeń sam zapisze. Co `BACKUP_EVERY` (10) UKOŃCZONYCH lekcji
+`recordLesson` wystawia trwały komunikat z przyciskiem pobrania. Stan trzymają dwa pola
+kontenera `backup`: `at` przesuwa **wyłącznie** zapisana kopia i znaczy „tyle postępów leży na
+dysku ucznia", a `snoozed` przesuwa zamknięcie komunikatu i znaczy „nie teraz". Zlanie ich w
+jedno pole sprawia, że zamknięcie komunikatu wygląda dla kursu jak zrobiona kopia i drugie
+przypomnienie nie przychodzi nigdy. Bramka stoi w `recordLesson`, a nie w widoku końca lekcji,
+bo `recordLesson` woła też ekran rozmów — ten sam powód, dla którego zgoda na mikrofon stoi
+w `Audio2.listen`. `downloadBackup()` stawia znacznik PRZED serializacją, żeby wypuszczony
+plik niósł już nową wartość i po odzyskaniu nie prosił od razu o następną kopię.
+
 ## Kontrola jakości
 
 ```bash
@@ -236,9 +247,9 @@ z poprzedniej wersji tego pliku.
 | Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 12 wystąpień, wszystkie z pytań do czytanek) |
 | Nagrania | 2657 plików mp3, 34 MB |
-| Klucze interfejsu na język | 501 × 5 języków |
-| Testy jednostkowe | 214, zielone |
-| Testy DOM | 97 deklaracji, 113 przebiegów, zielone |
+| Klucze interfejsu na język | 671 × 5 języków |
+| Testy jednostkowe | 371 przebiegów, zielone |
+| Testy DOM | 139 deklaracji, 158 przebiegów, zielone |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
 „29 testów jednostkowych, 17 DOM". Były prawdziwe w dniu wprowadzenia suity i przestały być

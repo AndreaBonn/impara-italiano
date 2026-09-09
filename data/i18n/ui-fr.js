@@ -692,6 +692,12 @@ LINGUAI.addUI("fr", {
   "core.saveBlocked": "Le stockage du navigateur est plein : ta progression n'est plus enregistrée. Exporte-la dans les Réglages et libère de la place.",
   "core.storagePruned": "Plus de place : les cartes de révision les plus anciennes ont été supprimées pour garder ta progression dans les leçons.",
   "core.noticeDismiss": "Fermer le message",
+  "core.backupDue": {
+    one: "{n} leçon terminée depuis la dernière sauvegarde. Le cours ne garde ta progression que dans ce navigateur : enregistre une copie, car une mémoire effacée ne se reconstitue pas.",
+    many: "{n} leçons terminées depuis la dernière sauvegarde. Le cours ne garde ta progression que dans ce navigateur : enregistre une copie, car une mémoire effacée ne se reconstitue pas.",
+    other: "{n} leçons terminées depuis la dernière sauvegarde. Le cours ne garde ta progression que dans ce navigateur : enregistre une copie, car une mémoire effacée ne se reconstitue pas."
+  },
+  "core.backupSave": "Enregistrer une copie",
 
   /* ---------------- Sens des verbes dans le conjugueur ---------------- */
   "verb.essere": "être",

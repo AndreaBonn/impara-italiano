@@ -101,7 +101,15 @@
         });
       }
       dodaj(inf);
-      dodaj(V.participle && V.participle(inf));
+      /* Imiesłów uzgadnia się z dopełnieniem i podmiotem, więc obok
+         „usato" w tekście stoi „usata", „usati", „usate". Bez tych trzech
+         forma żeńska była ciszą przy odmienionym czasowniku, którego kurs
+         uczy — najgorszy możliwy rodzaj luki, bo wygląda na przypadek. */
+      var im = V.participle && V.participle(inf);
+      dodaj(im);
+      if (im && /o$/.test(im)) ["a", "i", "e"].forEach(function (k) {
+        dodaj(im.slice(0, -1) + k);
+      });
       dodaj(V.gerund && V.gerund(inf));
       tempy.forEach(function (klucz) {
         var formy = V.conjugate(inf, klucz) || [];
@@ -118,12 +126,22 @@
      „amiche" ma zejść do „amica", a nie do „amiche" bez „h".
      -------------------------------------------------------- */
   var REGULY = [
+    /* Stopień najwyższy. „h" wchodzi po to, żeby zachować twarde „k":
+       antico -> antichissimo, więc w drugą stronę trzeba je zdjąć, inaczej
+       wychodzi „anticho" i słownik nic nie znajduje. */
+    [/chissim[oaie]$/, "co"],
+    [/ghissim[oaie]$/, "go"],
+    [/issim[oaie]$/, "o"],
     [/che$/, "ca"],      // amiche -> amica
     [/ghe$/, "ga"],      // colleghe -> collega
     [/chi$/, "co"],      // fuochi -> fuoco
     [/ghi$/, "go"],      // laghi -> lago
     [/ci$/, "co"],       // amici -> amico
+    [/ci$/, "cio"],      // uffici -> ufficio
     [/gi$/, "go"],       // asparagi -> asparago
+    [/gi$/, "gio"],      // orologi -> orologio
+    [/ari$/, "ario"],    // proprietari -> proprietario
+    [/eri$/, "erio"],    // misteri -> misterio (rzadkie, ale tanie)
     [/i$/, "o"],         // libri -> libro
     [/i$/, "e"],         // cani -> cane
     [/i$/, "a"],         // problemi -> problema
@@ -162,7 +180,7 @@
     /* Formy skrócone przed apostrofem i cząstki, które w tekście stoją
        samotnie. „c" pochodzi z „c'era", „mal" z „mal di testa": bez nich
        dotknięcie trafiało w literę, której nie da się objaśnić. */
-    "c né ne' sé se' no né mal").split(/\s+/);
+    "c né ne' sé se' no né mal quei lui lei esso essa").split(/\s+/);
 
   /* Liczebniki. Zbiór zamknięty, uczony w A1, a w tekstach o cenach,
      godzinach i rozkładach jazdy siedzi ich pełno. Bez tego „quattro"
@@ -267,6 +285,33 @@
    * Wystawione osobno, bo widok „nie znam tego słowa" pokazuje uczniowi
    * formę podstawową, nawet gdy kursu jej nie uczy.
    */
+  /* Zaimki doklejane do bezokolicznika, gerundio i trybu rozkazującego:
+     „mandarli", „preoccuparti", „dammelo". Włoski pisze je razem z
+     czasownikiem, więc bez odklejenia to jest jedno nieznane słowo. */
+  var ENKLITYKI = ["glielo", "gliela", "glieli", "gliele", "gliene",
+    "melo", "mela", "meli", "mele", "mene", "telo", "tela", "teli", "tele", "tene",
+    "celo", "cela", "celi", "cele", "cene", "velo", "vela", "veli", "vele", "vene",
+    "mi", "ti", "si", "ci", "vi", "lo", "la", "li", "le", "ne", "gli"];
+
+  /**
+   * Odkleja zaimki od końca wyrazu i zwraca możliwe rdzenie.
+   *
+   * „mandarli" -> „mandar" -> „mandare": bezokolicznik traci końcowe „e"
+   * przed zaimkiem, więc rdzeń trzeba jeszcze odbudować.
+   */
+  function bezEnklityk(w) {
+    var out = [];
+    ENKLITYKI.forEach(function (z) {
+      if (w.length <= z.length + 2) return;
+      if (w.slice(-z.length) !== z) return;
+      var rdzen = w.slice(0, -z.length);
+      out.push(rdzen);
+      if (/[aei]r$/.test(rdzen)) out.push(rdzen + "e");   // mandar -> mandare
+      if (/[aei]$/.test(rdzen)) out.push(rdzen + "rsi");  // preoccupa -> preoccuparsi
+    });
+    return out;
+  }
+
   function kandydaci(slowo) {
     var w = String(slowo).toLowerCase().replace(/[’']/g, "'");
     var out = [];
@@ -275,6 +320,10 @@
     dodaj(w);
     (zbuduj()[w] || []).forEach(dodaj);
     odmienne(w).forEach(dodaj);
+    bezEnklityk(w).forEach(function (rdzen) {
+      dodaj(rdzen);
+      (zbuduj()[rdzen] || []).forEach(dodaj);
+    });
     return out;
   }
 

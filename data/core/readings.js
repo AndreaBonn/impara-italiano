@@ -35,6 +35,7 @@ window.READINGS = [
       "Dopo pranzo gli italiani bevono il caffè, mai il cappuccino."
     ],
     glossIt: ["al banco", "dura", "il doppio", "il servizio"],
+    lexIt: ["Italia", "persona", "euro", "minuto", "sedersi", "tavolino", "turista", "ordinare", "pranzo"],
     questions: [
       { t: "truefalse", q: "Il caffè al tavolino costa come al banco.", a: 1 },
       { t: "mcq", q: "Quanto dura un caffè al banco?", opts: ["Due minuti", "Mezz'ora", "Un'ora"], a: 0 },
@@ -56,6 +57,7 @@ window.READINGS = [
       "La differenza è piccola, ma al mercato è subito evidente."
     ],
     glossIt: ["il cliente", "il sacchetto", "matura", "rovinano"],
+    lexIt: ["toccare", "fruttivendolo", "scegliere", "preparare", "pesca", "venditore", "contento", "antipatia", "delicato", "differenza", "piccolo", "evidente"],
     questions: [
       { t: "truefalse", q: "Al mercato il cliente sceglie la frutta con le mani.", a: 1 },
       { t: "mcq", q: "Chi prepara il sacchetto?", opts: ["Il cliente", "Il fruttivendolo", "Il turista"], a: 1 },
@@ -79,6 +81,7 @@ window.READINGS = [
       "Chiedere spiegazioni a chi non le ha è solo un modo per arrabbiarsi due volte."
     ],
     glossIt: ["l'altoparlante", "ha protestato", "furioso", "rassegnazione"],
+    lexIt: ["Bologna", "altoparlante", "parola", "spiegazione", "ragazzo", "francese", "passeggero", "modo", "arrabbiarsi"],
     questions: [
       { t: "mcq", q: "Quanto ritardo ha fatto il treno?", opts: ["Dieci minuti", "Quaranta minuti", "Due ore"], a: 1 },
       { t: "truefalse", q: "I passeggeri italiani hanno chiesto spiegazioni.", a: 1 },
@@ -100,6 +103,7 @@ window.READINGS = [
       "Adesso quei pranzi non ci sono più e mi mancano."
     ],
     glossIt: ["un obbligo", "le portate", "rifiutare", "mi mancano"],
+    lexIt: ["nonna", "considerare", "complimento"],
     questions: [
       { t: "truefalse", q: "Da bambino aspettava il pranzo della domenica con piacere.", a: 1 },
       { t: "mcq", q: "Che cosa significava per la nonna un piatto vuoto?", opts: ["Un complimento", "Un problema", "Una scortesia"], a: 0 },
@@ -121,6 +125,7 @@ window.READINGS = [
       "Chi va subito al pronto soccorso aspetta sei ore per sentire la stessa cosa."
     ],
     glossIt: ["il farmacista", "la diagnosi", "basta", "il pronto soccorso"],
+    lexIt: ["mandare", "dottore"],
     questions: [
       { t: "mcq", q: "Dove vanno prima molti italiani?", opts: ["Dal medico", "In farmacia", "Al pronto soccorso"], a: 1 },
       { t: "truefalse", q: "Il farmacista può fare una diagnosi.", a: 1 },
@@ -145,6 +150,7 @@ window.READINGS = [
       "Adesso paga più di quanto vorrebbe, ma almeno abita vicino al lavoro."
     ],
     glossIt: ["inquilino", "a tempo indeterminato", "bilocale", "mensilità", "temeva"],
+    lexIt: ["appartamento", "Milano", "settembre", "proprietario", "Sara", "visitare", "buio", "umido", "zona", "Navigli", "ascensore", "deposito"],
     questions: [
       { t: "mcq", q: "Quanti appartamenti ha visitato Sara?", opts: ["Due", "Sei", "Dieci"], a: 1 },
       { t: "truefalse", q: "Il bilocale che ha scelto ha l'ascensore.", a: 1 },
@@ -166,6 +172,7 @@ window.READINGS = [
       "Le hanno offerto un posto diverso da quello per cui si era candidata."
     ],
     glossIt: ["selezionatore", "ammesso", "sincerità", "candidata"],
+    lexIt: ["Marta", "preparato", "sito", "azienda", "risposta", "voce", "inventare", "incontro", "occasione", "richiamare", "apprezzare", "proprio"],
     questions: [
       { t: "truefalse", q: "Marta non si era preparata al colloquio.", a: 1 },
       { t: "mcq", q: "Che cosa ha fatto quando non sapeva rispondere?", opts: ["Ha inventato una risposta", "Ha ammesso di non saperlo", "Ha cambiato argomento"], a: 1 },
@@ -187,6 +194,7 @@ window.READINGS = [
       "Nel frattempo il Comune ha promesso più corse degli autobus."
     ],
     glossIt: ["provvedimento", "inquinamento", "calo", "lamentano", "corse"],
+    lexIt: ["auto", "privato", "circa", "obiettivo", "rendere", "vivibile", "commerciante", "vendita", "residente", "favorevole", "mancanza", "parcheggio", "durare", "promettere"],
     questions: [
       { t: "mcq", q: "Chi teme un calo delle vendite?", opts: ["I residenti", "I commercianti", "Il Comune"], a: 1 },
       { t: "truefalse", q: "Il provvedimento è definitivo.", a: 1 },
@@ -210,6 +218,7 @@ window.READINGS = [
       "Il risultato è un modello ibrido, che nessuno aveva progettato ma che quasi tutti hanno adottato."
     ],
     glossIt: ["si ripopolerebbero", "sostengono", "cautela", "faticano", "ibrido"],
+    lexIt: ["remoto", "davvero", "recente", "realtà", "professione", "svolta", "distanza", "produzione", "sanità", "trasporto", "presente", "adatto", "servire", "spazio", "silenzio", "connessione", "decente", "canto", "modello", "progettare", "adottare"],
     questions: [
       { t: "truefalse", q: "Secondo il testo, tutte le professioni possono essere svolte a distanza.", a: 1 },
       { t: "mcq", q: "Che cosa serve in casa per lavorare da remoto?", opts: ["Spazio, silenzio e connessione", "Un ufficio separato per legge", "Un contratto speciale"], a: 0 },
@@ -231,6 +240,7 @@ window.READINGS = [
       "Chi difende la ricetta originale difende, di solito, la versione imparata da sua nonna."
     ],
     glossIt: ["risalgono", "guanciale", "eresia", "ricettari", "si costruiscono"],
+    lexIt: ["carbonara", "antico", "dopoguerra", "uovo", "polvere", "americano", "usare", "pancetta", "panna", "oggi", "comparire", "difendere", "imparare"],
     questions: [
       { t: "truefalse", q: "Le prime ricette scritte della carbonara sono medievali.", a: 1 },
       { t: "mcq", q: "Che cosa veniva usato nelle versioni più vecchie?", opts: ["Il guanciale", "La pancetta", "Il prosciutto"], a: 1 },
@@ -254,6 +264,7 @@ window.READINGS = [
       "Vengono citati spesso e applicati raramente, il che è a suo modo una risposta."
     ],
     glossIt: ["allegare", "istante", "casuale", "contestarlo", "semplificazione"],
+    lexIt: ["lingua", "ufficio", "caratteristica", "riconoscibile", "accuratamente", "documentazione", "richiesta", "cittadino", "definire", "interessato", "innocente", "amministrazione", "nomina", "atto", "esistere", "manuale", "linguaggio", "amministrativo", "citare", "applicare"],
     questions: [
       { t: "mcq", q: "Qual è la caratteristica del linguaggio amministrativo descritta nel testo?", opts: ["È troppo semplice", "Evita di dire chi fa cosa", "Usa parole straniere"], a: 1 },
       { t: "truefalse", q: "Secondo il testo, questa distanza è casuale.", a: 1 },
@@ -277,6 +288,7 @@ window.READINGS = [
       "Non esiste una regola: esiste l'abitudine, e si acquista sbagliando in pubblico un certo numero di volte."
     ],
     glossIt: ["figurati", "presa in giro", "affettuosa", "si acquista"],
+    lexIt: ["ironia", "annunciare", "riservato", "accadere", "frase", "significare", "preoccuparsi", "oppure", "esatto", "contrario", "contesto", "pausa", "straniero", "significato", "letterale", "seriamente", "offesa", "espressione", "abitudine"],
     questions: [
       { t: "truefalse", q: "In italiano esiste un tono di voce riservato allo scherzo.", a: 1 },
       { t: "mcq", q: "Da che cosa dipende il significato di „ma no, figurati”?", opts: ["Dalla grammatica", "Dal contesto e da chi la dice", "Dalla regione"], a: 1 },

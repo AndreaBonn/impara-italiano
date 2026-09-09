@@ -167,6 +167,11 @@
       if (!p) return;
       copy(r, p, ["title"]);
       if (p.gloss) r.gloss = p.gloss;
+      /* lex: znaczenia słów, których panel trudnych słów NIE pokazuje.
+         Karmią wyłącznie wyszukiwanie po dotknięciu (lemma.js), więc
+         panel zostaje listą wybraną przez autora, a nie spisem wszystkiego,
+         czego kurs nie uczy. */
+      if (p.lex) r.lex = p.lex;
     });
   }
 

@@ -25,7 +25,7 @@
    ============================================================ */
 
 /* Podnieś przy każdej zmianie plików z PRECACHE. */
-var SW_VERSION = "v22";
+var SW_VERSION = "v23";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Nagrania są adresowane treścią, więc ich pamięć przeżywa zmianę wersji. */
@@ -41,6 +41,7 @@ var PRECACHE = [
   "./assets/js/notice.js",
   "./assets/js/store.js",
   "./assets/js/registry.js",
+  "./assets/js/srs.js",
   "./assets/js/core.js",
   "./assets/js/i18n.js",
   "./assets/js/consent.js",

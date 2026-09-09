@@ -31,6 +31,7 @@ export const CORE = [
   "assets/js/notice.js",
   "assets/js/store.js",
   "assets/js/registry.js",
+  "assets/js/srs.js",
   "assets/js/core.js"
 ];
 

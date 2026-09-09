@@ -24,7 +24,7 @@
    ============================================================ */
 
 /* Podnieś przy każdej zmianie plików z PRECACHE. */
-var SW_VERSION = "v7";
+var SW_VERSION = "v8";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Nagrania są adresowane treścią, więc ich pamięć przeżywa zmianę wersji. */
@@ -70,7 +70,15 @@ var PRECACHE = [
   "./data/core/readings.js",
   "./data/core/writing.js",
   "./assets/icons/icon-192.png",
-  "./assets/icons/icon-512.png"
+  "./assets/icons/icon-512.png",
+  /* Kroje pisma. Wcześniej szły z fonts.googleapis.com i z tego powodu
+     NIGDY nie trafiały do pamięci: obsługa `fetch` niżej wychodzi przy
+     pierwszej cudzej domenie. Bez sieci strona wyglądała więc inaczej niż
+     z siecią, co czytało się jak usterka, a było wypisane w regule. */
+  "./assets/fonts/fraunces-latin.woff2",
+  "./assets/fonts/fraunces-latin-ext.woff2",
+  "./assets/fonts/inter-latin.woff2",
+  "./assets/fonts/inter-latin-ext.woff2"
 ];
 
 function isAudio(url) { return /\/audio\/[0-9a-f]{2}\/[0-9a-f]{16}\.mp3$/.test(url.pathname); }

@@ -909,3 +909,19 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .cov__done{margin-top:22px;font-weight:600;}
 .cov__src{margin-top:26px;color:var(--ink-faint);font-size:.84rem;}
 #covList .js-f{color:var(--ink-faint);font-size:.86rem;}
+
+/* ============================================================
+   Fałszywi przyjaciele (views-falsi.js)
+   ============================================================ */
+.fa-card{margin:0;}
+.fa-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.fa-it{font-family:var(--display);font-size:1.15rem;font-weight:600;}
+.fa-line{display:flex;gap:10px;align-items:baseline;margin:0 0 5px;flex-wrap:wrap;}
+.fa-tag{
+  flex:0 0 auto;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 8px;border-radius:99px;
+}
+.fa-tag--no{background:var(--ko-bg);color:var(--ko);}
+.fa-tag--yes{background:var(--ok-bg);color:var(--ok);}
+.fa-why{margin:10px 0 0;color:var(--ink-soft);font-size:.92rem;}
+.fa-ex{margin:10px 0 0;font-style:italic;}

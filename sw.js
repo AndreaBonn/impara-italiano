@@ -25,7 +25,7 @@
    ============================================================ */
 
 /* Podnieś przy każdej zmianie plików z PRECACHE. */
-var SW_VERSION = "v12";
+var SW_VERSION = "v14";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Nagrania są adresowane treścią, więc ich pamięć przeżywa zmianę wersji. */
@@ -58,6 +58,7 @@ var PRECACHE = [
   "./assets/js/anki.js",
   "./assets/js/frequency.js",
   "./assets/js/views-frequency.js",
+  "./assets/js/views-falsi.js",
   "./assets/js/views-reading.js",
   "./assets/js/views-writing.js",
   "./assets/js/search.js",
@@ -75,6 +76,12 @@ var PRECACHE = [
   "./data/core/conversations.js",
   "./data/core/phonetics.js",
   "./data/core/readings.js",
+  "./data/core/interference.js",
+  "./data/i18n/pl/interference.js",
+  "./data/i18n/en/interference.js",
+  "./data/i18n/es/interference.js",
+  "./data/i18n/fr/interference.js",
+  "./data/i18n/de/interference.js",
   "./data/core/frequenza.js",
   "./data/core/writing.js",
   "./assets/icons/icon-192.png",

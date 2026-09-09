@@ -47,6 +47,7 @@ readdirSync(CORE).filter(f => /^[abc]\d-\d+\.js$/.test(f)).sort().forEach(run);
 run("conversations.js");
 run("phonetics.js");
 run("readings.js");
+run("interference.js");
 
 /* ---------------- Zbieranie ---------------- */
 /** primary: głos główny · other: głos rozmówcy (tylko jeśli nigdzie indziej nie występuje) */
@@ -126,6 +127,15 @@ levels.forEach(function (lv) {
      same: kurs po prostu mówi gorzej i nikt nie wie dlaczego. */
   (r.glossIt || []).forEach(addP);
   (r.lexIt || []).forEach(addP);
+});
+
+/* Fałszywi przyjaciele: samo słowo i zdanie z nim. Ćwiczenie polega na
+   tym, że uczeń SŁYSZY włoskie znaczenie zamiast czytać o nim po swojemu,
+   więc bez nagrania rodzi się nieme — a to jedyny powód, dla którego ten
+   plik leży w data/core/, a nie w nakładce. */
+(sandbox.INTERFERENCE || []).forEach(function (v) {
+  addP(v.it);
+  addP(v.ex);
 });
 
 EXTRA.forEach(addP);

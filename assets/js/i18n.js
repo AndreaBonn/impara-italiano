@@ -188,6 +188,24 @@
     });
   }
 
+  /**
+   * Fałszywi przyjaciele: JEDYNA kategoria, w której nakładka bywa krótsza
+   * od listy i ma prawo taka być.
+   *
+   * Wpis dostaje wyjaśnienie tylko wtedy, gdy jego `for` zawiera ten język.
+   * Pozostałym CZYŚCIMY pola, zamiast zostawiać je z poprzedniego języka:
+   * po przełączeniu z polskiego na hiszpański „la targa" nie ma pułapki i
+   * nie może dalej nosić polskiego wyjaśnienia. Nakładka jest idempotentna,
+   * więc bez tego czyszczenia stary tekst zostawał na ekranie.
+   */
+  function applyInterference(lang) {
+    (global.INTERFERENCE || []).forEach(function (v) {
+      var p = get(lang, "int:" + v.id);
+      if (p) { v.looks = p.looks; v.mean = p.mean; v.why = p.why; }
+      else { v.looks = ""; v.mean = ""; v.why = ""; }
+    });
+  }
+
   function applyStrings(lang) {
     var reg = global.Core && global.Core.registry;
     if (reg) reg.levels.forEach(function (lv) { applyLevel(lv, lang); });
@@ -196,6 +214,7 @@
     applyPhonetics(lang);
     applyReadings(lang);
     applyWriting(lang);
+    applyInterference(lang);
   }
 
   /* ═══════════════════════════════════════════════════════════

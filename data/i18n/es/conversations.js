@@ -193,5 +193,133 @@ LINGUAI.addStrings("es", {
         tr: "No estoy nada de acuerdo: el híbrido permite elegir según el tipo de trabajo."
       }
     ]
+  },
+  "conv:ristorante-scelte": {
+    title: "En la mesa, con algunas decisiones",
+    setting: "Viernes por la noche, la trattoria de la esquina. Esta vez la conversación sigue lo que dices: en tres momentos eliges entre dos respuestas.",
+    closing: "La cuenta final coincidía con lo que se pidió en la mesa. Esa es la diferencia entre una elección y un adorno.",
+    turns: [
+      { tr: "Buenas noches. ¿Tienen reserva?" },
+      { task: "Di si tenéis reserva.", opts: [
+        { tr: "Sí, tengo una reserva a nombre de Rossi." },
+        { tr: "No, somos dos. ¿Hay sitio?" }
+      ] },
+      { tr: "Perfecto. La mesa junto a la ventana. Por aquí, por favor." },
+      { tr: "Hay una mesa para dos al fondo de la sala. Adelante." },
+      { tr: "Aquí tienen el menú. Mientras tanto, ¿quieren pedir algo de beber?" },
+      { task: "Pide una botella de agua sin gas.", tr: "Una botella de agua sin gas, por favor." },
+      { tr: "Sin gas, enseguida. ¿Y de primero?" },
+      { task: "Elige el primer plato.", opts: [
+        { tr: "Para mí, carbonara." },
+        { tr: "Pasta con tomate: soy vegetariana." }
+      ] },
+      { tr: "Esta noche la carbonara está buenísima, el guanciale está crujiente." },
+      { tr: "Entonces le recomiendo tomate y albahaca: la albahaca es de nuestro huerto." },
+      { tr: "¿Un postre para terminar? El tiramisú lo hacemos nosotros." },
+      { task: "Decide si quieres postre.", opts: [
+        { tr: "Sí, el tiramisú, gracias." },
+        { tr: "No, gracias, solo un café." }
+      ] },
+      { tr: "Excelente elección, enseguida se lo traigo." },
+      { tr: "Un café, muy bien." },
+      { tr: "Aquí tiene la cuenta: primer plato, agua y tiramisú. Veintidós euros." },
+      { tr: "Aquí tiene la cuenta: primer plato, agua y café. Dieciséis euros." },
+      { task: "Pregunta si puedes pagar con tarjeta.", tr: "¿Puedo pagar con tarjeta?" },
+      { tr: "Claro, el datáfono está aquí. Gracias y buenas noches." }
+    ]
+  },
+  "conv:treno-perso": {
+    title: "En la ventanilla, tras un tren perdido",
+    setting: "La estación, martes por la mañana. Delante, la taquilla y la cola; detrás, un tren que ya no está.",
+    closing: "La misma conversación cuesta ocho euros o nada. La diferencia la marcó una frase al principio.",
+    turns: [
+      { tr: "Buenos días, dígame." },
+      { task: "Di qué ha pasado con tu tren.", opts: [
+        { tr: "He perdido el tren de las 9:20 a Bolonia." },
+        { tr: "Han cancelado mi tren a Bolonia." }
+      ] },
+      { tr: "El tren perdido no se reembolsa. El billete sí puedo rehacerlo, pagando la diferencia." },
+      { tr: "El próximo a Bolonia sale a las 11:40. Son ocho euros." },
+      { tr: "Cancelado por la huelga, lo siento. En ese caso el cambio no cuesta nada." },
+      { tr: "El próximo a Bolonia sale a las 11:40. No paga nada." },
+      { task: "Decide si tomas el de las 11:40.", opts: [
+        { tr: "Vale, tomo el de las 11:40." },
+        { tr: "¿Hay algo antes?" }
+      ] },
+      { tr: "Perfecto. Vía siete, coche cuatro." },
+      { tr: "Antes solo está el regional de las 10:15, pero tarda dos horas y media." },
+      { task: "Elige entre el regional y esperar.", opts: [
+        { tr: "Da igual, tomo el regional." },
+        { tr: "Entonces espero el de las 11:40." }
+      ] },
+      { tr: "Regional de las 10:15, vía tres." },
+      { tr: "Aquí tiene el billete. ¡Buen viaje!" },
+      { task: "Da las gracias y despídete.", tr: "Muchas gracias, buen día." },
+      { tr: "Hasta luego." }
+    ]
+  },
+  "conv:casa-visita": {
+    title: "Visita a un piso",
+    setting: "Sábado por la tarde, segundo sin ascensor. La agente abre la puerta y espera tu reacción.",
+    closing: "Lo del precio se pregunta o no se pregunta. Aquí se ve lo que costó no preguntarlo.",
+    turns: [
+      { tr: "Bueno, este es el salón. ¿Qué le parece?" },
+      { task: "Di tu primera impresión.", opts: [
+        { tr: "Me gusta, pero es más pequeño que en las fotos." },
+        { tr: "Es muy luminoso, me gusta." }
+      ] },
+      { tr: "Las fotos siempre engañan un poco. Aun así son treinta y cinco metros cuadrados, sin pasillos desperdiciados." },
+      { tr: "Sí, da al sur: en invierno la calefacción se enciende poco." },
+      { tr: "Los gastos de comunidad son ochenta euros al mes, calefacción incluida." },
+      { tr: "El alquiler es de setecientos euros." },
+      { task: "Pregunta lo que más te interesa ahora.", opts: [
+        { tr: "¿El precio es negociable?" },
+        { tr: "¿Desde cuándo está libre?" }
+      ] },
+      { tr: "Con un contrato de cuatro años el propietario baja a seiscientos cincuenta." },
+      { tr: "Está libre desde el uno del mes que viene." },
+      { tr: "Desde el uno del mes que viene. El precio, eso sí, se queda en setecientos." },
+      { task: "Decide si te quedas el piso.", opts: [
+        { tr: "Me lo quedo." },
+        { tr: "Lo pienso y le digo." }
+      ] },
+      { tr: "Muy bien. Le mando el contrato por correo antes de mañana." },
+      { tr: "Hablamos estos días." },
+      { tr: "Claro, piénselo con calma. Mi número ya lo tiene." },
+      { task: "Da las gracias y despídete.", tr: "Gracias, hasta luego." },
+      { tr: "Hasta luego." }
+    ]
+  },
+  "conv:medico-gola": {
+    title: "En el médico, con dolor de garganta",
+    setting: "Lunes, centro de salud. Cuarenta minutos en la sala de espera, cinco en la consulta.",
+    closing: "La misma garganta, dos recetas distintas. Lo decidió una frase sobre el tragar.",
+    turns: [
+      { tr: "Buenos días, siéntese. Dígame." },
+      { task: "Describe los síntomas.", opts: [
+        { tr: "Llevo tres días con dolor de garganta y fiebre." },
+        { tr: "Llevo tres días con dolor de garganta, pero sin fiebre." }
+      ] },
+      { tr: "Tres días con fiebre. ¿Cuánto le ha subido?" },
+      { tr: "Treinta y ocho y medio es mucho. Abra la boca, por favor." },
+      { tr: "Sin fiebre ya es una buena noticia. Abra la boca, por favor." },
+      { tr: "La garganta está muy roja. ¿Le cuesta tragar?" },
+      { task: "Di si te cuesta tragar.", opts: [
+        { tr: "Sí, me cuesta tragar." },
+        { tr: "No, solo me molesta." }
+      ] },
+      { tr: "Entonces le receto un antibiótico: un comprimido cada doce horas, durante seis días." },
+      { tr: "Entonces nada de antibiótico: gárgaras con agua y sal, y muchos líquidos calientes." },
+      { tr: "En cualquier caso, reposo. Si en tres días no mejora, vuelva." },
+      { task: "Haz una pregunta sobre tu día a día.", opts: [
+        { tr: "¿Tengo que quedarme en casa sin ir a trabajar?" },
+        { tr: "¿Puedo hacer deporte?" }
+      ] },
+      { tr: "Le hago el justificante para tres días y se lo mando yo a su empresa." },
+      { tr: "Deporte no, al menos mientras la garganta esté así. Caminar sí." },
+      { tr: "Nos vemos. Que se mejore pronto." },
+      { task: "Da las gracias al médico y despídete.", tr: "Gracias, doctor, hasta luego." },
+      { tr: "Hasta luego." }
+    ]
   }
 });

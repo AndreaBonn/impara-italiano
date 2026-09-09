@@ -524,6 +524,25 @@
     var turn = el().querySelector(".js-turn");
     var i = 0, score = 0, turns = 0;
 
+    /* Rozwidlenia: graf zamiast listy, ale DOKŁADANY. Tura z polem `go`
+       mówi, dokąd iść dalej; bez niego idziemy o jeden do przodu, więc
+       dziesięć dialogów napisanych wcześniej chodzi tak samo jak przedtem
+       i nie trzeba było ich tknąć. Cel jest podawany po `id` tury, nie po
+       numerze: numer przesunąłby się przy pierwszej wstawce w środku. */
+    var PROG = 0.72;
+
+    function indeksTury(id) {
+      for (var n = 0; n < conv.turns.length; n++) if (conv.turns[n].id === id) return n;
+      return conv.turns.length; /* nieznany cel = koniec; validate.mjs tego nie przepuści */
+    }
+
+    function dalej(skad, teraz) { return skad && skad.go ? indeksTury(skad.go) : teraz + 1; }
+
+    /* Punkty wyboru odwiedzone w tym przejściu — do powrotu na rozwidlenie
+       bez powtarzania całego dialogu (`bąbelki` to długość transkryptu w
+       chwili wyboru, żeby dało się go uciąć dokładnie tam). */
+    var wybory = [];
+
     function bubble(it, pl, mine) {
       var d = document.createElement("div");
       d.className = "dlg__line" + (mine ? " dlg__line--b" : "");
@@ -541,21 +560,42 @@
       var turnData = conv.turns[i];
       if (turnData.sp !== "TY") {
         bubble(turnData.it, turnData.tr, false);
-        i++;
+        i = dalej(turnData, i);
         Audio2.speak(turnData.it, { onend: function () { setTimeout(step, 260); } });
         return;
       }
       renderTurn(turnData);
     }
 
+    /* Przy rozwidleniu obie możliwości są POKAZANE. To nie jest test pamięci:
+       uczeń ma zdecydować, co powiedzieć, a nie odgadnąć, czego kurs oczekuje.
+       Mikrofon i pole tekstowe zostają — kliknięcie jest skrótem, nie jedyną
+       drogą, więc scena nadal daje się przejść głosem. */
+    function podpowiedziWyboru(opcje) {
+      return '<p class="voice-pl" style="margin-bottom:10px">' + esc(t("talk.chooseOne")) + "</p>" +
+        '<div class="dlg-opts">' + opcje.map(function (o) {
+          /* Wysyłamy TREŚĆ PODPOWIEDZI, nie klucz odpowiedzi: klucze są
+             pisane bez wielkich liter i bez interpunkcji, pod porównywanie,
+             i w dymku wyglądałyby jak zdanie napisane byle jak. `norm()`
+             w `similarity` i tak sprowadza jedno do drugiego. */
+          var wzor = o.hintIt || (o.accept && o.accept[0]) || "";
+          return '<button type="button" class="dlg-opt js-opt" data-opt="' + esc(wzor) + '">' +
+            "<i>" + esc(o.hintIt || wzor) + "</i>" +
+            (o.tr ? "<span>" + esc(o.tr) + "</span>" : "") + "</button>";
+        }).join("") + "</div>";
+    }
+
     // parametr nazywa się turnData, nie t: `t` to helper tłumaczeń w tym pliku
     function renderTurn(turnData) {
       turns++;
-      var accepted = turnData.accept || [turnData.it];
+      var opcje = turnData.opts || null;
+      var accepted = opcje ? (opcje[0].accept || []) : (turnData.accept || [turnData.it]);
+      if (opcje) wybory.push({ i: i, bakelki: dlg.children.length, score: score, turns: turns - 1 });
       turn.innerHTML =
         '<div class="voice-box">' +
         '<p style="font-weight:600;margin:0 0 4px">' + esc(t("talk.yourTurn", { task: turnData.task })) + "</p>" +
-        '<p class="voice-pl" style="margin-bottom:14px">' + t("ex.hintLabel", { hint: "<i>" + esc(turnData.hintIt || accepted[0]) + "</i>" }) + "</p>" +
+        (opcje ? podpowiedziWyboru(opcje) :
+          '<p class="voice-pl" style="margin-bottom:14px">' + t("ex.hintLabel", { hint: "<i>" + esc(turnData.hintIt || accepted[0]) + "</i>" }) + "</p>") +
         (Audio2.sttSupported ? '<button type="button" class="mic js-mic" aria-label="' + esc(t("talk.speak")) + '">🎤</button><p class="voice-heard js-heard">' + t("talk.tapAndSpeak") + "</p>" : "") +
         '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
         '<input type="text" class="field js-in" style="max-width:340px" placeholder="' + esc(t("talk.orType")) + '" autocomplete="off" spellcheck="false">' +
@@ -565,18 +605,39 @@
       var heard = turn.querySelector(".js-heard");
       var input = turn.querySelector(".js-in");
 
+      /* Przy rozwidleniu wygrywa opcja NAJBLIŻSZA temu, co uczeń powiedział,
+         a nie pierwsza pasująca: dwie odpowiedzi w tej samej scenie bywają
+         podobne („tylko kawa" / „kawa i deser") i pierwsza z brzegu
+         wysyłałaby go w gałąź, o którą nie prosił. */
+      function wybierz(text) {
+        var naj = { w: -1, o: null };
+        (opcje || [{ accept: accepted }]).forEach(function (o) {
+          var b = 0;
+          (o.accept || []).forEach(function (a) { b = Math.max(b, Core.similarity(text, a)); });
+          if (b > naj.w) naj = { w: b, o: o };
+        });
+        return naj;
+      }
+
       function accept(text) {
-        var best = 0;
-        accepted.forEach(function (a) { best = Math.max(best, Core.similarity(text, a)); });
-        var ok = best >= 0.72;
+        var naj = wybierz(text);
+        var ok = naj.w >= PROG;
+        /* Poniżej progu nie zgadujemy kierunku: idziemy pierwszą gałęzią i
+           pokazujemy jej wzorcową odpowiedź, tak jak w dialogu liniowym. */
+        var gal = ok ? naj.o : (opcje ? opcje[0] : null);
+        var wzor = (gal && gal.accept && gal.accept[0]) || accepted[0];
         if (ok) score++;
         Core.recordAnswer(ok);
-        bubble(ok ? text : accepted[0], turnData.tr || "", true);
-        if (!ok) Core.toast(t("talk.modelAnswer", { answer: accepted[0] }));
+        bubble(ok ? text : wzor, (gal && gal.tr) || turnData.tr || "", true);
+        if (!ok) Core.toast(t("talk.modelAnswer", { answer: wzor }));
         turn.innerHTML = "";
-        i++;
+        i = dalej(opcje ? gal : turnData, i);
         setTimeout(step, 420);
       }
+
+      if (opcje) turn.querySelectorAll(".js-opt").forEach(function (b) {
+        b.addEventListener("click", function () { accept(b.getAttribute("data-opt")); });
+      });
 
       if (Audio2.sttSupported) {
         var mic = turn.querySelector(".js-mic");
@@ -606,13 +667,28 @@
       });
     }
 
+    /* Powrót na ostatnie rozwidlenie, nie na początek. Gałąź, której się nie
+       wybrało, jest tym, po co w ogóle są rozwidlenia; kazać przechodzić od
+       nowa cały dialog, żeby ją zobaczyć, znaczy nie pokazać jej nikomu. */
+    function wrocDoWyboru() {
+      var w = wybory.pop();
+      while (dlg.children.length > w.bakelki) dlg.removeChild(dlg.lastChild);
+      i = w.i; score = w.score; turns = w.turns;
+      turn.innerHTML = "";
+      step();
+    }
+
     function finishConv() {
       Core.recordLesson("conv-" + conv.id, score, Math.max(turns, 1), 0);
       App.refreshRail();
       turn.innerHTML = '<div class="summary"><div class="summary__score">' + score + "/" + turns + "</div>" +
         '<p class="summary__msg">' + esc(conv.closing || t("talk.defaultClosing")) + "</p>" +
-        '<div class="summary__acts"><button class="btn btn--primary js-again">' + t("talk.again") + "</button>" +
+        '<div class="summary__acts">' +
+        (wybory.length ? '<button class="btn btn--primary js-branch">' + t("talk.otherBranch") + "</button>" : "") +
+        '<button class="btn ' + (wybory.length ? "btn--ghost" : "btn--primary") + ' js-again">' + t("talk.again") + "</button>" +
         '<button class="btn btn--ghost js-list">' + t("talk.others") + "</button></div></div>";
+      var gal = turn.querySelector(".js-branch");
+      if (gal) gal.addEventListener("click", wrocDoWyboru);
       turn.querySelector(".js-again").addEventListener("click", function () { App.go("conversazione", { id: conv.id }); });
       turn.querySelector(".js-list").addEventListener("click", function () { App.go("conversazione"); });
     }
@@ -854,6 +930,40 @@
       '<button class="btn btn--ghost btn--sm js-test" style="align-self:flex-start">' + t("set.testVoice") + "</button>" +
       "</div></div>" +
 
+      /* Powtórki stoją między mową a kopią zapasową, bo to nadal ustawienie
+         nauki. Kopia i „wyczyść wszystko" są końcem strony celowo: to
+         działania na całym profilu, nie pokrętła do kręcenia w trakcie.
+
+         Suwak z gołą liczbą („0.87") nie znaczy dla ucznia nic, więc wybór
+         jest z trzech nazwanych progów, a zdanie pod spodem mówi o SKUTKU,
+         nie o algorytmie: nikt nie zmienia retencji, ludzie zmieniają „za
+         często mi to wraca". */
+      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.reviews") + "</h3>" +
+      '<div class="stack">' +
+      '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' + t("set.retention") + "</span>" +
+      '<select class="field js-retention" style="max-width:420px">' +
+      [["0.85", "set.retentionRelaxed"], ["0.9", "set.retentionDefault"], ["0.95", "set.retentionStrict"]]
+        .map(function (o) {
+          var wybrane = Math.abs((Core.state.settings.retention || 0.9) - parseFloat(o[0])) < 0.001;
+          return '<option value="' + o[0] + '"' + (wybrane ? " selected" : "") + ">" + esc(t(o[1])) + "</option>";
+        }).join("") +
+      "</select></label>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem;margin:0">' + esc(t("set.retentionHint")) + "</p>" +
+      "</div></div>" +
+
+      /* Talia dla innych programów. Osobna karta od kopii postępów, bo to
+         inna obietnica: kopia wraca TUTAJ z terminami, a ta wychodzi STĄD
+         bez nich. Zlanie ich w jeden przycisk kończy się importem „na
+         czysto" i utratą roku powtórek. */
+      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("anki.title") + "</h3>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem">' + esc(t("anki.hint")) + "</p>" +
+      '<p style="font-size:.9rem;font-weight:600">' + esc(t("anki.noSchedule")) + "</p>" +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
+      '<button class="btn btn--green btn--sm js-tsv-out">' + t("anki.export") + "</button>" +
+      '<label class="btn btn--ghost btn--sm" style="cursor:pointer">' + t("anki.import") +
+      '<input type="file" accept=".tsv,.txt,.csv,text/plain" class="js-tsv-in" hidden></label></div>' +
+      '<div class="js-tsv-preview" style="margin-top:14px"></div></div>' +
+
       '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.backup") + "</h3>" +
       '<p style="color:var(--ink-soft);font-size:.9rem">' + t("set.backupHint") + "</p>" +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
@@ -884,6 +994,14 @@
     });
     el().querySelector(".js-autoplay").addEventListener("change", function (e) { Core.state.settings.autoplay = e.target.checked; Core.save(); });
     el().querySelector(".js-strict").addEventListener("change", function (e) { Core.state.settings.strictAccents = e.target.checked; Core.save(); });
+    /* Zmiana działa od NASTĘPNEJ odpowiedzi: terminów już wyznaczonych nie
+       ruszamy. Przeliczenie całej talii przesunęłoby karty, których uczeń
+       dziś nie widzi, a on zmienił ustawienie, nie poprosił o migrację. */
+    el().querySelector(".js-retention").addEventListener("change", function (e) {
+      Core.state.settings.retention = parseFloat(e.target.value);
+      Core.save();
+      Core.toast(t("set.retentionSaved"));
+    });
     el().querySelector(".js-test").addEventListener("click", function () {
       Audio2.speak("Ciao! Sono la tua voce italiana. Andiamo a studiare insieme.");
     });
@@ -911,11 +1029,137 @@
       };
       fr.readAsText(f);
     });
+    wireAnki();
+
     el().querySelector(".js-reset").addEventListener("click", function () {
       if (!global.confirm(t("set.resetConfirm"))) return;
       Core.resetState(); App.refreshRail(); Core.toast(t("set.resetDone")); App.go("percorso");
     });
   };
+
+  /* ═══════════════ Talia w formacie Anki ═══════════════ */
+
+  /**
+   * Eksport i import TSV, z ANTEPRIMA przed zapisem.
+   *
+   * Import bez podglądu to jedyne miejsce w kursie, w którym cudzy plik
+   * zmienia stan bezpowrotnie i po cichu. Uczeń ma najpierw zobaczyć, co
+   * się stanie — ile dojdzie, ile się zaktualizuje, ile zostanie
+   * pominiętych — i dopiero potem potwierdzić. Anulowanie nie może
+   * zostawić po sobie ani jednej zmiany.
+   */
+  function wireAnki() {
+    var root = el();
+    var podglad = root.querySelector(".js-tsv-preview");
+
+    root.querySelector(".js-tsv-out").addEventListener("click", function () {
+      var karty = Object.keys(Core.state.srs).map(function (k) {
+        var c = Core.state.srs[k];
+        return { it: c.it, tr: Core.cardTr(c), tag: (c.src || "").replace(/[\s,]+/g, "-") };
+      });
+      if (!karty.length) { Core.toast(t("anki.nothingToExport")); return; }
+      var blob = new Blob([Anki.toTsv(karty)], { type: "text/tab-separated-values" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "impara-italiano-" + Core.today() + ".tsv";
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      Core.toast(t("anki.exported", { n: karty.length }));
+    });
+
+    root.querySelector(".js-tsv-in").addEventListener("change", function (e) {
+      var f = e.target.files[0];
+      if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () { pokazPodglad(String(fr.result), podglad); };
+      fr.readAsText(f);
+      e.target.value = "";        // ten sam plik da się wybrać drugi raz
+    });
+  }
+
+  /** Co zrobi import: dojdzie, zaktualizuje się, zostanie pominięte. */
+  function policz(karty) {
+    var srs = Core.state.srs;
+    var nowe = 0, aktualizacje = 0, pominiete = 0, widziane = {};
+    karty.forEach(function (k) {
+      var klucz = Core.cardKey(k.it);
+      if (!klucz || Core.isForbidden(klucz)) { pominiete++; return; }
+      if (widziane[klucz]) { pominiete++; return; }
+      widziane[klucz] = true;
+      if (Object.prototype.hasOwnProperty.call(srs, klucz)) aktualizacje++;
+      else nowe++;
+    });
+    return { nowe: nowe, aktualizacje: aktualizacje, pominiete: pominiete };
+  }
+
+  function pokazPodglad(tekst, box) {
+    var w = Anki.fromTsv(tekst);
+    if (w.blad) {
+      box.innerHTML = '<div class="callout callout--trap"></div>';
+      box.querySelector(".callout").textContent = t(w.blad);
+      return;
+    }
+    if (!w.karty.length) {
+      box.innerHTML = "<p></p>";
+      box.querySelector("p").textContent = t("anki.emptyFile");
+      return;
+    }
+
+    var licz = policz(w.karty);
+    licz.pominiete += w.pominiete;
+
+    box.innerHTML = '<div class="card" style="margin:0">' +
+      '<p style="font-weight:600;margin:0 0 8px" class="js-sum"></p>' +
+      '<div class="stack js-rows" style="margin-bottom:12px"></div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button class="btn btn--green btn--sm js-ok">' + esc(t("anki.confirm")) + "</button>" +
+      '<button class="btn btn--ghost btn--sm js-no">' + esc(t("anki.cancel")) + "</button></div></div>";
+
+    box.querySelector(".js-sum").textContent =
+      t("anki.summary", { add: licz.nowe, upd: licz.aktualizacje, skip: licz.pominiete });
+
+    /* Pierwsze pięć wierszy, WYŁĄCZNIE przez textContent. To jest treść z
+       cudzego pliku: `esc()` by wystarczyło, ale textContent nie da się
+       użyć źle, a to jedyne miejsce, gdzie cudzy napis trafia na ekran. */
+    var lista = box.querySelector(".js-rows");
+    w.karty.slice(0, 5).forEach(function (k) {
+      var row = document.createElement("div");
+      row.className = "list-row";
+      var a = document.createElement("b");
+      a.textContent = k.it;
+      var b = document.createElement("span");
+      b.style.color = "var(--ink-soft)";
+      b.textContent = k.tr;
+      var main = document.createElement("span");
+      main.className = "list-row__main";
+      main.appendChild(a);
+      main.appendChild(b);
+      row.appendChild(main);
+      lista.appendChild(row);
+    });
+
+    box.querySelector(".js-no").addEventListener("click", function () {
+      box.innerHTML = "";
+      Core.toast(t("anki.cancelled"));
+    });
+    box.querySelector(".js-ok").addEventListener("click", function () {
+      /* Zapis pomija DOKŁADNIE to, co podgląd policzył jako pominięte.
+         Bez tego duplikat w pliku był liczony jako pominięty, a mimo to
+         nadpisywał tłumaczenie — podgląd obiecywał jedno, import robił
+         drugie, i uczeń nie miał jak zauważyć różnicy. Wygrywa pierwsze
+         wystąpienie, tak jak przy liczeniu. */
+      var dodane = 0, uzyte = {};
+      w.karty.forEach(function (k) {
+        var klucz = Core.cardKey(k.it);
+        if (!klucz || uzyte[klucz]) return;
+        uzyte[klucz] = true;
+        if (Core.addCard(k.it, k.tr, k.tag || "anki")) dodane++;
+      });
+      box.innerHTML = "";
+      App.refreshRail();
+      Core.toast(t("anki.imported", { n: dodane }));
+    });
+  }
 
   /**
    * Skorupa widoku, wystawiona dla modułów, które dokładają własne trasy

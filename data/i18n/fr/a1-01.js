@@ -532,6 +532,7 @@ LINGUAI.addStrings("fr", {
       ]
     },
     vocab: [
+      "être",
       "je m'appelle…",
       "comment tu t'appelles ?",
       "tu viens d'où ?",
@@ -631,6 +632,7 @@ LINGUAI.addStrings("fr", {
       ]
     },
     vocab: [
+      "avoir",
       "j'ai faim",
       "j'ai soif",
       "j'ai froid / chaud",

@@ -532,6 +532,7 @@ LINGUAI.addStrings("en", {
       ]
     },
     vocab: [
+      "to be",
       "my name is…",
       "what's your name?",
       "where are you from?",
@@ -631,6 +632,7 @@ LINGUAI.addStrings("en", {
       ]
     },
     vocab: [
+      "to have",
       "I'm hungry",
       "I'm thirsty",
       "I'm cold / hot",

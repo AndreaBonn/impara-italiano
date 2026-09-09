@@ -115,3 +115,37 @@ for (const theme of ["light", "dark"]) {
     }
   });
 }
+
+/* ============================================================
+   Kontrast POD KURSOREM, nie tylko w spoczynku.
+
+   Defekt, który to złapało: w ciemnym motywie napis na przycisku jest
+   ciemny, a `:hover` przyciemniał tło — oba kolory zbiegały się do
+   3,36:1 przy progu 4,5. W jasnym motywie ta sama reguła jest poprawna,
+   bo tam napis jest jasny. Stan spoczynku przechodził w obu.
+
+   Dwie rzeczy, których nie widać, dopóki się nie potkniesz: paleta ma
+   przejście, więc pomiar zaraz po przełączeniu motywu zwraca kolor
+   pośredni; i sam klik Playwrighta zostawia kursor NA przycisku, więc
+   „stan spoczynku" zmierzony po kliknięciu jest w rzeczywistości hover.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`przyciski akcji: kontrast pod kursorem w motywie ${theme}`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html#/velocita");
+    await page.waitForSelector(".sp-num");
+    await page.evaluate(t => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* przejście palety */
+
+    for (const [sel, opis] of [[".js-reveal", "przycisk podstawowy"],
+                               [".js-play.btn--green", "przycisk zielony"]]) {
+      await page.hover(sel);
+      await page.waitForTimeout(400);
+      const m = await page.evaluate(s => window.__kontrast(s), sel);
+      expect(m, `${opis} (${sel}) nie istnieje`).not.toBeNull();
+      expect(m.tekst, `${opis} pod kursorem: ${m.tekst.toFixed(2)}:1, próg ${TEKST}`)
+        .toBeGreaterThanOrEqual(TEKST);
+      await page.mouse.move(0, 0);
+    }
+  });
+}

@@ -532,6 +532,7 @@ LINGUAI.addStrings("es", {
       ]
     },
     vocab: [
+      "ser/estar",
       "me llamo…",
       "¿cómo te llamas?",
       "¿de dónde eres?",
@@ -631,6 +632,7 @@ LINGUAI.addStrings("es", {
       ]
     },
     vocab: [
+      "tener",
       "tengo hambre",
       "tengo sed",
       "tengo frío / calor",

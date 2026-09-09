@@ -39,6 +39,20 @@
 
   function render(route, params) {
     Audio2.stop();
+    /* Sprzątanie po widoku, który zostawił coś chodzącego.
+       `Audio2.stop()` wyżej wystarczało, dopóki jedynym śladem widoku był
+       dźwięk. Symulacja egzaminu ma odliczanie na `setInterval`: bez tego
+       haczyka zegar zostawał żywy po wyjściu z trasy i po pół godzinie
+       wywoływał domykanie sekcji na CUDZYM ekranie. Zmierzone: jeden
+       interwał aktywny 2,5 sekundy po `App.go("lettura")`.
+       Kontrakt jest jednorazowy: widok ustawia `Views.onLeave` przy
+       rysowaniu, router go woła i kasuje, więc nikt nie musi pamiętać
+       o wyrejestrowaniu. */
+    if (typeof Views.onLeave === "function") {
+      var sprzatnij = Views.onLeave;
+      Views.onLeave = null;
+      sprzatnij();
+    }
     current = { route: route, params: params };
 
     /* Domyślnie po zmianie trasy fokus ląduje na kontenerze treści, żeby

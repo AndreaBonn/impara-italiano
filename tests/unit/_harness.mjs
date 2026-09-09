@@ -135,7 +135,7 @@ function makeDocument(toasts, notices) {
  */
 export function loadEngine(options) {
   const opts = options || {};
-  const files = opts.files || ["assets/js/core.js"];
+  const files = opts.files || ["assets/js/fsrs.js", "assets/js/core.js"];
   const storage = opts.storage || makeStorage();
   const clock = makeClock();
   const toasts = [];

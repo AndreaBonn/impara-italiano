@@ -163,8 +163,14 @@ rejestracja rzuca wyjątkiem, a otwieranie kursu z dysku jest wymogiem projektu:
 strażnik stoi na protokole, nie w `try/catch`, i żadna ścieżka kodu nie zakłada, że
 worker istnieje. Zakładka Ustawienia pokazuje, w którym z trzech stanów jest kurs.
 
-Cudzych domen worker nie dotyka w ogóle (fonty Google): nieprzejrzysta odpowiedź w
-pamięci to rozmiar bez możliwości sprawdzenia treści.
+Cudzych domen worker nie dotyka w ogóle: nieprzejrzysta odpowiedź w pamięci to rozmiar bez
+możliwości sprawdzenia treści. Do niedawna kosztowało to wygląd kursu bez sieci, bo Fraunces
+i Inter szły z `fonts.googleapis.com` i przez tę właśnie regułę nie trafiały do pamięci.
+**Oba kroje leżą teraz w `assets/fonts/`** (cztery pliki: `latin` i `latin-ext` na rodzinę,
+bo polskie znaki diakrytyczne siedzą w `latin-ext`), są w `PRECACHE`, a `index.html` nie
+odpytuje już żadnej cudzej domeny. Zmierzone, nie założone: wszystkie cztery pliki ładują się
+**także z `file://`** — obawa, że CORS je tam zablokuje, okazała się nietrafiona, natomiast
+`<link rel="preload" crossorigin>` faktycznie tam pada i dlatego go nie ma.
 
 **Po dopisaniu pliku do `assets/js/` albo `data/core/` dopisz go do `PRECACHE` w `sw.js`
 i podnieś `SW_VERSION`.** Inaczej pierwszy start bez sieci padnie na brakującym skrypcie.
@@ -218,11 +224,26 @@ npm run test:all                    # obie suity; warunek zamknięcia każdej fa
 `index.html` nie wczytuje z niego niczego, aplikacja nadal startuje z `file://`
 bez żadnego pakietu. `npm install` jest potrzebny do uruchomienia testów, nie kursu.
 
-Baseline na dzień wprowadzenia suity (do porównania, gdy coś zacznie znikać):
-32 jednostki, 150 lekcji, 1514 ćwiczeń, 1410 pozycji słownika, 10 rozmów,
-42 hasła gramatyczne, 12 typów ćwiczeń obecnych w danych (`truefalse` jest
-obsługiwany przez silnik, ale nie występuje w kursie).
-Suity: 29 testów jednostkowych, 17 testów DOM, wszystkie zielone.
+Baseline (do porównania, gdy coś zacznie znikać). Zmierzona, nie zapamiętana: liczby niżej
+pochodzą z uruchomienia `node scripts/validate.mjs`, `npm test` i `npm run test:dom`, a nie
+z poprzedniej wersji tego pliku.
+
+| Co | Ile |
+|---|---|
+| Jednostki / lekcje / ćwiczenia | 32 / 150 / 1514 |
+| Pozycje słownika / rozmowy / hasła gramatyczne | 1410 / 10 / 42 |
+| Czytanki / zadania pisane / zbiory par minimalnych | 12 / 6 / 5 |
+| Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
+| Typy ćwiczeń obecnych w danych | **13** (`truefalse` 12 wystąpień, wszystkie z pytań do czytanek) |
+| Nagrania | 2657 plików mp3, 34 MB |
+| Klucze interfejsu na język | 501 × 5 języków |
+| Testy jednostkowe | 214, zielone |
+| Testy DOM | 97 deklaracji, 113 przebiegów, zielone |
+
+Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
+„29 testów jednostkowych, 17 DOM". Były prawdziwe w dniu wprowadzenia suity i przestały być
+prawdziwe bez niczyjej decyzji — dlatego liczby stoją teraz w tabeli z podanym poleceniem,
+które je odtwarza.
 
 `parity.mjs` jest bramką dla nowego języka. Nakładki łączą się z warstwą neutralną **po indeksie**,
 więc tablica krótsza o jeden element niczego nie wywraca: jedno ćwiczenie po cichu zostaje w

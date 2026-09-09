@@ -1,0 +1,629 @@
+{
+  "zrodlo": "py-fsrs, Scheduler(enable_fuzzing=False)",
+  "parametry": [
+    0.212,
+    1.2931,
+    2.3065,
+    8.2956,
+    6.4133,
+    0.8334,
+    3.0194,
+    0.001,
+    1.8722,
+    0.1666,
+    0.796,
+    1.4835,
+    0.0614,
+    0.2629,
+    1.6483,
+    0.6014,
+    1.8729,
+    0.5425,
+    0.0912,
+    0.0658,
+    0.1542
+  ],
+  "desiredRetention": 0.9,
+  "learningStepsSekund": [
+    60,
+    600
+  ],
+  "relearningStepsSekund": [
+    600
+  ],
+  "maximumInterval": 36500,
+  "scenariusze": {
+    "nowa-good-przez-kroki": [
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": null,
+          "difficulty": null
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0,
+        "odstepSekund": 600,
+        "po": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 2.118104
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 2.118104
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0.2,
+        "odstepSekund": 172800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 2.3065,
+          "difficulty": 2.111214
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 2.3065,
+          "difficulty": 2.111214
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 24,
+        "odstepSekund": 604800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 7.319186,
+          "difficulty": 2.104331
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 7.319186,
+          "difficulty": 2.104331
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 96,
+        "odstepSekund": 1987200,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 23.205358,
+          "difficulty": 2.097455
+        }
+      }
+    ],
+    "nowa-easy-od-razu": [
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": null,
+          "difficulty": null
+        },
+        "ocena": "easy",
+        "godzinOdPoprzedniej": 0,
+        "odstepSekund": 691200,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 8.2956,
+          "difficulty": 1.0
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 8.2956,
+          "difficulty": 1.0
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 120,
+        "odstepSekund": 2592000,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 29.733567,
+          "difficulty": 1.0
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 29.733567,
+          "difficulty": 1.0
+        },
+        "ocena": "easy",
+        "godzinOdPoprzedniej": 480,
+        "odstepSekund": 13564800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 156.544462,
+          "difficulty": 1.0
+        }
+      }
+    ],
+    "nowa-again-uporczywe": [
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": null,
+          "difficulty": null
+        },
+        "ocena": "again",
+        "godzinOdPoprzedniej": 0,
+        "odstepSekund": 60,
+        "po": {
+          "state": "learning",
+          "step": 0,
+          "stability": 0.212,
+          "difficulty": 6.4133
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": 0.212,
+          "difficulty": 6.4133
+        },
+        "ocena": "again",
+        "godzinOdPoprzedniej": 0.02,
+        "odstepSekund": 60,
+        "po": {
+          "state": "learning",
+          "step": 0,
+          "stability": 0.083357,
+          "difficulty": 8.806304
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": 0.083357,
+          "difficulty": 8.806304
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0.02,
+        "odstepSekund": 600,
+        "po": {
+          "state": "learning",
+          "step": 1,
+          "stability": 0.103141,
+          "difficulty": 8.792727
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 1,
+          "stability": 0.103141,
+          "difficulty": 8.792727
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 24,
+        "odstepSekund": 86400,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 0.695255,
+          "difficulty": 8.779162
+        }
+      }
+    ],
+    "nowa-hard-powolna": [
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": null,
+          "difficulty": null
+        },
+        "ocena": "hard",
+        "godzinOdPoprzedniej": 0,
+        "odstepSekund": 330,
+        "po": {
+          "state": "learning",
+          "step": 0,
+          "stability": 1.2931,
+          "difficulty": 5.112171
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": 1.2931,
+          "difficulty": 5.112171
+        },
+        "ocena": "hard",
+        "godzinOdPoprzedniej": 0.1,
+        "odstepSekund": 330,
+        "po": {
+          "state": "learning",
+          "step": 0,
+          "stability": 1.2931,
+          "difficulty": 6.74046
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": 1.2931,
+          "difficulty": 6.74046
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0.2,
+        "odstepSekund": 600,
+        "po": {
+          "state": "learning",
+          "step": 1,
+          "stability": 1.3359,
+          "difficulty": 6.728947
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 1,
+          "stability": 1.3359,
+          "difficulty": 6.728947
+        },
+        "ocena": "hard",
+        "godzinOdPoprzedniej": 48,
+        "odstepSekund": 600,
+        "po": {
+          "state": "learning",
+          "step": 1,
+          "stability": 3.65436,
+          "difficulty": 7.813751
+        }
+      }
+    ],
+    "wpadka-po-dojrzalosci": [
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": null,
+          "difficulty": null
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0,
+        "odstepSekund": 600,
+        "po": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 2.118104
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 2.118104
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0.2,
+        "odstepSekund": 172800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 2.3065,
+          "difficulty": 2.111214
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 2.3065,
+          "difficulty": 2.111214
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 24,
+        "odstepSekund": 604800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 7.319186,
+          "difficulty": 2.104331
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 7.319186,
+          "difficulty": 2.104331
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 144,
+        "odstepSekund": 2505600,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 29.092972,
+          "difficulty": 2.097455
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 29.092972,
+          "difficulty": 2.097455
+        },
+        "ocena": "again",
+        "godzinOdPoprzedniej": 360,
+        "odstepSekund": 600,
+        "po": {
+          "state": "relearning",
+          "step": 0,
+          "stability": 2.269128,
+          "difficulty": 7.387716
+        }
+      },
+      {
+        "przed": {
+          "state": "relearning",
+          "step": 0,
+          "stability": 2.269128,
+          "difficulty": 7.387716
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0.2,
+        "odstepSekund": 172800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 2.269128,
+          "difficulty": 7.375556
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 2.269128,
+          "difficulty": 7.375556
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 72,
+        "odstepSekund": 604800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 6.957652,
+          "difficulty": 7.363409
+        }
+      }
+    ],
+    "dlugie-zapomnienie": [
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": null,
+          "difficulty": null
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0,
+        "odstepSekund": 600,
+        "po": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 2.118104
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 2.118104
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0.2,
+        "odstepSekund": 172800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 2.3065,
+          "difficulty": 2.111214
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 2.3065,
+          "difficulty": 2.111214
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 24,
+        "odstepSekund": 604800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 7.319186,
+          "difficulty": 2.104331
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 7.319186,
+          "difficulty": 2.104331
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 4800,
+        "odstepSekund": 10540800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 121.618401,
+          "difficulty": 2.097455
+        }
+      }
+    ],
+    "mieszany-dlugi": [
+      {
+        "przed": {
+          "state": "learning",
+          "step": 0,
+          "stability": null,
+          "difficulty": null
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0,
+        "odstepSekund": 600,
+        "po": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 2.118104
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 2.118104
+        },
+        "ocena": "hard",
+        "godzinOdPoprzedniej": 0.2,
+        "odstepSekund": 600,
+        "po": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 4.752858
+        }
+      },
+      {
+        "przed": {
+          "state": "learning",
+          "step": 1,
+          "stability": 2.3065,
+          "difficulty": 4.752858
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 24,
+        "odstepSekund": 518400,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 5.829474,
+          "difficulty": 4.743334
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 5.829474,
+          "difficulty": 4.743334
+        },
+        "ocena": "easy",
+        "godzinOdPoprzedniej": 120,
+        "odstepSekund": 2592000,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 30.368211,
+          "difficulty": 2.97203
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 30.368211,
+          "difficulty": 2.97203
+        },
+        "ocena": "hard",
+        "godzinOdPoprzedniej": 288,
+        "odstepSekund": 4492800,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 51.946987,
+          "difficulty": 5.319734
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 51.946987,
+          "difficulty": 5.319734
+        },
+        "ocena": "again",
+        "godzinOdPoprzedniej": 720,
+        "odstepSekund": 600,
+        "po": {
+          "state": "relearning",
+          "step": 0,
+          "stability": 2.74914,
+          "difficulty": 8.446857
+        }
+      },
+      {
+        "przed": {
+          "state": "relearning",
+          "step": 0,
+          "stability": 2.74914,
+          "difficulty": 8.446857
+        },
+        "ocena": "good",
+        "godzinOdPoprzedniej": 0.2,
+        "odstepSekund": 259200,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 2.74914,
+          "difficulty": 8.433638
+        }
+      },
+      {
+        "przed": {
+          "state": "review",
+          "step": null,
+          "stability": 2.74914,
+          "difficulty": 8.433638
+        },
+        "ocena": "easy",
+        "godzinOdPoprzedniej": 192,
+        "odstepSekund": 1209600,
+        "po": {
+          "state": "review",
+          "step": null,
+          "stability": 14.45416,
+          "difficulty": 7.895462
+        }
+      }
+    ]
+  }
+}

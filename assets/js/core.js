@@ -36,11 +36,31 @@
          istniejącego pola, tak jak przy v1 → v2, a tutaj nic nie
          zmienia znaczenia. Bump zamiast tego odrzuciłby każdy plik
          wyeksportowany przez ucznia do tej pory. */
+      /* Dziennik powtórek: {k klucz fiszki, t czas, q ocena 0/3/4/5}.
+         Wejście dla PRZYSZŁEGO strojenia parametrów FSRS na własnej
+         historii — optymalizator Anki robi to lokalnie, na urządzeniu, od
+         ok. tysiąca powtórek, więc konsument jest realny, nie wymyślony.
+         Powód, dla którego stoi tu już teraz, jest asymetryczny: kosztuje
+         grosze dzisiaj, a wstecz nie da się go odtworzyć. Kto uczy się rok
+         bez dziennika, po roku ma zero historii i nikt mu jej nie odda. */
+      reviews: [],
       errors: {},         // klucz ćwiczenia -> karta błędu
-      gsrs: {},           // id zagadnienia z GRAMMAR_REF -> harmonogram
+      /* Był tu `gsrs` — harmonogram per zagadnienie gramatyczne. Zadeklarowany
+         przy silniku adaptacyjnym i nigdy przez nikogo nie zapisany ani nie
+         odczytany; jedyne dotknięcie było w teście, który wpisywał go ręcznie,
+         żeby sprawdzić trwałość. Pusty kontener w SHAPE to kontrakt, którego
+         nikt nie honoruje, a FSRS go nie potrzebuje: planuje karty, nie tematy.
+         Usunięcie jest bezpieczne w obie strony, bo merge() pomija klucze
+         spoza domyślnych, więc starszy zapis z tym polem wczytuje się dalej. */
       drills: {},         // id generatora -> licznik podejść
       session: {},        // skład i postęp dzisiejszej sesji
       writing: {},        // id zadania -> wypracowanie ucznia
+      /* Przebiegi symulacji egzaminu. Kontener DOKŁADANY: starszy profil
+         dostaje go pustym przez merge(), więc numer schematu się nie rusza.
+         Trzymamy punkty dwóch sprawności, które symulator umie policzyć,
+         listę sekcji, w których skończył się czas, i werdykt — nie
+         odpowiedzi: te są ćwiczeniem, nie historią. */
+      cils: { runs: [] },
       placement: null,    // wynik testu poziomującego, dopóki go nie ma
       streak: { count: 0, lastDay: null, best: 0 },
       xp: 0,
@@ -52,7 +72,15 @@
         rate: 1,
         autoplay: true,
         showPl: true,       // tłumaczenia widoczne od razu
-        strictAccents: false
+        strictAccents: false,
+        /* Docelowa szansa przypomnienia w chwili powtórki (FSRS).
+           Wyżej = częstsze powtórki i mniej zapominania, niżej = rzadsze
+           i więcej. 0.9 to wartość domyślna implementacji referencyjnej. */
+        retention: 0.9,
+        /* Zgoda na wysyłanie głosu do rozpoznawania mowy. Domyślnie NIE ma
+           jej: milcząca zgoda jest dokładnie tym, czego consent.js ma nie
+           dopuścić. Kontener dokładany, schemat się nie rusza. */
+        sttConsent: false
       },
       stats: { correct: 0, wrong: 0, lessonsDone: 0, days: {} }
     };
@@ -60,12 +88,42 @@
 
   var state = defaultState();
 
+  /**
+   * Wczytuje stan, przeprowadzając starszy zapis przez schodki migracji.
+   *
+   * Do niedawna warunkiem było `parsed.schema === SCHEMA`, równość ścisła,
+   * a `migrateUp` wisiało wyłącznie pod `importState`. Zapis o innym numerze
+   * schematu był więc po cichu pomijany: bez błędu, bez śladu, z pustym
+   * profilem na ekranie i bez możliwości odkręcenia tego przez ucznia.
+   * Nie wybuchało tylko dlatego, że nikt jeszcze nie podniósł schematu —
+   * czyli wybuchłoby przy pierwszym podniesieniu, w najgorszym momencie.
+   *
+   * Kierunki nie są symetryczne i nie mają prawa być:
+   * - starszy zapis (`schema < SCHEMA`) idzie przez `MIGRATIONS` — wiemy,
+   *   jak go podnieść, bo sami napisaliśmy każdy stopień;
+   * - zapis z przyszłości (`schema > SCHEMA`) jest odrzucany w całości.
+   *   Wczytanie połowiczne byłoby gorsze niż odmowa: pola o zmienionym
+   *   znaczeniu weszłyby do stanu wyglądając poprawnie. To samo robi
+   *   `validateImport` przy imporcie z pliku.
+   *
+   * `MIGRATIONS` jest przypisywane niżej w tym pliku, ale `load()` woła
+   * dopiero `app.js` po wykonaniu całego modułu, więc tablica jest gotowa.
+   */
   function load() {
     try {
       var raw = global.localStorage.getItem(STORE_KEY);
       if (raw) {
         var parsed = JSON.parse(raw);
-        if (parsed && parsed.schema === SCHEMA) state = merge(defaultState(), parsed);
+        if (!parsed || typeof parsed.schema !== "number") return;
+        if (parsed.schema > SCHEMA) return;
+        if (parsed.schema === SCHEMA) { state = merge(defaultState(), parsed); return; }
+
+        var podniesiony = migrateUp(parsed);
+        /* Stopień może nie istnieć: wtedy numer się nie ruszy i zapis
+           zostaje nietknięty na dysku, zamiast wejść w niespójnym kształcie. */
+        if (podniesiony.schema !== SCHEMA) return;
+        state = podniesiony;
+        save();
         return;
       }
       var old = global.localStorage.getItem(STORE_KEY_V1);
@@ -133,6 +191,13 @@
     Object.keys(state.drills).forEach(function (k) {
       out.push({ bag: "drills", key: k, score: 1000 });   // same liczniki, odtwarzalne
     });
+    /* Dziennik powtórek ustępuje PO błędach i drillach, bo tamte wracają
+       same przy dalszej nauce, a on nie. Ustępuje jednak przed postępami
+       lekcji i wypracowaniami: to wejście do strojenia, które jeszcze nie
+       istnieje, a tamto jest nauką, którą uczeń już odbył. */
+    if (Array.isArray(state.reviews) && state.reviews.length) {
+      out.push({ bag: "reviews", key: "", score: 500 });
+    }
     return out.sort(function (a, b) { return b.score - a.score; });
   }
 
@@ -143,7 +208,15 @@
     var cands = pruneCandidates();
     if (!cands.length) return false;
     var n = Math.min(PRUNE_BATCH, cands.length);
-    for (var i = 0; i < n; i++) delete state[cands[i].bag][cands[i].key];
+    for (var i = 0; i < n; i++) {
+      /* Dziennik powtórek jest tablicą, nie workiem pod kluczem: ustępuje
+         połową najstarszych wpisów zamiast pojedynczą pozycją. */
+      if (cands[i].bag === "reviews") {
+        state.reviews.splice(0, Math.ceil(state.reviews.length / 2));
+        continue;
+      }
+      delete state[cands[i].bag][cands[i].key];
+    }
     return true;
   }
 
@@ -335,8 +408,26 @@
    * Dzięki temu uczeń, który przełączy się na angielski, nie gubi harmonogramu
    * powtórek: ta sama karta zyskuje drugą glosę.
    */
+  /**
+   * Dokłada fiszkę. Zwraca klucz albo `null`, gdy treść jest odrzucona.
+   *
+   * ODRZUCENIE KLUCZY ZASTRZEŻONYCH. `merge()` filtruje `__proto__`,
+   * `constructor` i `prototype`, ale ta droga jej nie przechodzi: idzie
+   * prosto przez `cardKey` do `state.srs[k] = {…}`, a `norm()` podkreśleń
+   * nie rusza. Fiszka o takiej treści ustawiłaby PROTOTYP obiektu zamiast
+   * założyć w nim właściwość — zniknęłaby z `Object.keys` i z zapisu, a
+   * odczyt dowolnego brakującego klucza zacząłby trafiać w podstawiony
+   * obiekt. Cicho, bo nic się nie wywraca.
+   *
+   * Do tej pory nieosiągalne: fiszki zakładał wyłącznie kurs. Import cudzej
+   * talii z pliku czyni z tego wektor, więc obrona wchodzi razem z nim.
+   * Odrzucamy zamiast przemianowywać: to nie są włoskie słowa i nie ma
+   * czego ratować, a przemianowanie zostawiłoby w talii klucz, którego
+   * uczeń nie umie z niczym powiązać.
+   */
   function addCard(it, tr, src) {
     var k = cardKey(it);
+    if (!k || isForbidden(k)) return null;
     var lang = state.settings.lang;
     var card = state.srs[k];
     if (!card) {
@@ -377,6 +468,11 @@
    * Wydzielony z gradeCard, bo quaderno błędów (errors.js) prowadzi drugą
    * talię tymi samymi regułami. Dwie kopie tej arytmetyki rozjechałyby się
    * przy pierwszej zmianie progu — i to po cichu, bo obie dalej działają.
+   *
+   * OD F1 SŁUŻY JUŻ TYLKO QUADERNO BŁĘDÓW. Talia słownictwa jest na FSRS
+   * (patrz gradeCard niżej). Zostawione tutaj, a nie przeniesione do
+   * errors.js, bo to nadal arytmetyka harmonogramu, a nie logika quaderna,
+   * i nadal wisi w publicznym API jako `Core.schedule`.
    */
   function schedule(c, q) {
     if (q < 3) {
@@ -395,12 +491,104 @@
     return c;
   }
 
+  /* ---------------- FSRS na talii słownictwa ----------------
+
+     Talia słownictwa przechodzi na FSRS, quaderno błędów zostaje na SM-2
+     wyżej. To nie jest niekonsekwencja, tylko wniosek z pomiaru: errors.js
+     kasuje kartę przy `ok && reps >= 2` (GRADUATE_REPS), a gałąź
+     `interval * ef` w `schedule` zaczyna się od `reps >= 3`. Karta z
+     quaderno NIGDY tam nie dochodzi — `ef` jest tam zapisywane i nigdy
+     czytane. Podmiana algorytmu w miejscu, którego nie widać, powiększa
+     powierzchnię bez żadnego zysku.
+
+     Skala ocen w interfejsie została ta sama (0/3/4/5), bo to napisy,
+     które uczeń już zna, i zmiana ich znaczenia przy okazji zmiany silnika
+     zmieszałaby dwie rzeczy w jednym kroku.
+     ------------------------------------------------------- */
+
+  var OCENA_FSRS = { 0: 1, 3: 2, 4: 3, 5: 4 };   // znowu / trudne / dobrze / łatwe
+
+  /**
+   * Przenosi kartę SM-2 na tory FSRS przy PIERWSZEJ powtórce po zmianie.
+   *
+   * Migracji hurtem nie ma i nie ma jej być: przeliczenie całej talii przy
+   * starcie przesunęłoby terminy kart, których uczeń dziś nie dotknie, a
+   * numer schematu zostaje przy 2 właśnie dlatego, że żadne istniejące pole
+   * nie zmienia znaczenia (R1). `ef` staje się balastem na starych kartach:
+   * nie czytamy go poza tym jednym przeliczeniem.
+   *
+   * Przełożenie jest przybliżone i inne być nie może — SM-2 nie przechowuje
+   * niczego, z czego dałoby się odtworzyć stabilność. Bierzemy to, co niesie
+   * sens: dotychczasowy odstęp JEST oszacowaniem stabilności (tyle dni karta
+   * wytrzymywała), a `ef` odwzorowuje się na trudność odwrotnie, bo wysokie
+   * `ef` to karta łatwa, a wysoka trudność FSRS to karta trudna.
+   */
+  function naFsrs(c) {
+    if (typeof c.s === "number" && typeof c.d === "number") return c;
+    if (!c.reps) return c;                     // nowa karta startuje w FSRS od zera
+    var interval = c.interval || 1;
+    var ef = typeof c.ef === "number" ? c.ef : 2.5;
+    c.st = "review";
+    c.step = null;
+    c.s = Math.max(interval, 0.001);
+    c.d = Math.min(Math.max(10 - (ef - 1.3) * 7.5, 1), 10);
+    c.last = (c.due || Date.now()) - interval * DAY;
+    return c;
+  }
+
+  /* Silnik zależy tylko od retencji, a ta zmienia się raz na ruski rok:
+     trzymamy ostatni zamiast budować go przy każdej odpowiedzi. */
+  var silnikCache = { retencja: null, silnik: null };
+
+  function silnikFsrs() {
+    var r = state.settings.retention || 0.9;
+    if (silnikCache.retencja !== r) {
+      silnikCache = { retencja: r, silnik: global.Fsrs.silnik({ retencja: r }) };
+    }
+    return silnikCache.silnik;
+  }
+
   function gradeCard(key, q) {
     var c = state.srs[key];
     if (!c) return null;
-    schedule(c, q);
+
+    naFsrs(c);
+    var wynik = silnikFsrs().powtorz(
+      typeof c.s === "number" ? c : null,
+      OCENA_FSRS[q] || 3,
+      Date.now()
+    );
+
+    c.st = wynik.st;
+    c.step = wynik.step;
+    c.s = wynik.s;
+    c.d = wynik.d;
+    c.due = wynik.due;
+    c.last = wynik.last;
+    /* `reps`, `interval` i `lapses` zostają przy swoim znaczeniu, bo czyta je
+       widok słownika i statystyki. `interval` w dniach, jak dotąd. */
+    if (q === 0) { c.reps = 0; c.lapses = (c.lapses || 0) + 1; }
+    else c.reps = (c.reps || 0) + 1;
+    c.interval = Math.max(0, Math.round((wynik.due - wynik.last) / DAY));
+
+    zapiszPowtorke(key, q, wynik.last);
     save();
     return c;
+  }
+
+  /* Ile powtórek trzymamy. Rekord to trzy pola, około 40 bajtów: pięć
+     tysięcy to jakieś 200 kB przy kwocie 5 MB dzielonej z całą resztą.
+     Optymalizator FSRS potrzebuje rzędu tysiąca, więc tetto z zapasem. */
+  var MAX_REVIEWS = 5000;
+
+  function zapiszPowtorke(key, q, kiedy) {
+    if (!Array.isArray(state.reviews)) state.reviews = [];
+    state.reviews.push({ k: key, t: kiedy, q: q });
+    /* Przycinamy od najstarszej: świeża historia opisuje pamięć taką,
+       jaka jest teraz, i to ona ma wartość dla strojenia. */
+    if (state.reviews.length > MAX_REVIEWS) {
+      state.reviews.splice(0, state.reviews.length - MAX_REVIEWS);
+    }
   }
 
   function dueCards(limit) {
@@ -585,7 +773,7 @@
   }
 
   /* Pliki tekstów wczytywane od razu przy starcie, niezależne od poziomu. */
-  var EAGER_FILES = ["curriculum-index.js", "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js", "writing.js"];
+  var EAGER_FILES = ["curriculum-index.js", "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js", "writing.js", "interference.js"];
 
   /**
    * Zmienia język wyjaśnień. Warstwa neutralna zostaje w pamięci taka, jaka jest:
@@ -648,8 +836,8 @@
     schema: "number", createdAt: "number", xp: "number", minutes: "number",
     lessons: "object", srs: "object", saved: "object",
     settings: "object", streak: "object", stats: "object",
-    errors: "object", gsrs: "object", drills: "object",
-    session: "object", writing: "object"
+    errors: "object", drills: "object", reviews: "array",
+    session: "object", writing: "object", cils: "object"
   };
 
   function typeOf(v) {
@@ -782,7 +970,7 @@
     norm: norm, fold: fold, stripAccents: stripAccents, levenshtein: levenshtein,
     similarity: similarity, checkOpen: checkOpen,
     today: today, touchDay: touchDay,
-    cardKey: cardKey, addCard: addCard, cardTr: cardTr,
+    cardKey: cardKey, addCard: addCard, cardTr: cardTr, isForbidden: isForbidden,
     schedule: schedule, gradeCard: gradeCard,
     dueCards: dueCards, dueCount: dueCount,
     lessonState: lessonState, isLessonDone: isLessonDone,

@@ -47,6 +47,8 @@ readdirSync(CORE).filter(f => /^[abc]\d-\d+\.js$/.test(f)).sort().forEach(run);
 run("conversations.js");
 run("phonetics.js");
 run("readings.js");
+run("interference.js");
+run("cils.js");
 
 /* ---------------- Zbieranie ---------------- */
 /** primary: głos główny · other: głos rozmówcy (tylko jeśli nigdzie indziej nie występuje) */
@@ -98,9 +100,13 @@ levels.forEach(function (lv) {
 (sandbox.CONVERSATIONS || []).forEach(function (c) {
   (c.turns || []).forEach(function (t) {
     if (t.sp === "TY") {
-      // model odpowiedzi, odtwarzany przyciskiem „Pokaż odpowiedź"
-      const acc = t.accept || (t.it ? [t.it] : []);
-      if (acc[0]) addP(acc[0]);
+      // model odpowiedzi, odtwarzany przyciskiem „Pokaż odpowiedź".
+      // Przy rozwidleniu KAŻDA gałąź ma własny wzór i własny przycisk:
+      // nagranie tylko pierwszej zostawia drugą gałąź niemą.
+      const wzory = t.opts
+        ? t.opts.map(function (o) { return (o.accept || [])[0]; })
+        : [(t.accept || (t.it ? [t.it] : []))[0]];
+      wzory.forEach(function (w) { if (w) addP(w); });
     } else {
       addO(t.it);
     }
@@ -119,6 +125,39 @@ levels.forEach(function (lv) {
    ciągłe skleja te same pliki przez Audio2.speakSequence. */
 (sandbox.READINGS || []).forEach(function (r) {
   (r.sentences || []).forEach(addP);
+  /* Słowa czytanki: glosy autora i słownictwo dla dotknięcia w tekście.
+     Karta słowa ma przycisk 🔊, więc te napisy SĄ wypowiadane — a ten
+     skrypt chodził tylko po zdaniach, przez co wszystkie schodziły na
+     głos systemowy. Pola wypowiadane bez kolektora nie zgłaszają się
+     same: kurs po prostu mówi gorzej i nikt nie wie dlaczego. */
+  (r.glossIt || []).forEach(addP);
+  (r.lexIt || []).forEach(addP);
+});
+
+/* Symulacja egzaminu: WYPOWIADANE są tylko teksty do słuchania. Pytania,
+   polecenia i teksty do czytania uczeń czyta, tak jak na egzaminie, więc
+   nagrywanie ich byłoby trzystoma plikami, których nikt nigdy nie odtworzy.
+   Rozmówca dostaje drugi głos, jak w dialogach kursu. */
+(sandbox.CILS || []).forEach(function (sim) {
+  (sim.sezioni || []).forEach(function (sez) {
+    if (sez.id !== "ascolto") return;
+    (sez.prove || []).forEach(function (p) {
+      (p.brani || []).forEach(function (brano) {
+        (brano || []).forEach(function (r) {
+          if (r.it) (r.sp === "B" ? addO : addP)(r.it);
+        });
+      });
+    });
+  });
+});
+
+/* Fałszywi przyjaciele: samo słowo i zdanie z nim. Ćwiczenie polega na
+   tym, że uczeń SŁYSZY włoskie znaczenie zamiast czytać o nim po swojemu,
+   więc bez nagrania rodzi się nieme — a to jedyny powód, dla którego ten
+   plik leży w data/core/, a nie w nakładce. */
+(sandbox.INTERFERENCE || []).forEach(function (v) {
+  addP(v.it);
+  addP(v.ex);
 });
 
 EXTRA.forEach(addP);

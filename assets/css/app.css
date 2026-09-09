@@ -13,6 +13,62 @@
    odpowiedzią. Jedna reguła zamiast poprawki przy każdym kolejnym. */
 [hidden]{display:none !important;}
 
+/* ============================================================
+   Kroje pisma — u siebie, nie z Google.
+
+   Do tej pory `index.html` wciągał Fraunces i Inter z fonts.googleapis.com.
+   To była jedyna rzecz w całym kursie, która wychodziła poza przeglądarkę
+   ucznia, i jedyny powód, dla którego strona bez sieci wyglądała inaczej
+   niż z siecią: service worker celowo nie dotyka cudzych domen, więc te
+   dwa pliki nigdy nie trafiały do pamięci.
+
+   Cztery pliki zamiast dwóch, bo `latin` nie zawiera polskich znaków
+   diakrytycznych — ą, ę, ł, ż siedzą w `latin-ext`. Bez tego zestawu
+   interfejs po polsku sypałby się na zastępczy krój przy co drugim
+   słowie. Pozostałych podzbiorów (cyrylica, greka, wietnamski) nie
+   bierzemy: kurs mówi pięcioma językami i wszystkie są łacińskie.
+
+   Oba kroje są zmienne (variable), więc jeden plik obsługuje całą oś
+   grubości, a nie cztery osobne pliki: `500 700` dla Fraunces (używanego
+   tylko w nagłówkach) i `400 700` dla Inter. Zakresy nie są takie same,
+   bo nie takie same są zastosowania — Fraunces nigdy nie stoi w tekście
+   ciągłym, więc grubość 400 nie jest mu potrzebna.
+
+   Licencja: SIL Open Font License 1.1 — oba. Wolno hostować u siebie.
+   ============================================================ */
+@font-face{
+  font-family:'Fraunces';
+  font-style:normal;
+  font-weight:500 700;
+  font-display:swap;
+  src:url(../fonts/fraunces-latin-ext.woff2) format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face{
+  font-family:'Fraunces';
+  font-style:normal;
+  font-weight:500 700;
+  font-display:swap;
+  src:url(../fonts/fraunces-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'Inter';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url(../fonts/inter-latin-ext.woff2) format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face{
+  font-family:'Inter';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url(../fonts/inter-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
 :root{
   /* --- superfici --- */
   --paper:        oklch(0.985 0.011 62);
@@ -303,9 +359,17 @@ button{font:inherit;color:inherit;}
 .btn--primary{background:var(--rosa-deep);color:oklch(0.99 0.005 40);border-color:var(--rosa-deep);}
 .btn--primary:hover:not(:disabled){background:oklch(0.545 0.170 16);border-color:oklch(0.545 0.170 16);}
 :root[data-theme="dark"] .btn--primary{color:oklch(0.20 0.03 20);}
+/* W ciemnym motywie napis na przycisku jest CIEMNY, więc przyciemnienie tła
+   pod kursorem zbliża oba kolory zamiast je rozsuwać: zmierzone 3,36:1 przy
+   progu 4,5. Tu jaśniejemy — kierunek odwrotny niż w jasnym motywie, bo
+   odwrotny jest też napis. */
+:root[data-theme="dark"] .btn--primary:hover:not(:disabled){
+  background:oklch(0.875 0.090 16);border-color:oklch(0.875 0.090 16);}
 .btn--green{background:var(--salvia-deep);color:oklch(0.99 0.005 40);border-color:var(--salvia-deep);}
 .btn--green:hover:not(:disabled){background:oklch(0.49 0.105 168);}
 :root[data-theme="dark"] .btn--green{color:oklch(0.18 0.03 160);}
+/* Ten sam defekt co przy przycisku podstawowym, ta sama poprawka. */
+:root[data-theme="dark"] .btn--green:hover:not(:disabled){background:oklch(0.845 0.075 168);}
 .btn--ghost{background:var(--paper-2);border-color:var(--line-strong);color:var(--ink);}
 .btn--ghost:hover:not(:disabled){border-color:var(--rosa-deep);color:var(--rosa-deep);}
 .btn--quiet{background:transparent;border-color:transparent;color:var(--ink-soft);text-decoration:underline;min-height:36px;padding:6px 10px;}
@@ -523,6 +587,20 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
 .dlg__it{font-weight:600;display:block;}
 .dlg__pl{font-size:.84rem;color:var(--ink-soft);display:block;margin-top:2px;}
 
+/* Wybór repliki w dialogu rozgałęzionym. Kolumna, nie rząd: obie możliwości
+   są całymi zdaniami i przy dwóch kolumnach na telefonie łamią się na czwarte
+   wiersze, przez co dłuższa wygląda na ważniejszą. */
+.dlg-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.dlg-opt{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  border:2px solid var(--line-strong);background:var(--paper-2);color:var(--ink);
+  border-radius:var(--r-m);padding:10px 14px;min-height:44px;font:inherit;
+  transition:border-color .16s ease, background .16s ease;
+}
+.dlg-opt:hover{border-color:var(--rosa-deep);background:var(--paper-3);}
+.dlg-opt i{display:block;font-style:italic;font-weight:600;}
+.dlg-opt span{display:block;font-size:.84rem;color:var(--ink-soft);margin-top:2px;}
+
 /* ══════════════════ ĆWICZENIA ══════════════════ */
 .exq{
   border:2px solid var(--line);background:var(--paper-2);
@@ -671,13 +749,22 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
    bo pole bywa w różnych widokach i nie ma jednego rodzica do zaczepienia. */
 .keybar{
   position:absolute;z-index:100;display:flex;gap:4px;
+  /* Zawija się i mieści w ekranie. Dziesięć klawiszy po 44px to ~500px,
+     więc na telefonie pasek wystawał poza stronę i spychał ją w bok —
+     akurat tam, gdzie jest najbardziej potrzebny, bo akcentów nie ma na
+     klawiaturze ekranowej. Zmierzone: +436px przy szerokości 280px. */
+  flex-wrap:wrap;max-width:calc(100vw - 24px);
   padding:6px;border-radius:var(--r-m);
   background:var(--paper-2);border:2px solid var(--ink-faint);box-shadow:var(--shadow-m);
 }
 .keybar__k{
   min-width:44px;min-height:44px;
   border:1px solid var(--line-strong);border-radius:var(--r-s);
-  background:var(--paper-1);color:var(--ink);
+  /* Było `var(--paper-1)`, a takiego tokenu nie ma w palecie: deklaracja
+     jest nieprawidłowa, więc klawisze nie miały własnego tła i zlewały
+     się z paskiem. Nic tego nie zgłaszało, bo CSS po prostu pomija
+     regułę, której nie rozumie. */
+  background:var(--paper);color:var(--ink);
   font-family:inherit;font-size:1.05rem;font-weight:600;cursor:pointer;
 }
 .keybar__k:hover{background:var(--paper-3);border-color:var(--rosa-deep);}
@@ -782,3 +869,164 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   .rail,.rail-toggle,.toast-stack{display:none;}
   .main{padding:0;max-width:100%;}
 }
+
+/* ============================================================
+   Dotknięcie słowa w czytance (views-lookup.js)
+   ============================================================ */
+
+/* Słowo w tekście. Wygląda jak tekst, zachowuje się jak przycisk:
+   podkreślenie kropkowane mówi „da się dotknąć" bez rozbijania rytmu
+   akapitu, którego kolorowanie każdego wyrazu by nie przetrwało. */
+.lk-word{
+  font:inherit;color:inherit;background:none;border:0;padding:0 1px;margin:0;
+  cursor:pointer;border-radius:3px;
+  text-decoration:underline dotted color-mix(in oklch, var(--ink-faint) 60%, transparent);
+  text-underline-offset:4px;
+}
+.lk-word:hover{background:var(--paper-3);text-decoration-color:var(--rosa-deep);}
+.lk-word:focus-visible{outline:2px solid var(--rosa-deep);outline-offset:2px;}
+
+/* Wiersz tekstu ma line-height 2.1 właśnie po to: cel dotknięcia rośnie
+   w pionie do ~44px bez rozstrzeliwania liter w poziomie. Sam padding na
+   wyrazie by tego nie dał, bo wyrazy stoją obok siebie w zdaniu. */
+@media (pointer:coarse){
+  .lk-text{line-height:2.4;}
+}
+
+.lk-card{
+  display:block;margin:10px 0;padding:14px 16px;
+  background:var(--paper-2);border:1px solid var(--rosa-deep);border-radius:14px;
+  box-shadow:0 6px 22px rgba(0,0,0,.10);
+  max-width:min(460px,100%);
+}
+.lk-card__head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.lk-card__lemma{font-family:var(--display);font-size:1.14rem;font-weight:600;}
+.lk-card__x{
+  margin-left:auto;min-width:44px;min-height:44px;
+  background:none;border:0;cursor:pointer;color:var(--ink-soft);font-size:1rem;border-radius:10px;
+}
+.lk-card__x:hover{background:var(--paper-sunk);color:var(--ink);}
+.lk-card__x:focus-visible{outline:2px solid var(--rosa-deep);outline-offset:2px;}
+.lk-card__lab{display:block;font-size:.86rem;font-weight:600;color:var(--ink-soft);}
+.lk-card__lab .field{margin-top:5px;width:100%;}
+.lk-card__row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.lk-card__from,.lk-card__guess{color:var(--ink-soft);font-size:.86rem;margin:0;}
+.lk-card__miss{margin:0 0 8px;font-size:.94rem;}
+.lk-card__ctx{color:var(--ink-soft);font-size:.84rem;margin:6px 0 0;}
+
+/* ============================================================
+   Pokrycie listy częstości (views-frequency.js)
+   ============================================================ */
+.cov{margin:0 0 22px;}
+.cov:last-child{margin-bottom:0;}
+.cov__top{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
+.cov__top b{font-family:var(--display);font-size:1.06rem;}
+.cov__n{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink-soft);font-size:.92rem;}
+.cov__bar{height:12px;border-radius:99px;background:var(--paper-sunk);overflow:hidden;}
+.cov__fill{display:block;height:100%;border-radius:99px;background:var(--salvia-mid);}
+.cov__fill--strong{background:var(--rosa-deep);}
+.cov__why{margin:7px 0 0;color:var(--ink-soft);font-size:.9rem;}
+.cov__tok{margin:3px 0 0;font-size:.9rem;font-weight:600;}
+.cov__h{font-size:1.15rem;margin:26px 0 4px;}
+.cov__done{margin-top:22px;font-weight:600;}
+.cov__src{margin-top:26px;color:var(--ink-faint);font-size:.84rem;}
+#covList .js-f{color:var(--ink-faint);font-size:.86rem;}
+
+/* ============================================================
+   Fałszywi przyjaciele (views-falsi.js)
+   ============================================================ */
+.fa-card{margin:0;}
+.fa-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.fa-it{font-family:var(--display);font-size:1.15rem;font-weight:600;}
+.fa-line{display:flex;gap:10px;align-items:baseline;margin:0 0 5px;flex-wrap:wrap;}
+.fa-tag{
+  flex:0 0 auto;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 8px;border-radius:99px;
+}
+.fa-tag--no{background:var(--ko-bg);color:var(--ko);}
+.fa-tag--yes{background:var(--ok-bg);color:var(--ok);}
+.fa-why{margin:10px 0 0;color:var(--ink-soft);font-size:.92rem;}
+.fa-ex{margin:10px 0 0;font-style:italic;}
+
+/* ============================================================
+   Shadowing (views-shadow.js)
+   ============================================================ */
+.sh-it{font-family:var(--display);font-size:1.35rem;line-height:1.5;margin:0 0 18px;}
+.sh-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.sh-row + .sh-row{margin-top:10px;}
+.sh-state{margin:12px 0 0;min-height:1.5em;color:var(--ink-soft);font-size:.92rem;}
+.sh-note{margin-top:18px;color:var(--ink-faint);font-size:.86rem;}
+/* Nagrywanie widać, a nie tylko słychać w opisie: puls przy czerwonym
+   przycisku plus aria-pressed, bo sam kolor nie jest informacją. */
+.js-rec.is-rec{background:var(--ko);border-color:var(--ko);color:oklch(0.99 0.005 40);}
+@media (prefers-reduced-motion: no-preference){
+  .js-rec.is-rec{animation:sh-puls 1.4s ease-in-out infinite;}
+}
+@keyframes sh-puls{50%{opacity:.72;}}
+
+/* Zgoda na rozpoznawanie mowy (views-shadow.js) */
+.stt-consent{
+  position:fixed;inset:0;z-index:400;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  background:oklch(0.30 0.03 340 / .55);
+}
+.stt-consent__box{
+  background:var(--paper-2);border:2px solid var(--rosa-deep);border-radius:var(--r-l);
+  padding:26px;max-width:520px;box-shadow:var(--shadow-l);
+}
+.stt-consent__box h2{font-size:1.2rem;margin-bottom:10px;}
+.stt-consent__box p{margin:0 0 12px;}
+.stt-consent__row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+
+/* ============================================================
+   Tempo mowy (views-speed.js)
+   ============================================================ */
+.sp-num{font-size:.74rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);margin:0 0 12px;}
+.sp-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.sp-state{margin:12px 0 0;min-height:1.5em;color:var(--ink-soft);font-size:.92rem;}
+.sp-reveal{margin-top:16px;}
+.sp-it{font-family:var(--display);font-size:1.28rem;line-height:1.5;margin:12px 0 0;}
+
+/* ══════════════════ SYMULACJA EGZAMINU ══════════════════ */
+.cils-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:14px;padding:10px 14px;border:2px solid var(--line-strong);
+  border-radius:var(--r-m);background:var(--paper-2);
+}
+.cils-step{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+/* Zegar: cyfry o stałej szerokości, żeby pasek nie drgał co sekundę. */
+.cils-clock{font-variant-numeric:tabular-nums;font-size:1.3rem;font-weight:700;color:var(--ink);}
+.cils-prova{margin-bottom:18px;}
+.cils-h{font-size:1.05rem;margin:0 0 8px;}
+.cils-titolo{font-family:var(--display);font-size:1.15rem;margin:14px 0 6px;}
+.cils-consegna{font-style:italic;color:var(--ink-soft);margin:0 0 12px;}
+.cils-testo{margin:0 0 10px;line-height:1.62;}
+.cils-gap{color:var(--rosa-deep);}
+.cils-audio{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
+.cils-hint{font-size:.86rem;color:var(--ink-soft);margin:6px 0 0;}
+.cils-items{margin:14px 0 0;padding-left:22px;}
+.cils-items li{margin-bottom:12px;line-height:1.5;}
+.cils-q{display:block;margin-bottom:4px;}
+.cils-opts{display:flex;gap:16px;flex-wrap:wrap;}
+.cils-opts--col{flex-direction:column;gap:4px;}
+.cils-opts label{display:inline-flex;gap:6px;align-items:baseline;cursor:pointer;min-height:32px;}
+.cils-tracce{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.cils-traccia{display:flex;gap:8px;align-items:flex-start;line-height:1.5;cursor:pointer;}
+.cils-ta{width:100%;min-height:220px;font-family:inherit;line-height:1.6;resize:vertical;}
+.cils-count{font-size:.88rem;color:var(--ink-soft);margin:8px 0 0;}
+.cils-list{margin:0 0 14px;padding-left:22px;}
+.cils-list li{margin-bottom:4px;}
+.cils-check{list-style:none;margin:0;padding:0;}
+.cils-check li{margin-bottom:6px;line-height:1.5;}
+.cils-check label{display:flex;gap:8px;align-items:flex-start;cursor:pointer;min-height:32px;}
+.cils-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+.cils-state{margin:10px 0 0;min-height:1.4em;color:var(--ink-soft);}
+.cils-tab{width:100%;border-collapse:collapse;margin-bottom:12px;}
+.cils-tab th,.cils-tab td{text-align:left;padding:8px 0;border-bottom:1px solid var(--line);}
+.cils-tab td{font-variant-numeric:tabular-nums;}
+.cils-verdict{margin:12px 0 0;line-height:1.6;}
+/* Pochodzenie progu jest częścią wyniku, nie przypisem: ma być czytelne, */
+/* nie szare do granicy niewidzialności. */
+.cils-src{font-size:.88rem;color:var(--ink-soft);line-height:1.55;margin:10px 0 0;}
+.cils-struct{margin:0;line-height:1.6;}

@@ -165,6 +165,33 @@ if (!existsSync(join(I18N, REFERENCE))) {
   process.exit(1);
 }
 
+/* ---------------- Kategoria asymetryczna: fałszywi przyjaciele ----------
+   Wpisy „int:" NIE mają być takie same we wszystkich językach: pułapka
+   istnieje albo nie, zależnie od tego, co uczeń ma w głowie. Porównujemy
+   je więc z DEKLARACJĄ `for` w warstwie neutralnej, a nie z polskim.
+
+   Wyłączenie bramki na tej kategorii (jak FREE_FIELDS dla „theory") byłoby
+   prostsze i gorsze: krótsza lista wygląda dokładnie jak lista, więc
+   brakujące wyjaśnienie nie zgłosiłoby się nigdy.
+   -------------------------------------------------------------------- */
+function interferenceFor() {
+  const box = { window: {}, console };
+  box.window = box;
+  vm.createContext(box);
+  vm.runInContext(readFileSync(join(ROOT, "data", "core", "interference.js"), "utf8"), box);
+  const mapa = new Map();
+  for (const v of box.INTERFERENCE || []) mapa.set("int:" + v.id, new Set(v.for || []));
+  return mapa;
+}
+
+const INT = interferenceFor();
+
+/** Czy ten wpis MA istnieć w nakładce tego języka. */
+function oczekiwany(klucz, lang) {
+  const f = INT.get(klucz);
+  return f ? f.has(lang) : true;
+}
+
 const ref = loadLang(REFERENCE);
 const refKeys = Object.keys(ref).sort();
 const refUI = loadUI(REFERENCE);
@@ -175,10 +202,26 @@ for (const lang of langs) {
   const bag = loadLang(lang);
   const problems = [];
 
-  refKeys.filter(k => !(k in bag)).forEach(k => problems.push(`${k}: brak całego wpisu`));
-  Object.keys(bag).filter(k => !(k in ref)).forEach(k => problems.push(`${k}: wpis nadmiarowy`));
-  refKeys.filter(k => k in bag)
+  /* Klucze „int:" idą osobną ścieżką: obecność rozstrzyga `for`, nie polski. */
+  const zwykle = refKeys.filter(k => !INT.has(k));
+
+  zwykle.filter(k => !(k in bag)).forEach(k => problems.push(`${k}: brak całego wpisu`));
+  Object.keys(bag).filter(k => !INT.has(k) && !(k in ref))
+    .forEach(k => problems.push(`${k}: wpis nadmiarowy`));
+  zwykle.filter(k => k in bag)
     .forEach(k => diff(shape(withoutFreeFields(ref[k])), shape(withoutFreeFields(bag[k])), k, problems));
+
+  for (const [klucz] of INT) {
+    const jest = klucz in bag;
+    const ma = oczekiwany(klucz, lang);
+    if (ma && !jest) problems.push(`${klucz}: brak wyjaśnienia, choć „for" wymienia ${lang}`);
+    if (!ma && jest) problems.push(`${klucz}: wyjaśnienie jest, ale „for" nie wymienia ${lang}`);
+    if (ma && jest) {
+      ["looks", "mean", "why"].forEach(pole => {
+        if (!bag[klucz] || !bag[klucz][pole]) problems.push(`${klucz}.${pole}: puste`);
+      });
+    }
+  }
 
   if (!LOCALES[lang]) problems.push(`ui-${lang}.js: brak wpisu w LOCALE w assets/js/i18n.js`);
   else checkUI(lang, LOCALES[lang], refUI, problems);

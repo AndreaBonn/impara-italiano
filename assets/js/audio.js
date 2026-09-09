@@ -255,9 +255,32 @@
   var sttSupported = !!SR;
   var activeRec = null;
 
+  /**
+   * Rozpoznawanie mowy — z bramką zgody PRZED pierwszym wysłaniem głosu.
+   *
+   * To jedyne miejsce w kursie, z którego coś opuszcza przeglądarkę ucznia:
+   * przeglądarki, które udostępniają SpeechRecognition, wysyłają nagranie
+   * na serwer dostawcy. Bramka stoi tutaj, a nie w trzech widokach, które
+   * to wołają, bo obrona rozłożona po miejscach wywołania działa do
+   * pierwszego nowego miejsca wywołania.
+   *
+   * Bez zgody zachowujemy się dokładnie jak przy braku obsługi: widoki już
+   * umieją zamienić wtedy ćwiczenie na pisane, więc nie trzeba dokładać
+   * żadnej nowej ścieżki, a odmowa nie kończy się pustym ekranem.
+   */
   function listen(handlers) {
     handlers = handlers || {};
     if (!SR) { handlers.onerror && handlers.onerror("unsupported"); return { abort: function () {} }; }
+
+    var C = global.Consent;
+    if (C && !C.udzielona()) {
+      var pusty = { abort: function () {} };
+      C.zZgoda(
+        function () { listen(handlers); },
+        function () { handlers.onerror && handlers.onerror("no-consent"); }
+      );
+      return pusty;
+    }
     try { if (activeRec) activeRec.abort(); } catch (e) { /* nic aktywnego */ }
 
     var rec = new SR();

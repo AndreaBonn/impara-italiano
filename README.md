@@ -6,7 +6,7 @@ Działa w przeglądarce, nie wymaga konta ani internetu po pierwszym wczytaniu, 
 ## Co jest w środku
 
 - **150 lekcji** ułożonych w 32 tematyczne jednostki, od powitania w barze po język prawniczy i ironię
-- **1500 ćwiczeń** w dwunastu formatach: wybór, uzupełnianie luk, tłumaczenie, układanie zdań, łączenie w pary, odmiana czasowników, dyktando ze słuchu i wymowa do mikrofonu
+- **1500 ćwiczeń** w trzynastu formatach: wybór, prawda/fałsz, uzupełnianie luk, tłumaczenie, układanie zdań, łączenie w pary, odmiana czasowników, dyktando ze słuchu i wymowa do mikrofonu
 - **10 rozmów na głos**: aplikacja mówi po włosku, Ty odpowiadasz — bar, targ, restauracja, dworzec, lekarz, wynajem mieszkania, rozmowa o pracę, urząd, dyskusja przy stole
 - **1400 słówek** z wymową i systemem powtórek, który przypomina o nich dokładnie wtedy, kiedy zaczynasz zapominać
 - **Głos lektorski**, nie robot: każde włoskie zdanie kursu jest nagrane głosem neuronowym (Isabella), a rozmówca w dialogach mówi drugim głosem (Giuseppe)
@@ -38,14 +38,23 @@ Safari 16+ oraz połączenia szyfrowanego: działa na `localhost` i po opublikow
 ale nie po otwarciu pliku z dysku. W pozostałych przypadkach te ćwiczenia zamieniają się
 w pisane — kurs działa dalej, tylko bez oceny wymowy.
 
+**To jedyne miejsce, w którym coś opuszcza Twoje urządzenie.** Rozpoznawanie mowy nie liczy
+się w przeglądarce: przeglądarki, które je udostępniają, wysyłają nagranie Twojego głosu na
+serwer swojego dostawcy i odsyłają tekst. Nie mamy nad tym kontroli i nie da się tego zrobić
+inaczej bez własnego serwera, którego kurs celowo nie ma. Dotyczy to ćwiczeń z mikrofonem
+i rozmów na głos; **nie** dotyczy niczego innego — teoria, ćwiczenia pisane, słuchanie,
+fiszki i postępy zostają u Ciebie. Jeśli Ci to nie odpowiada, nie dotykaj mikrofonu: te
+ćwiczenia same zamieniają się w pisane i kurs działa w całości.
+
 Jedyne miejsce z głosem systemowym to **odmiana czasowników**: generuje dowolne formy,
 więc nie da się ich nagrać z góry.
 
 ## Postępy
 
-Wszystko zapisuje się lokalnie w przeglądarce. Nic nie jest wysyłane na zewnątrz — nie ma serwera,
-konta ani śledzenia. W zakładce **Ustawienia** możesz wyeksportować postępy do pliku i wczytać je
-na innym komputerze.
+Wszystko zapisuje się lokalnie w przeglądarce. Nie ma serwera, konta ani śledzenia, a kurs
+nie wysyła Twoich postępów nigdzie — jedynym wyjątkiem jest rozpoznawanie mowy opisane wyżej,
+i tylko wtedy, gdy sam włączysz mikrofon. W zakładce **Ustawienia** możesz wyeksportować
+postępy do pliku i wczytać je na innym komputerze.
 
 Wyczyszczenie danych przeglądarki kasuje postępy. Warto co jakiś czas zrobić eksport.
 
@@ -74,7 +83,7 @@ assets/js/
   core.js               stan, zapis postępów, algorytm powtórek SM-2
   audio.js              synteza i rozpoznawanie mowy
   verbs.js              silnik odmiany czasowników
-  exercises.js          dwanaście typów ćwiczeń
+  exercises.js          trzynaście typów ćwiczeń
   views.js              ekrany aplikacji
   app.js                router i start
 data/

@@ -19,12 +19,13 @@
      zamrożenie ucznia na starym kodzie — czego on nie umie ani
      zauważyć, ani odkręcić.
 
-   Cudzych domen nie dotykamy w ogóle (fonty Google): nieprzejrzysta
-   odpowiedź w pamięci to rozmiar bez treści i błędy nie do zdiagnozowania.
+   Cudzych domen nie dotykamy w ogóle: nieprzejrzysta odpowiedź w pamięci
+   to rozmiar bez treści i błędy nie do zdiagnozowania. Od kiedy kroje
+   pisma leżą w assets/fonts/, żadne żądanie kursu i tak tam nie idzie.
    ============================================================ */
 
 /* Podnieś przy każdej zmianie plików z PRECACHE. */
-var SW_VERSION = "v7";
+var SW_VERSION = "v17";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Nagrania są adresowane treścią, więc ich pamięć przeżywa zmianę wersji. */
@@ -35,9 +36,16 @@ var PRECACHE = [
   "./index.html",
   "./manifest.webmanifest",
   "./assets/css/app.css",
+  "./assets/js/fsrs.js",
   "./assets/js/core.js",
   "./assets/js/i18n.js",
+  "./assets/js/consent.js",
   "./assets/js/audio.js",
+  "./assets/js/recorder.js",
+  "./assets/js/views-shadow.js",
+  "./assets/js/views-speed.js",
+  "./assets/js/cils.js",
+  "./assets/js/views-cils.js",
   "./assets/js/verbs.js",
   "./assets/js/exercises.js",
   "./assets/js/errors-key.js",
@@ -51,6 +59,12 @@ var PRECACHE = [
   "./assets/js/views-phonetics.js",
   "./assets/js/views-placement.js",
   "./assets/js/writing.js",
+  "./assets/js/lemma.js",
+  "./assets/js/views-lookup.js",
+  "./assets/js/anki.js",
+  "./assets/js/frequency.js",
+  "./assets/js/views-frequency.js",
+  "./assets/js/views-falsi.js",
   "./assets/js/views-reading.js",
   "./assets/js/views-writing.js",
   "./assets/js/search.js",
@@ -67,10 +81,26 @@ var PRECACHE = [
   "./data/core/grammar-reference.js",
   "./data/core/conversations.js",
   "./data/core/phonetics.js",
+  "./data/core/cils.js",
   "./data/core/readings.js",
+  "./data/core/interference.js",
+  "./data/i18n/pl/interference.js",
+  "./data/i18n/en/interference.js",
+  "./data/i18n/es/interference.js",
+  "./data/i18n/fr/interference.js",
+  "./data/i18n/de/interference.js",
+  "./data/core/frequenza.js",
   "./data/core/writing.js",
   "./assets/icons/icon-192.png",
-  "./assets/icons/icon-512.png"
+  "./assets/icons/icon-512.png",
+  /* Kroje pisma. Wcześniej szły z fonts.googleapis.com i z tego powodu
+     NIGDY nie trafiały do pamięci: obsługa `fetch` niżej wychodzi przy
+     pierwszej cudzej domenie. Bez sieci strona wyglądała więc inaczej niż
+     z siecią, co czytało się jak usterka, a było wypisane w regule. */
+  "./assets/fonts/fraunces-latin.woff2",
+  "./assets/fonts/fraunces-latin-ext.woff2",
+  "./assets/fonts/inter-latin.woff2",
+  "./assets/fonts/inter-latin-ext.woff2"
 ];
 
 function isAudio(url) { return /\/audio\/[0-9a-f]{2}\/[0-9a-f]{16}\.mp3$/.test(url.pathname); }
@@ -135,8 +165,9 @@ self.addEventListener("fetch", function (e) {
   if (req.method !== "GET") return;
 
   var url = new URL(req.url);
-  /* Cudza domena: nie dotykamy. Fonty Google odpowiadają nieprzejrzyście,
-     a taka odpowiedź w pamięci to rozmiar bez możliwości sprawdzenia treści. */
+  /* Cudza domena: nie dotykamy. Nieprzejrzysta odpowiedź w pamięci to rozmiar
+     bez możliwości sprawdzenia treści. Kurs sam już nigdzie na zewnątrz nie
+     sięga; ta gałąź broni przed tym, co doklei rozszerzenie przeglądarki. */
   if (url.origin !== self.location.origin) return;
 
   if (isAudio(url)) {

@@ -532,6 +532,7 @@ LINGUAI.addStrings("pl", {
       ]
     },
     vocab: [
+      "być",
       "nazywam się…",
       "jak się nazywasz?",
       "skąd jesteś?",
@@ -631,6 +632,7 @@ LINGUAI.addStrings("pl", {
       ]
     },
     vocab: [
+      "mieć",
       "jestem głodny/a",
       "chce mi się pić",
       "jest mi zimno / gorąco",

@@ -266,7 +266,53 @@
       pres: ["siedo", "siedi", "siede", "sediamo", "sedete", "siedono"],
       cong: ["sieda", "sieda", "sieda", "sediamo", "sediate", "siedano"]
     },
-    "accorgersi": { aux: "essere", ppAgree: true, pp: "accorto", refl: true, remoto: ["mi accorsi", "ti accorgesti", "si accorse", "ci accorgemmo", "vi accorgeste", "si accorsero"] }
+    "accorgersi": { aux: "essere", ppAgree: true, pp: "accorto", refl: true, remoto: ["mi accorsi", "ti accorgesti", "si accorse", "ci accorgemmo", "vi accorgeste", "si accorsero"] },
+
+    /* ------------------------------------------------------------------
+       Imiesłowy nieregularne, których brakowało.
+
+       Zmierzone: z 45 pospolitych czasowników o nieregularnym imiesłowie
+       koniugator produkował 25 form NIEISTNIEJĄCYCH — „riduto" zamiast
+       „riso", „rotto" jako „romputo", „mosso" jako „muovuto". Imiesłów
+       wchodzi w SZEŚĆ z czternastu czasów (passato prossimo, trapassato,
+       futuro anteriore, condizionale passato, congiuntivo passato i
+       trapassato), więc jeden brak psuł sześć wierszy tabeli odmiany i
+       każde ćwiczenie na czasie złożonym z tym czasownikiem.
+
+       Wpisy są minimalne: samo `pp`. Reszta form tych czasowników jest
+       regularna albo wystarczająco bliska, a `remoto` zostaje na razie
+       regularne — to jeden czas na poziomie C2 i osobna, zadeklarowana
+       luka, nie cichy błąd.
+
+       Czasowniki z przedrostkiem dziedziczą po rdzeniu (patrz irrOf), więc
+       „ridere" naprawia też „sorridere", a „prendere" — „riprendere".
+       ------------------------------------------------------------------ */
+    ridere: { aux: "avere", pp: "riso" },
+    succedere: { aux: "essere", ppAgree: true, pp: "successo" },
+    accendere: { aux: "avere", pp: "acceso" },
+    dividere: { aux: "avere", pp: "diviso" },
+    coprire: { aux: "avere", pp: "coperto" },
+    scoprire: { aux: "avere", pp: "scoperto" },
+    crescere: { aux: "essere", ppAgree: true, pp: "cresciuto" },
+    piangere: { aux: "avere", pp: "pianto" },
+    spendere: { aux: "avere", pp: "speso" },
+    scendere: { aux: "both", ppAgree: true, pp: "sceso" },
+    rendere: { aux: "avere", pp: "reso" },
+    spingere: { aux: "avere", pp: "spinto" },
+    giungere: { aux: "essere", ppAgree: true, pp: "giunto" },
+    togliere: { aux: "avere", pp: "tolto" },
+    cogliere: { aux: "avere", pp: "colto" },
+    raccogliere: { aux: "avere", pp: "raccolto" },
+    valere: { aux: "essere", ppAgree: true, pp: "valso" },
+    parere: { aux: "essere", ppAgree: true, pp: "parso" },
+    correggere: { aux: "avere", pp: "corretto" },
+    proteggere: { aux: "avere", pp: "protetto" },
+    distruggere: { aux: "avere", pp: "distrutto" },
+    friggere: { aux: "avere", pp: "fritto" },
+    cuocere: { aux: "avere", pp: "cotto" },
+    rompere: { aux: "avere", pp: "rotto" },
+    muovere: { aux: "avere", pp: "mosso" },
+    tacere: { aux: "avere", pp: "taciuto" }
   };
 
   /* czasowniki -ire z wzorcem -isc- (lista częstotliwościowa) */
@@ -327,19 +373,107 @@
     return s + "ir";
   }
 
+  /* --------------------------------------------------------
+     Czasowniki z przedrostkiem dziedziczą nieregularność.
+
+     „promettere" to „mettere" z przedrostkiem i odmienia się tak samo:
+     imiesłów „promesso", nie „promettuto". Bez tego widok odmiany
+     pokazywał uczniowi formy nieistniejące — dla „promettere",
+     „permettere", „riscrivere", „comporre" i całej reszty rodziny.
+     Znalezione, gdy bramka lookupu nie umiała rozpoznać „promesso".
+
+     Przedrostek musi być z listy zamkniętej i to jest istotne: samo
+     „kończy się na znany czasownik" zrobiłoby z „mandare" krewnego
+     „andare" i wyprodukowało „mando/vado". Lista jest tania, pomyłka nie.
+     -------------------------------------------------------- */
+  var PRZEDROSTKI = [
+    "ri", "pro", "per", "pre", "com", "con", "contro", "co",
+    "sotto", "sopra", "sovra", "super", "inter", "intra",
+    "in", "im", "ir", "ap", "am", "ab", "ad", "af", "ag", "al", "as", "at",
+    "tras", "trans", "tra", "dis", "de", "es", "ex", "re", "sor", "so", "su", "s"
+  ];
+
+  /* Rozbiór na przedrostek i rdzeń jest heurystyką PISOWNI, nie etymologią,
+     więc zamknięta lista przedrostków wyżej wyklucza „mandare = m + andare",
+     ale nie wyklucza wszystkiego. Te trzy wpadły:
+
+       restare  wygląda jak re + stare i dostawało formy „stare",
+                czyli „restanno" zamiast „restano";
+       prestare to samo, ten sam rdzeń;
+       affare   nie jest nawet czasownikiem — trafia tu, bo kończy się
+                na -are, a słownik kursu odmienia wszystko z tą końcówką.
+
+     Znalezione przez bramkę pokrycia: „restano" z czytanki nie miało czego
+     rozpoznać. Lista rośnie tylko wtedy, gdy bramka znowu coś złapie. */
+  var BEZ_DZIEDZICZENIA = { restare: 1, prestare: 1, affare: 1 };
+
+  /* Przedrostek zasymilowany, którego pisownia nie pokazuje: „ottenere" to
+     ob+tenere, „mantenere" to manu+tenere. Dopisanie „ot" albo „man" do
+     listy przedrostków ściągnęłoby „mandare" na „dare", więc te rodziny
+     wskazujemy wprost. Bez tego „ottiene" wychodziło jako „ottene". */
+  var DZIEDZICZY_WPROST = { ottenere: "tenere", mantenere: "tenere", sostenere: "tenere" };
+
+  var cachePrzedrostkow = {};
+
+  /**
+   * Opis nieregularności dla bezokolicznika, z dziedziczeniem po przedrostku.
+   *
+   * @param {string} b bezokolicznik w formie podstawowej (bez `-si`)
+   * @returns {object|null}
+   */
+  function irrOf(b) {
+    if (IRR[b]) return IRR[b];
+    if (BEZ_DZIEDZICZENIA[b]) return null;
+    if (Object.prototype.hasOwnProperty.call(cachePrzedrostkow, b)) return cachePrzedrostkow[b];
+
+    if (DZIEDZICZY_WPROST[b]) {
+      var rdzenWprost = DZIEDZICZY_WPROST[b];
+      cachePrzedrostkow[b] = zPrzedrostkiem(IRR[rdzenWprost], b.slice(0, b.length - rdzenWprost.length));
+      return cachePrzedrostkow[b];
+    }
+
+    var wynik = null;
+    for (var i = 0; i < PRZEDROSTKI.length && !wynik; i++) {
+      var p = PRZEDROSTKI[i];
+      if (b.length <= p.length + 3) continue;
+      if (b.slice(0, p.length) !== p) continue;
+      var rdzen = b.slice(p.length);
+      if (!IRR[rdzen]) continue;
+      wynik = zPrzedrostkiem(IRR[rdzen], p);
+    }
+    cachePrzedrostkow[b] = wynik;
+    return wynik;
+  }
+
+  /** Kopia opisu z przedrostkiem doklejonym do każdej formy. */
+  function zPrzedrostkiem(d, p) {
+    var out = {};
+    Object.keys(d).forEach(function (k) {
+      var v = d[k];
+      if (typeof v === "string") out[k] = p + v;
+      else if (Array.isArray(v)) out[k] = v.map(function (x) { return x === null ? null : p + x; });
+      else out[k] = v;                       // aux, ppAgree i inne flagi
+    });
+    /* Posiłkownik się NIE dziedziczy: „andare" chce „essere", ale
+       „riandare" jest rzadkie, a „mettere/promettere" oba biorą „avere".
+       Zostawiamy to, co było w opisie rdzenia, bo dla par prefiksowych
+       pokrywa się w praktyce; wyjątki idą do IRR wprost. */
+    return out;
+  }
+
   function reflPronoun(i) { return ["mi", "ti", "si", "ci", "vi", "si"][i]; }
 
   function auxOf(inf) {
     var b = baseOf(inf);
     if (isRefl(inf)) return "essere";
-    var d = IRR[b];
+    var d = irrOf(b);
     if (d && d.aux && d.aux !== "both") return d.aux;
     if (d && d.aux === "both") return "avere";
     return ESSERE_VERBS.indexOf(b) >= 0 ? "essere" : "avere";
   }
 
   function participle(inf) {
-    var b = baseOf(inf), d = IRR[b];
+    var b = baseOf(inf), d = irrOf(b);
     if (d && d.pp) return d.pp;
     return stemOf(inf) + REG[groupOf(inf)].pp;
   }
@@ -354,14 +488,14 @@
   }
 
   function gerund(inf) {
-    var b = baseOf(inf), d = IRR[b];
+    var b = baseOf(inf), d = irrOf(b);
     if (d && d.ger) return d.ger;
     return stemOf(inf) + REG[groupOf(inf)].ger;
   }
 
   /* ---------------- Czasy proste ---------------- */
   function simple(inf, tense) {
-    var b = baseOf(inf), g = groupOf(inf), s = stemOf(inf), d = IRR[b] || {};
+    var b = baseOf(inf), g = groupOf(inf), s = stemOf(inf), d = irrOf(b) || {};
     var out = [];
 
     if (tense === "futuro" || tense === "condizionale") {
@@ -443,7 +577,7 @@
       participio: participle(inf),
       gerundio: gerund(inf),
       riflessivo: isRefl(inf),
-      irregolare: !!IRR[baseOf(inf)]
+      irregolare: !!irrOf(baseOf(inf))
     };
     return out;
   }

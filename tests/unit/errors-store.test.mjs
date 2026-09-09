@@ -10,7 +10,7 @@ import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { loadEngine } from "./_harness.mjs";
 
-const PLIKI = ["assets/js/core.js", "assets/js/errors.js"];
+const PLIKI = ["assets/js/core.js", "assets/js/errors-key.js", "assets/js/errors.js"];
 
 /** Lekcja wystarczająco prawdziwa, żeby dała klucze; bez wczytywania kursu. */
 const LEKCJA = {

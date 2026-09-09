@@ -3,6 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Co ta reguła NAPRAWDĘ zamyka: `script-src 'self'` — wykonanie kodu, którego
+     nie podał ten katalog. Kurs nie ma ani jednego skryptu w treści strony i ani
+     jednego atrybutu on*=, więc stać przy 'self' nic nie kosztuje.
+     Czego NIE zamyka: stylu. `style-src` musi mieć 'unsafe-inline', bo 166 miejsc
+     w assets/js buduje atrybut style="..." doklejając wyliczone wartości; ani nonce,
+     ani hash nie mają jak powstać w pliku bez serwera i bez kroku budowania.
+     Ile to warte: bez serwera i bez logowania XSS nie ma tu skąd wejść. Zostaje
+     obrona przed cudzym kodem doklejonym z zewnątrz — rozszerzeniem przeglądarki
+     albo zależnością, która kiedyś przyjdzie z sieci.
+     `frame-ancestors` celowo NIE ma: w <meta> przeglądarki ją ignorują, a reguła,
+     która nie działa, wygląda w spisie dokładnie jak ta, która działa. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title data-i18n="app.title">Impara l'Italiano 🇮🇹 — kurs włoskiego od A1 do C2</title>
 <meta name="description" data-i18n-content="app.description" content="Kompletny kurs języka włoskiego po polsku: gramatyka, teoria, ćwiczenia, słuchanie i mówienie. Od A1 do poziomu native.">
 <link rel="manifest" href="manifest.webmanifest">

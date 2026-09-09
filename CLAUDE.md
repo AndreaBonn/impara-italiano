@@ -175,6 +175,13 @@ odpytuje już żadnej cudzej domeny. Zmierzone, nie założone: wszystkie cztery
 **Po dopisaniu pliku do `assets/js/` albo `data/core/` dopisz go do `PRECACHE` w `sw.js`
 i podnieś `SW_VERSION`.** Inaczej pierwszy start bez sieci padnie na brakującym skrypcie.
 
+Tej prośby nie trzeba już pamiętać: `node scripts/check_precache.mjs` porównuje to,
+co ładuje `index.html`, z `PRECACHE` i kończy się kodem 1, wypisując brakujące pliki.
+Chodzi w CI. Porównanie idzie w jedną stronę, bo `PRECACHE` z założenia trzyma też
+pliki dociągane w czasie działania (nakładki `ui-*.js`, kroje, ikony).
+Gdyby mimo wszystko czegoś zabrakło, guska nie milczy: nazwa pliku, który nie
+wszedł do pamięci, ląduje w konsoli (DevTools → Application → Service Workers).
+
 ## Silnik adaptacyjny
 
 Dopisany w całości po pierwszym wydaniu kursu. Sedno: kurs zapamiętuje, co uczeń
@@ -220,9 +227,11 @@ plik niósł już nową wartość i po odzyskaniu nie prosił od razu o następn
 ## Kontrola jakości
 
 ```bash
+npm run lint                        # poprawność kodu (eslint, flat config, cztery bloki)
 node scripts/validate.mjs           # duplikaty id, kompletność ćwiczeń, statystyki (domyślnie pl)
 node scripts/validate.mjs en        # to samo dla nakładki angielskiej
 node scripts/parity.mjs             # czy każdy język ma ten sam kształt co polski
+node scripts/check_precache.mjs     # czy guska wczyta wszystko, co ładuje index.html
 node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
@@ -230,6 +239,19 @@ npm test                            # logika silnika, node:test w piaskownicy no
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 ```
+
+Wszystkie te bramki chodzą też same, przy każdym `push`, z
+`.github/workflows/ci.yml` — od najtańszej do najdroższej, żeby błąd w danych
+zgłosił się w sekundach, a nie po minucie testów w przeglądarce.
+
+**`npm run lint` nie pilnuje stylu, tylko poprawności.** Reguł kosmetycznych nie
+ma i nie należy ich dodawać: formatowanie tego repozytorium jest spójne bez
+automatu, a lista zakazów zamieniłaby bramkę w szum. Konfiguracja ma cztery
+bloki, bo pliki mają cztery natury (skrypty przeglądarki łączone globalami,
+guska z `self`, moduły Node w `scripts/`, CommonJS Playwrighta, którego wnętrze
+`page.evaluate` wykonuje się w przeglądarce). Uwaga na środowisko: jeśli wynik
+mówi `ESLint: 6.4.0`, to odezwał się eslint systemowy, a nie ten z projektu —
+wtedy `./node_modules/.bin/eslint .`.
 
 **Zależności są wyłącznie deweloperskie.** `package.json` istnieje dla testów;
 `index.html` nie wczytuje z niego niczego, aplikacja nadal startuje z `file://`
@@ -249,7 +271,7 @@ z poprzedniej wersji tego pliku.
 | Nagrania | 2657 plików mp3, 34 MB |
 | Klucze interfejsu na język | 671 × 5 języków |
 | Testy jednostkowe | 371 przebiegów, zielone |
-| Testy DOM | 139 deklaracji, 158 przebiegów, zielone |
+| Testy DOM | 141 deklaracji, 160 przebiegów, zielone |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
 „29 testów jednostkowych, 17 DOM". Były prawdziwe w dniu wprowadzenia suity i przestały być

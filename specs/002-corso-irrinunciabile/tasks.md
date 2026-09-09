@@ -238,11 +238,16 @@ esclusione e mappa di ereditarietà esplicita, più due regole nominali in `lemm
 
 ## F10 - O1 simulatore CILS (66h codice + 50h contenuto)
 
-**T130 è bloccante per l'intera fase** (R8). Le fonti secondarie non concordano nemmeno sul
-numero delle prove del formato Cittadinanza: una ne descrive quattro, un'altra cinque
-includendo l'analisi delle strutture di comunicazione, e concordano solo sul fatto che il
-costrutto è **diverso** dal CILS UNO B1 standard, quindi la documentazione del B1 generico non
-è una fonte valida. Fino a T130 la struttura è `BASIS: unknown` e si scrive così.
+**T130 chiuso il 9 settembre 2026**: struttura, item, durate, pesi e soglia stanno in
+`cils-formato.md` con URL e data, e passano da `unknown` a `measured`. Il blocco su R8 è
+sciolto e il contenuto di O1 si può scrivere.
+
+Due esiti che cambiano il piano. Il primo: le prove sono **sei** (2 ascolto, 2 lettura, 1
+scritta, 1 orale) su **quattro abilità**, e la discordanza delle fonti secondarie si spiega,
+chi contava cinque copiava lo schema del B1 standard. Il secondo: **il Centro CILS non
+pubblica la soglia di questo modulo**. La cifra usata (7/12 per abilità, 28/48) si ricava dal
+documento di procedura del Centro CILS più un documento di sede d'esame statale, e va
+dichiarata in pagina ogni volta che il simulatore la applica.
 
 | ID | Dip. | Req. | Task | File | Stima | Verify | Rischio |
 |---|---|---|---|---|---|---|---|

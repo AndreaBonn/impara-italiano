@@ -67,11 +67,16 @@ Node 24 non è arbitrario: `npm test` passa la glob `"tests/unit/**/*.test.mjs"`
   exit 0 su tutti; YAML validato dall'hook `format-changed-file.sh` (yamllint) alla scrittura.
 - **commit:** `ci: run the existing gates on every push`
 
-## T3b - Badge di stato nel README - BLOCCATO DA A1
+## T3b - Badge di stato nel README - RIMANDATO (unico task non eseguito)
 
 Una riga sotto il titolo di `README.md`. Serve lo slug `owner/repo` reale: un badge verso un
 repo inesistente è un'immagine rotta in cima al README pubblico, cioè l'opposto dell'effetto
 voluto.
+
+**Stato: rimandato su decisione dell'utente** («procedi senza badge»), non dimenticato. La
+condizione che lo sblocca è una sola e osservabile: `git remote -v` smette di essere vuoto.
+Da quel momento il workflow di T3, che oggi è inerte, comincia davvero a girare, e il badge
+diventa la sua unica prova visibile dall'esterno. Fino ad allora non c'è niente da mettere.
 
 - **verify:** l'URL del badge aperto nel browser restituisce l'immagine di stato, non un 404.
 - **commit:** `docs: add the pipeline status badge`

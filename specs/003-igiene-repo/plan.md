@@ -20,8 +20,11 @@ in `index.html` come dipendenza reale.
 
 Una casella per fix, ciascuna con il comando o l'osservazione che la chiude.
 
-- [ ] **M2** - `git ls-files | grep impara-italiano-pl` vuoto; `grep -rn impara-italiano-pl`
-      sui file tracciati vuoto; il file esce anche dal working tree.
+- [x] **M2** - `git ls-files | grep impara-italiano-pl` vuoto; il file esce anche dal working
+      tree; `grep -rn impara-italiano-pl . --exclude-dir=.git --exclude-dir=node_modules
+      --exclude-dir=specs` vuoto. L'esclusione di `specs/` non è un'indulgenza: questi
+      documenti nominano il file perché descrivono l'operazione che lo rimuove, e senza
+      quel filtro il criterio non potrebbe essere soddisfatto da nessun esito.
 - [ ] **MINOR 5** - `git ls-files | grep REPORT_ATTIVITA` vuoto, `wc -l docs/REPORT_ATTIVITA.md`
       restituisce 362 (il file resta sul disco e resta aggiornabile), `git status --short`
       non lo elenca come untracked.

@@ -36,6 +36,7 @@
     <ul class="rail__menu" id="railMenu">
       <li><button class="rail__item" data-route="percorso"><span class="rail__ico" aria-hidden="true">🗺️</span><span data-i18n="nav.path">Ścieżka nauki</span></button></li>
       <li><button class="rail__item" data-route="ripasso"><span class="rail__ico" aria-hidden="true">🔁</span><span data-i18n="nav.review">Powtórki</span><span class="rail__badge" id="dueBadge" hidden>0</span></button></li>
+      <li><button class="rail__item" data-route="allenamento"><span class="rail__ico" aria-hidden="true">🎯</span><span data-i18n="nav.train">Trening</span></button></li>
       <li><button class="rail__item" data-route="conversazione"><span class="rail__ico" aria-hidden="true">🎙️</span><span data-i18n="nav.talk">Rozmowy na głos</span></button></li>
       <li><button class="rail__item" data-route="grammatica"><span class="rail__ico" aria-hidden="true">📐</span><span data-i18n="nav.grammar">Gramatyka</span></button></li>
       <li><button class="rail__item" data-route="coniugatore"><span class="rail__ico" aria-hidden="true">🧩</span><span data-i18n="nav.verbs">Odmiana czasowników</span></button></li>
@@ -67,6 +68,9 @@
 <script src="assets/js/exercises.js"></script>
 <!-- po exercises.js: quaderno owija Ex.build, żeby przechwycić złe odpowiedzi -->
 <script src="assets/js/errors.js"></script>
+<!-- leksykon przed generatorami, generatory przed widokiem treningu -->
+<script src="assets/js/drills-lex.js"></script>
+<script src="assets/js/drills.js"></script>
 <script src="assets/js/views.js"></script>
 <!-- po views.js: dokłada zakładki treningu do już zdefiniowanych widoków -->
 <script src="assets/js/views-train.js"></script>

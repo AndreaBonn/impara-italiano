@@ -148,13 +148,34 @@
     return keysIn(lesson)[index];
   }
 
+  /* Zadania z generatora nie mają lekcji ani treści do zapamiętania:
+     wystarczy para (generator, ziarno), bo generator jest funkcją czystą.
+     Prefiks oddziela je od kluczy ćwiczeń autorskich w jednym zbiorze. */
+  var GEN_PREFIX = "drill:";
+
+  function generatedKey(topicId, seed) { return GEN_PREFIX + topicId + "#" + seed; }
+
   /**
    * Z klucza z powrotem na ćwiczenie. Zwraca null, gdy lekcji nie ma,
    * gdy nie jest wczytana albo gdy treść ćwiczenia się zmieniła —
    * i to ostatnie jest funkcją, nie usterką.
+   *
+   * Karta z generatora odtwarza się przeciwnie: nic nie mogło się
+   * zmienić, więc wystarczy zawołać generator z tym samym ziarnem.
+   * Dzięki temu widok powtórki obsługuje oba rodzaje kart tak samo.
    */
   function locate(key) {
-    var parts = String(key).split("#");
+    var raw = String(key);
+    if (raw.indexOf(GEN_PREFIX) === 0) {
+      var cut = raw.indexOf("#");
+      var topicId = raw.slice(GEN_PREFIX.length, cut);
+      var seed = raw.slice(cut + 1);
+      var item = global.Drills && global.Drills.make(topicId, seed);
+      if (!item) return null;
+      return { generated: true, ex: item.ex, index: 0, topicId: topicId, seed: seed, lesson: null };
+    }
+
+    var parts = raw.split("#");
     if (parts.length !== 3) return null;
     var found = global.Core && global.Core.getLesson(parts[0]);
     if (!found) return null;
@@ -208,6 +229,37 @@
         kind: "authored",
         tag: tagFor(lesson, ex),
         srcId: lesson.id,
+        ef: 2.5, reps: 0, interval: 0, due: Date.now(), lapses: 0, ts: Date.now()
+      };
+    }
+    global.Core.schedule(card, quality(ok));
+    var out = withKey(key, card);
+    if (ok && card.reps >= GRADUATE_REPS) delete deck[key];
+    global.Core.save();
+    return out;
+  }
+
+  /**
+   * Odnotowuje odpowiedź na zadaniu z generatora.
+   *
+   * Ta sama logika progu i harmonogramu, co przy ćwiczeniach autorskich,
+   * ale inna tożsamość: tag przychodzi od generatora, nie od lekcji, i
+   * karta niesie `kind: "generated"`. Rozróżnienie jest zadeklarowane,
+   * a nie domyślne — dwie specie kart z różną granulacją mieszkają w
+   * jednym zbiorze i widok musi wiedzieć, którą trzyma.
+   */
+  function recordGenerated(item, ok) {
+    if (!item) return null;
+    var key = generatedKey(item.topicId, item.seed);
+    var deck = bag();
+    var card = deck[key];
+
+    if (!card && ok) return null;
+    if (!card) {
+      card = deck[key] = {
+        kind: "generated",
+        tag: item.tag,
+        srcId: item.topicId,
         ef: 2.5, reps: 0, interval: 0, due: Date.now(), lapses: 0, ts: Date.now()
       };
     }
@@ -319,6 +371,8 @@
   Errors.keyOf = keyOf;
   Errors.locate = locate;
   Errors.record = record;
+  Errors.recordGenerated = recordGenerated;
+  Errors.generatedKey = generatedKey;
   Errors.drop = drop;
   Errors.due = due;
   Errors.dueCount = dueCount;

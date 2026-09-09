@@ -875,6 +875,14 @@
     });
   };
 
+  /**
+   * Skorupa widoku, wystawiona dla modułów, które dokładają własne trasy
+   * (views-train.js). Bez tego taki moduł musiałby powtórzyć u siebie
+   * set/pageHead/el — trzy kopie tego samego, rozjeżdżające się przy
+   * pierwszej zmianie nagłówka.
+   */
+  Views.shell = { set: set, head: pageHead, root: el, empty: empty, pct: pct };
+
   global.Views = Views;
 
 })(window);

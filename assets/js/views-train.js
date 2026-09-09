@@ -19,6 +19,12 @@
   var esc = Core.esc;
   var t = function (k, v) { return I18n.t(k, v); };
 
+  /* Skorupa widoku pożyczona z views.js: ten moduł dokłada trasę do już
+     istniejącego zestawu, a nie zakłada własnego układu strony. */
+  var set = Views.shell.set;
+  var pageHead = Views.shell.head;
+  var el = Views.shell.root;
+
   /** Ile kart bierzemy na jedno podejście. */
   var BATCH = 10;
 
@@ -146,8 +152,103 @@
     dalej();
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     ALLENAMENTO — ćwiczenia z generatora
+     ═══════════════════════════════════════════════════════════ */
+
+  /** Ile zadań w jednym podejściu. */
+  var DRILL_N = 10;
+
+  /**
+   * Nazwa zagadnienia treningu.
+   *
+   * NIE bierzemy jej z GRAMMAR_REF, choć tag tam wskazuje: „numeri" ma
+   * tag `g-frase`, którego tytuł brzmi „struktura zdania" i jako nazwa
+   * ćwiczenia wprowadzałby w błąd. Tag służy quaderno błędów do grupowania,
+   * nazwa służy uczniowi do wyboru — to dwie różne rzeczy.
+   */
+  function topicLabel(id) { return t("train.topic." + id); }
+
+  Views.allenamento = function (params) {
+    if (params && params.topic) return drillSession(params.topic);
+
+    set(pageHead(t("train.kicker"), t("train.title"), t("train.intro")) +
+      '<div class="stack">' + Drills.TOPICS.map(function (topic) {
+        return '<div class="list-row"><span class="list-row__main"><b>' + esc(topicLabel(topic.id)) + "</b>" +
+          "<span>" + esc(tagLabel(topic.tag)) + "</span></span>" +
+          '<button class="btn btn--primary btn--sm js-topic" data-topic="' + esc(topic.id) + '">' +
+          esc(t("train.start")) + "</button></div>";
+      }).join("") + "</div>" +
+      '<p class="exq__sub" style="margin-top:20px">' + esc(t("train.endless")) + "</p>");
+
+    el().querySelectorAll(".js-topic").forEach(function (b) {
+      b.addEventListener("click", function () {
+        App.go("allenamento", { topic: b.getAttribute("data-topic") });
+      });
+    });
+  };
+
+  /**
+   * Seria zadań jednego zagadnienia.
+   *
+   * Ziarno bierze się z zegara przy wejściu, więc każde podejście jest
+   * inne, ale W TRAKCIE podejścia jest stałe: karta błędu zapisuje parę
+   * (generator, ziarno) i to samo zadanie da się później odtworzyć
+   * co do znaku.
+   */
+  function drillSession(topicId) {
+    var topic = Drills.TOPICS.filter(function (x) { return x.id === topicId; })[0];
+    if (!topic) { App.go("allenamento"); return; }
+
+    var baza = topicId + "-" + Date.now();
+    var zadania = Drills.session(topicId, DRILL_N, baza);
+    var i = 0, dobre = 0;
+
+    set(pageHead(t("train.kicker"), topicLabel(topicId), tagLabel(topic.tag)) +
+      '<div id="drillBox"></div>');
+    var box = document.getElementById("drillBox");
+
+    function dalej() {
+      if (i >= zadania.length) { koniec(); return; }
+      var item = zadania[i];
+      var zbudowane = Ex.build(item.ex, i, "drill-" + topicId);
+
+      box.innerHTML = '<p class="exq__num">' + esc(t("train.progress", { i: i + 1, n: zadania.length })) + "</p>" +
+        zbudowane.html +
+        '<div style="margin-top:16px"><button class="btn btn--ghost btn--sm js-next" hidden>' +
+        esc(t("train.next")) + "</button></div>";
+
+      var korzen = box.querySelector(".exq");
+      var next = box.querySelector(".js-next");
+
+      /* Zadanie z generatora nie należy do żadnej lekcji, więc owinięcie
+         Ex.build nie ma czego zapisać: quaderno dostaje je stąd, wprost. */
+      zbudowane.wire(korzen, function (ok) {
+        if (ok) dobre++;
+        Errors.recordGenerated(item, ok);
+        next.hidden = false;
+        next.focus();
+      });
+      next.addEventListener("click", function () { i++; dalej(); });
+    }
+
+    function koniec() {
+      box.innerHTML = '<div class="summary"><div class="summary__score">' + dobre + "/" + zadania.length + "</div>" +
+        '<p class="summary__msg">' + esc(t("train.done")) + "</p>" +
+        '<div class="summary__acts"><button class="btn btn--primary js-more">' + esc(t("train.again")) + "</button>" +
+        '<button class="btn btn--ghost js-hub">' + esc(t("train.backHub")) + "</button></div></div>";
+      box.querySelector(".js-more").addEventListener("click", function () { drillSession(topicId); });
+      box.querySelector(".js-hub").addEventListener("click", function () { App.go("allenamento"); });
+      App.refreshRail();
+    }
+
+    dalej();
+  }
+
   Train.BATCH = BATCH;
+  Train.DRILL_N = DRILL_N;
   Train.tagLabel = tagLabel;
+  Train.topicLabel = topicLabel;
 
   global.Train = Train;
 

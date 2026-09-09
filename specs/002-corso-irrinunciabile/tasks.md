@@ -174,6 +174,24 @@ dalla voce, ed è già successo in questo progetto con la "o" aperta e chiusa.
 | T117 | T113 | O8 DoD 5 | 8 chiavi UI ×5 | `data/i18n/ui-*.js` | 1,5h | `P` esce 0 | basso |
 | T118 | T112, T114 | O8 DoD 2,4 | Test di fase: un dialogo lineare e uno ramificato, entrambi coperti | `tests/dom/conversazione.spec.js` | 8h | `T` verde; due percorsi diversi nello stesso dialogo producono due finali diversi | medio |
 
+### Esito di F8 (misurato)
+
+| Dialogo | CEFR | Turni | Punti di scelta | Conseguenza differita |
+|---|---|---|---|---|
+| `ristorante-scelte` | A2 | 18 | 3 | il dolce rifiutato non compare sul conto, tre turni dopo |
+| `treno-perso` | A2 | 14 | 3 | otto euro contro zero, secondo la causa dichiarata all'inizio |
+| `casa-visita` | B1 | 16 | 3 | 650 invece di 700 solo per chi chiede se il prezzo è trattabile |
+| `medico-gola` | B1 | 16 | 3 | antibiotico contro gargarismi, secondo la risposta sulla deglutizione |
+
+Tutti sotto 20 turni. Otto percorsi (due rami per dialogo) percorsi fino al riepilogo
+nel browser, zero errori di pagina.
+
+**T116 non è chiuso.** `extract_strings.mjs` raccoglieva solo `accept[0]` del turno,
+quindi le risposte modello dei rami restavano mute: corretto, ma le 73 registrazioni
+nuove non sono ancora generate. Aspettano la rilettura dell'italiano prevista da Q1=B,
+perché dopo la registrazione una correzione costa un mp3 nuovo più un orfano che resta
+nella history.
+
 ## F9 - O2 biblioteca, a scaglioni (8h codice + 100h contenuto per 28 testi)
 
 Fase editoriale al 93%. Lo scaglione minimo è 12 testi. Il secondo si apre solo se il primo

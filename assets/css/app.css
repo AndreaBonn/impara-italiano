@@ -891,3 +891,20 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .lk-card__from,.lk-card__guess{color:var(--ink-soft);font-size:.86rem;margin:0;}
 .lk-card__miss{margin:0 0 8px;font-size:.94rem;}
 .lk-card__ctx{color:var(--ink-soft);font-size:.84rem;margin:6px 0 0;}
+
+/* ============================================================
+   Pokrycie listy częstości (views-frequency.js)
+   ============================================================ */
+.cov{margin:0 0 22px;}
+.cov:last-child{margin-bottom:0;}
+.cov__top{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
+.cov__top b{font-family:var(--display);font-size:1.06rem;}
+.cov__n{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink-soft);font-size:.92rem;}
+.cov__bar{height:12px;border-radius:99px;background:var(--paper-sunk);overflow:hidden;}
+.cov__fill{display:block;height:100%;border-radius:99px;background:var(--salvia-mid);}
+.cov__fill--strong{background:var(--rosa-deep);}
+.cov__why{margin:7px 0 0;color:var(--ink-soft);font-size:.9rem;}
+.cov__tok{margin:3px 0 0;font-size:.9rem;font-weight:600;}
+.cov__h{font-size:1.15rem;margin:26px 0 4px;}
+.cov__done{margin-top:22px;font-weight:600;}
+.cov__src{margin-top:26px;color:var(--ink-faint);font-size:.84rem;}

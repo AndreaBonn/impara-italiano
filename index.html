@@ -45,6 +45,7 @@
       <li><button class="rail__item" data-route="grammatica"><span class="rail__ico" aria-hidden="true">📐</span><span data-i18n="nav.grammar">Gramatyka</span></button></li>
       <li><button class="rail__item" data-route="coniugatore"><span class="rail__ico" aria-hidden="true">🧩</span><span data-i18n="nav.verbs">Odmiana czasowników</span></button></li>
       <li><button class="rail__item" data-route="lessico"><span class="rail__ico" aria-hidden="true">📖</span><span data-i18n="nav.lexicon">Mój słownik</span></button></li>
+      <li><button class="rail__item" data-route="copertura"><span class="rail__ico" aria-hidden="true">📊</span><span data-i18n="nav.coverage">Pokrycie</span></button></li>
       <li><button class="rail__item" data-route="progressi"><span class="rail__ico" aria-hidden="true">🌸</span><span data-i18n="nav.progress">Postępy</span></button></li>
       <li><button class="rail__item" data-route="impostazioni"><span class="rail__ico" aria-hidden="true">⚙️</span><span data-i18n="nav.settings">Ustawienia</span></button></li>
     </ul>
@@ -89,6 +90,8 @@
 <script src="assets/js/lemma.js"></script>
 <!-- po lemma.js: karta słowa go konsumuje; przed views-reading.js, który ją wywołuje -->
 <script src="assets/js/views-lookup.js"></script>
+<script src="assets/js/frequency.js"></script>
+<script src="assets/js/views-frequency.js"></script>
 <script src="assets/js/views-reading.js"></script>
 <script src="assets/js/views-writing.js"></script>
 <script src="assets/js/search.js"></script>
@@ -109,6 +112,8 @@
 <script src="data/core/conversations.js"></script>
 <script src="data/core/phonetics.js"></script>
 <script src="data/core/readings.js"></script>
+<!-- lista częstości: 44 KB, czytana tylko przez widok Pokrycie -->
+<script src="data/core/frequenza.js"></script>
 <script src="data/core/writing.js"></script>
 <!-- Nakładek NIE ma tutaj celowo: wpisany tu język byłby wyróżniony,
      a uczeń z innym zapisanym w ustawieniach zobaczyłby puste pola.

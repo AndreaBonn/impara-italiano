@@ -463,6 +463,24 @@
 
   function reflPronoun(i) { return ["mi", "ti", "si", "ci", "vi", "si"][i]; }
 
+  /* Osoby, w których zaimek dokleja się do formy trybu rozkazującego:
+     tu, noi, voi. Formy grzecznościowe (Lei, Loro) trzymają zaimek przed
+     czasownikiem — to nie jest wariant stylistyczny, tylko reguła, którą
+     kurs sam wykłada w haśle „ref:g-imperativo”. */
+  var ENKLITYKA = [false, true, false, true, true, false];
+
+  /**
+   * Dokleja zaimek zwrotny do formy trybu rozkazującego.
+   *
+   * „alza" + „ti" → „alzati". Krótka forma tu gubi apostrof i podwaja
+   * spółgłoskę zaimka: „fa'" + „ti" → „fatti", tak samo jak „dammi"
+   * i „dimmi" z tego samego hasła.
+   */
+  function doklej(form, pron) {
+    if (/'$/.test(form)) return form.slice(0, -1) + pron.charAt(0) + pron;
+    return form + pron;
+  }
+
   function auxOf(inf) {
     var b = baseOf(inf);
     if (isRefl(inf)) return "essere";
@@ -516,6 +534,7 @@
       out = out.map(function (f, i) {
         if (!f) return f;
         if (/^(mi|ti|si|ci|vi)\s/.test(f)) return f;
+        if (tense === "imper" && ENKLITYKA[i]) return doklej(f, reflPronoun(i));
         return reflPronoun(i) + " " + f;
       });
     }

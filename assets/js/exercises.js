@@ -56,7 +56,7 @@
       '<p class="exq__prompt">' + (ex.q || "") + (ex.say ? " " + sayBtn(ex.say) : "") + "</p>" +
       (ex.sub ? '<p class="exq__sub">' + esc(ex.sub) + "</p>" : "") +
       '<div class="opts" role="radiogroup" aria-label="' + esc(t("ex.answersGroup")) + '">' +
-      opts.map(function (o, k) {
+      opts.map(function (o) {
         return '<label class="opt" data-orig="' + o.i + '">' +
           '<input type="radio" name="' + name + '" value="' + o.i + '"><span>' + o.txt + "</span></label>";
       }).join("") +

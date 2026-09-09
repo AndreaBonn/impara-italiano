@@ -184,7 +184,7 @@
       var s = typeof c.s === "number" ? c.s : null;
       var d = typeof c.d === "number" ? c.d : null;
       var dni = typeof c.last === "number" ? dniOd(c.last, terazMs) : null;
-      var odstepMs = null;
+      var odstepMs;
       var nowyStan = stan;
       var nowyKrok = krok;
 

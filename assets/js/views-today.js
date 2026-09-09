@@ -14,7 +14,7 @@
 
    Skrypt klasyczny. Wymaga core.js, errors.js, drills.js, views.js.
    ============================================================ */
-(function (global) {
+(function () {
   "use strict";
 
   var esc = Core.esc;

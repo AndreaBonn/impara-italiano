@@ -19,7 +19,6 @@ import { join } from "node:path";
 import { loadEngine, ROOT } from "./_harness.mjs";
 
 const WEKTORY = JSON.parse(readFileSync(join(ROOT, "tests/unit/fsrs-vectors.json"), "utf8"));
-const DZIEN = 86400000;
 
 /* Sześć cyfr po przecinku: tyle zapisuje generator. Dalej to szum
    arytmetyki zmiennoprzecinkowej, inny w Pythonie i inny w V8. */

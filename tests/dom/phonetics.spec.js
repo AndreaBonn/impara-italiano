@@ -87,10 +87,10 @@ test("pomyłka w rozróżnianiu trafia do quaderno błędów", async ({ page }) 
   await page.locator('.js-set[data-set="ph-doppie"]').click();
   await expect(page.locator(".exq")).toBeVisible();
 
-  /* Wybieramy tę opcję, której NIE odtworzono. */
+  /* Ćwiczenie ma z czego wybierać. Której opcji NIE odtworzono, nie da się
+     odczytać z DOM — dlatego niżej klikamy po kolei, aż któraś okaże się zła. */
   const zla = await page.evaluate(() => {
     const opts = [...document.querySelectorAll(".exq .opt")];
-    const slyszane = document.querySelector(".exq").dataset.idx;   // tylko po to, by nie zoptymalizowano
     return opts.length ? 0 : -1;
   });
   expect(zla).toBe(0);

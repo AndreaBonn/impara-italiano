@@ -140,7 +140,7 @@
     document.addEventListener("focusin", function (e) {
       if (wantsBar(e.target)) show(e.target); else hide();
     });
-    document.addEventListener("focusout", function (e) {
+    document.addEventListener("focusout", function () {
       /* Odsunięte, żeby kliknięcie w pasek zdążyło zadziałać. */
       global.setTimeout(function () {
         if (!document.activeElement || !wantsBar(document.activeElement)) hide();

@@ -423,7 +423,7 @@
    * mnogą. Widok „Pokrycie" wybiera po nim hasło do pokazania.
    */
   function lemat(slowo) {
-    var w = String(slowo).toLowerCase().replace(/[’\']/g, "'");
+    var w = String(slowo).toLowerCase().replace(/[’']/g, "'");
     var z = zbuduj()[w];
     return z && z.length ? z[0] : "";
   }

@@ -231,7 +231,7 @@
         '<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">' +
         '<button class="btn btn--ghost btn--sm js-play-all">' + t("lesson.playAll") + "</button>" +
         '<button class="btn btn--ghost btn--sm js-save-all">' + t("lesson.saveAll") + "</button></div>" +
-        '<div class="vocab-grid">' + L.vocab.map(function (v, i) {
+        '<div class="vocab-grid">' + L.vocab.map(function (v) {
           var key = Core.cardKey(v.it);
           var saved = !!Core.state.srs[key];
           return '<div class="vocab-card">' +

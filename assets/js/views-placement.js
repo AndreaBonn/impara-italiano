@@ -8,7 +8,7 @@
 
    Skrypt klasyczny. Wymaga core.js, placement.js, exercises.js, views.js.
    ============================================================ */
-(function (global) {
+(function () {
   "use strict";
 
   var esc = Core.esc;

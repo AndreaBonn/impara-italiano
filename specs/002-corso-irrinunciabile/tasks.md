@@ -186,11 +186,17 @@ dalla voce, ed è già successo in questo progetto con la "o" aperta e chiusa.
 Tutti sotto 20 turni. Otto percorsi (due rami per dialogo) percorsi fino al riepilogo
 nel browser, zero errori di pagina.
 
-**T116 non è chiuso.** `extract_strings.mjs` raccoglieva solo `accept[0]` del turno,
-quindi le risposte modello dei rami restavano mute: corretto, ma le 73 registrazioni
-nuove non sono ancora generate. Aspettano la rilettura dell'italiano prevista da Q1=B,
-perché dopo la registrazione una correzione costa un mp3 nuovo più un orfano che resta
-nella history.
+**T116 chiuso.** `extract_strings.mjs` raccoglieva solo `accept[0]` del turno, quindi le
+risposte modello dei rami restavano mute: corretto. Rilettura dell'italiano fatta prima
+della registrazione (Q1=B), due battute corrette dal revisore e riportate anche nelle
+cinque nakładki. 73 file nuovi, **1,06 MB**, sotto il tetto di 1,5 MB; il corso passa a
+3094 registrazioni e 32,2 MB.
+
+Effetto collaterale che le registrazioni hanno reso visibile: i test dei dialoghi erano
+veloci perché senza mp3 il motore scendeva sulla sintesi di sistema, che in headless
+finisce subito. Con le registrazioni la catena aspetta davvero la fine di ogni battuta,
+quindi il file ha ora un budget di 120 s. La riproduzione resta reale: è lei a far
+avanzare `step()`.
 
 ## F9 - O2 biblioteca, a scaglioni (8h codice + 100h contenuto per 28 testi)
 

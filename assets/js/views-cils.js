@@ -73,6 +73,22 @@
     if (global.Audio2) Audio2.stop();
   }
 
+  /* Router woła to przy KAŻDYM wyjściu z trasy, także przez pasek boczny,
+     hashchange i przycisk wstecz przeglądarki. Bez tego zegar żył dalej. */
+  function pilnujWyjscia() { Views.onLeave = fermaTimer; }
+
+  /* Przycisk domykający sekcję gaśnie w chwili kliknięcia. Podwójne
+     kliknięcie trafiłoby w ten sam guzik już przerysowanej sekcji i
+     przeskoczyłoby ją bez ani jednej odpowiedzi — a klika się pod zegarem,
+     więc dwuklik z nerwów jest tu regułą, nie wyjątkiem. */
+  function razTylko(przycisk, akcja) {
+    przycisk.addEventListener("click", function () {
+      if (przycisk.disabled) return;
+      przycisk.disabled = true;
+      akcja();
+    });
+  }
+
   /**
    * Avvia il conto alla rovescia della sezione.
    *
@@ -88,6 +104,7 @@
     var voce = el().querySelector(".js-clock-live");
     scrivi();
 
+    pilnujWyjscia();
     tick = global.setInterval(function () {
       resta--;
       scrivi();
@@ -162,7 +179,7 @@
 
     podepnijRisposte(sez);
     if (sez.id === "ascolto") podepnijAscolti(sez);
-    el().querySelector(".js-next").addEventListener("click", function () { chiudiChiusa(sez); });
+    razTylko(el().querySelector(".js-next"), function () { chiudiChiusa(sez); });
     avviaTimer(sez.minuti * 60, function () { scadi(sez.id); });
   }
 
@@ -273,7 +290,7 @@
       r.addEventListener("change", function () { scelta = Number(r.value); });
     });
 
-    el().querySelector(".js-next").addEventListener("click", function () {
+    razTylko(el().querySelector(".js-next"), function () {
       run.scritta = { traccia: sez.tracce[scelta], testo: ta.value };
       avanti();
     });
@@ -316,7 +333,7 @@
     });
     if (!powod) podepnijNagranie();
 
-    el().querySelector(".js-next").addEventListener("click", function () {
+    razTylko(el().querySelector(".js-next"), function () {
       run.orale = { argomento: (sez.argomenti || [])[scelto], spuntate: spuntate() };
       avanti();
     });
@@ -433,7 +450,10 @@
    */
   function salva(e) {
     var st = Core.state.cils;
-    if (!st || !st.runs) return;
+    /* Array.isArray, nie truthy: import z `cils.runs` innego typu przechodzi
+       walidację (sprawdza tylko pole najwyższego poziomu), a `push` na
+       stringu rzuciłby wyjątek w środku rysowania podsumowania. */
+    if (!st || !Array.isArray(st.runs)) return;
     st.runs.push({
       sim: run.sim.id,
       ts: Date.now(),

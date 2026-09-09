@@ -111,8 +111,10 @@
       out.totali += p.totali;
       out.max += quantiItem(prove[i]) * (prove[i].puntiPerItem || 0);
     }
-    /* Mezzi punti esistono nelle prove da 12 item: arrotondiamo solo la
-       somma, e per difetto, come fa il conteggio ufficiale. */
+    /* Mezzi punti esistono davvero: sette item da 0,5 fanno 3,5 e l'esame
+       li dà. Qui non si arrotonda il risultato, si toglie il rumore della
+       somma in virgola mobile (0.5 + 0.5 + 0.5 non sempre fa 1,5 esatto):
+       il valore torna al mezzo punto più vicino, che è già quello vero. */
     out.punti = Math.round(out.punti * 2) / 2;
     return out;
   }

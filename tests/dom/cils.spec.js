@@ -90,6 +90,32 @@ test.describe("simulazione d'esame", () => {
     await expect(b).toBeDisabled();
   });
 
+  test("uscire dalla rotta ferma il conto alla rovescia", async ({ page }) => {
+    /* Il timer viveva oltre la vista: mezz'ora dopo il callback chiudeva
+       una sezione sullo schermo di qualcun altro. Contiamo gli intervalli
+       aperti, non il comportamento visibile: il difetto non si vedeva. */
+    await page.addInitScript(() => {
+      window.__vivi = 0;
+      const si = window.setInterval, ci = window.clearInterval;
+      window.setInterval = function (...a) { window.__vivi++; return si.apply(window, a); };
+      window.clearInterval = function (id) { if (id != null) window.__vivi--; return ci.call(window, id); };
+    });
+    await otworz(page);
+    expect(await page.evaluate(() => window.__vivi)).toBe(1);
+    await page.evaluate(() => window.App.go("lettura"));
+    await page.waitForTimeout(400);
+    expect(await page.evaluate(() => window.__vivi)).toBe(0);
+  });
+
+  test("un doppio clic non salta la sezione successiva", async ({ page }) => {
+    await otworz(page);
+    const b = page.locator(".js-next");
+    await b.dblclick();
+    await page.waitForTimeout(400);
+    /* Dopo un doppio clic siamo nella sezione 2, non nella 3. */
+    expect(await page.textContent(".cils-step")).toMatch(/2/);
+  });
+
   test("l'orologio non parla a ogni secondo", async ({ page }) => {
     await otworz(page);
     /* La cifra che cambia ogni secondo è nascosta agli screen reader; la

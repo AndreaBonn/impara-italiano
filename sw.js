@@ -109,10 +109,19 @@ self.addEventListener("install", function (e) {
   e.waitUntil(
     caches.open(SHELL_CACHE)
       /* addAll przewraca się w całości, gdy padnie JEDEN plik; wolimy
-         wczytać tyle, ile się da, i nie zostawić ucznia bez niczego. */
+         wczytać tyle, ile się da, i nie zostawić ucznia bez niczego.
+
+         Odporność to jednak nie to samo co milczenie. Wcześniej błąd szedł
+         do kosza bez nazwy pliku, więc pierwszy start bez sieci padał na
+         brakującym skrypcie, a nie było jak sprawdzić na którym. Nazwa idzie
+         teraz do konsoli guska (DevTools → Application → Service Workers),
+         a instalacja kończy się tak samo jak przedtem: świadomie. */
       .then(function (c) {
         return Promise.all(PRECACHE.map(function (u) {
-          return c.add(u).catch(function () { return null; });
+          return c.add(u).catch(function (blad) {
+            console.warn("[sw] precache pominął: " + u, blad);
+            return null;
+          });
         }));
       })
       .then(function () { return self.skipWaiting(); })

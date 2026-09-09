@@ -4,24 +4,24 @@
 LINGUAI.addStrings("en", {
 
   "read:r-a1-mattina": {
-    title: "Luca's morning",
-    gloss: ["wakes up", "breakfast", "full, crowded", "greets"]
+    title: "Coffee, Standing at the Bar",
+    gloss: ["at the counter", "lasts", "double", "table service"]
   },
   "read:r-a1-mercato": {
-    title: "Saturday at the market",
-    gloss: ["greengrocer", "gives as a gift", "heavy", "bags"]
+    title: "At the Market, Don't Touch",
+    gloss: ["the customer", "the bag", "ripe", "they ruin"]
   },
   "read:r-a2-treno": {
-    title: "A missed train",
-    gloss: ["delay", "had already left", "empty", "to let her know"]
+    title: "For Technical Reasons",
+    gloss: ["the loudspeaker", "protested", "furious", "resignation"]
   },
   "read:r-a2-casa": {
-    title: "My grandparents' house",
-    gloss: ["vegetable garden", "I followed him", "smell", "we stayed"]
+    title: "Sunday Lunch",
+    gloss: ["an obligation", "the courses", "to refuse", "I miss them"]
   },
   "read:r-a2-medico": {
-    title: "At the doctor's",
-    gloss: ["sore throat", "examines", "prescribes", "syrup"]
+    title: "The Pharmacy First",
+    gloss: ["the pharmacist", "the diagnosis", "is enough", "the ER"]
   },
   "read:r-b1-affitto": {
     title: "Flat-hunting in Milan",

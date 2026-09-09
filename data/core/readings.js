@@ -24,40 +24,42 @@ window.READINGS = [
     id: "r-a1-mattina",
     cefr: "A1",
     tag: "g-presente",
-    titleIt: "La mattina di Luca",
+    titleIt: "Il caffè si beve in piedi",
     sentences: [
-      "Luca si sveglia alle sette.",
-      "Fa colazione con un caffè e due biscotti.",
-      "Alle otto prende l'autobus per andare in ufficio.",
-      "L'autobus è sempre pieno, ma il viaggio è breve.",
-      "In ufficio saluta i colleghi e accende il computer.",
-      "A mezzogiorno mangia un panino con il suo amico Marco."
+      "In Italia molte persone bevono il caffè in piedi, al banco.",
+      "Costa un euro e dura due minuti.",
+      "Se ti siedi al tavolino il prezzo cambia, a volte è il doppio.",
+      "Non è un errore del bar: il servizio al tavolo costa di più.",
+      "Molti turisti si siedono e ordinano un cappuccino alle quattro del pomeriggio.",
+      "Per un italiano il cappuccino finisce con la colazione.",
+      "Dopo pranzo gli italiani bevono il caffè, mai il cappuccino."
     ],
-    glossIt: ["si sveglia", "colazione", "pieno", "saluta"],
+    glossIt: ["al banco", "dura", "il doppio", "il servizio"],
     questions: [
-      { t: "truefalse", q: "Luca si sveglia alle otto.", a: 1 },
-      { t: "mcq", q: "Che cosa beve Luca a colazione?", opts: ["Un caffè", "Un tè", "Un succo"], a: 0 },
-      { t: "truefalse", q: "Luca va in ufficio in autobus.", a: 0 }
+      { t: "truefalse", q: "Il caffè al tavolino costa come al banco.", a: 1 },
+      { t: "mcq", q: "Quanto dura un caffè al banco?", opts: ["Due minuti", "Mezz'ora", "Un'ora"], a: 0 },
+      { t: "mcq", q: "Quando bevono il cappuccino gli italiani?", opts: ["Dopo pranzo", "A colazione", "La sera"], a: 1 }
     ]
   },
   {
     id: "r-a1-mercato",
     cefr: "A1",
     tag: "g-articolo-det",
-    titleIt: "Al mercato del sabato",
+    titleIt: "Al mercato non si tocca",
     sentences: [
-      "Il sabato mattina Anna va al mercato.",
-      "Compra la frutta, il pane e un po' di formaggio.",
-      "Le mele costano due euro al chilo.",
-      "Il fruttivendolo la conosce e le regala sempre un'arancia.",
-      "Anna torna a casa con due borse pesanti.",
-      "Il pomeriggio prepara il pranzo per la famiglia."
+      "Al mercato il cliente non tocca la frutta.",
+      "Il fruttivendolo sceglie i pezzi e prepara il sacchetto.",
+      "Se prendi una pesca da solo, il venditore non è contento.",
+      "Non è antipatia: la frutta matura è delicata e le mani rovinano tutto.",
+      "Il turista tocca, guarda e sceglie, come al supermercato.",
+      "Al mercato invece parla, chiede consiglio e aspetta.",
+      "La differenza è piccola, ma al mercato è subito evidente."
     ],
-    glossIt: ["fruttivendolo", "regala", "pesanti", "borse"],
+    glossIt: ["il cliente", "il sacchetto", "matura", "rovinano"],
     questions: [
-      { t: "mcq", q: "Quando va al mercato Anna?", opts: ["La domenica", "Il sabato", "Il lunedì"], a: 1 },
-      { t: "truefalse", q: "Il fruttivendolo non conosce Anna.", a: 1 },
-      { t: "mcq", q: "Quanto costano le mele?", opts: ["Un euro al chilo", "Due euro al chilo", "Tre euro al chilo"], a: 1 }
+      { t: "truefalse", q: "Al mercato il cliente sceglie la frutta con le mani.", a: 1 },
+      { t: "mcq", q: "Chi prepara il sacchetto?", opts: ["Il cliente", "Il fruttivendolo", "Il turista"], a: 1 },
+      { t: "mcq", q: "Perché non si tocca la frutta?", opts: ["Perché è delicata", "Perché è sporca", "Perché è cara"], a: 0 }
     ]
   },
 
@@ -66,62 +68,63 @@ window.READINGS = [
     id: "r-a2-treno",
     cefr: "A2",
     tag: "g-passato-prossimo",
-    titleIt: "Un treno perso",
+    titleIt: "Per motivi tecnici",
     sentences: [
-      "Ieri Giulia è arrivata in stazione con dieci minuti di ritardo.",
-      "Il treno per Bologna era già partito.",
-      "Ha comprato un altro biglietto e ha aspettato un'ora.",
-      "Mentre aspettava, ha letto il giornale e ha bevuto un cappuccino.",
-      "Il secondo treno era quasi vuoto e molto tranquillo.",
-      "Alla fine è arrivata a Bologna solo con un'ora di ritardo.",
-      "Ha telefonato alla sua amica per avvisarla."
+      "Ieri il treno per Bologna è partito con quaranta minuti di ritardo.",
+      "L'altoparlante ha detto solo due parole: per motivi tecnici.",
+      "Nessuno ha protestato e nessuno ha chiesto spiegazioni.",
+      "Un ragazzo francese vicino a me era furioso.",
+      "Gli altri passeggeri hanno aperto il giornale e hanno aspettato.",
+      "Non è rassegnazione: per motivi tecnici non vuole dire niente e tutti lo sanno.",
+      "Chiedere spiegazioni a chi non le ha è solo un modo per arrabbiarsi due volte."
     ],
-    glossIt: ["ritardo", "era partito", "vuoto", "avvisarla"],
+    glossIt: ["l'altoparlante", "ha protestato", "furioso", "rassegnazione"],
     questions: [
-      { t: "truefalse", q: "Giulia ha preso il primo treno.", a: 1 },
-      { t: "mcq", q: "Che cosa ha fatto Giulia mentre aspettava?", opts: ["Ha dormito", "Ha letto il giornale", "Ha telefonato al lavoro"], a: 1 },
-      { t: "mcq", q: "Com'era il secondo treno?", opts: ["Pieno e rumoroso", "Quasi vuoto e tranquillo", "In ritardo di due ore"], a: 1 }
+      { t: "mcq", q: "Quanto ritardo ha fatto il treno?", opts: ["Dieci minuti", "Quaranta minuti", "Due ore"], a: 1 },
+      { t: "truefalse", q: "I passeggeri italiani hanno chiesto spiegazioni.", a: 1 },
+      { t: "mcq", q: "Secondo il testo, perché nessuno protesta?", opts: ["Perché ha paura", "Perché la spiegazione non dice niente", "Perché non ha capito"], a: 1 }
     ]
   },
   {
     id: "r-a2-casa",
     cefr: "A2",
     tag: "g-imperfetto",
-    titleIt: "La casa dei nonni",
+    titleIt: "Il pranzo della domenica",
     sentences: [
-      "Da bambino passavo tutte le estati dai nonni, in campagna.",
-      "La casa era vecchia e aveva una cucina enorme.",
-      "La mattina mio nonno andava nell'orto e io lo seguivo.",
-      "Mia nonna preparava il pane due volte alla settimana.",
-      "Il pomeriggio faceva troppo caldo per uscire.",
-      "Restavamo in casa a giocare a carte fino alle cinque.",
-      "Quella casa adesso non c'è più, ma il profumo del pane me lo ricordo bene."
+      "Da bambino il pranzo della domenica dai nonni non era una festa: era un obbligo.",
+      "Cominciavamo all'una e finivamo alle quattro.",
+      "C'erano sempre troppe portate e nessuno poteva rifiutare.",
+      "Mia nonna considerava il piatto vuoto un complimento.",
+      "Se lasciavo qualcosa, chiedeva subito se stavo male.",
+      "Da bambino volevo solo uscire con i miei amici.",
+      "Adesso quei pranzi non ci sono più e mi mancano."
     ],
-    glossIt: ["orto", "seguivo", "profumo", "restavamo"],
+    glossIt: ["un obbligo", "le portate", "rifiutare", "mi mancano"],
     questions: [
-      { t: "mcq", q: "Dove passava le estati?", opts: ["Al mare", "In campagna dai nonni", "In città"], a: 1 },
-      { t: "truefalse", q: "La nonna preparava il pane ogni giorno.", a: 1 },
-      { t: "mcq", q: "Perché restavano in casa il pomeriggio?", opts: ["Perché pioveva", "Perché faceva troppo caldo", "Perché lavoravano"], a: 1 }
+      { t: "truefalse", q: "Da bambino aspettava il pranzo della domenica con piacere.", a: 1 },
+      { t: "mcq", q: "Che cosa significava per la nonna un piatto vuoto?", opts: ["Un complimento", "Un problema", "Una scortesia"], a: 0 },
+      { t: "mcq", q: "Come finisce il testo?", opts: ["Con un rimpianto", "Con una lite", "Con una ricetta"], a: 0 }
     ]
   },
   {
     id: "r-a2-medico",
     cefr: "A2",
     tag: "g-condizionale",
-    titleIt: "Dal medico",
+    titleIt: "Prima la farmacia",
     sentences: [
-      "Da tre giorni Paolo ha mal di gola e un po' di febbre.",
-      "Il medico lo visita e gli dice che non è niente di grave.",
-      "Dovrebbe bere molta acqua e riposare almeno due giorni.",
-      "Gli prescrive uno sciroppo da prendere la sera.",
-      "Paolo chiede se può andare al lavoro lunedì.",
-      "Il medico risponde che sarebbe meglio aspettare fino a mercoledì."
+      "In Italia molte persone vanno prima in farmacia e poi dal medico.",
+      "Il farmacista ascolta, guarda la gola e consiglia qualcosa.",
+      "Non è un medico e non può fare diagnosi.",
+      "Però conosce i clienti e sa quando dovrebbe mandarli dal dottore.",
+      "Per un mal di gola di due giorni la farmacia basta.",
+      "Per la febbre alta di una settimana il farmacista stesso direbbe di andare dal medico.",
+      "Chi va subito al pronto soccorso aspetta sei ore per sentire la stessa cosa."
     ],
-    glossIt: ["mal di gola", "visita", "prescrive", "sciroppo"],
+    glossIt: ["il farmacista", "la diagnosi", "basta", "il pronto soccorso"],
     questions: [
-      { t: "truefalse", q: "Paolo ha qualcosa di grave.", a: 1 },
-      { t: "mcq", q: "Che cosa dovrebbe fare Paolo?", opts: ["Camminare molto", "Bere acqua e riposare", "Andare subito al lavoro"], a: 1 },
-      { t: "mcq", q: "Quando potrebbe tornare al lavoro?", opts: ["Lunedì", "Mercoledì", "Domenica"], a: 1 }
+      { t: "mcq", q: "Dove vanno prima molti italiani?", opts: ["Dal medico", "In farmacia", "Al pronto soccorso"], a: 1 },
+      { t: "truefalse", q: "Il farmacista può fare una diagnosi.", a: 1 },
+      { t: "mcq", q: "Che cosa direbbe il farmacista per una febbre alta di una settimana?", opts: ["Di riposare", "Di andare dal medico", "Di aspettare"], a: 1 }
     ]
   },
 

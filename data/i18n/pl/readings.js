@@ -4,24 +4,24 @@
 LINGUAI.addStrings("pl", {
 
   "read:r-a1-mattina": {
-    title: "Poranek Luki",
-    gloss: ["budzi się", "śniadanie", "pełny", "wita"]
+    title: "Kawę pije się na stojąco",
+    gloss: ["przy ladzie", "trwa", "dwa razy tyle", "obsługa"]
   },
   "read:r-a1-mercato": {
-    title: "Na sobotnim targu",
-    gloss: ["warzywniak", "daje w prezencie", "ciężkie", "torby"]
+    title: "Na targu się nie dotyka",
+    gloss: ["klient", "woreczek", "dojrzała", "niszczą"]
   },
   "read:r-a2-treno": {
-    title: "Spóźniony pociąg",
-    gloss: ["opóźnienie", "już odjechał", "pusty", "uprzedzić ją"]
+    title: "Z przyczyn technicznych",
+    gloss: ["głośnik", "zaprotestował", "wściekły", "rezygnacja"]
   },
   "read:r-a2-casa": {
-    title: "Dom dziadków",
-    gloss: ["ogród warzywny", "szedłem za nim", "zapach", "zostawaliśmy"]
+    title: "Niedzielny obiad",
+    gloss: ["obowiązek", "dania", "odmówić", "brakuje mi ich"]
   },
   "read:r-a2-medico": {
-    title: "U lekarza",
-    gloss: ["ból gardła", "bada", "przepisuje", "syrop"]
+    title: "Najpierw apteka",
+    gloss: ["farmaceuta", "diagnoza", "wystarczy", "SOR"]
   },
   "read:r-b1-affitto": {
     title: "Szukanie mieszkania w Mediolanie",

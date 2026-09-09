@@ -4,24 +4,24 @@
 LINGUAI.addStrings("es", {
 
   "read:r-a1-mattina": {
-    title: "La mañana de Luca",
-    gloss: ["se despierta", "desayuno", "lleno", "saluda"]
+    title: "El café se toma de pie",
+    gloss: ["en la barra", "dura", "el doble", "el servicio"]
   },
   "read:r-a1-mercato": {
-    title: "En el mercado del sábado",
-    gloss: ["frutero", "regala", "pesadas", "bolsas"]
+    title: "En el mercado no se toca",
+    gloss: ["el cliente", "la bolsa", "madura", "estropean"]
   },
   "read:r-a2-treno": {
-    title: "Un tren perdido",
-    gloss: ["retraso", "ya había salido", "vacío", "avisarla"]
+    title: "Por motivos técnicos",
+    gloss: ["el altavoz", "protestó", "furioso", "resignación"]
   },
   "read:r-a2-casa": {
-    title: "La casa de los abuelos",
-    gloss: ["huerto", "lo seguía", "olor", "nos quedábamos"]
+    title: "La comida del domingo",
+    gloss: ["una obligación", "los platos", "rechazar", "los echo de menos"]
   },
   "read:r-a2-medico": {
-    title: "En el médico",
-    gloss: ["dolor de garganta", "examina", "receta", "jarabe"]
+    title: "Primero la farmacia",
+    gloss: ["el farmacéutico", "el diagnóstico", "basta", "urgencias"]
   },
   "read:r-b1-affitto": {
     title: "Buscar piso en Milán",

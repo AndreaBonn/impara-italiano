@@ -4,24 +4,24 @@
 LINGUAI.addStrings("de", {
 
   "read:r-a1-mattina": {
-    title: "Lucas Morgen",
-    gloss: ["wacht auf", "Frühstück", "voll", "grüßt"]
+    title: "Kaffee trinkt man im Stehen",
+    gloss: ["an der Theke", "dauert", "das Doppelte", "die Bedienung"]
   },
   "read:r-a1-mercato": {
-    title: "Auf dem Samstagsmarkt",
-    gloss: ["Obsthändler", "schenkt", "schwer", "Taschen"]
+    title: "Auf dem Markt fasst man nichts an",
+    gloss: ["der Kunde", "die Tüte", "reif", "ruinieren"]
   },
   "read:r-a2-treno": {
-    title: "Ein verpasster Zug",
-    gloss: ["Verspätung", "war schon abgefahren", "leer", "sie zu benachrichtigen"]
+    title: "Aus technischen Gründen",
+    gloss: ["der Lautsprecher", "hat protestiert", "wütend", "Resignation"]
   },
   "read:r-a2-casa": {
-    title: "Das Haus der Großeltern",
-    gloss: ["Gemüsegarten", "ich folgte ihm", "Duft", "wir blieben"]
+    title: "Das Sonntagsessen",
+    gloss: ["eine Pflicht", "die Gänge", "ablehnen", "sie fehlen mir"]
   },
   "read:r-a2-medico": {
-    title: "Beim Arzt",
-    gloss: ["Halsschmerzen", "untersucht", "verschreibt", "Hustensaft"]
+    title: "Zuerst die Apotheke",
+    gloss: ["der Apotheker", "die Diagnose", "reicht", "die Notaufnahme"]
   },
   "read:r-b1-affitto": {
     title: "Wohnungssuche in Mailand",

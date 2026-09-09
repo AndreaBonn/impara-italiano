@@ -184,7 +184,10 @@
          regułę, tu ucho, i jedno nie zastępuje drugiego. */
       '<div class="list-row" style="margin-top:24px"><span class="list-row__main"><b>' +
       esc(t("sound.title")) + "</b><span>" + esc(t("sound.hubHint")) + "</span></span>" +
-      '<button class="btn btn--ghost btn--sm js-sounds">' + esc(t("sound.open")) + "</button></div>");
+      '<button class="btn btn--ghost btn--sm js-sounds">' + esc(t("sound.open")) + "</button></div>" +
+      '<div class="list-row" style="margin-top:12px"><span class="list-row__main"><b>' +
+      esc(t("read.title")) + "</b><span>" + esc(t("read.hubHint")) + "</span></span>" +
+      '<button class="btn btn--ghost btn--sm js-read">' + esc(t("read.open")) + "</button></div>");
 
     el().querySelectorAll(".js-topic").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -192,6 +195,7 @@
       });
     });
     el().querySelector(".js-sounds").addEventListener("click", function () { App.go("suoni"); });
+    el().querySelector(".js-read").addEventListener("click", function () { App.go("lettura"); });
   };
 
   /**

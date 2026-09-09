@@ -46,6 +46,7 @@ run("curriculum-index.js");
 readdirSync(CORE).filter(f => /^[abc]\d-\d+\.js$/.test(f)).sort().forEach(run);
 run("conversations.js");
 run("phonetics.js");
+run("readings.js");
 
 /* ---------------- Zbieranie ---------------- */
 /** primary: głos główny · other: głos rozmówcy (tylko jeśli nigdzie indziej nie występuje) */
@@ -111,6 +112,13 @@ levels.forEach(function (lv) {
    te dźwięki — nie jest tu awaryjnym wyjściem, tylko końcem ćwiczenia. */
 (sandbox.PHONETICS || []).forEach(function (zbior) {
   (zbior.pairs || []).forEach(function (para) { addP(para.a); addP(para.b); });
+});
+
+/* Czytanki: KAŻDE zdanie osobno. Nagranie całego tekstu ważyłoby więcej
+   niż wszystkie zdania razem i nie dałoby się go użyć do dyktanda; słuchanie
+   ciągłe skleja te same pliki przez Audio2.speakSequence. */
+(sandbox.READINGS || []).forEach(function (r) {
+  (r.sentences || []).forEach(addP);
 });
 
 EXTRA.forEach(addP);

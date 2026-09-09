@@ -157,12 +157,26 @@
     });
   }
 
+  /**
+   * Teksty do czytania. Zdania i pytania są po włosku i zostają w
+   * warstwie neutralnej; stąd przychodzi tytuł i glosy trudnych słów.
+   */
+  function applyReadings(lang) {
+    (global.READINGS || []).forEach(function (r) {
+      var p = get(lang, "read:" + r.id);
+      if (!p) return;
+      copy(r, p, ["title"]);
+      if (p.gloss) r.gloss = p.gloss;
+    });
+  }
+
   function applyStrings(lang) {
     var reg = global.Core && global.Core.registry;
     if (reg) reg.levels.forEach(function (lv) { applyLevel(lv, lang); });
     (global.CONVERSATIONS || []).forEach(function (c) { applyConversation(c, lang); });
     applyRef(lang);
     applyPhonetics(lang);
+    applyReadings(lang);
   }
 
   /* ═══════════════════════════════════════════════════════════

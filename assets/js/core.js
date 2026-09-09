@@ -550,7 +550,7 @@
   }
 
   /* Pliki tekstów wczytywane od razu przy starcie, niezależne od poziomu. */
-  var EAGER_FILES = ["curriculum-index.js", "conversations.js", "grammar-reference.js", "phonetics.js"];
+  var EAGER_FILES = ["curriculum-index.js", "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js"];
 
   /**
    * Zmienia język wyjaśnień. Warstwa neutralna zostaje w pamięci taka, jaka jest:

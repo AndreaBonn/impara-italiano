@@ -60,7 +60,7 @@ run("assets/js/i18n.js");
 const dataFiles = readdirSync(join(ROOT, "data", "core"))
   .filter(f => /^[abc]\d-\d+\.js$/.test(f))
   .sort();
-const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js", "phonetics.js"];
+const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js"];
 ALL.forEach(f => run(join("data", "core", f)));
 /* Migawka warstwy neutralnej ZANIM nakładka wpisze teksty ucznia: po
    applyStrings te same obiekty niosą już tłumaczenia i skan nic nie znaczy. */
@@ -68,7 +68,8 @@ const neutralneDane = JSON.parse(JSON.stringify({
   levels: levels,
   conversations: sandbox.CONVERSATIONS || [],
   grammar: (sandbox.GRAMMAR_REF || []).map(s => ({ items: (s.items || []).map(i => ({ id: i.id, cefr: i.cefr })) })),
-  phonetics: sandbox.PHONETICS || []
+  phonetics: sandbox.PHONETICS || [],
+  readings: (sandbox.READINGS || []).map(r => ({ id: r.id, titleIt: r.titleIt, sentences: r.sentences, questions: r.questions }))
 }));
 
 ALL.forEach(f => run(join("data", "i18n", LANG, f)));
@@ -189,6 +190,38 @@ const gramIds = new Set();
     gramIds.add(it.id);
     if (!it.body) errors.push(`Hasło ${it.id}: brak treści`);
   });
+});
+
+/* ---------------- Czytanki ---------------- */
+const readIds = new Set();
+(sandbox.READINGS || []).forEach(r => {
+  if (readIds.has(r.id)) errors.push(`Duplikat id czytanki: ${r.id}`);
+  readIds.add(r.id);
+  if (!Array.isArray(r.sentences) || r.sentences.length < 3) {
+    errors.push(`Czytanka ${r.id}: mniej niż trzy zdania`);
+  }
+  if (!r.titleIt) errors.push(`Czytanka ${r.id}: brak titleIt`);
+  if (!r.title) errors.push(`Czytanka ${r.id}: brak tytułu w nakładce`);
+  /* Glosy łączą się PO INDEKSIE, więc różna długość to cicha dziura:
+     ostatnie słowo dostałoby tłumaczenie poprzedniego albo żadne. */
+  if (r.glossIt && (!r.gloss || r.gloss.length !== r.glossIt.length)) {
+    errors.push(`Czytanka ${r.id}: ${(r.glossIt || []).length} słów, ${(r.gloss || []).length} glos`);
+  }
+  if (!Array.isArray(r.questions) || !r.questions.length) {
+    errors.push(`Czytanka ${r.id}: brak pytań`);
+  }
+  (r.questions || []).forEach((q, i) => checkExercise(q, `czytanka ${r.id}#${i + 1}`));
+  if (r.tag) usedTags.push({ where: `czytanka ${r.id}`, tag: r.tag });
+});
+
+/* Pary minimalne */
+(sandbox.PHONETICS || []).forEach(z => {
+  if (!Array.isArray(z.pairs) || !z.pairs.length) errors.push(`Zbiór ${z.id}: brak par`);
+  (z.pairs || []).forEach((para, i) => {
+    if (!para.a || !para.b) errors.push(`Zbiór ${z.id}, para ${i}: brak wyrazu`);
+    if (para.a === para.b) errors.push(`Zbiór ${z.id}, para ${i}: dwa razy ten sam wyraz`);
+  });
+  if (z.tag) usedTags.push({ where: `zbiór ${z.id}`, tag: z.tag });
 });
 
 /* ---------------- Warstwa neutralna: żadnego języka ucznia ----------------

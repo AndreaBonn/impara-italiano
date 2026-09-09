@@ -140,3 +140,25 @@ test("cyfra nie działa, gdy uczeń pisze w polu tekstowym", async ({ page }) =>
   await page.locator("#searchQ").type("1");
   await expect(page.locator("#searchQ"), "cyfra ma wejść do pola, nie wybrać opcji").toHaveValue("1");
 });
+
+/* Pasek unosi się nad treścią, więc może przykryć to, co jest pod polem —
+   a pod polem stoi zwykle przycisk „sprawdź". Pierwsza wersja tak właśnie
+   robiła i uczeń nie mógł zatwierdzić dyktanda. */
+test("pasek znaków nie zasłania przycisku sprawdzania", async ({ page }) => {
+  await page.goto("/index.html#/lettura?id=r-a1-mattina&mode=dictation");
+  await page.waitForSelector(".exq .js-in");
+  await page.locator(".exq .js-in").click();
+  await page.locator(".keybar").waitFor();
+
+  const kolizja = await page.evaluate(() => {
+    const bar = document.querySelector(".keybar").getBoundingClientRect();
+    const btn = document.querySelector(".exq .js-check").getBoundingClientRect();
+    const nachodzi = !(bar.right < btn.left || bar.left > btn.right ||
+                       bar.bottom < btn.top || bar.top > btn.bottom);
+    return { nachodzi, bar: Math.round(bar.top), btn: Math.round(btn.top) };
+  });
+  expect(kolizja.nachodzi, `pasek (${kolizja.bar}) na przycisku (${kolizja.btn})`).toBe(false);
+
+  /* I naprawdę da się kliknąć: to jest właściwy dowód, nie geometria. */
+  await page.locator(".exq .js-check").click({ timeout: 5000 });
+});

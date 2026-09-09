@@ -66,13 +66,30 @@
     return !!el.closest(".exq, #srsBox, #main");
   }
 
+  /**
+   * Pasek staje NAD polem, nie pod nim.
+   *
+   * Pod polem stoi zwykle przycisk „sprawdź", a pasek jest elementem
+   * unoszącym się: przykrywał go i uczeń nie mógł zatwierdzić odpowiedzi,
+   * dopóki nie kliknął gdzieś obok. Nad polem jest prompt i etykieta,
+   * czyli nic klikalnego. Gdy u góry nie ma miejsca (pole tuż pod
+   * krawędzią okna), wracamy pod spód — tam brak miejsca jest gorszy niż
+   * zasłonięty przycisk.
+   */
+  var ODSTEP = 6;
+
   function show(input) {
     if (!bar) { bar = buildBar(); document.body.appendChild(bar); }
     forInput = input;
-    var r = input.getBoundingClientRect();
-    bar.style.left = Math.max(8, Math.min(r.left, global.innerWidth - 260)) + "px";
-    bar.style.top = (r.bottom + global.scrollY + 6) + "px";
     bar.hidden = false;
+
+    var r = input.getBoundingClientRect();
+    var h = bar.offsetHeight || 56;
+    var nadMiejsce = r.top - h - ODSTEP;
+    var gora = nadMiejsce >= 0 ? nadMiejsce : r.bottom + ODSTEP;
+
+    bar.style.left = Math.max(8, Math.min(r.left, global.innerWidth - bar.offsetWidth - 8)) + "px";
+    bar.style.top = (gora + global.scrollY) + "px";
   }
 
   function hide() {

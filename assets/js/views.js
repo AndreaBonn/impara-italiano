@@ -807,6 +807,26 @@
       '</span></span><span class="chip ' + (ok ? "chip--green" : "") + '">' + esc(chip) + "</span></div>";
   }
 
+  /**
+   * Wiersz o pracy bez sieci.
+   *
+   * Trzy stany, nie dwa: działa, nie działa mimo http(s), i „nie z tego
+   * miejsca". Ostatni jest najczęstszy — kurs otwarty podwójnym
+   * kliknięciem chodzi z file://, gdzie service worker jest zabroniony,
+   * a to nie jest usterka do zgłaszania, tylko cena otwierania z dysku.
+   */
+  function offlineRow() {
+    var http = /^https?:$/.test(global.location.protocol);
+    var wspiera = "serviceWorker" in global.navigator;
+    var dziala = http && wspiera && !!global.navigator.serviceWorker.controller;
+    return supportRow(
+      t("set.offline"),
+      t(http ? "set.offlineUse" : "set.offlineFile"),
+      dziala,
+      t(dziala ? "set.works" : http ? "set.offlineWaiting" : "set.offlineNeedsServer")
+    );
+  }
+
   Views.impostazioni = function () {
     var st = Core.state.settings;
     var voices = Audio2.italianVoices();
@@ -846,6 +866,7 @@
       supportRow(t("set.stt"), t("set.sttUse"), Audio2.sttSupported,
                  t(Audio2.sttSupported ? "set.works" : "set.absentTyping")) +
       supportRow(t("set.italianVoices"), t("set.fallbackOnly"), false, String(voices.length)) +
+      offlineRow() +
       "</div></div>");
 
     var src = el().querySelector(".js-source");

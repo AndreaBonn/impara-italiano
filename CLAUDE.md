@@ -121,6 +121,32 @@ uv run --script scripts/build_audio.py          # tworzy tylko brakujące pliki
 Nazwy oparte na skrócie treści oznaczają, że niezmienione zdania zachowują swój plik:
 kolejne przebiegi nie generują ruchu w gicie.
 
+## Praca bez sieci
+
+`sw.js` (w katalogu głównym, bo tam sięga scope) plus `manifest.webmanifest`.
+Dwie strategie i obie mają powód:
+
+- **Nagrania** — cache-first, bez unieważniania. Nazwa pliku jest skrótem treści zdania,
+  więc plik pod danym adresem nigdy nie zmienia zawartości; poprawione zdanie dostaje
+  po prostu inny adres. Sierotę po starym zdaniu sprząta `sweepAudio()` przy aktywacji,
+  porównując pamięć z `data/audio-index.js`.
+- **Kod i dane** — network-first, pamięć jako siatka pod spodem. **Nie zamieniaj tego na
+  cache-first.** Projekt nie ma kroku budowania, więc pliki nie mają skrótu w nazwie i
+  jedyną wersją jest `SW_VERSION` podnoszone ręcznie. Zapomniane podniesienie przy
+  cache-first zamraża ucznia na starym kodzie: on tego nie zauważy ani nie odkręci,
+  a my nie zobaczymy tego w żadnym logu.
+
+Rejestracja idzie **tylko po http(s)** (`registerWorker()` w `app.js`). Z `file://`
+rejestracja rzuca wyjątkiem, a otwieranie kursu z dysku jest wymogiem projektu:
+strażnik stoi na protokole, nie w `try/catch`, i żadna ścieżka kodu nie zakłada, że
+worker istnieje. Zakładka Ustawienia pokazuje, w którym z trzech stanów jest kurs.
+
+Cudzych domen worker nie dotyka w ogóle (fonty Google): nieprzejrzysta odpowiedź w
+pamięci to rozmiar bez możliwości sprawdzenia treści.
+
+**Po dopisaniu pliku do `assets/js/` albo `data/core/` dopisz go do `PRECACHE` w `sw.js`
+i podnieś `SW_VERSION`.** Inaczej pierwszy start bez sieci padnie na brakującym skrypcie.
+
 ## Kontrola jakości
 
 ```bash

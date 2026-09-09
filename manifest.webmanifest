@@ -1,0 +1,19 @@
+{
+  "name": "Impara l'Italiano",
+  "short_name": "Italiano",
+  "description": "Kurs języka włoskiego od A1 do C2, z nagraniami i systemem powtórek. Działa bez sieci.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fdf6f3",
+  "theme_color": "#b72e42",
+  "lang": "pl",
+  "dir": "ltr",
+  "categories": ["education"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

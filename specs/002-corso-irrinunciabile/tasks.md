@@ -212,6 +212,30 @@ conferma il ritmo dichiarato.
 | T124 | T123 | O2 DoD 2 | Copertura del lookup sui testi nuovi | `scripts/check_lookup.mjs` | 3h | Il gate resta sopra la soglia di T030 anche sui 12 testi nuovi; se scende, si estende `glossIt` finché non risale | medio |
 | T125 | T124 | O2 DoD 6 | Secondo scaglione, stessi passi da T120 a T124 | come sopra | 53h (di cui 50h contenuto) | Come sopra; il conteggio arriva a 40 testi | medio |
 
+### Esito del primo scaglione (misurato)
+
+12 testi nuovi, da A2 a C1, 8 frasi ciascuno, 3-4 domande in italiano. Il conteggio
+passa da 12 a 24 testi. Rilettura dell'italiano fatta prima della registrazione (Q1=B),
+nessuna correzione richiesta dal revisore.
+
+| Voce | Valore |
+|---|---|
+| Copertura del lookup | 100% su tutti e 24 i testi (era 100% su 12, mai scesa sotto la soglia dell'85%) |
+| Registrazioni | 333 file, **3,77 MB** |
+| Test | 347 unit, 139 DOM, verdi |
+
+**Il delta audio sfora il tetto di 2,5 MB dichiarato in T123**, e il motivo si legge nella
+composizione: 96 frasi contro 274 parole singole, perché ogni voce di glossario e ogni
+parola del lookup ha la propria registrazione, pronunciata sulla scheda. La stima
+contava le frasi. Per il secondo scaglione il tetto va rifatto su questa base, non
+sulla precedente.
+
+**Difetti trovati dal gate del lookup, non dal test suite** (entrambi producevano
+non-parole): `restare` letto come `re` + `stare` dava «restanno»; `ottenere`, il cui
+prefisso è assimilato, si coniugava come «ottene». Corretti in `verbs.js` con lista di
+esclusione e mappa di ereditarietà esplicita, più due regole nominali in `lemma.js`
+(`-i → -io`, `-che → -co`). Test di regressione in `tests/unit/verbs-prefix.test.mjs`.
+
 ## F10 - O1 simulatore CILS (66h codice + 50h contenuto)
 
 **T130 è bloccante per l'intera fase** (R8). Le fonti secondarie non concordano nemmeno sul

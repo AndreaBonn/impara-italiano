@@ -727,13 +727,22 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
    bo pole bywa w różnych widokach i nie ma jednego rodzica do zaczepienia. */
 .keybar{
   position:absolute;z-index:100;display:flex;gap:4px;
+  /* Zawija się i mieści w ekranie. Dziesięć klawiszy po 44px to ~500px,
+     więc na telefonie pasek wystawał poza stronę i spychał ją w bok —
+     akurat tam, gdzie jest najbardziej potrzebny, bo akcentów nie ma na
+     klawiaturze ekranowej. Zmierzone: +436px przy szerokości 280px. */
+  flex-wrap:wrap;max-width:calc(100vw - 24px);
   padding:6px;border-radius:var(--r-m);
   background:var(--paper-2);border:2px solid var(--ink-faint);box-shadow:var(--shadow-m);
 }
 .keybar__k{
   min-width:44px;min-height:44px;
   border:1px solid var(--line-strong);border-radius:var(--r-s);
-  background:var(--paper-1);color:var(--ink);
+  /* Było `var(--paper-1)`, a takiego tokenu nie ma w palecie: deklaracja
+     jest nieprawidłowa, więc klawisze nie miały własnego tła i zlewały
+     się z paskiem. Nic tego nie zgłaszało, bo CSS po prostu pomija
+     regułę, której nie rozumie. */
+  background:var(--paper);color:var(--ink);
   font-family:inherit;font-size:1.05rem;font-weight:600;cursor:pointer;
 }
 .keybar__k:hover{background:var(--paper-3);border-color:var(--rosa-deep);}
@@ -838,3 +847,47 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   .rail,.rail-toggle,.toast-stack{display:none;}
   .main{padding:0;max-width:100%;}
 }
+
+/* ============================================================
+   Dotknięcie słowa w czytance (views-lookup.js)
+   ============================================================ */
+
+/* Słowo w tekście. Wygląda jak tekst, zachowuje się jak przycisk:
+   podkreślenie kropkowane mówi „da się dotknąć" bez rozbijania rytmu
+   akapitu, którego kolorowanie każdego wyrazu by nie przetrwało. */
+.lk-word{
+  font:inherit;color:inherit;background:none;border:0;padding:0 1px;margin:0;
+  cursor:pointer;border-radius:3px;
+  text-decoration:underline dotted color-mix(in oklch, var(--ink-faint) 60%, transparent);
+  text-underline-offset:4px;
+}
+.lk-word:hover{background:var(--paper-3);text-decoration-color:var(--rosa-deep);}
+.lk-word:focus-visible{outline:2px solid var(--rosa-deep);outline-offset:2px;}
+
+/* Wiersz tekstu ma line-height 2.1 właśnie po to: cel dotknięcia rośnie
+   w pionie do ~44px bez rozstrzeliwania liter w poziomie. Sam padding na
+   wyrazie by tego nie dał, bo wyrazy stoją obok siebie w zdaniu. */
+@media (pointer:coarse){
+  .lk-text{line-height:2.4;}
+}
+
+.lk-card{
+  display:block;margin:10px 0;padding:14px 16px;
+  background:var(--paper-2);border:1px solid var(--rosa-deep);border-radius:14px;
+  box-shadow:0 6px 22px rgba(0,0,0,.10);
+  max-width:min(460px,100%);
+}
+.lk-card__head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.lk-card__lemma{font-family:var(--display);font-size:1.14rem;font-weight:600;}
+.lk-card__x{
+  margin-left:auto;min-width:44px;min-height:44px;
+  background:none;border:0;cursor:pointer;color:var(--ink-soft);font-size:1rem;border-radius:10px;
+}
+.lk-card__x:hover{background:var(--paper-sunk);color:var(--ink);}
+.lk-card__x:focus-visible{outline:2px solid var(--rosa-deep);outline-offset:2px;}
+.lk-card__lab{display:block;font-size:.86rem;font-weight:600;color:var(--ink-soft);}
+.lk-card__lab .field{margin-top:5px;width:100%;}
+.lk-card__row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.lk-card__from,.lk-card__guess{color:var(--ink-soft);font-size:.86rem;margin:0;}
+.lk-card__miss{margin:0 0 8px;font-size:.94rem;}
+.lk-card__ctx{color:var(--ink-soft);font-size:.84rem;margin:6px 0 0;}

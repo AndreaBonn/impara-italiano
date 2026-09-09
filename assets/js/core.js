@@ -37,7 +37,13 @@
          zmienia znaczenia. Bump zamiast tego odrzuciłby każdy plik
          wyeksportowany przez ucznia do tej pory. */
       errors: {},         // klucz ćwiczenia -> karta błędu
-      gsrs: {},           // id zagadnienia z GRAMMAR_REF -> harmonogram
+      /* Był tu `gsrs` — harmonogram per zagadnienie gramatyczne. Zadeklarowany
+         przy silniku adaptacyjnym i nigdy przez nikogo nie zapisany ani nie
+         odczytany; jedyne dotknięcie było w teście, który wpisywał go ręcznie,
+         żeby sprawdzić trwałość. Pusty kontener w SHAPE to kontrakt, którego
+         nikt nie honoruje, a FSRS go nie potrzebuje: planuje karty, nie tematy.
+         Usunięcie jest bezpieczne w obie strony, bo merge() pomija klucze
+         spoza domyślnych, więc starszy zapis z tym polem wczytuje się dalej. */
       drills: {},         // id generatora -> licznik podejść
       session: {},        // skład i postęp dzisiejszej sesji
       writing: {},        // id zadania -> wypracowanie ucznia
@@ -407,6 +413,11 @@
    * Wydzielony z gradeCard, bo quaderno błędów (errors.js) prowadzi drugą
    * talię tymi samymi regułami. Dwie kopie tej arytmetyki rozjechałyby się
    * przy pierwszej zmianie progu — i to po cichu, bo obie dalej działają.
+   *
+   * OD F1 SŁUŻY JUŻ TYLKO QUADERNO BŁĘDÓW. Talia słownictwa jest na FSRS
+   * (patrz gradeCard niżej). Zostawione tutaj, a nie przeniesione do
+   * errors.js, bo to nadal arytmetyka harmonogramu, a nie logika quaderna,
+   * i nadal wisi w publicznym API jako `Core.schedule`.
    */
   function schedule(c, q) {
     if (q < 3) {
@@ -425,10 +436,74 @@
     return c;
   }
 
+  /* ---------------- FSRS na talii słownictwa ----------------
+
+     Talia słownictwa przechodzi na FSRS, quaderno błędów zostaje na SM-2
+     wyżej. To nie jest niekonsekwencja, tylko wniosek z pomiaru: errors.js
+     kasuje kartę przy `ok && reps >= 2` (GRADUATE_REPS), a gałąź
+     `interval * ef` w `schedule` zaczyna się od `reps >= 3`. Karta z
+     quaderno NIGDY tam nie dochodzi — `ef` jest tam zapisywane i nigdy
+     czytane. Podmiana algorytmu w miejscu, którego nie widać, powiększa
+     powierzchnię bez żadnego zysku.
+
+     Skala ocen w interfejsie została ta sama (0/3/4/5), bo to napisy,
+     które uczeń już zna, i zmiana ich znaczenia przy okazji zmiany silnika
+     zmieszałaby dwie rzeczy w jednym kroku.
+     ------------------------------------------------------- */
+
+  var OCENA_FSRS = { 0: 1, 3: 2, 4: 3, 5: 4 };   // znowu / trudne / dobrze / łatwe
+
+  /**
+   * Przenosi kartę SM-2 na tory FSRS przy PIERWSZEJ powtórce po zmianie.
+   *
+   * Migracji hurtem nie ma i nie ma jej być: przeliczenie całej talii przy
+   * starcie przesunęłoby terminy kart, których uczeń dziś nie dotknie, a
+   * numer schematu zostaje przy 2 właśnie dlatego, że żadne istniejące pole
+   * nie zmienia znaczenia (R1). `ef` staje się balastem na starych kartach:
+   * nie czytamy go poza tym jednym przeliczeniem.
+   *
+   * Przełożenie jest przybliżone i inne być nie może — SM-2 nie przechowuje
+   * niczego, z czego dałoby się odtworzyć stabilność. Bierzemy to, co niesie
+   * sens: dotychczasowy odstęp JEST oszacowaniem stabilności (tyle dni karta
+   * wytrzymywała), a `ef` odwzorowuje się na trudność odwrotnie, bo wysokie
+   * `ef` to karta łatwa, a wysoka trudność FSRS to karta trudna.
+   */
+  function naFsrs(c) {
+    if (typeof c.s === "number" && typeof c.d === "number") return c;
+    if (!c.reps) return c;                     // nowa karta startuje w FSRS od zera
+    var interval = c.interval || 1;
+    var ef = typeof c.ef === "number" ? c.ef : 2.5;
+    c.st = "review";
+    c.step = null;
+    c.s = Math.max(interval, 0.001);
+    c.d = Math.min(Math.max(10 - (ef - 1.3) * 7.5, 1), 10);
+    c.last = (c.due || Date.now()) - interval * DAY;
+    return c;
+  }
+
   function gradeCard(key, q) {
     var c = state.srs[key];
     if (!c) return null;
-    schedule(c, q);
+
+    naFsrs(c);
+    var wynik = global.Fsrs.powtorz(
+      typeof c.s === "number" ? c : null,
+      OCENA_FSRS[q] || 3,
+      Date.now()
+    );
+
+    c.st = wynik.st;
+    c.step = wynik.step;
+    c.s = wynik.s;
+    c.d = wynik.d;
+    c.due = wynik.due;
+    c.last = wynik.last;
+    /* `reps`, `interval` i `lapses` zostają przy swoim znaczeniu, bo czyta je
+       widok słownika i statystyki. `interval` w dniach, jak dotąd. */
+    if (q === 0) { c.reps = 0; c.lapses = (c.lapses || 0) + 1; }
+    else c.reps = (c.reps || 0) + 1;
+    c.interval = Math.max(0, Math.round((wynik.due - wynik.last) / DAY));
+
     save();
     return c;
   }
@@ -678,7 +753,7 @@
     schema: "number", createdAt: "number", xp: "number", minutes: "number",
     lessons: "object", srs: "object", saved: "object",
     settings: "object", streak: "object", stats: "object",
-    errors: "object", gsrs: "object", drills: "object",
+    errors: "object", drills: "object",
     session: "object", writing: "object"
   };
 

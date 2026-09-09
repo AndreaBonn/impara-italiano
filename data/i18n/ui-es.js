@@ -198,6 +198,24 @@ LINGUAI.addUI("es", {
   "search.kind.talk": "conversación",
   "keys.barLabel": "Caracteres italianos",
 
+  /* ---------------- Prueba de nivel ---------------- */
+  "place.kicker": "NIVEL",
+  "place.title": "Por dónde empezar",
+  "place.intro": "Una prueba corta, para no ir pasando cien lecciones que ya no necesitas.",
+  "place.how": "Unos {n} ejercicios en tres rondas. La prueba salta entre niveles en vez de empezar por A1, así que termina rápido aunque sepas bastante.",
+  "place.previous": "Resultado anterior: {level}. Entonces se dieron por hechas {n} lecciones.",
+  "place.start": "Empezar la prueba",
+  "place.running": "Ve con calma. Si no lo sabes, arriésgate: eso también es información.",
+  "place.loading": "Cargando ejercicios de todos los niveles…",
+  "place.progress": "Ejercicio {i} · nivel {level}",
+  "place.next": "Siguiente",
+  "place.noItems": "El nivel {level} no tiene ejercicios aptos para la prueba.",
+  "place.result": "Tu nivel es {level}. Has acertado {hit} de {asked}.",
+  "place.willMark": "Aceptar esto marcará como hechas {n} lecciones de niveles inferiores. El nivel {level} te queda por delante.",
+  "place.accept": "Empezar en {level}",
+  "place.fromScratch": "Prefiero empezar desde el principio",
+  "place.applied": "{n} lecciones marcadas. Sin puntos por ellas: no las has hecho.",
+
   /* ---------------- Distinguir sonidos ---------------- */
   "sound.kicker": "OÍDO",
   "sound.title": "Pares mínimos",

@@ -198,6 +198,24 @@ LINGUAI.addUI("fr", {
   "search.kind.talk": "conversation",
   "keys.barLabel": "Caractères italiens",
 
+  /* ---------------- Test de niveau ---------------- */
+  "place.kicker": "NIVEAU",
+  "place.title": "Par où commencer",
+  "place.intro": "Un test court, pour ne pas cliquer à travers cent leçons dont tu n'as plus besoin.",
+  "place.how": "Environ {n} exercices en trois manches. Le test saute d'un niveau à l'autre au lieu de partir de A1, donc il se termine vite même si tu sais déjà beaucoup.",
+  "place.previous": "Résultat précédent : {level}. {n} leçons avaient alors été validées.",
+  "place.start": "Commencer le test",
+  "place.running": "Prends ton temps. Si tu ne sais pas, devine : c'est aussi une information.",
+  "place.loading": "Chargement des exercices de tous les niveaux…",
+  "place.progress": "Exercice {i} · niveau {level}",
+  "place.next": "Suivant",
+  "place.noItems": "Le niveau {level} n'a pas d'exercices utilisables pour le test.",
+  "place.result": "Ton niveau est {level}. Tu as {hit} bonnes réponses sur {asked}.",
+  "place.willMark": "Accepter ce résultat validera {n} leçons des niveaux inférieurs. Le niveau {level} reste devant toi.",
+  "place.accept": "Commencer à {level}",
+  "place.fromScratch": "Je préfère partir du début",
+  "place.applied": "{n} leçons validées. Aucun point pour elles : tu ne les as pas faites.",
+
   /* ---------------- Distinguer les sons ---------------- */
   "sound.kicker": "OREILLE",
   "sound.title": "Paires minimales",

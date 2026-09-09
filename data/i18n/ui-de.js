@@ -196,6 +196,24 @@ LINGUAI.addUI("de", {
   "search.kind.talk": "Gespräch",
   "keys.barLabel": "Italienische Zeichen",
 
+  /* ---------------- Einstufungstest ---------------- */
+  "place.kicker": "NIVEAU",
+  "place.title": "Wo anfangen",
+  "place.intro": "Ein kurzer Test, damit du dich nicht durch hundert Lektionen klickst, die du nicht mehr brauchst.",
+  "place.how": "Etwa {n} Aufgaben in drei Runden. Der Test springt zwischen den Niveaus, statt bei A1 zu beginnen, und ist deshalb auch dann schnell vorbei, wenn du schon viel kannst.",
+  "place.previous": "Letztes Ergebnis: {level}. Damals wurden {n} Lektionen als erledigt markiert.",
+  "place.start": "Test starten",
+  "place.running": "Lass dir Zeit. Wenn du es nicht weißt, rate — auch das ist eine Information.",
+  "place.loading": "Aufgaben aus allen Niveaus werden geladen…",
+  "place.progress": "Aufgabe {i} · Niveau {level}",
+  "place.next": "Weiter",
+  "place.noItems": "Niveau {level} hat keine für den Test geeigneten Aufgaben.",
+  "place.result": "Dein Niveau ist {level}. Richtig: {hit} von {asked}.",
+  "place.willMark": "Wenn du das annimmst, gelten {n} Lektionen niedrigerer Niveaus als erledigt. Niveau {level} liegt weiterhin vor dir.",
+  "place.accept": "Bei {level} anfangen",
+  "place.fromScratch": "Lieber von vorn",
+  "place.applied": "{n} Lektionen markiert. Punkte gibt es dafür nicht — du hast sie nicht gemacht.",
+
   /* ---------------- Laute unterscheiden ---------------- */
   "sound.kicker": "GEHÖR",
   "sound.title": "Minimalpaare",

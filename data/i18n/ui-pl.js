@@ -196,6 +196,24 @@ LINGUAI.addUI("pl", {
   "search.kind.talk": "rozmowa",
   "keys.barLabel": "Znaki włoskie",
 
+  /* ---------------- Test poziomujący ---------------- */
+  "place.kicker": "POZIOM",
+  "place.title": "Od czego zacząć",
+  "place.intro": "Krótki test, żeby nie przeklikiwać stu lekcji, których już nie potrzebujesz.",
+  "place.how": "Około {n} zadań w trzech rundach. Test skacze po poziomach zamiast iść od A1, więc kończy się szybko także wtedy, gdy umiesz sporo.",
+  "place.previous": "Poprzedni wynik: {level}. Zaliczono wtedy {n} lekcji.",
+  "place.start": "Zacznij test",
+  "place.running": "Odpowiadaj spokojnie. Jeśli nie wiesz, zgaduj — to też jest informacja.",
+  "place.loading": "Wczytuję zadania ze wszystkich poziomów…",
+  "place.progress": "Zadanie {i} · poziom {level}",
+  "place.next": "Dalej",
+  "place.noItems": "Poziom {level} nie ma zadań nadających się do testu.",
+  "place.result": "Twój poziom to {level}. Trafionych {hit} z {asked}.",
+  "place.willMark": "Przyjęcie wyniku oznaczy jako zaliczone {n} lekcji z niższych poziomów. Poziom {level} zostaje do zrobienia.",
+  "place.accept": "Zacznij od {level}",
+  "place.fromScratch": "Wolę od początku",
+  "place.applied": "Oznaczono {n} lekcji. Punktów za nie nie ma — nie zrobiłeś ich.",
+
   /* ---------------- Rozróżnianie dźwięków ---------------- */
   "sound.kicker": "SŁUCH",
   "sound.title": "Pary minimalne",

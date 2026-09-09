@@ -191,6 +191,24 @@ LINGUAI.addUI("en", {
   "search.kind.talk": "conversation",
   "keys.barLabel": "Italian characters",
 
+  /* ---------------- Placement test ---------------- */
+  "place.kicker": "LEVEL",
+  "place.title": "Where to start",
+  "place.intro": "A short test, so you do not click through a hundred lessons you no longer need.",
+  "place.how": "About {n} items in three rounds. The test jumps between levels instead of starting at A1, so it finishes quickly even if you already know a lot.",
+  "place.previous": "Previous result: {level}. It marked {n} lessons as done.",
+  "place.start": "Start the test",
+  "place.running": "Take your time. If you do not know, guess — that is information too.",
+  "place.loading": "Loading items from every level…",
+  "place.progress": "Item {i} · level {level}",
+  "place.next": "Next",
+  "place.noItems": "Level {level} has no items suitable for the test.",
+  "place.result": "Your level is {level}. You got {hit} of {asked}.",
+  "place.willMark": "Accepting this marks {n} lessons from lower levels as done. Level {level} stays ahead of you.",
+  "place.accept": "Start at {level}",
+  "place.fromScratch": "I would rather start from the beginning",
+  "place.applied": "{n} lessons marked. No points for them — you did not do them.",
+
   /* ---------------- Hearing the difference ---------------- */
   "sound.kicker": "EAR",
   "sound.title": "Minimal pairs",

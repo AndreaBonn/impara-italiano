@@ -853,6 +853,7 @@
       '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.backup") + "</h3>" +
       '<p style="color:var(--ink-soft);font-size:.9rem">' + t("set.backupHint") + "</p>" +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
+      '<button class="btn btn--ghost btn--sm js-place">' + t("place.title") + "</button>" +
       '<button class="btn btn--green btn--sm js-export">' + t("set.export") + "</button>" +
       '<label class="btn btn--ghost btn--sm" style="cursor:pointer">' + t("set.import") + '<input type="file" accept="application/json" class="js-import" hidden></label>' +
       '<button class="btn btn--ghost btn--sm js-reset" style="color:var(--ko);border-color:var(--ko)">' + t("set.reset") + "</button></div></div>" +
@@ -883,6 +884,7 @@
       Audio2.speak("Ciao! Sono la tua voce italiana. Andiamo a studiare insieme.");
     });
 
+    el().querySelector(".js-place").addEventListener("click", function () { App.go("piazzamento"); });
     el().querySelector(".js-export").addEventListener("click", function () {
       var blob = new Blob([Core.exportState()], { type: "application/json" });
       var a = document.createElement("a");

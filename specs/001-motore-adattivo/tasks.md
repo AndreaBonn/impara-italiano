@@ -342,3 +342,70 @@ suo scopo.
 **Ramo rimosso perché irraggiungibile:** lo stato "oggi non c'è niente". I drill generativi sono
 sempre disponibili, quindi la sessione ha sempre di che riempire dieci minuti. Rimosse anche le
 due stringhe relative in cinque lingue.
+
+### F4 - chiusa (P8 PWA + P9 attriti)
+
+| Cosa | Prova |
+|---|---|
+| barra accenti | 7 caratteri, 44 px, inserimento al cursore; test su posizione del cursore |
+| ricerca globale | rotta `cerca`, lezioni + vocabolario + grammatica + conversazioni, con e senza accenti |
+| scorciatoie | Enter avanza, cifra seleziona; disattivate dentro un campo di testo |
+| PWA | `manifest.webmanifest`, `sw.js`, icone 192/512/maskable generate |
+| offline | testato staccando la rete davvero e ricaricando |
+
+**Difetti trovati e corretti:** `Views.allenamento` chiamava funzioni private di `views.js`
+(rotta silenziosamente caduta sul percorso); `[hidden]` sopraffatto da `display` di classe;
+`Core.norm` collassa gli spazi e sfalsava gli indici dell'evidenziazione; il router rubava il
+focus al campo di ricerca; la scorciatoia numerica commutava due volte una casella.
+
+### F5 - chiusa (P3 coppie minime)
+
+21 coppie in 5 set, 42 registrazioni. **`ph-o-aperta` eliminato per intero e `vènti/vénti`
+scartata**: la voce produce audio byte-identico, quindi l'esercizio sarebbe indistinguibile.
+Misurato da `scripts/check_minpairs.py`, che resta come gate.
+
+### F6 - chiusa (P5 piazzamento)
+
+Ricerca binaria su 6 livelli, 3 round, ≤18 item presi dai test di unità esistenti.
+Il risultato **non si salva da solo**: mostra quante lezioni verrebbero marcate e aspetta.
+Nessun XP e nessun incremento del contatore di lezioni completate.
+
+**Difetto:** `przebieg` definiva le funzioni del round e non chiamava mai la prima —
+un'omissione silenziosa, trovata tracciando il percorso reale.
+
+### F7 - chiusa (P6 comprensione estesa)
+
+12 testi A1→C2, 3 modalità (lettura, ascolto a testo nascosto, dettato), 82 registrazioni.
+**Nessuna registrazione del testo intero:** `speakSequence` concatena le frasi del dettato,
+mentre un file per testo avrebbe superato da solo il budget audio della fase.
+**Domande in italiano nella warstwa neutrale:** verificare in polacco la comprensione di un
+testo italiano verifica la traduzione, e l'effetto collaterale è che una lingua nuova costa
+zero domande.
+
+**Difetto:** la barra degli accenti copriva il bottone di verifica del dettato.
+
+### F8 - chiusa (P7 produzione scritta)
+
+6 compiti, 3 composizioni e 3 traduzioni. Le costruzioni richieste sono rilevate
+meccanicamente espandendole con `Verbs.conjugate`; ciò che non è misurabile è **nominato
+sullo schermo** invece che finto. Il testo dello studente è la prima contenuto non fidato
+dell'app: entra nel DOM solo via `textContent`, mai `innerHTML`, ed è esente dalla potatura
+su quota.
+
+### Chiusura del programma
+
+| Gate | Esito |
+|---|---|
+| `npm test` | 204 unit, verdi |
+| `npm run test:dom` | 111 DOM, verdi |
+| `validate.mjs` × 5 lingue | OK |
+| `parity.mjs` | OK, 4 nakładki |
+| `build_audio.py --dry-run` | 0 mancanti, 2654 file, 34 MB (+2 MB) |
+| axe-core, 7 viste nuove × 2 temi | 0 violazioni |
+| 16 rotte × 375/1280 × chiaro/scuro | 0 errori in console |
+| overflow orizzontale 320/375/414 | nessuno |
+| apertura da `file://` | funziona |
+
+**Difetto pre-esistente corretto in chiusura:** il grafico dei 14 giorni spingeva la pagina
+24 px oltre lo schermo a 375 px. Non era in nessuna vista toccata dal programma: l'ha trovato
+lo sweep di tutte le rotte.

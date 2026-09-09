@@ -169,6 +169,37 @@ pamięci to rozmiar bez możliwości sprawdzenia treści.
 **Po dopisaniu pliku do `assets/js/` albo `data/core/` dopisz go do `PRECACHE` w `sw.js`
 i podnieś `SW_VERSION`.** Inaczej pierwszy start bez sieci padnie na brakującym skrypcie.
 
+## Silnik adaptacyjny
+
+Dopisany w całości po pierwszym wydaniu kursu. Sedno: kurs zapamiętuje, co uczeń
+pomylił, i sam mu to podsuwa.
+
+- **Quaderno błędów** (`errors-key.js` + `errors.js`). Każda zła odpowiedź zakłada
+  kartę z tagiem zagadnienia. Klucz karty to `id lekcji # firma treści # numer bliźniaka`
+  — trzy części, bo w warstwie neutralnej całe `mcq` to `{ t: "mcq", a: 1 }` i sam skrót
+  treści zderzyłby setki ćwiczeń, a numer porządkowy przesunąłby się przy pierwszej
+  wstawce w środku lekcji. Firma liczy się WYŁĄCZNIE z pól neutralnych: cokolwiek z
+  nakładki osierociłoby cały zbiór przy zmianie języka.
+  Przechwytywanie idzie przez owinięcie `Ex.build` (`Errors.install`), nie przez
+  trzynaście builderów: przy czternastym typie nie ma czego zapomnieć.
+- **Drille z reguł** (`drills-lex.js` + `drills.js`). Siedem generatorów, funkcje czyste
+  ziarna. Zadania są **wyłącznie pisane**: wygenerowanego zdania nie ma w indeksie
+  nagrań, więc `say` i typy `listen`/`speak` są zabronione i pilnowane testem.
+- **Sesja dnia** (`views-today.js`), **test poziomujący** (`placement.js`),
+  **pary minimalne** (`views-phonetics.js`), **czytanki** (`views-reading.js`),
+  **pisanie** (`writing.js` + `views-writing.js`).
+
+**Stan rośnie przez DOKŁADANIE, nie przez migrację.** `load()` nakłada zapis na
+`defaultState()`, więc nowy kontener starszy profil dostaje pusty sam z siebie.
+`SCHEMA` zostaje przy 2 i podnosi się **wyłącznie**, gdy zmienia się ZNACZENIE
+istniejącego pola (tak było przy v1 → v2). Bump „na wszelki wypadek" odrzuciłby każdy
+plik wyeksportowany przez ucznia do tej pory; `importState` przyjmuje `schema <= SCHEMA`
+i dokłada migracje po drodze.
+
+**Przy pełnej pamięci potarcie wyrzuca to, co wraca samo**: najpierw karty najlepiej
+opanowane, potem liczniki drilli. Nigdy postępów lekcji ani wypracowań — tych uczeń nie
+odtworzy dalszą nauką.
+
 ## Kontrola jakości
 
 ```bash

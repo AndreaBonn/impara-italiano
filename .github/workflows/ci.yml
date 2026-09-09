@@ -1,0 +1,47 @@
+# ============================================================
+# Bramki, które do tej pory istniały tylko wtedy, gdy ktoś pamiętał,
+# żeby je uruchomić. Kolejność jest od najtańszej do najdroższej:
+# validate i parity kończą się w sekundach, testy DOM potrzebują
+# przeglądarki i minuty, więc błąd w danych ma się zgłosić wcześniej.
+#
+# Serwera nie podnosimy tutaj: playwright.config.js ma własne
+# `webServer` (scripts/serve.mjs) z reuseExistingServer wyłączonym.
+#
+# Node 24, nie 20: `npm test` podaje glob "tests/unit/**/*.test.mjs"
+# prosto do `node --test`, a to działa dopiero od Node 21.
+# ============================================================
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Instalacja zależności deweloperskich
+        run: npm ci
+
+      - name: Przeglądarka do testów DOM
+        run: npx playwright install --with-deps chromium
+
+      - name: Spójność danych kursu
+        run: node scripts/validate.mjs
+
+      - name: Kształt nakładek językowych
+        run: node scripts/parity.mjs
+
+      - name: Testy jednostkowe
+        run: npm test
+
+      - name: Testy w przeglądarce
+        run: npm run test:dom

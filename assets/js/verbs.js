@@ -327,19 +327,80 @@
     return s + "ir";
   }
 
+  /* --------------------------------------------------------
+     Czasowniki z przedrostkiem dziedziczą nieregularność.
+
+     „promettere" to „mettere" z przedrostkiem i odmienia się tak samo:
+     imiesłów „promesso", nie „promettuto". Bez tego widok odmiany
+     pokazywał uczniowi formy nieistniejące — dla „promettere",
+     „permettere", „riscrivere", „comporre" i całej reszty rodziny.
+     Znalezione, gdy bramka lookupu nie umiała rozpoznać „promesso".
+
+     Przedrostek musi być z listy zamkniętej i to jest istotne: samo
+     „kończy się na znany czasownik" zrobiłoby z „mandare" krewnego
+     „andare" i wyprodukowało „mando/vado". Lista jest tania, pomyłka nie.
+     -------------------------------------------------------- */
+  var PRZEDROSTKI = [
+    "ri", "pro", "per", "pre", "com", "con", "contro", "co",
+    "sotto", "sopra", "sovra", "super", "inter", "intra",
+    "in", "im", "ir", "ap", "am", "ab", "ad", "af", "ag", "al", "as", "at",
+    "tras", "trans", "tra", "dis", "de", "es", "ex", "re", "sor", "so", "su", "s"
+  ];
+
+  var cachePrzedrostkow = {};
+
+  /**
+   * Opis nieregularności dla bezokolicznika, z dziedziczeniem po przedrostku.
+   *
+   * @param {string} b bezokolicznik w formie podstawowej (bez `-si`)
+   * @returns {object|null}
+   */
+  function irrOf(b) {
+    if (IRR[b]) return IRR[b];
+    if (Object.prototype.hasOwnProperty.call(cachePrzedrostkow, b)) return cachePrzedrostkow[b];
+
+    var wynik = null;
+    for (var i = 0; i < PRZEDROSTKI.length && !wynik; i++) {
+      var p = PRZEDROSTKI[i];
+      if (b.length <= p.length + 3) continue;
+      if (b.slice(0, p.length) !== p) continue;
+      var rdzen = b.slice(p.length);
+      if (!IRR[rdzen]) continue;
+      wynik = zPrzedrostkiem(IRR[rdzen], p);
+    }
+    cachePrzedrostkow[b] = wynik;
+    return wynik;
+  }
+
+  /** Kopia opisu z przedrostkiem doklejonym do każdej formy. */
+  function zPrzedrostkiem(d, p) {
+    var out = {};
+    Object.keys(d).forEach(function (k) {
+      var v = d[k];
+      if (typeof v === "string") out[k] = p + v;
+      else if (Array.isArray(v)) out[k] = v.map(function (x) { return x === null ? null : p + x; });
+      else out[k] = v;                       // aux, ppAgree i inne flagi
+    });
+    /* Posiłkownik się NIE dziedziczy: „andare" chce „essere", ale
+       „riandare" jest rzadkie, a „mettere/promettere" oba biorą „avere".
+       Zostawiamy to, co było w opisie rdzenia, bo dla par prefiksowych
+       pokrywa się w praktyce; wyjątki idą do IRR wprost. */
+    return out;
+  }
+
   function reflPronoun(i) { return ["mi", "ti", "si", "ci", "vi", "si"][i]; }
 
   function auxOf(inf) {
     var b = baseOf(inf);
     if (isRefl(inf)) return "essere";
-    var d = IRR[b];
+    var d = irrOf(b);
     if (d && d.aux && d.aux !== "both") return d.aux;
     if (d && d.aux === "both") return "avere";
     return ESSERE_VERBS.indexOf(b) >= 0 ? "essere" : "avere";
   }
 
   function participle(inf) {
-    var b = baseOf(inf), d = IRR[b];
+    var b = baseOf(inf), d = irrOf(b);
     if (d && d.pp) return d.pp;
     return stemOf(inf) + REG[groupOf(inf)].pp;
   }
@@ -354,14 +415,14 @@
   }
 
   function gerund(inf) {
-    var b = baseOf(inf), d = IRR[b];
+    var b = baseOf(inf), d = irrOf(b);
     if (d && d.ger) return d.ger;
     return stemOf(inf) + REG[groupOf(inf)].ger;
   }
 
   /* ---------------- Czasy proste ---------------- */
   function simple(inf, tense) {
-    var b = baseOf(inf), g = groupOf(inf), s = stemOf(inf), d = IRR[b] || {};
+    var b = baseOf(inf), g = groupOf(inf), s = stemOf(inf), d = irrOf(b) || {};
     var out = [];
 
     if (tense === "futuro" || tense === "condizionale") {
@@ -443,7 +504,7 @@
       participio: participle(inf),
       gerundio: gerund(inf),
       riflessivo: isRefl(inf),
-      irregolare: !!IRR[baseOf(inf)]
+      irregolare: !!irrOf(baseOf(inf))
     };
     return out;
   }

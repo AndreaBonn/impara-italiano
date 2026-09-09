@@ -263,6 +263,31 @@ dichiarata in pagina ogni volta che il simulatore la applica.
 | T140 | T134, T136 | - | `PRECACHE` e `SW_VERSION` per i tre file nuovi | `sw.js` | 0,5h | Rete spenta: il percorso d'esame si apre e le domande ci sono | medio |
 | T139 | T131, T133, T136 | O1 DoD tutte | Test di fase: sezione scaduta, punteggio parziale, orale che non contribuisce all'esito | `tests/unit/cils.test.mjs`, `tests/dom/cils.spec.js` (nuovi) | 10h | `T` verde; una sezione lasciata scadere produce il punteggio parziale corretto e non blocca le successive | **alto** |
 
+### Esito di F10 (misurato)
+
+| Voce | Valore |
+|---|---|
+| Simulazioni | 2, complete e senza testi in comune (verificato da test) |
+| Item per simulazione | 36 a risposta chiusa (6+12 ascolto, 12+6 lettura) più scritta e orale |
+| Registrazioni | 64 file, **1,37 MB**, sotto il tetto di 3 MB di T137 |
+| Test | 361 unit, 145 DOM, verdi |
+| a11y | axe 0 violazioni su chiaro e scuro, nessun overflow a 320/375/414 |
+| Senza rete | rotta aperta, 2 simulazioni in lista, 42 item nella prima sezione |
+| Profilo pre-F10 | importato senza errori, `schema` fermo a 2, `cils` riempito dai default |
+
+Due decisioni che il piano non prevedeva e che vanno lette insieme al codice.
+
+**Il simulatore punteggia due abilità su quattro.** Ascolto e lettura hanno il peso per
+item nei criteri ufficiali, quindi il numero è vero. Scritta e orale hanno griglie a
+giudizio umano: un punteggio automatico sarebbe una cifra con l'aria di un voto. La scritta
+torna come elementi della traccia presenti e assenti (via `Writing.analyse`), l'orale non
+entra nell'esito.
+
+**L'esito è asimmetrico.** Una abilità sotto soglia basta a dire che l'esame non sarebbe
+superato; tutte sopra soglia non bastano a dire il contrario, perché due non sono state
+misurate. È l'unico punto in cui un simulatore comincerebbe a promettere il risultato di un
+esame vero, quindi è fissato nel motore e coperto da un test dedicato.
+
 ---
 
 ## Totali aggiornati dopo la riconciliazione

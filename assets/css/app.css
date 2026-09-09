@@ -359,9 +359,17 @@ button{font:inherit;color:inherit;}
 .btn--primary{background:var(--rosa-deep);color:oklch(0.99 0.005 40);border-color:var(--rosa-deep);}
 .btn--primary:hover:not(:disabled){background:oklch(0.545 0.170 16);border-color:oklch(0.545 0.170 16);}
 :root[data-theme="dark"] .btn--primary{color:oklch(0.20 0.03 20);}
+/* W ciemnym motywie napis na przycisku jest CIEMNY, więc przyciemnienie tła
+   pod kursorem zbliża oba kolory zamiast je rozsuwać: zmierzone 3,36:1 przy
+   progu 4,5. Tu jaśniejemy — kierunek odwrotny niż w jasnym motywie, bo
+   odwrotny jest też napis. */
+:root[data-theme="dark"] .btn--primary:hover:not(:disabled){
+  background:oklch(0.875 0.090 16);border-color:oklch(0.875 0.090 16);}
 .btn--green{background:var(--salvia-deep);color:oklch(0.99 0.005 40);border-color:var(--salvia-deep);}
 .btn--green:hover:not(:disabled){background:oklch(0.49 0.105 168);}
 :root[data-theme="dark"] .btn--green{color:oklch(0.18 0.03 160);}
+/* Ten sam defekt co przy przycisku podstawowym, ta sama poprawka. */
+:root[data-theme="dark"] .btn--green:hover:not(:disabled){background:oklch(0.845 0.075 168);}
 .btn--ghost{background:var(--paper-2);border-color:var(--line-strong);color:var(--ink);}
 .btn--ghost:hover:not(:disabled){border-color:var(--rosa-deep);color:var(--rosa-deep);}
 .btn--quiet{background:transparent;border-color:transparent;color:var(--ink-soft);text-decoration:underline;min-height:36px;padding:6px 10px;}
@@ -955,3 +963,13 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .stt-consent__box h2{font-size:1.2rem;margin-bottom:10px;}
 .stt-consent__box p{margin:0 0 12px;}
 .stt-consent__row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+
+/* ============================================================
+   Tempo mowy (views-speed.js)
+   ============================================================ */
+.sp-num{font-size:.74rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);margin:0 0 12px;}
+.sp-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.sp-state{margin:12px 0 0;min-height:1.5em;color:var(--ink-soft);font-size:.92rem;}
+.sp-reveal{margin-top:16px;}
+.sp-it{font-family:var(--display);font-size:1.28rem;line-height:1.5;margin:12px 0 0;}

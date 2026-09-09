@@ -181,6 +181,23 @@ LINGUAI.addUI("es", {
   "srs.howText": "Las tarjetas vuelven a intervalos cada vez más largos (1 → 3 → 7 → 16 días…), según la seguridad con la que respondas. Es el algoritmo SM-2, el mismo que usa Anki.",
   "srs.dueToday": "Para hoy: {n}",
   "srs.gradeHonestly": "Responde en voz alta o mentalmente y luego puntúate con sinceridad: de eso depende cuándo vuelve la tarjeta.",
+  /* ---------------- Buscar en el curso ---------------- */
+  "search.open": "Buscar en el curso",
+  "search.kicker": "BUSCAR",
+  "search.title": "¿Dónde estaba eso?",
+  "search.intro": "Busca en títulos de lecciones, vocabulario, entradas de gramática y conversaciones. En italiano o en español, con tildes o sin ellas.",
+  "search.label": "Término de búsqueda",
+  "search.ph": "p. ej. magari, congiuntivo, estación",
+  "search.go": "Buscar",
+  "search.count": { one: "{n} resultado", many: "{n} resultados", other: "{n} resultados" },
+  "search.noneTitle": "En el curso no hay nada así",
+  "search.noneText": "Revisa la ortografía, o prueba con un trozo más corto de la palabra.",
+  "search.kind.lesson": "lección",
+  "search.kind.vocab": "palabra",
+  "search.kind.grammar": "gramática",
+  "search.kind.talk": "conversación",
+  "keys.barLabel": "Caracteres italianos",
+
   /* ---------------- Sesión de hoy ---------------- */
   "nav.today": "Hoy",
   "today.kicker": "HOY",

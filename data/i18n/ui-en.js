@@ -174,6 +174,23 @@ LINGUAI.addUI("en", {
   "srs.howText": "Cards come back at growing intervals (1 → 3 → 7 → 16 days…), depending on how confidently you answer. It is the SM-2 algorithm, the same one Anki uses.",
   "srs.dueToday": "Due today: {n}",
   "srs.gradeHonestly": "Answer out loud or in your head, then grade yourself honestly — that decides when the card comes back.",
+  /* ---------------- Searching the course ---------------- */
+  "search.open": "Search the course",
+  "search.kicker": "SEARCH",
+  "search.title": "Where was that?",
+  "search.intro": "Searches lesson titles, vocabulary, grammar entries and conversations. In Italian or in English, with accents or without.",
+  "search.label": "Search term",
+  "search.ph": "e.g. magari, congiuntivo, station",
+  "search.go": "Search",
+  "search.count": { one: "{n} hit", other: "{n} hits" },
+  "search.noneTitle": "Nothing like that in the course",
+  "search.noneText": "Check the spelling, or try a shorter part of the word.",
+  "search.kind.lesson": "lesson",
+  "search.kind.vocab": "word",
+  "search.kind.grammar": "grammar",
+  "search.kind.talk": "conversation",
+  "keys.barLabel": "Italian characters",
+
   /* ---------------- Today's session ---------------- */
   "nav.today": "Today",
   "today.kicker": "TODAY",

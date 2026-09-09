@@ -29,6 +29,9 @@
       <p class="rail__tag" data-i18n="app.tagline">Włoski po polsku · A1 → C2</p>
       <!-- wypełniane przez app.js z I18n.LANGS: nowy język nie wymaga zmiany w HTML -->
       <div class="rail__lang" id="langPicker" role="group"></div>
+      <button class="rail__search" id="railSearch" data-i18n-label="search.open" aria-label="Szukaj w kursie">
+        <span aria-hidden="true">🔍</span><span data-i18n="search.open">Szukaj w kursie</span>
+      </button>
     </div>
 
     <div class="rail__stats" id="railStats"></div>
@@ -78,6 +81,9 @@
 <script src="assets/js/views-train.js"></script>
 <!-- po views-train.js: sesja dnia korzysta z Train.topicLabel -->
 <script src="assets/js/views-today.js"></script>
+<script src="assets/js/search.js"></script>
+<!-- pasek znaków i skróty: doczepiają się do gotowego DOM, kolejność obojętna -->
+<script src="assets/js/keys.js"></script>
 
 <!-- ══════════ DANE ══════════ -->
 <!-- słowniki interfejsu: wszystkie języki naraz, bo przełączenie ma być natychmiastowe.

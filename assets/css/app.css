@@ -245,6 +245,18 @@ button{font:inherit;color:inherit;}
   margin-left:auto;background:var(--oro);color:oklch(0.30 0.05 60);
   font-size:.70rem;font-weight:700;padding:2px 8px;border-radius:20px;min-width:22px;text-align:center;
 }
+/* Wejście do wyszukiwarki w główce panelu, nie jako dziesiąta pozycja menu:
+   szuka się z dowolnego miejsca, a menu jest listą miejsc, nie czynności. */
+.rail__search{
+  display:flex;align-items:center;gap:8px;width:100%;min-height:44px;
+  margin-top:10px;padding:8px 12px;border-radius:var(--r-m);
+  background:oklch(0 0 0 / .16);border:1px solid oklch(1 0 0 / .30);
+  color:oklch(0.99 0.005 40);font-family:inherit;font-size:.86rem;font-weight:600;
+  cursor:pointer;text-align:left;
+}
+.rail__search:hover{background:oklch(0 0 0 / .26);}
+.rail__search:focus-visible{outline:3px solid oklch(0.99 0.005 40);outline-offset:2px;}
+
 .rail__foot{padding:12px 16px 18px;border-top:1px solid oklch(1 0 0 / .2);}
 .rail__theme{
   width:100%;min-height:40px;background:oklch(0 0 0 / .16);border:1px solid oklch(1 0 0 / .30);
@@ -641,6 +653,31 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
   padding:40px 28px;text-align:center;color:var(--ink-soft);background:var(--paper-3);
 }
 .empty h3{margin-bottom:6px;color:var(--ink);}
+
+/* Etykieta tylko dla czytnika ekranu: widoczna dla technologii
+   wspomagających, niewidoczna na ekranie. `display:none` nie zadziała —
+   czytnik też by jej nie zobaczył. */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;
+}
+mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0 2px;}
+
+/* ══════════════════ PASEK ZNAKÓW ══════════════════ */
+/* Unosi się nad treścią pod polem tekstowym: pozycję liczy keys.js,
+   bo pole bywa w różnych widokach i nie ma jednego rodzica do zaczepienia. */
+.keybar{
+  position:absolute;z-index:100;display:flex;gap:4px;
+  padding:6px;border-radius:var(--r-m);
+  background:var(--paper-2);border:2px solid var(--ink-faint);box-shadow:var(--shadow-m);
+}
+.keybar__k{
+  min-width:44px;min-height:44px;
+  border:1px solid var(--line-strong);border-radius:var(--r-s);
+  background:var(--paper-1);color:var(--ink);
+  font-family:inherit;font-size:1.05rem;font-weight:600;cursor:pointer;
+}
+.keybar__k:hover{background:var(--paper-3);border-color:var(--rosa-deep);}
 
 /* ══════════════════ ZAKŁADKI ══════════════════ */
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}

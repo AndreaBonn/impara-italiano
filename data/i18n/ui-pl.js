@@ -179,6 +179,23 @@ LINGUAI.addUI("pl", {
   "srs.howText": "Fiszki wracają w rosnących odstępach (1 → 3 → 7 → 16 dni…), zależnie od tego, jak pewnie odpowiadasz. To algorytm SM-2, ten sam co w Anki.",
   "srs.dueToday": "Do powtórzenia dziś: {n}",
   "srs.gradeHonestly": "Odpowiadaj na głos albo w myślach, potem oceń szczerze — od tego zależy, kiedy fiszka wróci.",
+  /* ---------------- Szukanie w kursie ---------------- */
+  "search.open": "Szukaj w kursie",
+  "search.kicker": "SZUKANIE",
+  "search.title": "Gdzie to było?",
+  "search.intro": "Przeszukuje tytuły lekcji, słownictwo, hasła gramatyczne i rozmowy. Po włosku albo po polsku, z akcentami lub bez.",
+  "search.label": "Szukana fraza",
+  "search.ph": "np. magari, congiuntivo, dworzec",
+  "search.go": "Szukaj",
+  "search.count": { one: "{n} trafienie", few: "{n} trafienia", many: "{n} trafień", other: "{n} trafień" },
+  "search.noneTitle": "Nic takiego w kursie nie ma",
+  "search.noneText": "Sprawdź pisownię albo poszukaj krótszego fragmentu słowa.",
+  "search.kind.lesson": "lekcja",
+  "search.kind.vocab": "słówko",
+  "search.kind.grammar": "gramatyka",
+  "search.kind.talk": "rozmowa",
+  "keys.barLabel": "Znaki włoskie",
+
   /* ---------------- Sesja dnia ---------------- */
   "nav.today": "Dziś",
   "today.kicker": "DZIŚ",

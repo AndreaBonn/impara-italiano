@@ -179,6 +179,23 @@ LINGUAI.addUI("de", {
   "srs.howText": "Karten kommen in wachsenden Abständen zurück (1 → 3 → 7 → 16 Tage…), je nachdem, wie sicher du antwortest. Das ist der SM-2-Algorithmus, derselbe wie bei Anki.",
   "srs.dueToday": "Heute fällig: {n}",
   "srs.gradeHonestly": "Antworte laut oder im Kopf und bewerte dich dann ehrlich — davon hängt ab, wann die Karte wiederkommt.",
+  /* ---------------- Im Kurs suchen ---------------- */
+  "search.open": "Im Kurs suchen",
+  "search.kicker": "SUCHE",
+  "search.title": "Wo war das noch?",
+  "search.intro": "Durchsucht Lektionstitel, Wortschatz, Grammatikeinträge und Gespräche. Auf Italienisch oder auf Deutsch, mit Akzenten oder ohne.",
+  "search.label": "Suchbegriff",
+  "search.ph": "z. B. magari, congiuntivo, Bahnhof",
+  "search.go": "Suchen",
+  "search.count": { one: "{n} Treffer", other: "{n} Treffer" },
+  "search.noneTitle": "So etwas gibt es im Kurs nicht",
+  "search.noneText": "Prüf die Schreibweise, oder versuch es mit einem kürzeren Teil des Wortes.",
+  "search.kind.lesson": "Lektion",
+  "search.kind.vocab": "Wort",
+  "search.kind.grammar": "Grammatik",
+  "search.kind.talk": "Gespräch",
+  "keys.barLabel": "Italienische Zeichen",
+
   /* ---------------- Sitzung des Tages ---------------- */
   "nav.today": "Heute",
   "today.kicker": "HEUTE",

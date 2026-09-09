@@ -40,11 +40,19 @@
   function render(route, params) {
     Audio2.stop();
     current = { route: route, params: params };
+
+    /* Domyślnie po zmianie trasy fokus ląduje na kontenerze treści, żeby
+       czytnik ekranu przeczytał nową stronę od początku. Widok, który sam
+       ustawia fokus na konkretnym polu (wyszukiwarka), podnosi tę flagę —
+       inaczej router zabierałby mu fokus zaraz po jego ustawieniu.
+       Deklaracja zamiast setTimeout: to jest kontrakt, nie wyścig. */
+    Views.keepFocus = false;
+
     var fn = Views[route];
     if (!fn) { Views.percorso({}); route = "percorso"; }
     else fn(params);
     markRail(route);
-    document.getElementById("main").focus({ preventScroll: true });
+    if (!Views.keepFocus) document.getElementById("main").focus({ preventScroll: true });
     closeRail();
   }
 
@@ -229,6 +237,7 @@
       document.getElementById("rail").classList.contains("is-open") ? closeRail() : openRail();
     });
     document.getElementById("railScrim").addEventListener("click", closeRail);
+    document.getElementById("railSearch").addEventListener("click", function () { App.go("cerca"); });
     document.getElementById("themeToggle").addEventListener("click", function () {
       var t = Core.state.settings.theme === "dark" ? "light" : "dark";
       Core.state.settings.theme = t; Core.save(); applyTheme(t);

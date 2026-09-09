@@ -70,7 +70,11 @@
         /* Docelowa szansa przypomnienia w chwili powtórki (FSRS).
            Wyżej = częstsze powtórki i mniej zapominania, niżej = rzadsze
            i więcej. 0.9 to wartość domyślna implementacji referencyjnej. */
-        retention: 0.9
+        retention: 0.9,
+        /* Zgoda na wysyłanie głosu do rozpoznawania mowy. Domyślnie NIE ma
+           jej: milcząca zgoda jest dokładnie tym, czego consent.js ma nie
+           dopuścić. Kontener dokładany, schemat się nie rusza. */
+        sttConsent: false
       },
       stats: { correct: 0, wrong: 0, lessonsDone: 0, days: {} }
     };

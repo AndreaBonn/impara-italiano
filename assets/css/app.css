@@ -925,3 +925,33 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .fa-tag--yes{background:var(--ok-bg);color:var(--ok);}
 .fa-why{margin:10px 0 0;color:var(--ink-soft);font-size:.92rem;}
 .fa-ex{margin:10px 0 0;font-style:italic;}
+
+/* ============================================================
+   Shadowing (views-shadow.js)
+   ============================================================ */
+.sh-it{font-family:var(--display);font-size:1.35rem;line-height:1.5;margin:0 0 18px;}
+.sh-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.sh-row + .sh-row{margin-top:10px;}
+.sh-state{margin:12px 0 0;min-height:1.5em;color:var(--ink-soft);font-size:.92rem;}
+.sh-note{margin-top:18px;color:var(--ink-faint);font-size:.86rem;}
+/* Nagrywanie widać, a nie tylko słychać w opisie: puls przy czerwonym
+   przycisku plus aria-pressed, bo sam kolor nie jest informacją. */
+.js-rec.is-rec{background:var(--ko);border-color:var(--ko);color:oklch(0.99 0.005 40);}
+@media (prefers-reduced-motion: no-preference){
+  .js-rec.is-rec{animation:sh-puls 1.4s ease-in-out infinite;}
+}
+@keyframes sh-puls{50%{opacity:.72;}}
+
+/* Zgoda na rozpoznawanie mowy (views-shadow.js) */
+.stt-consent{
+  position:fixed;inset:0;z-index:400;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  background:oklch(0.30 0.03 340 / .55);
+}
+.stt-consent__box{
+  background:var(--paper-2);border:2px solid var(--rosa-deep);border-radius:var(--r-l);
+  padding:26px;max-width:520px;box-shadow:var(--shadow-l);
+}
+.stt-consent__box h2{font-size:1.2rem;margin-bottom:10px;}
+.stt-consent__box p{margin:0 0 12px;}
+.stt-consent__row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}

@@ -23,7 +23,16 @@ module.exports = defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
-    screenshot: "only-on-failure"
+    screenshot: "only-on-failure",
+    /* Mikrofon: sztuczne urządzenie i automatyczna zgoda, żeby dało się
+       przejść cały cykl nagrywania. Czego to NIE odtwarza: prawdziwej
+       odmowy uprawnienia — headless Chromium zwraca wtedy inny błąd niż
+       przeglądarka użytkownika, więc ta ścieżka zostaje niesprawdzona i
+       jest tak opisana w recorder.js. */
+    permissions: ["microphone"],
+    launchOptions: {
+      args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"]
+    }
   },
 
   projects: [

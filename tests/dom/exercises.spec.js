@@ -164,6 +164,12 @@ test("każdy typ obecny w danych kursu daje się zbudować", async ({ page }) =>
           const b = window.Ex.build(ex, i, l.id);
           if (!b || typeof b.html !== "string" || typeof b.wire !== "function") {
             broken.push(`${l.id}#${i} (${ex.t}): zły kształt`);
+          } else if (!/class="exq"[^>]*data-idx=/.test(b.html)) {
+            /* Nieznany typ TEŻ oddaje poprawny kształt {html, wire} — dyspozytor
+               nie wywraca lekcji przez jedno ćwiczenie. Bez tego sprawdzenia
+               brakujący <script> rodziny (exercises-choice/text/voice) przechodzi
+               ten test, bo kształt się zgadza, a na ekranie stoi „nieznany typ". */
+            broken.push(`${l.id}#${i} (${ex.t}): dyspozytor nie zna tego typu`);
           }
         } catch (e) {
           broken.push(`${l.id}#${i} (${ex.t}): ${e.message}`);

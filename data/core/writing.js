@@ -68,7 +68,7 @@ window.WRITING = [
       { any: ["purtroppo", "mi dispiace"] },
       { any: ["cordiali saluti", "un cordiale saluto", "distinti saluti"] }
     ],
-    model: "Gentile dottoressa Rossi, le scrivo per disdire l'appuntamento di giovedì 14 alle 16. Purtroppo devo partire per lavoro proprio quel giorno e non riesco a spostare il viaggio. Potrei venire la settimana successiva, se ha ancora posto? Sono libero il martedì e il mercoledì pomeriggio. La ringrazio per la comprensione. Cordiali saluti, Marco Bianchi."
+    model: "Gentile dottoressa Rossi, Le scrivo per disdire l'appuntamento di giovedì 14 alle 16. Purtroppo devo partire per lavoro proprio quel giorno e non riesco a spostare il viaggio. Potrei venire la settimana successiva, se ha ancora posto? Sono libero il martedì e il mercoledì pomeriggio. La ringrazio per la comprensione. Cordiali saluti, Marco Bianchi."
   },
 
   {
@@ -99,7 +99,7 @@ window.WRITING = [
       { any: ["quindi", "di conseguenza", "perciò"] },
       { verb: "dovere", tense: "condizionale" }
     ],
-    model: "Il lavoro da remoto ha cambiato più cose di quante ne avesse promesse. Da una parte permette di vivere lontano dagli uffici e di organizzare la giornata con più libertà. Inoltre riduce il tempo perso negli spostamenti, che nessuno considerava lavoro ma che lo era. Tuttavia non tutte le professioni possono farlo, e chi resta in presenza finisce per sentirsi di serie B. Di conseguenza il problema non è il luogo, ma chi decide. Le aziende dovrebbero dirlo apertamente, invece di parlare di flessibilità."
+    model: "Il lavoro da remoto ha cambiato molto più di quello che prometteva. Da una parte permette di vivere lontano dagli uffici e di organizzare la giornata con più libertà. Inoltre riduce il tempo perso negli spostamenti, che nessuno considerava lavoro ma che lo era. Tuttavia non tutte le professioni possono farlo, e chi resta in presenza finisce per sentirsi di serie B. Di conseguenza il problema non è il luogo, ma chi decide. Le aziende dovrebbero dirlo apertamente, invece di parlare di flessibilità."
   },
 
   {

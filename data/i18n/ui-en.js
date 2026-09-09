@@ -405,6 +405,8 @@ LINGUAI.addUI("en", {
   "talk.defaultClosing": "Conversation over. Run it again in a few days — fluency comes from repetition.",
   "talk.again": "Once more",
   "talk.others": "Other conversations",
+  "talk.chooseOne": "The conversation forks here. Pick what you say, or say it in your own words.",
+  "talk.otherBranch": "Back to the choice",
 
   /* ---------------- Grammar ---------------- */
   "gram.backToIndex": "← Contents",

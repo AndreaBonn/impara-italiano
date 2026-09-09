@@ -587,6 +587,20 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
 .dlg__it{font-weight:600;display:block;}
 .dlg__pl{font-size:.84rem;color:var(--ink-soft);display:block;margin-top:2px;}
 
+/* Wybór repliki w dialogu rozgałęzionym. Kolumna, nie rząd: obie możliwości
+   są całymi zdaniami i przy dwóch kolumnach na telefonie łamią się na czwarte
+   wiersze, przez co dłuższa wygląda na ważniejszą. */
+.dlg-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.dlg-opt{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  border:2px solid var(--line-strong);background:var(--paper-2);color:var(--ink);
+  border-radius:var(--r-m);padding:10px 14px;min-height:44px;font:inherit;
+  transition:border-color .16s ease, background .16s ease;
+}
+.dlg-opt:hover{border-color:var(--rosa-deep);background:var(--paper-3);}
+.dlg-opt i{display:block;font-style:italic;font-weight:600;}
+.dlg-opt span{display:block;font-size:.84rem;color:var(--ink-soft);margin-top:2px;}
+
 /* ══════════════════ ĆWICZENIA ══════════════════ */
 .exq{
   border:2px solid var(--line);background:var(--paper-2);

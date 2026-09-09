@@ -416,6 +416,8 @@ LINGUAI.addUI("pl", {
   "talk.defaultClosing": "Rozmowa zakończona. Powtórz ją za kilka dni — płynność bierze się z powtarzania.",
   "talk.again": "Jeszcze raz",
   "talk.others": "Inne rozmowy",
+  "talk.chooseOne": "Tutaj rozmowa się rozgałęzia. Wybierz, co powiesz, albo powiedz to własnymi słowami.",
+  "talk.otherBranch": "Wróć do wyboru",
 
   /* ---------------- Gramatyka ---------------- */
   "gram.backToIndex": "← Spis treści",

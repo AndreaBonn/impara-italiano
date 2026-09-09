@@ -381,5 +381,100 @@ window.CONVERSATIONS = [
         ]
       }
     ]
+  },
+
+  /* ══════════════════ ROZMOWY ROZGAŁĘZIONE ══════════════════
+
+     Tura z `id` jest celem skoku, `go` mówi dokąd iść po niej, a tura ucznia
+     z `opts` rozwidla dialog: każda gałąź ma własny klucz odpowiedzi i własne
+     `go`. Bez tych pól tura idzie o jeden do przodu, więc dziesięć rozmów
+     napisanych wyżej działa dokładnie tak jak przedtem.
+
+     Kształt: romb. Wybór rozchodzi się na dwie gałęzie i schodzi z powrotem
+     w jedną turę, zamiast rozgałęziać się w drzewo. Drzewo o trzech wyborach
+     to osiem zakończeń, czyli osiem razy tyle tekstu do napisania, nagrania
+     i przetłumaczenia na pięć języków — a uczeń i tak zobaczy jedno.
+
+     Konsekwencja gałęzi jest widoczna PÓŹNIEJ, nie od razu: kto odmówi
+     deseru, nie znajdzie go potem na rachunku. Rozwidlenie, które po dwóch
+     turach niczego nie zmienia, jest ozdobą, nie wyborem.
+     ══════════════════════════════════════════════════════════ */
+  {
+    id: "ristorante-scelte",
+    cefr: "A2",
+    icon: "🍝",
+    titleIt: "A tavola, con qualche decisione",
+    turns: [
+      { sp: "A", it: "Buonasera. Avete prenotato?" },
+      {
+        sp: "TY",
+        opts: [
+          {
+            hintIt: "Sì, ho prenotato a nome Rossi",
+            accept: ["sì ho prenotato a nome rossi", "sì a nome rossi", "ho prenotato a nome rossi"],
+            go: "prenotato"
+          },
+          {
+            hintIt: "No, siamo in due. C'è posto?",
+            accept: ["no siamo in due c'è posto", "no, siamo in due", "siamo in due c'è posto"],
+            go: "senza"
+          }
+        ]
+      },
+      { sp: "A", id: "prenotato", it: "Perfetto. Il tavolo vicino alla finestra. Prego, da questa parte.", go: "menu" },
+      { sp: "A", id: "senza", it: "Un tavolo per due c'è, in fondo alla sala. Prego." },
+      { sp: "A", id: "menu", it: "Ecco il menù. Intanto da bere?" },
+      {
+        sp: "TY",
+        hintIt: "Una bottiglia d'acqua naturale, grazie",
+        accept: ["una bottiglia d'acqua naturale grazie", "acqua naturale grazie", "una naturale grazie"]
+      },
+      { sp: "A", it: "Naturale, arriva subito. E di primo?" },
+      {
+        sp: "TY",
+        opts: [
+          {
+            hintIt: "Per me la carbonara",
+            accept: ["per me la carbonara", "prendo la carbonara", "una carbonara grazie"],
+            go: "carbonara"
+          },
+          {
+            hintIt: "Una pasta al pomodoro: sono vegetariana",
+            accept: ["una pasta al pomodoro sono vegetariana", "pasta al pomodoro sono vegetariano",
+                     "per me pasta al pomodoro, sono vegetariana"],
+            go: "pomodoro"
+          }
+        ]
+      },
+      { sp: "A", id: "carbonara", it: "Stasera la carbonara è ottima, il guanciale è croccante.", go: "dolce" },
+      { sp: "A", id: "pomodoro", it: "Allora le consiglio pomodoro e basilico: il basilico è del nostro orto." },
+      { sp: "A", id: "dolce", it: "Un dolce per finire? Il tiramisù lo facciamo noi." },
+      {
+        sp: "TY",
+        opts: [
+          {
+            hintIt: "Sì, il tiramisù, grazie",
+            accept: ["sì il tiramisù grazie", "sì prendo il tiramisù", "il tiramisù grazie"],
+            go: "con-dolce"
+          },
+          {
+            hintIt: "No, grazie, solo un caffè",
+            accept: ["no grazie solo un caffè", "solo un caffè grazie", "no, per me solo un caffè"],
+            go: "senza-dolce"
+          }
+        ]
+      },
+      { sp: "A", id: "con-dolce", it: "Ottima scelta, arriva subito.", go: "conto-dolce" },
+      { sp: "A", id: "senza-dolce", it: "Un caffè, benissimo.", go: "conto-caffe" },
+      { sp: "A", id: "conto-dolce", it: "Ecco il conto: primo, acqua e tiramisù. Ventidue euro.", go: "pagare" },
+      { sp: "A", id: "conto-caffe", it: "Ecco il conto: primo, acqua e caffè. Sedici euro." },
+      {
+        sp: "TY",
+        id: "pagare",
+        hintIt: "Posso pagare con la carta?",
+        accept: ["posso pagare con la carta", "pago con la carta", "con la carta grazie"]
+      },
+      { sp: "A", it: "Certo, il POS è qui. Grazie e buona serata." }
+    ]
   }
 ];

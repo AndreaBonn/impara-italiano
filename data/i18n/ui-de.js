@@ -410,6 +410,8 @@ LINGUAI.addUI("de", {
   "talk.defaultClosing": "Gespräch beendet. Mach es in ein paar Tagen noch einmal — Flüssigkeit kommt aus der Wiederholung.",
   "talk.again": "Noch einmal",
   "talk.others": "Andere Gespräche",
+  "talk.chooseOne": "Hier verzweigt sich das Gespräch. Wähle, was du sagst, oder sag es mit eigenen Worten.",
+  "talk.otherBranch": "Zurück zur Wahl",
 
   /* ---------------- Grammatik ---------------- */
   "gram.backToIndex": "← Inhalt",

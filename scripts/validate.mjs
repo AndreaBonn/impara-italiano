@@ -178,10 +178,82 @@ const convIds = new Set();
   convIds.add(c.id);
   if (!Array.isArray(c.turns) || !c.turns.length) errors.push(`Rozmowa ${c.id}: brak tur`);
   (c.turns || []).forEach((t, i) => {
-    if (t.sp === "TY" && !(t.accept || t.it)) errors.push(`Rozmowa ${c.id} tura ${i}: brak akceptowanych odpowiedzi`);
+    if (t.sp === "TY" && !(t.accept || t.it || t.opts)) errors.push(`Rozmowa ${c.id} tura ${i}: brak akceptowanych odpowiedzi`);
     if (t.sp !== "TY" && !t.it) errors.push(`Rozmowa ${c.id} tura ${i}: brak kwestii włoskiej`);
+    (t.opts || []).forEach((o, k) => {
+      if (!Array.isArray(o.accept) || !o.accept.length)
+        errors.push(`Rozmowa ${c.id} tura ${i} gałąź ${k}: brak akceptowanych odpowiedzi`);
+      if (!o.hintIt) errors.push(`Rozmowa ${c.id} tura ${i} gałąź ${k}: brak podpowiedzi po włosku`);
+    });
+    if (t.opts && t.opts.length < 2) errors.push(`Rozmowa ${c.id} tura ${i}: rozwidlenie z jedną gałęzią`);
   });
+  sprawdzGraf(c);
 });
+
+/* ════════════════════════════════════════════════════════════════
+   Rozmowy rozgałęzione: trzy rzeczy, których nie widać z danych.
+
+   Cel, którego nie ma, nie wywala silnika — `indeksTury` zwraca wtedy
+   koniec dialogu, więc rozmowa po prostu URYWA SIĘ w środku i wygląda
+   na skończoną. Tura, do której nic nie prowadzi, jest napisana, jest
+   przetłumaczona, jest nagrana i nikt jej nigdy nie zobaczy. A pętla
+   bez wyjścia zapętla ucznia bez żadnego komunikatu.
+
+   Osiągalność liczymy PO grafie, nie po numerach: przy skokach kolejność
+   w tablicy nie mówi już, co po czym idzie.
+   ════════════════════════════════════════════════════════════════ */
+/** Krawędzie grafu: dla każdej tury lista numerów tur, do których prowadzi.
+    Liczone RAZ, bo to jedyne miejsce, które zgłasza skok w pustkę — przy
+    liczeniu w locie ten sam błąd wypadłby tyle razy, ile razy iteruje
+    punkt stały niżej. Numer >= długości tablicy znaczy „koniec dialogu". */
+function krawedzieGrafu(c) {
+  const tury = c.turns || [];
+  const poId = new Map();
+  tury.forEach((t, i) => {
+    if (!t.id) return;
+    if (poId.has(t.id)) errors.push(`Rozmowa ${c.id}: powtórzone id tury "${t.id}"`);
+    poId.set(t.id, i);
+  });
+  return tury.map((t, i) => (t.opts ? t.opts.map(o => o.go) : [t.go]).map(cel => {
+    if (!cel) return i + 1;
+    if (poId.has(cel)) return poId.get(cel);
+    errors.push(`Rozmowa ${c.id} tura ${i}: skok do nieistniejącej tury "${cel}"`);
+    return tury.length;
+  }));
+}
+
+function sprawdzGraf(c) {
+  const tury = c.turns || [];
+  if (!tury.length) return;
+  const kraw = krawedzieGrafu(c);
+
+  const osiagalne = new Set([0]);
+  const stos = [0];
+  while (stos.length) {
+    const i = stos.pop();
+    if (i >= tury.length) continue;
+    kraw[i].forEach(n => { if (!osiagalne.has(n)) { osiagalne.add(n); stos.push(n); } });
+  }
+  tury.forEach((t, i) => {
+    if (!osiagalne.has(i)) errors.push(`Rozmowa ${c.id} tura ${i}: nieosiągalna z początku dialogu`);
+  });
+
+  /* Wyjście istnieje, jeśli z tury da się dojść za koniec tablicy. Liczymy
+     wstecz do punktu stałego, a nie rekurencją: graf z rozwidleniami ma
+     cykle i rekurencja wpadłaby w pierwszy z nich. */
+  const wychodzi = new Set();
+  for (let rosnie = true; rosnie;) {
+    rosnie = false;
+    tury.forEach((t, i) => {
+      if (wychodzi.has(i)) return;
+      if (kraw[i].some(n => n >= tury.length || wychodzi.has(n))) { wychodzi.add(i); rosnie = true; }
+    });
+  }
+  tury.forEach((t, i) => {
+    if (osiagalne.has(i) && !wychodzi.has(i))
+      errors.push(`Rozmowa ${c.id} tura ${i}: pętla bez wyjścia, dialog się nie kończy`);
+  });
+}
 
 /* gramatyka */
 const gramIds = new Set();

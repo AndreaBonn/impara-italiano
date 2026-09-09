@@ -192,5 +192,39 @@ LINGUAI.addStrings("en", {
         tr: "I completely disagree: hybrid lets you choose depending on the kind of work."
       }
     ]
+  },
+  "conv:ristorante-scelte": {
+    title: "At the table, with a few decisions",
+    setting: "Friday evening, the trattoria round the corner. This time the conversation follows what you say: at three points you pick one of two answers.",
+    closing: "The bill at the end matched what was actually ordered. That is what separates a choice from a decoration.",
+    turns: [
+      { tr: "Good evening. Do you have a reservation?" },
+      { task: "Say whether you have a reservation.", opts: [
+        { tr: "Yes, I have a reservation under Rossi." },
+        { tr: "No, there are two of us. Is there a table?" }
+      ] },
+      { tr: "Perfect. The table by the window. This way, please." },
+      { tr: "There is a table for two at the back of the room. Please." },
+      { tr: "Here is the menu. Something to drink in the meantime?" },
+      { task: "Order a bottle of still water.", tr: "A bottle of still water, please." },
+      { tr: "Still water, right away. And for the first course?" },
+      { task: "Choose your first course.", opts: [
+        { tr: "Carbonara for me." },
+        { tr: "Pasta with tomato: I am vegetarian." }
+      ] },
+      { tr: "The carbonara is excellent tonight, the guanciale is crisp." },
+      { tr: "Then I would suggest tomato and basil: the basil comes from our own garden." },
+      { tr: "A dessert to finish? We make the tiramisu ourselves." },
+      { task: "Decide whether you want dessert.", opts: [
+        { tr: "Yes, the tiramisu, thank you." },
+        { tr: "No, thank you, just a coffee." }
+      ] },
+      { tr: "Excellent choice, coming right up." },
+      { tr: "A coffee, very good." },
+      { tr: "Here is the bill: first course, water and tiramisu. Twenty-two euros." },
+      { tr: "Here is the bill: first course, water and coffee. Sixteen euros." },
+      { task: "Ask whether you can pay by card.", tr: "Can I pay by card?" },
+      { tr: "Of course, the card reader is right here. Thank you and have a good evening." }
+    ]
   }
 });

@@ -524,6 +524,25 @@
     var turn = el().querySelector(".js-turn");
     var i = 0, score = 0, turns = 0;
 
+    /* Rozwidlenia: graf zamiast listy, ale DOKŁADANY. Tura z polem `go`
+       mówi, dokąd iść dalej; bez niego idziemy o jeden do przodu, więc
+       dziesięć dialogów napisanych wcześniej chodzi tak samo jak przedtem
+       i nie trzeba było ich tknąć. Cel jest podawany po `id` tury, nie po
+       numerze: numer przesunąłby się przy pierwszej wstawce w środku. */
+    var PROG = 0.72;
+
+    function indeksTury(id) {
+      for (var n = 0; n < conv.turns.length; n++) if (conv.turns[n].id === id) return n;
+      return conv.turns.length; /* nieznany cel = koniec; validate.mjs tego nie przepuści */
+    }
+
+    function dalej(skad, teraz) { return skad && skad.go ? indeksTury(skad.go) : teraz + 1; }
+
+    /* Punkty wyboru odwiedzone w tym przejściu — do powrotu na rozwidlenie
+       bez powtarzania całego dialogu (`bąbelki` to długość transkryptu w
+       chwili wyboru, żeby dało się go uciąć dokładnie tam). */
+    var wybory = [];
+
     function bubble(it, pl, mine) {
       var d = document.createElement("div");
       d.className = "dlg__line" + (mine ? " dlg__line--b" : "");
@@ -541,21 +560,42 @@
       var turnData = conv.turns[i];
       if (turnData.sp !== "TY") {
         bubble(turnData.it, turnData.tr, false);
-        i++;
+        i = dalej(turnData, i);
         Audio2.speak(turnData.it, { onend: function () { setTimeout(step, 260); } });
         return;
       }
       renderTurn(turnData);
     }
 
+    /* Przy rozwidleniu obie możliwości są POKAZANE. To nie jest test pamięci:
+       uczeń ma zdecydować, co powiedzieć, a nie odgadnąć, czego kurs oczekuje.
+       Mikrofon i pole tekstowe zostają — kliknięcie jest skrótem, nie jedyną
+       drogą, więc scena nadal daje się przejść głosem. */
+    function podpowiedziWyboru(opcje) {
+      return '<p class="voice-pl" style="margin-bottom:10px">' + esc(t("talk.chooseOne")) + "</p>" +
+        '<div class="dlg-opts">' + opcje.map(function (o) {
+          /* Wysyłamy TREŚĆ PODPOWIEDZI, nie klucz odpowiedzi: klucze są
+             pisane bez wielkich liter i bez interpunkcji, pod porównywanie,
+             i w dymku wyglądałyby jak zdanie napisane byle jak. `norm()`
+             w `similarity` i tak sprowadza jedno do drugiego. */
+          var wzor = o.hintIt || (o.accept && o.accept[0]) || "";
+          return '<button type="button" class="dlg-opt js-opt" data-opt="' + esc(wzor) + '">' +
+            "<i>" + esc(o.hintIt || wzor) + "</i>" +
+            (o.tr ? "<span>" + esc(o.tr) + "</span>" : "") + "</button>";
+        }).join("") + "</div>";
+    }
+
     // parametr nazywa się turnData, nie t: `t` to helper tłumaczeń w tym pliku
     function renderTurn(turnData) {
       turns++;
-      var accepted = turnData.accept || [turnData.it];
+      var opcje = turnData.opts || null;
+      var accepted = opcje ? (opcje[0].accept || []) : (turnData.accept || [turnData.it]);
+      if (opcje) wybory.push({ i: i, bakelki: dlg.children.length, score: score, turns: turns - 1 });
       turn.innerHTML =
         '<div class="voice-box">' +
         '<p style="font-weight:600;margin:0 0 4px">' + esc(t("talk.yourTurn", { task: turnData.task })) + "</p>" +
-        '<p class="voice-pl" style="margin-bottom:14px">' + t("ex.hintLabel", { hint: "<i>" + esc(turnData.hintIt || accepted[0]) + "</i>" }) + "</p>" +
+        (opcje ? podpowiedziWyboru(opcje) :
+          '<p class="voice-pl" style="margin-bottom:14px">' + t("ex.hintLabel", { hint: "<i>" + esc(turnData.hintIt || accepted[0]) + "</i>" }) + "</p>") +
         (Audio2.sttSupported ? '<button type="button" class="mic js-mic" aria-label="' + esc(t("talk.speak")) + '">🎤</button><p class="voice-heard js-heard">' + t("talk.tapAndSpeak") + "</p>" : "") +
         '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
         '<input type="text" class="field js-in" style="max-width:340px" placeholder="' + esc(t("talk.orType")) + '" autocomplete="off" spellcheck="false">' +
@@ -565,18 +605,39 @@
       var heard = turn.querySelector(".js-heard");
       var input = turn.querySelector(".js-in");
 
+      /* Przy rozwidleniu wygrywa opcja NAJBLIŻSZA temu, co uczeń powiedział,
+         a nie pierwsza pasująca: dwie odpowiedzi w tej samej scenie bywają
+         podobne („tylko kawa" / „kawa i deser") i pierwsza z brzegu
+         wysyłałaby go w gałąź, o którą nie prosił. */
+      function wybierz(text) {
+        var naj = { w: -1, o: null };
+        (opcje || [{ accept: accepted }]).forEach(function (o) {
+          var b = 0;
+          (o.accept || []).forEach(function (a) { b = Math.max(b, Core.similarity(text, a)); });
+          if (b > naj.w) naj = { w: b, o: o };
+        });
+        return naj;
+      }
+
       function accept(text) {
-        var best = 0;
-        accepted.forEach(function (a) { best = Math.max(best, Core.similarity(text, a)); });
-        var ok = best >= 0.72;
+        var naj = wybierz(text);
+        var ok = naj.w >= PROG;
+        /* Poniżej progu nie zgadujemy kierunku: idziemy pierwszą gałęzią i
+           pokazujemy jej wzorcową odpowiedź, tak jak w dialogu liniowym. */
+        var gal = ok ? naj.o : (opcje ? opcje[0] : null);
+        var wzor = (gal && gal.accept && gal.accept[0]) || accepted[0];
         if (ok) score++;
         Core.recordAnswer(ok);
-        bubble(ok ? text : accepted[0], turnData.tr || "", true);
-        if (!ok) Core.toast(t("talk.modelAnswer", { answer: accepted[0] }));
+        bubble(ok ? text : wzor, (gal && gal.tr) || turnData.tr || "", true);
+        if (!ok) Core.toast(t("talk.modelAnswer", { answer: wzor }));
         turn.innerHTML = "";
-        i++;
+        i = dalej(opcje ? gal : turnData, i);
         setTimeout(step, 420);
       }
+
+      if (opcje) turn.querySelectorAll(".js-opt").forEach(function (b) {
+        b.addEventListener("click", function () { accept(b.getAttribute("data-opt")); });
+      });
 
       if (Audio2.sttSupported) {
         var mic = turn.querySelector(".js-mic");
@@ -606,13 +667,28 @@
       });
     }
 
+    /* Powrót na ostatnie rozwidlenie, nie na początek. Gałąź, której się nie
+       wybrało, jest tym, po co w ogóle są rozwidlenia; kazać przechodzić od
+       nowa cały dialog, żeby ją zobaczyć, znaczy nie pokazać jej nikomu. */
+    function wrocDoWyboru() {
+      var w = wybory.pop();
+      while (dlg.children.length > w.bakelki) dlg.removeChild(dlg.lastChild);
+      i = w.i; score = w.score; turns = w.turns;
+      turn.innerHTML = "";
+      step();
+    }
+
     function finishConv() {
       Core.recordLesson("conv-" + conv.id, score, Math.max(turns, 1), 0);
       App.refreshRail();
       turn.innerHTML = '<div class="summary"><div class="summary__score">' + score + "/" + turns + "</div>" +
         '<p class="summary__msg">' + esc(conv.closing || t("talk.defaultClosing")) + "</p>" +
-        '<div class="summary__acts"><button class="btn btn--primary js-again">' + t("talk.again") + "</button>" +
+        '<div class="summary__acts">' +
+        (wybory.length ? '<button class="btn btn--primary js-branch">' + t("talk.otherBranch") + "</button>" : "") +
+        '<button class="btn ' + (wybory.length ? "btn--ghost" : "btn--primary") + ' js-again">' + t("talk.again") + "</button>" +
         '<button class="btn btn--ghost js-list">' + t("talk.others") + "</button></div></div>";
+      var gal = turn.querySelector(".js-branch");
+      if (gal) gal.addEventListener("click", wrocDoWyboru);
       turn.querySelector(".js-again").addEventListener("click", function () { App.go("conversazione", { id: conv.id }); });
       turn.querySelector(".js-list").addEventListener("click", function () { App.go("conversazione"); });
     }

@@ -193,5 +193,39 @@ LINGUAI.addStrings("es", {
         tr: "No estoy nada de acuerdo: el híbrido permite elegir según el tipo de trabajo."
       }
     ]
+  },
+  "conv:ristorante-scelte": {
+    title: "En la mesa, con algunas decisiones",
+    setting: "Viernes por la noche, la trattoria de la esquina. Esta vez la conversación sigue lo que dices: en tres momentos eliges entre dos respuestas.",
+    closing: "La cuenta final coincidía con lo que se pidió en la mesa. Esa es la diferencia entre una elección y un adorno.",
+    turns: [
+      { tr: "Buenas noches. ¿Tienen reserva?" },
+      { task: "Di si tenéis reserva.", opts: [
+        { tr: "Sí, tengo una reserva a nombre de Rossi." },
+        { tr: "No, somos dos. ¿Hay sitio?" }
+      ] },
+      { tr: "Perfecto. La mesa junto a la ventana. Por aquí, por favor." },
+      { tr: "Hay una mesa para dos al fondo de la sala. Adelante." },
+      { tr: "Aquí tienen el menú. Mientras tanto, ¿para beber?" },
+      { task: "Pide una botella de agua sin gas.", tr: "Una botella de agua sin gas, por favor." },
+      { tr: "Sin gas, enseguida. ¿Y de primero?" },
+      { task: "Elige el primer plato.", opts: [
+        { tr: "Para mí, carbonara." },
+        { tr: "Pasta con tomate: soy vegetariana." }
+      ] },
+      { tr: "Esta noche la carbonara está buenísima, el guanciale está crujiente." },
+      { tr: "Entonces le recomiendo tomate y albahaca: la albahaca es de nuestro huerto." },
+      { tr: "¿Un postre para terminar? El tiramisú lo hacemos nosotros." },
+      { task: "Decide si quieres postre.", opts: [
+        { tr: "Sí, el tiramisú, gracias." },
+        { tr: "No, gracias, solo un café." }
+      ] },
+      { tr: "Excelente elección, enseguida se lo traigo." },
+      { tr: "Un café, muy bien." },
+      { tr: "Aquí tiene la cuenta: primer plato, agua y tiramisú. Veintidós euros." },
+      { tr: "Aquí tiene la cuenta: primer plato, agua y café. Dieciséis euros." },
+      { task: "Pregunta si puedes pagar con tarjeta.", tr: "¿Puedo pagar con tarjeta?" },
+      { tr: "Claro, el datáfono está aquí. Gracias y buenas noches." }
+    ]
   }
 });

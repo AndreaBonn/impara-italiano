@@ -415,6 +415,8 @@ LINGUAI.addUI("es", {
   "talk.defaultClosing": "Conversación terminada. Repítela dentro de unos días: la soltura sale de la repetición.",
   "talk.again": "Otra vez",
   "talk.others": "Otras conversaciones",
+  "talk.chooseOne": "Aquí la conversación se bifurca. Elige qué dices, o dilo con tus palabras.",
+  "talk.otherBranch": "Volver a la elección",
 
   /* ---------------- Gramática ---------------- */
   "gram.backToIndex": "← Índice",

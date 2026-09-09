@@ -194,5 +194,39 @@ LINGUAI.addStrings("de", {
         tr: "Da bin ich überhaupt nicht einverstanden: hybrid lässt einen je nach Art der Arbeit wählen."
       }
     ]
+  },
+  "conv:ristorante-scelte": {
+    title: "Am Tisch, mit ein paar Entscheidungen",
+    setting: "Freitagabend, die Trattoria um die Ecke. Diesmal folgt das Gespräch dem, was du sagst: an drei Stellen wählst du zwischen zwei Antworten.",
+    closing: "Die Rechnung am Ende stimmte mit dem überein, was am Tisch bestellt wurde. Das trennt eine Wahl von einer Verzierung.",
+    turns: [
+      { tr: "Guten Abend. Haben Sie reserviert?" },
+      { task: "Sag, ob ihr reserviert habt.", opts: [
+        { tr: "Ja, ich habe auf den Namen Rossi reserviert." },
+        { tr: "Nein, wir sind zu zweit. Ist noch Platz?" }
+      ] },
+      { tr: "Perfekt. Der Tisch am Fenster. Hier entlang, bitte." },
+      { tr: "Ein Tisch für zwei ist hinten im Saal frei. Bitte." },
+      { tr: "Hier ist die Karte. Zum Trinken schon mal etwas?" },
+      { task: "Bestell eine Flasche stilles Wasser.", tr: "Eine Flasche stilles Wasser, bitte." },
+      { tr: "Still, kommt sofort. Und als ersten Gang?" },
+      { task: "Wähl den ersten Gang.", opts: [
+        { tr: "Für mich Carbonara." },
+        { tr: "Pasta mit Tomate: Ich bin Vegetarierin." }
+      ] },
+      { tr: "Heute Abend ist die Carbonara ausgezeichnet, der Guanciale ist knusprig." },
+      { tr: "Dann empfehle ich Tomate und Basilikum: Das Basilikum kommt aus unserem Garten." },
+      { tr: "Zum Abschluss ein Dessert? Das Tiramisù machen wir selbst." },
+      { task: "Entscheide, ob du ein Dessert willst.", opts: [
+        { tr: "Ja, das Tiramisù, danke." },
+        { tr: "Nein danke, nur einen Kaffee." }
+      ] },
+      { tr: "Ausgezeichnete Wahl, kommt sofort." },
+      { tr: "Einen Kaffee, sehr gern." },
+      { tr: "Hier die Rechnung: erster Gang, Wasser und Tiramisù. Zweiundzwanzig Euro." },
+      { tr: "Hier die Rechnung: erster Gang, Wasser und Kaffee. Sechzehn Euro." },
+      { task: "Frag, ob du mit Karte zahlen kannst.", tr: "Kann ich mit Karte zahlen?" },
+      { tr: "Natürlich, das Kartengerät ist hier. Danke und einen schönen Abend." }
+    ]
   }
 });

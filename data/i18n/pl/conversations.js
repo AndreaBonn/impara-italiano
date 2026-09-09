@@ -188,5 +188,39 @@ LINGUAI.addStrings("pl", {
         tr: "Zupełnie się nie zgadzam: hybryda pozwala wybierać zależnie od typu pracy."
       }
     ]
+  },
+  "conv:ristorante-scelte": {
+    title: "Przy stoliku, z kilkoma decyzjami",
+    setting: "Piątek wieczorem, trattoria za rogiem. Tym razem rozmowa idzie za tym, co powiesz: w trzech miejscach wybierasz jedną z dwóch odpowiedzi.",
+    closing: "Rachunek na końcu zgadzał się z tym, co padło przy stoliku. Na tym polega różnica między wyborem a ozdobą.",
+    turns: [
+      { tr: "Dobry wieczór. Mają państwo rezerwację?" },
+      { task: "Powiedz, czy macie rezerwację.", opts: [
+        { tr: "Tak, mam rezerwację na nazwisko Rossi." },
+        { tr: "Nie, jest nas dwoje. Jest miejsce?" }
+      ] },
+      { tr: "Świetnie. Stolik przy oknie. Proszę tędy." },
+      { tr: "Stolik dla dwojga jest, w głębi sali. Proszę." },
+      { tr: "Oto menu. A do picia?" },
+      { task: "Zamów butelkę wody niegazowanej.", tr: "Butelkę wody niegazowanej poproszę." },
+      { tr: "Niegazowana, już podaję. A na pierwsze danie?" },
+      { task: "Wybierz pierwsze danie.", opts: [
+        { tr: "Dla mnie carbonara." },
+        { tr: "Makaron z pomidorami: jestem wegetarianką." }
+      ] },
+      { tr: "Dziś carbonara jest wyśmienita, guanciale chrupiące." },
+      { tr: "W takim razie polecam pomidory z bazylią: bazylia jest z naszego ogródka." },
+      { tr: "Deser na koniec? Tiramisu robimy sami." },
+      { task: "Zdecyduj, czy chcesz deser.", opts: [
+        { tr: "Tak, tiramisu, dziękuję." },
+        { tr: "Nie, dziękuję, tylko kawa." }
+      ] },
+      { tr: "Świetny wybór, już podaję." },
+      { tr: "Kawa, doskonale." },
+      { tr: "Oto rachunek: pierwsze danie, woda i tiramisu. Dwadzieścia dwa euro." },
+      { tr: "Oto rachunek: pierwsze danie, woda i kawa. Szesnaście euro." },
+      { task: "Zapytaj, czy możesz zapłacić kartą.", tr: "Mogę zapłacić kartą?" },
+      { tr: "Oczywiście, terminal jest tutaj. Dziękuję i miłego wieczoru." }
+    ]
   }
 });

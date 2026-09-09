@@ -99,9 +99,13 @@ levels.forEach(function (lv) {
 (sandbox.CONVERSATIONS || []).forEach(function (c) {
   (c.turns || []).forEach(function (t) {
     if (t.sp === "TY") {
-      // model odpowiedzi, odtwarzany przyciskiem „Pokaż odpowiedź"
-      const acc = t.accept || (t.it ? [t.it] : []);
-      if (acc[0]) addP(acc[0]);
+      // model odpowiedzi, odtwarzany przyciskiem „Pokaż odpowiedź".
+      // Przy rozwidleniu KAŻDA gałąź ma własny wzór i własny przycisk:
+      // nagranie tylko pierwszej zostawia drugą gałąź niemą.
+      const wzory = t.opts
+        ? t.opts.map(function (o) { return (o.accept || [])[0]; })
+        : [(t.accept || (t.it ? [t.it] : []))[0]];
+      wzory.forEach(function (w) { if (w) addP(w); });
     } else {
       addO(t.it);
     }

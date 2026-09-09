@@ -124,6 +124,14 @@
     if (!p) return;
     copy(c, p, ["title", "setting", "closing"]);
     objByIndex(c.turns, p.turns, ["tr", "task"]);
+    /* Tura z rozwidleniem ma tłumaczenie NA KAŻDEJ gałęzi, bo każda jest
+       osobną repliką ucznia. Kierunek (`go`) i klucz odpowiedzi zostają
+       w warstwie neutralnej: gdyby wjechały do nakładki, zmiana języka
+       mogłaby przestawić przebieg dialogu. */
+    (c.turns || []).forEach(function (tura, n) {
+      var pt = p.turns && p.turns[n];
+      if (tura.opts && pt && pt.opts) objByIndex(tura.opts, pt.opts, ["tr"]);
+    });
   }
 
   function applyRef(lang) {

@@ -908,3 +908,4 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .cov__h{font-size:1.15rem;margin:26px 0 4px;}
 .cov__done{margin-top:22px;font-weight:600;}
 .cov__src{margin-top:26px;color:var(--ink-faint);font-size:.84rem;}
+#covList .js-f{color:var(--ink-faint);font-size:.86rem;}

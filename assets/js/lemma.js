@@ -180,7 +180,7 @@
     /* Formy skrócone przed apostrofem i cząstki, które w tekście stoją
        samotnie. „c" pochodzi z „c'era", „mal" z „mal di testa": bez nich
        dotknięcie trafiało w literę, której nie da się objaśnić. */
-    "c né ne' sé se' no né mal quei lui lei esso essa").split(/\s+/);
+    "c né ne' sé se' no né mal quei lui lei esso essa io tu noi voi me te sé").split(/\s+/);
 
   /* Liczebniki. Zbiór zamknięty, uczony w A1, a w tekstach o cenach,
      godzinach i rozkładach jazdy siedzi ich pełno. Bez tego „quattro"
@@ -372,8 +372,22 @@
     return out;
   }
 
+  /**
+   * Bezokolicznik, jeśli ta forma jest formą czasownika. Inaczej "".
+   *
+   * Wystawiony osobno, bo to jedyny kandydat, któremu można ufać bez
+   * słownika: pochodzi z koniugatora, a nie z reguł zgadujących liczbę
+   * mnogą. Widok „Pokrycie" wybiera po nim hasło do pokazania.
+   */
+  function lemat(slowo) {
+    var w = String(slowo).toLowerCase().replace(/[’\']/g, "'");
+    var z = zbuduj()[w];
+    return z && z.length ? z[0] : "";
+  }
+
   global.Lemma = {
     resolve: resolve,
+    lemat: lemat,
     kandydaci: kandydaci,
     uzyjSlownika: uzyjSlownika,
     dodajCzasowniki: dodajCzasowniki,

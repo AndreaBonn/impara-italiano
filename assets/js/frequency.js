@@ -91,16 +91,64 @@
    * wykonać. Braki spoza kursu są widoczne w różnicy dwóch liczb, nie na
    * liście do klikania.
    */
-  function brakujace(words, kurs, uczen, limit) {
-    var out = [];
-    for (var i = 0; i < (words || []).length && out.length < (limit || 20); i++) {
-      var forma = words[i][0];
-      if (posiadana(forma, uczen)) continue;
-      if (!posiadana(forma, kurs)) continue;
-      if (global.Lemma && global.Lemma.funkcyjne(forma)) continue;
-      out.push({ forma: forma, ranga: i + 1, ile: words[i][1] });
+  /**
+   * Hasło kursu, do którego sprowadza się ta forma. Puste = kurs go nie zna.
+   *
+   * Wynik jest tym, co trafi na fiszkę, więc widok ma pokazywać TO, a nie
+   * formę z listy. Pierwsza wersja pokazywała formę i dodawała hasło:
+   * uczeń widział „ha", słyszał „ha" (bez nagrania, bo nagrany jest
+   * bezokolicznik) i dostawał kartę „avere".
+   */
+  function hasloKursu(forma, kurs) {
+    var L = global.Lemma;
+    if (!L) return Object.prototype.hasOwnProperty.call(kurs, forma) ? forma : "";
+
+    /* Najpierw bezokolicznik, jeśli to forma czasownika. Ta kolejność jest
+       całą poprawką: „ha" i „ho" SĄ w słowniku kursu jako osobne wyrazy,
+       bo zwroty wielowyrazowe rozkładamy na słowa — więc sprawdzenie
+       dosłowne wygrywało i lista braków pokazywała cztery razy „avere"
+       pod czterema różnymi formami. */
+    var inf = L.lemat(forma);
+    if (inf && Object.prototype.hasOwnProperty.call(kurs, inf)) return inf;
+
+    if (Object.prototype.hasOwnProperty.call(kurs, forma)) return forma;
+
+    /* Reguły liczby mnogiej są heurystyką, więc idą na końcu: „casa" nie
+       ma się zwinąć do „caso" tylko dlatego, że kurs zna oba. */
+    var k = L.kandydaci(forma);
+    for (var i = 0; i < k.length; i++) {
+      if (Object.prototype.hasOwnProperty.call(kurs, k[i])) return k[i];
     }
-    return out;
+    return "";
+  }
+
+  /**
+   * Najczęstsze HASŁA, których uczeń nie ma, a kurs ich uczy.
+   *
+   * Zwijane po haśle, nie po formie. Lista częstości ma osobno „ho", „ha",
+   * „hai", „hanno" — bez zwinięcia pierwsza piątka braków to cztery razy
+   * to samo słowo, co wygląda jak usterka i marnuje jedyne miejsce, w
+   * którym podsuwamy uczniowi coś do zrobienia.
+   *
+   * Ranga to najlepsza (najniższa) z rang jego form, częstość — suma.
+   */
+  function brakujace(words, kurs, uczen, limit) {
+    var wg = {};
+    var kolejnosc = [];
+    (words || []).forEach(function (para, i) {
+      var forma = para[0];
+      if (global.Lemma && global.Lemma.funkcyjne(forma)) return;
+      if (posiadana(forma, uczen)) return;
+      var haslo = hasloKursu(forma, kurs);
+      if (!haslo) return;
+      if (!wg[haslo]) {
+        wg[haslo] = { haslo: haslo, ranga: i + 1, ile: 0, formy: [] };
+        kolejnosc.push(haslo);
+      }
+      wg[haslo].ile += para[1];
+      if (wg[haslo].formy.indexOf(forma) < 0) wg[haslo].formy.push(forma);
+    });
+    return kolejnosc.slice(0, limit || 20).map(function (h) { return wg[h]; });
   }
 
   Frequency.posiadana = posiadana;

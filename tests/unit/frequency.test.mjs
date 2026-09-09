@@ -74,26 +74,38 @@ describe("frequency: najbliższe braki", () => {
     const s = silnik();
     const kurs = { casa: true, libro: true, bere: true };
     const uczen = { bere: true };
-    const braki = s.Frequency.brakujace(LISTA, kurs, uczen, 10);
-    const formy = Array.from(braki).map(b => b.forma);
-    assert.ok(formy.includes("casa"), "kurs zna, uczeń nie ma");
-    assert.ok(formy.includes("libri"), "też przez odmianę: libro w kursie");
-    assert.ok(!formy.includes("bevo"), "uczeń ma bere, więc bevo nie jest brakiem");
-    assert.ok(!formy.includes("xyzzy"), "kurs tego nie uczy: podsuwanie byłoby przerzuceniem roboty");
+    const hasla = Array.from(s.Frequency.brakujace(LISTA, kurs, uczen, 10)).map(b => b.haslo);
+    assert.ok(hasla.includes("casa"), "kurs zna, uczeń nie ma");
+    assert.ok(hasla.includes("libro"), "wychodzi HASŁO, nie forma „libri” z listy");
+    assert.ok(!hasla.includes("bere"), "uczeń ma bere, więc bevo nie jest brakiem");
+    assert.ok(!hasla.includes("xyzzy"), "kurs tego nie uczy: podsuwanie byłoby przerzuceniem roboty");
+  });
+
+  test("formy tego samego hasła zwijają się w jeden wiersz", () => {
+    const s = silnik();
+    /* Lista częstości ma osobno „ho”, „ha”, „hai”: bez zwinięcia pierwsza
+       piątka braków to cztery razy to samo słowo. */
+    const lista = [["ho", 90], ["ha", 80], ["hai", 70], ["casa", 10]];
+    const braki = Array.from(s.Frequency.brakujace(lista, { avere: true, casa: true }, {}, 10));
+    const hasla = braki.map(b => b.haslo);
+    assert.equal(hasla.filter(h => h === "avere").length, 1, "jeden wiersz na hasło");
+    const avere = braki.filter(b => b.haslo === "avere")[0];
+    assert.equal(avere.ile, 240, "częstość to suma form");
+    assert.equal(avere.ranga, 1, "ranga to najlepsza z rang jego form");
+    assert.ok(Array.from(avere.formy).length >= 3, "formy zachowane jako kontekst");
   });
 
   test("wyrazy funkcyjne nie trafiają na listę do klikania", () => {
     const s = silnik();
-    const braki = s.Frequency.brakujace(LISTA, { che: true, casa: true }, {}, 10);
-    const formy = Array.from(braki).map(b => b.forma);
-    assert.ok(!formy.includes("che"), "„che” jest rodzajem gramatyki, nie fiszką");
-    assert.ok(formy.includes("casa"));
+    const hasla = Array.from(s.Frequency.brakujace(LISTA, { che: true, casa: true }, {}, 10)).map(b => b.haslo);
+    assert.ok(!hasla.includes("che"), "„che” jest rodzajem gramatyki, nie fiszką");
+    assert.ok(hasla.includes("casa"));
   });
 
   test("kolejność idzie za częstością i niesie rangę", () => {
     const s = silnik();
     const braki = Array.from(s.Frequency.brakujace(LISTA, { casa: true, libro: true }, {}, 10));
-    assert.equal(braki[0].forma, "casa", "częstsze pierwsze");
+    assert.equal(braki[0].haslo, "casa", "częstsze pierwsze");
     assert.equal(braki[0].ranga, 3, "ranga to pozycja na liście, nie w wyniku");
     assert.ok(braki[0].ile > braki[1].ile);
   });

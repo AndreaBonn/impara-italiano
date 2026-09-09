@@ -158,8 +158,11 @@
     if (znane && !funkcyjny) {
       karta.innerHTML =
         '<div class="lk-card__head"><b class="lk-card__lemma"></b>' +
-        '<button type="button" class="say-btn" data-say="' + esc(haslo) + '" aria-label="' +
-        esc(t("a11y.listenTo", { what: haslo })) + '">🔊</button>' +
+        /* Jak w widoku Pokrycie: bez nagrania nie ma przycisku. */
+        (Audio2.hasNatural(haslo)
+          ? '<button type="button" class="say-btn" data-say="' + esc(haslo) + '" aria-label="' +
+            esc(t("a11y.listenTo", { what: haslo })) + '">🔊</button>'
+          : "") +
         '<button type="button" class="lk-card__x js-close" aria-label="' + esc(t("lookup.close")) + '">✕</button></div>' +
         '<label class="lk-card__lab">' + esc(t("lookup.meaning")) +
         '<input type="text" class="field js-tr"></label>' +

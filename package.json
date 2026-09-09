@@ -10,10 +10,14 @@
     "validate": "node scripts/validate.mjs",
     "parity": "node scripts/parity.mjs",
     "check:precache": "node scripts/check_precache.mjs",
+    "lint": "eslint .",
     "serve": "node scripts/serve.mjs"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
-    "axe-core": "^4.13.0"
+    "axe-core": "^4.13.0",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0"
   }
 }

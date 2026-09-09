@@ -1,7 +1,8 @@
 # CLAUDE.md — Impara l'Italiano
 
 Statyczna platforma do nauki włoskiego z wyjaśnieniami w języku ucznia. Bez backendu,
-bez build stepu, bez zależności zewnętrznych poza fontami Google.
+bez build stepu, bez ani jednej zależności w czasie działania — kroje pisma też leżą
+w repozytorium (`assets/fonts/`), więc strona nie odpytuje żadnej cudzej domeny.
 
 Włoski jest zawsze językiem **uczonym**. Językiem **wyjaśnień** jest polski albo angielski
 (`en` = odmiana amerykańska, locale `en-US`) i uczeń go wybiera; `settings.lang` trzyma wybór.
@@ -24,6 +25,34 @@ Włoski jest zawsze językiem **uczonym**. Językiem **wyjaśnień** jest polski
   dla warstwy neutralnej, potem dla tekstów, i dopiero wtedy woła `LINGUAI.applyStrings(lang)`.
   Nowy poziom = wpis w `data/core/curriculum-index.js` z tablicą `dataFiles` (same nazwy plików,
   bez katalogu).
+- **Jeden plik, jedna odpowiedzialność, jeden globalny.** Każdy plik w `assets/js/` przypisuje
+  jeden obiekt do `window` i czyta cudze przez `global.<Nazwa>`. Kolejność w `index.html` JEST
+  deklaracją zależności: plik czytający cudzy globalny przy wykonaniu modułu (a nie dopiero
+  w środku funkcji) musi stać po nim. Ta sama kolejność jest powtórzona w `sw.js` (PRECACHE)
+  i w stałych `CORE` / `VERBS` w `tests/unit/_harness.mjs` — trzy miejsca, jedna prawda.
+
+### Mapa silnika
+
+Kto od kogo zależy, w kolejności wczytywania. Strzałka idzie w jedną stronę: `store` nie wie
+nic o `srs`, `srs` nie wie nic o postępach lekcji.
+
+| Plik | Globalny | Co trzyma |
+|---|---|---|
+| `text.js` | `Txt` | porównywanie tekstu: normalizacja, Levenshtein, ocena odpowiedzi otwartej |
+| `notice.js` | `Notice` | komunikaty na ekranie: znikające i te, które zostają do zamknięcia |
+| `store.js` | `Store` | `state`, zapis do localStorage, potarcie przy pełnej pamięci, migracje, import |
+| `registry.js` | `Registry` | struktura kursu i dociąganie plików poziomu przez `<script>` |
+| `srs.js` | `Srs` | talia powtórek: FSRS na słownictwie, SM-2 dla quaderno błędów |
+| `core.js` | `Core` | postępy ucznia (lekcje, passa, XP, kopia zapasowa) **oraz fasada całego silnika** |
+
+`Core` wystawia dalej wszystko z tabeli pod dotychczasowymi nazwami (`Core.norm`, `Core.save`,
+`Core.addCard`, `Core.getLesson`…), bo woła je kilkanaście widoków. Nowy kod może iść wprost do
+modułu; stary nie musi się zmieniać. To jest fasada, nie warstwa: nie ma tam logiki.
+
+Ta sama zasada niżej: `verbs-data.js` (tabele włoskiego) przed `verbs.js` (algorytm);
+`exercises.js` (dyspozytor + wspólne kawałki) przed `exercises-choice/text/voice.js`
+(czternaście typów, wołają `Ex.register`); `views.js` (skorupa i `Views.shell`) przed
+kilkunastoma `views-*.js`, po jednym na ekran.
 
 ## Kontrakty
 
@@ -82,21 +111,39 @@ Tablice łączą się **po indeksie**, więc ich długość musi być identyczna
 neutralnych — dlatego drugi język można nałożyć na te same obiekty bez przeładowania strony.
 
 ### Ćwiczenie
-Typ w polu `t`. Czternaście typów obsługiwanych w `assets/js/exercises.js`:
-`mcq`, `multi`, `truefalse`, `fill`, `trans`, `cloze`, `order`, `match`, `conj`, `gender`,
-`listen`, `speak`, `dialogue`, `minpair`. Każdy builder zwraca `{html, wire(root, onDone)}`.
-`onDone(ok)` wywoływane **dokładnie raz** — na tym opiera się licznik postępu lekcji oraz
-przechwytywanie błędów, które owija `wire` (`assets/js/errors.js`).
+Typ w polu `t`. Czternaście typów, po trzech plikach, wg tego CO ROBI UCZEŃ:
+
+- `exercises-choice.js` — wybiera: `mcq`, `truefalse`, `multi`, `match`, `gender`, `minpair`
+- `exercises-text.js` — pisze: `fill`, `trans`, `cloze`, `order`, `conj`
+- `exercises-voice.js` — słucha i mówi: `listen`, `speak`, `dialogue`
+
+Każdy woła `Ex.register(typ, builder)`, a `Ex.build` pyta o rejestr dopiero przy budowaniu
+ćwiczenia. Builder zwraca `{html, wire(root, onDone)}`, `onDone(ok)` wywoływane **dokładnie
+raz** — na tym opiera się licznik postępu lekcji oraz przechwytywanie błędów, które owija
+`wire` (`assets/js/errors.js`).
+
+**Nieznany typ nie wywraca lekcji**: dyspozytor oddaje kafelek „nieznany typ" o poprawnym
+kształcie. To znaczy, że zapomniany `<script>` rodziny wygląda jak działający kurs z jednym
+zepsutym ćwiczeniem — dlatego `tests/dom/exercises.spec.js` sprawdza nie tylko kształt, ale
+i to, że zbudowany kafelek ma `data-idx`, czego zastępnik nie ma.
 
 `minpair` nie stoi w żadnej lekcji: powstaje w czasie działania z `data/core/phonetics.js`.
-`truefalse` też nie występuje w danych, choć silnik go zna.
+`truefalse` też nie występuje w lekcjach, ale jest w czytankach.
 
 ### Odmiana czasowników
 `Verbs.conjugate(infinito, tenseKey)` zwraca sześć form albo `null` na pozycjach bez formy
 (np. `io` w trybie rozkazującym). Klucze czasów: `pres, passPross, imperf, trapPross, futuro,
 futAnt, remoto, condizionale, condPass, cong, congPass, congImp, congTrap, imper`.
 Nieregularne siedzą w tablicy `IRR`; reszta jest wyprowadzana regułami, łącznie ze zmianami
-ortograficznymi (`-care/-gare/-ciare/-giare/-iare`).
+ortograficznymi (`-care/-gare/-ciare/-giare/-iare`). Tabele (`IRR`, końcówki, listy `ISC`
+i `ESSERE_VERBS`, `TENSES`, `COMMON`) leżą w `verbs-data.js`: dopisanie czasownika nie dotyka
+pliku z algorytmem. W `verbs.js` została lista przedrostków i jej dwa wyjątki, bo to strojenie
+heurystyki `irrOf`, a nie włoszczyzna do przeglądania.
+
+**Zwrotne w trybie rozkazującym**: zaimek dokleja się do form tu/noi/voi (`alzati`,
+`alziamoci`, `alzatevi`) i stoi przed formą grzecznościową (`si alzi`). Krótka forma tu gubi
+apostrof i podwaja spółgłoskę (`fa'` + `ti` → `fatti`). Przeczenia silnik NIE zna: włoskie
+„non alzarti" bierze bezokolicznik, więc `"non " + forma` byłoby błędem.
 
 ## Dźwięk
 
@@ -268,10 +315,11 @@ z poprzedniej wersji tego pliku.
 | Czytanki / zadania pisane / zbiory par minimalnych | 12 / 6 / 5 |
 | Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
-| Nagrania | 2657 plików mp3, 34 MB |
+| Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
 | Klucze interfejsu na język | 671 × 5 języków |
-| Testy jednostkowe | 371 przebiegów, zielone |
-| Testy DOM | 141 deklaracji, 160 przebiegów, zielone |
+| Pliki silnika | 53 w `assets/js/`, 10 551 linii |
+| Testy jednostkowe | 555 przebiegów w 24 plikach, zielone |
+| Testy DOM | 198 przebiegów w 26 plikach, zielone |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
 „29 testów jednostkowych, 17 DOM". Były prawdziwe w dniu wprowadzenia suity i przestały być
@@ -288,15 +336,30 @@ Ten drugi trzyma stare skrypty mimo zmian na dysku, więc strona pokazuje niepra
 a błędu szuka się w kodzie, który już jest poprawiony. `serve.mjs` odpowiada zawsze
 z `Cache-Control: no-store` i nie wychodzi poza katalog projektu.
 
-Suity testowe pilnują dwóch rzeczy, których żaden z powyższych skryptów nie widzi:
+Suity testowe pilnują rzeczy, których żaden z powyższych skryptów nie widzi. Wspólny
+mianownik: każda z nich broni przed awarią, która NIE wywraca kursu — bo te, które go
+wywracają, widać bez testu.
 
 - `tests/unit/` — stan. `merge`, `load`, `save`, `importState`, harmonogram SM-2
   i próg zaliczenia lekcji. Silnik wjeżdża do `node:vm` tym samym wzorcem, co
   w `validate.mjs`; czas i `localStorage` są podstawione, bo `save()` jest
   zdebouncowane na 180 ms, a pełnej kwoty nie da się wywołać inaczej.
-- `tests/dom/` — kontrakt ćwiczeń. `onDone(ok)` woła się **dokładnie raz** dla
-  każdego z 13 typów. Na tym opiera się licznik postępu: drugie wywołanie niczego
+  Atrapa DOM trzyma uchwyty zdarzeń (`el.fire("click")`) i kolejkę wstrzykiwanych
+  skryptów (`box.settleScripts([nieudane])`) — bez nich nie da się sprawdzić ani
+  zamknięcia komunikatu, ani tego, co się dzieje, gdy plik poziomu nie wejdzie.
+- `tests/unit/audio.test.mjs` — zgodność skrótów z Pythonem. Nazwa nagrania liczy się
+  dwa razy, w dwóch językach; rozjazd nie daje błędu, tylko cichy zjazd na syntezę
+  systemową. Test sprawdza wszystkie zdania z `scripts/audio-strings.json` wobec
+  **plików na dysku**, a nie wobec drugiej implementacji skrótu.
+- `tests/dom/exercises.spec.js` — kontrakt: `onDone(ok)` woła się **dokładnie raz** dla
+  każdego z 14 typów. Na tym opiera się licznik postępu: drugie wywołanie niczego
   nie wywraca, tylko po cichu zawyża wynik.
+- `tests/dom/exercises-grading.spec.js` — WERDYKT: każdy typ przechodzi dwa razy, raz
+  z odpowiedzią dobrą, raz ze złą. Kontrakt wyżej przepuszcza builder, który każdą
+  odpowiedź uznaje za błędną: to nadal „dokładnie raz".
+- `tests/dom/routes.spec.js` — każda trasa ma zarejestrowany widok. Router przy braku
+  widoku pokazuje ścieżkę nauki zamiast paść (`app.js`), więc zapomniany `<script>`
+  wygląda jak działający kurs z jedną pozycją menu prowadzącą gdzie indziej.
 - `tests/dom/contrast.spec.js` — kontrast liczony **przez przeglądarkę**, w obu
   motywach. Paleta jest w OKLCH, a zewnętrzne narzędzia a11y czytają
   `oklch(0.31 0.035 350)` jako trójkę RGB i wypisują kanał „350": ich wynik jest

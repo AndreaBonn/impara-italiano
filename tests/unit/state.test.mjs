@@ -686,3 +686,59 @@ describe("ciągłość eksportu przez F1", () => {
     assert.equal(znowu.Core.state.schema, SCHEMA);
   });
 });
+
+describe("dziennik powtórek", () => {
+  test("każda ocena zostawia wpis z kluczem, czasem i oceną", () => {
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.addCard("mangiare", "jeść", "a1-u01-l1");
+    const key = box.Core.cardKey("mangiare");
+    box.Core.gradeCard(key, 5);
+    box.Core.gradeCard(key, 0);
+
+    const d = box.Core.state.reviews;
+    assert.equal(d.length, 2);
+    assert.equal(d[0].k, key);
+    assert.equal(d[0].q, 5);
+    assert.equal(d[1].q, 0);
+    assert.ok(d[0].t > 0 && d[1].t >= d[0].t, "czasy rosną");
+  });
+
+  test("starszy profil bez dziennika dostaje go pustym", () => {
+    const box = loadEngine({ seed: { [KEY]: saved({ xp: 3 }) } });
+    box.Core.load();
+    assert.deepEqual(Array.from(box.Core.state.reviews), []);
+    assert.equal(box.Core.state.xp, 3);
+  });
+
+  test("dziennik przeżywa zapis, odczyt i eksport", () => {
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.addCard("mangiare", "jeść", "a1-u01-l1");
+    box.Core.gradeCard(box.Core.cardKey("mangiare"), 4);
+    box.Core.save();
+    box.flush();
+    assert.equal(box.stored(KEY).reviews.length, 1);
+
+    const znowu = loadEngine();
+    znowu.Core.load();
+    znowu.Core.importState(box.Core.exportState());
+    assert.equal(znowu.Core.state.reviews.length, 1, "przechodzi przez eksport");
+  });
+
+  test("dziennik ustępuje miejsca PO błędach, a przed postępami lekcji", () => {
+    const box = loadEngine({ storage: makeStorage({ limit: 4000 }) });
+    box.Core.load();
+    box.Core.state.lessons["a1-u01-l1"] = { done: true, score: 9, total: 10 };
+    for (let i = 0; i < 300; i++) box.Core.state.reviews.push({ k: "k" + i, t: i, q: 4 });
+    for (let i = 0; i < 30; i++) box.Core.state.errors["e" + i] = { kind: "authored", reps: 3, ts: i };
+    box.Core.save();
+    box.flush();
+
+    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "postęp lekcji zostaje");
+    assert.ok(
+      Object.keys(box.Core.state.errors).length < 30 || box.Core.state.reviews.length < 300,
+      "coś ustąpiło miejsca"
+    );
+  });
+});

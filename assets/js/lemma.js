@@ -57,13 +57,12 @@
 
     /* Hasła kursu na -are/-ere/-ire to bezokoliczniki i trzeba je odmienić:
        bez tego „aspetta" i „sceglie" są ciszą, mimo że kurs uczy obu
-       czasowników. COMMON i IRR z verbs.js pokrywają tylko część kursu. */
-    var reg = global.Core && global.Core.registry;
-    if (reg && reg.vocabIndex) {
-      Object.keys(reg.vocabIndex).forEach(function (haslo) {
-        if (czasownikowe(haslo)) zbior[haslo] = true;
-      });
-    }
+       czasowników. COMMON i IRR z verbs.js pokrywają tylko część kursu.
+       Źródłem jest CAŁY słownik, nie sam leksykon lekcji: czasownik
+       dopisany do czytanki ma się odmieniać tak samo jak ten z lekcji. */
+    Object.keys(slownikKursu()).forEach(function (haslo) {
+      if (czasownikowe(haslo)) zbior[haslo] = true;
+    });
     return Object.keys(zbior);
   }
 
@@ -159,7 +158,11 @@
     "quello quella quelli quelle piu più meno molto poco tanto troppo gia già " +
     "anche ancora sempre mai poi allora però pero cosi così tutto tutta tutti tutte " +
     "c'è ce sono sia suo sua suoi sue mio mia miei mie tuo tua tuoi tue " +
-    "nostro nostra nostri nostre vostro vostra vostri vostre loro").split(/\s+/);
+    "nostro nostra nostri nostre vostro vostra vostri vostre loro " +
+    /* Formy skrócone przed apostrofem i cząstki, które w tekście stoją
+       samotnie. „c" pochodzi z „c'era", „mal" z „mal di testa": bez nich
+       dotknięcie trafiało w literę, której nie da się objaśnić. */
+    "c né ne' sé se' no né mal").split(/\s+/);
 
   /* Liczebniki. Zbiór zamknięty, uczony w A1, a w tekstach o cenach,
      godzinach i rozkładach jazdy siedzi ich pełno. Bez tego „quattro"
@@ -168,24 +171,77 @@
     "undici dodici tredici quattordici quindici sedici diciassette diciotto diciannove " +
     "venti trenta quaranta cinquanta sessanta settanta ottanta novanta cento mille mila " +
     "primo prima secondo seconda terzo terza quarto quarta quinto quinta " +
-    "milione milioni miliardo miliardi").split(/\s+/);
+    "milione milioni miliardo miliardi " +
+    /* Formy przed apostrofem: „vent'anni", „trent'anni". Rozcinanie
+       zostawia sam człon dziesiątkowy, a to nadal liczebnik. */
+    "vent trent quarant cinquant sessant settant ottant novant").split(/\s+/);
 
   var funkcyjneSet = {};
   FUNKCYJNE.concat(LICZEBNIKI).forEach(function (w) { funkcyjneSet[w] = true; });
 
-  /* Słownik rozstrzygający. Domyślnie pytamy kurs; test i bramka mogą
-     podstawić własny, bo one nie ładują całego kursu. */
+  /* --------------------------------------------------------
+     Słownik rozstrzygający.
+
+     Budowany TUTAJ, a nie u wołającego, i to jest cały powód istnienia
+     tej sekcji. Pierwsza wersja miała dwie budowy: jedną w przeglądarce
+     z Core.registry, drugą ręcznie w skrypcie sprawdzającym. Dwie budowy
+     rozjeżdżają się przy pierwszej zmianie i wtedy bramka mierzy coś
+     innego niż to, co dostaje uczeń — czyli zieleń bez pokrycia.
+     -------------------------------------------------------- */
+  var slownik = null;
   var znane = null;
 
-  function domyslnieZnane(haslo) {
+  function dodajDoSlownika(zbior, s) {
+    if (!s) return;
+    var w = String(s).toLowerCase().replace(/[’']/g, "'").trim();
+    if (!w) return;
+    zbior[w] = true;
+    /* Hasło wielowyrazowe wnosi też swoje słowa: „di solito" sprawia,
+       że „solito" przestaje być ciszą. */
+    if (w.indexOf(" ") >= 0) {
+      w.split(/\s+/).forEach(function (x) { if (x.length > 1) zbior[x] = true; });
+    }
+  }
+
+  /**
+   * Zbiera włoskie hasła kursu: leksykon lekcji plus słowa czytanek.
+   *
+   * @param {Array} poziomy  Core.registry.levels albo równoważne
+   * @param {Array} czytanki window.READINGS
+   */
+  function zbudujSlownik(poziomy, czytanki) {
+    var zbior = {};
+    (poziomy || []).forEach(function (lv) {
+      (lv.units || []).forEach(function (u) {
+        (u.lessons || []).forEach(function (l) {
+          (l.vocab || []).forEach(function (v) { dodajDoSlownika(zbior, v.it); });
+        });
+      });
+    });
+    (czytanki || []).forEach(function (r) {
+      (r.glossIt || []).forEach(function (w) { dodajDoSlownika(zbior, w); });
+      /* lexIt: słowa, które lookup ma umieć objaśnić, ale których NIE
+         pokazujemy w panelu trudnych słów. Panel jest listą wybraną przez
+         autora; trzydzieści pozycji pod tekstem A1 przestaje być wyborem. */
+      (r.lexIt || []).forEach(function (w) { dodajDoSlownika(zbior, w); });
+    });
+    return zbior;
+  }
+
+  function slownikKursu() {
+    if (slownik) return slownik;
     var reg = global.Core && global.Core.registry;
-    if (!reg || !reg.vocabIndex) return false;
-    return Object.prototype.hasOwnProperty.call(reg.vocabIndex, haslo);
+    slownik = zbudujSlownik(reg && reg.levels, global.READINGS);
+    return slownik;
   }
 
   function czyZnane(haslo) {
-    return (znane || domyslnieZnane)(haslo);
+    if (znane) return znane(haslo);
+    return Object.prototype.hasOwnProperty.call(slownikKursu(), haslo);
   }
+
+  /** Unieważnia słownik i indeks: kurs dociąga poziomy leniwie. */
+  function odswiez() { slownik = null; indeks = null; }
 
   /**
    * Podstawia słownik rozstrzygający.
@@ -239,6 +295,8 @@
     kandydaci: kandydaci,
     uzyjSlownika: uzyjSlownika,
     dodajCzasowniki: dodajCzasowniki,
+    zbudujSlownik: zbudujSlownik,
+    odswiez: odswiez,
     funkcyjne: function (w) { return !!funkcyjneSet[String(w).toLowerCase()]; },
     /** Tylko do pomiaru: ile form zna indeks i ile trwało jego zbudowanie. */
     rozmiarIndeksu: function () { return Object.keys(zbuduj()).length; }

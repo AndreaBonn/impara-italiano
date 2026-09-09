@@ -58,32 +58,11 @@ for (const p of [
   vm.runInContext(readFileSync(join(ROOT, p), "utf8"), box, { filename: p });
 }
 
-/* Słownik: włoskie hasła leksykonu + glosy z czytanek, znormalizowane
-   tak samo jak tokeny. To dokładnie to, co widzi Core.registry.vocabIndex
-   w przeglądarce — budujemy je tu wprost, żeby bramka nie potrzebowała
-   całego core.js ze stanem i localStorage. */
-const slownik = new Set();
-function dodajHaslo(s) {
-  if (!s) return;
-  const w = String(s).toLowerCase().replace(/[’']/g, "'").trim();
-  if (w) slownik.add(w);
-  /* Hasło wielowyrazowe wnosi też swoje słowa: „di solito" ma sprawić,
-     że „solito" przestanie być ciszą. */
-  if (w.includes(" ")) w.split(/\s+/).forEach(x => { if (x.length > 1) slownik.add(x); });
-}
-for (const lv of levels) {
-  for (const u of lv.units || []) {
-    for (const l of u.lessons || []) {
-      (l.vocab || []).forEach(v => dodajHaslo(v.it));
-    }
-  }
-}
-for (const r of box.READINGS || []) (r.glossIt || []).forEach(dodajHaslo);
-
-box.window.Lemma.uzyjSlownika(w => slownik.has(w));
-/* Bezokoliczniki kursu do odmiany: bez tego indeks zna tylko 115 czasowników
-   z verbs.js, a kurs uczy ich znacznie więcej. */
-box.window.Lemma.dodajCzasowniki([...slownik]);
+/* Słownik budujemy TYM SAMYM kodem, co przeglądarka: Lemma.zbudujSlownik.
+   Druga budowa tutaj znaczyłaby, że bramka mierzy co innego niż dostaje
+   uczeń, i rozjechałaby się przy pierwszej zmianie po jednej ze stron. */
+box.window.Lemma.uzyjSlownika(null);
+box.Core = { registry: { levels } };
 
 /**
  * Tokenizacja tekstu włoskiego.
@@ -140,6 +119,27 @@ for (const r of READINGS) {
 }
 
 const pokrycie = wszystkie ? rozpoznane / wszystkie : 1;
+
+
+/* --dump: lista mancanti per testo, con la forma base proposta dal
+   resolver. Serve a scrivere le glosse, non a decidere il gate. */
+if (process.argv.includes("--dump")) {
+  const out = {};
+  for (const r of READINGS) {
+    const brak = new Map();
+    for (const zdanie of r.sentences || []) {
+      for (const t of tokeny(zdanie)) {
+        if (!Lemma.resolve(t).length) {
+          const k = Lemma.kandydaci(t);
+          brak.set(t, k.length > 1 ? k[1] : t);
+        }
+      }
+    }
+    if (brak.size) out[r.id] = Object.fromEntries(brak);
+  }
+  console.log(JSON.stringify(out, null, 1));
+  process.exit(0);
+}
 
 console.log("check_lookup — pokrycie słów w czytankach\n");
 for (const t of perTekst.sort((a, b) => a.pokrycie - b.pokrycie)) {

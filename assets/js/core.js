@@ -36,6 +36,14 @@
          istniejącego pola, tak jak przy v1 → v2, a tutaj nic nie
          zmienia znaczenia. Bump zamiast tego odrzuciłby każdy plik
          wyeksportowany przez ucznia do tej pory. */
+      /* Dziennik powtórek: {k klucz fiszki, t czas, q ocena 0/3/4/5}.
+         Wejście dla PRZYSZŁEGO strojenia parametrów FSRS na własnej
+         historii — optymalizator Anki robi to lokalnie, na urządzeniu, od
+         ok. tysiąca powtórek, więc konsument jest realny, nie wymyślony.
+         Powód, dla którego stoi tu już teraz, jest asymetryczny: kosztuje
+         grosze dzisiaj, a wstecz nie da się go odtworzyć. Kto uczy się rok
+         bez dziennika, po roku ma zero historii i nikt mu jej nie odda. */
+      reviews: [],
       errors: {},         // klucz ćwiczenia -> karta błędu
       /* Był tu `gsrs` — harmonogram per zagadnienie gramatyczne. Zadeklarowany
          przy silniku adaptacyjnym i nigdy przez nikogo nie zapisany ani nie
@@ -173,6 +181,13 @@
     Object.keys(state.drills).forEach(function (k) {
       out.push({ bag: "drills", key: k, score: 1000 });   // same liczniki, odtwarzalne
     });
+    /* Dziennik powtórek ustępuje PO błędach i drillach, bo tamte wracają
+       same przy dalszej nauce, a on nie. Ustępuje jednak przed postępami
+       lekcji i wypracowaniami: to wejście do strojenia, które jeszcze nie
+       istnieje, a tamto jest nauką, którą uczeń już odbył. */
+    if (Array.isArray(state.reviews) && state.reviews.length) {
+      out.push({ bag: "reviews", key: "", score: 500 });
+    }
     return out.sort(function (a, b) { return b.score - a.score; });
   }
 
@@ -183,7 +198,15 @@
     var cands = pruneCandidates();
     if (!cands.length) return false;
     var n = Math.min(PRUNE_BATCH, cands.length);
-    for (var i = 0; i < n; i++) delete state[cands[i].bag][cands[i].key];
+    for (var i = 0; i < n; i++) {
+      /* Dziennik powtórek jest tablicą, nie workiem pod kluczem: ustępuje
+         połową najstarszych wpisów zamiast pojedynczą pozycją. */
+      if (cands[i].bag === "reviews") {
+        state.reviews.splice(0, Math.ceil(state.reviews.length / 2));
+        continue;
+      }
+      delete state[cands[i].bag][cands[i].key];
+    }
     return true;
   }
 
@@ -520,8 +543,24 @@
     else c.reps = (c.reps || 0) + 1;
     c.interval = Math.max(0, Math.round((wynik.due - wynik.last) / DAY));
 
+    zapiszPowtorke(key, q, wynik.last);
     save();
     return c;
+  }
+
+  /* Ile powtórek trzymamy. Rekord to trzy pola, około 40 bajtów: pięć
+     tysięcy to jakieś 200 kB przy kwocie 5 MB dzielonej z całą resztą.
+     Optymalizator FSRS potrzebuje rzędu tysiąca, więc tetto z zapasem. */
+  var MAX_REVIEWS = 5000;
+
+  function zapiszPowtorke(key, q, kiedy) {
+    if (!Array.isArray(state.reviews)) state.reviews = [];
+    state.reviews.push({ k: key, t: kiedy, q: q });
+    /* Przycinamy od najstarszej: świeża historia opisuje pamięć taką,
+       jaka jest teraz, i to ona ma wartość dla strojenia. */
+    if (state.reviews.length > MAX_REVIEWS) {
+      state.reviews.splice(0, state.reviews.length - MAX_REVIEWS);
+    }
   }
 
   function dueCards(limit) {
@@ -769,7 +808,7 @@
     schema: "number", createdAt: "number", xp: "number", minutes: "number",
     lessons: "object", srs: "object", saved: "object",
     settings: "object", streak: "object", stats: "object",
-    errors: "object", drills: "object",
+    errors: "object", drills: "object", reviews: "array",
     session: "object", writing: "object"
   };
 

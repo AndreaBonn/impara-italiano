@@ -66,6 +66,35 @@ Decisione: nessun dizionario spedito, risoluzione forma-lemma a runtime dal coni
 regole di de-flessione. `scripts/check_lookup.mjs` resta come gate, con la soglia dichiarata
 prima di leggere il numero (C3 del piano).
 
+## R5 - RIBALTATA: il registro delle ripetizioni si aggiunge
+
+**La versione qui sotto è sbagliata e resta scritta perché l'errore è istruttivo.**
+Il ragionamento (un contenitore senza consumatore è complessità che non si ripaga) era corretto;
+il fatto su cui poggiava non lo era.
+
+Fatto verificato dopo: **l'ottimizzatore FSRS di Anki gira in locale, sul dispositivo, sullo
+storico dell'utente**, da circa mille ripetizioni in su, senza alcun server. Quindi "i parametri
+resteranno ai default per sempre" è falso, e con esso cade "nessuno leggerà mai quel registro".
+
+Quel che regge davvero la decisione è un'asimmetria che avevo mancato: **il registro costa poco
+adesso ed è irrecuperabile dopo.** Uno storico di ripetizioni non si ricostruisce
+retroattivamente. Se l'ottimizzatore arriva fra un anno, chi ha studiato un anno riparte da
+zero, e quella perdita è definitiva. Non è una feature speculativa: è l'unica finestra per
+catturare un dato che non si raccoglie a posteriori.
+
+Decisione: `reviews[]` entra, additivo, con tetto e potatura dalla voce più vecchia. Nessun bump
+di schema (contenitore nuovo, `merge()` lo riempie da solo sui profili esistenti). Il criterio
+di successo di O4 resta la parità con i vettori di riferimento, perché il registro abilita una
+misura futura, non ne produce una oggi.
+
+Quello che resta impossibile, e su cui la versione sbagliata aveva ragione: un **confronto
+controllato** fra SM-2 e FSRS sullo stesso studente. Non si rieseguono i ricordi di una persona.
+Quello non è un limite di questo progetto, è un limite della cosa misurata.
+
+---
+
+### Versione originale, sbagliata (conservata)
+
 ## R5 - Registro delle ripetizioni: NON si aggiunge
 
 `plan.md` § 5 prevede un contenitore `reviews[]` con tetto. Si toglie.

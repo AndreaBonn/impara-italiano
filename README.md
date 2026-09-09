@@ -7,7 +7,7 @@ Działa w przeglądarce, nie wymaga konta ani internetu po pierwszym wczytaniu, 
 
 - **150 lekcji** ułożonych w 32 tematyczne jednostki, od powitania w barze po język prawniczy i ironię
 - **1500 ćwiczeń** w trzynastu formatach: wybór, prawda/fałsz, uzupełnianie luk, tłumaczenie, układanie zdań, łączenie w pary, odmiana czasowników, dyktando ze słuchu i wymowa do mikrofonu
-- **10 rozmów na głos**: aplikacja mówi po włosku, Ty odpowiadasz — bar, targ, restauracja, dworzec, lekarz, wynajem mieszkania, rozmowa o pracę, urząd, dyskusja przy stole
+- **14 rozmów na głos**: aplikacja mówi po włosku, Ty odpowiadasz — bar, przedstawianie się, targ, restauracja, dworzec, lekarz, wynajem mieszkania, rozmowa o pracę, urząd, dyskusja przy stole. W czterech z nich rozmowa się rozwidla: to, co powiesz, zmienia jej dalszy ciąg, a po dojściu do końca możesz wrócić do wyboru i zobaczyć drugą gałąź
 - **1400 słówek** z wymową i systemem powtórek, który przypomina o nich dokładnie wtedy, kiedy zaczynasz zapominać
 - **Głos lektorski**, nie robot: każde włoskie zdanie kursu jest nagrane głosem neuronowym (Isabella), a rozmówca w dialogach mówi drugim głosem (Giuseppe)
 - **Gramatyka od A do Z**: 42 hasła obejmujące pełny program CEFR
@@ -79,47 +79,73 @@ Każda jednostka kończy się sprawdzianem, każdy poziom egzaminem. Próg zalic
 ```
 index.html              powłoka aplikacji
 assets/css/app.css      cały wygląd
+assets/fonts/           Fraunces i Inter, u siebie (kurs nie odpytuje cudzych domen)
 assets/js/
-  core.js               stan, zapis postępów, algorytm powtórek SM-2
-  audio.js              synteza i rozpoznawanie mowy
+  core.js               stan, zapis postępów, harmonogram powtórek
+  fsrs.js               harmonogram fiszek (FSRS; quaderno błędów został na SM-2)
+  i18n.js               nakładanie języka wyjaśnień na dane kursu
+  audio.js              nagrania lektorskie, synteza i rozpoznawanie mowy
   verbs.js              silnik odmiany czasowników
   exercises.js          trzynaście typów ćwiczeń
   views.js              ekrany aplikacji
+  views-*.js            pojedyncze ekrany wyjęte z views.js (rozmowy, trening, czytanki…)
   app.js                router i start
 data/
-  curriculum-index.js   mapa poziomów
-  a1-*.js … c2-*.js     treść lekcji
-  conversations.js      scenariusze rozmów
-  grammar-reference.js  encyklopedia gramatyczna
+  core/                 warstwa neutralna: struktura, włoski, klucze odpowiedzi
+    curriculum-index.js   mapa poziomów
+    a1-*.js … c2-*.js     treść lekcji
+    conversations.js      scenariusze rozmów
+    grammar-reference.js  encyklopedia gramatyczna
+  i18n/<lang>/          wyjaśnienia w języku ucznia (pl, en, es, fr, de)
   audio-index.js        skróty zdań, które mają nagranie (generowany)
 audio/<xx>/<hash>.mp3   nagrania lektorskie (generowane)
+sw.js                   praca bez sieci
 scripts/
   validate.mjs          kontrola spójności danych
+  parity.mjs            czy każdy język ma ten sam kształt co polski
+  check_precache.mjs    czy guska wczyta wszystko, co ładuje index.html
   extract_strings.mjs   lista zdań do nagrania
   build_audio.py        generowanie nagrań (uv + edge-tts + ffmpeg)
 ```
 
 ## Dodawanie własnych lekcji
 
-Treść jest oddzielona od silnika. Nowa jednostka to obiekt dopisany do pliku poziomu:
+Treść jest oddzielona od silnika, a od kiedy kurs mówi w pięciu językach — także od
+wyjaśnień. Jednostka mieszka więc w dwóch plikach o tej samej nazwie.
+
+W `data/core/` idzie to, co jest włoskie, sprawdza odpowiedź albo trzyma strukturę:
 
 ```js
 LINGUAI.addUnits("A1", [{
-  id: "a1-u11", icon: "🚲", titleIt: "In bicicletta", titlePl: "Rowerem po mieście",
-  grammarPl: "przyimki ruchu",
+  id: "a1-u11", icon: "🚲", titleIt: "In bicicletta",
   lessons: [ /* … */ ],
   test: { /* … */ }
 }]);
 ```
 
+W `data/i18n/<lang>/` idzie to, co uczeń czyta po swojemu — same napisy, ta sama kolejność:
+
+```js
+LINGUAI.addStrings("pl", {
+  "unit:a1-u11": { title: "Rowerem po mieście", grammarNote: "przyimki ruchu" },
+  "lesson:a1-u11-l1": { title: "…", theme: "…", objectives: [ /* … */ ] }
+});
+```
+
+Tablice łączą się **po indeksie**, więc po obu stronach muszą mieć tyle samo elementów.
+Uwaga kontrastywna („w twoim języku jest inaczej") pisze się dla każdego języka od nowa,
+nie tłumaczy: to, co dla Polaka jest pułapką, dla Amerykanina bywa nieistotne.
+
 Po dopisaniu uruchom kontrolę:
 
 ```bash
-node scripts/validate.mjs
+node scripts/validate.mjs      # duplikaty id, kompletność ćwiczeń, statystyki
+node scripts/parity.mjs        # czy każdy język ma ten sam kształt co polski
 ```
 
-Skrypt sprawdza duplikaty identyfikatorów, kompletność ćwiczeń, zgodność liczby luk z liczbą
-odpowiedzi i wypisuje statystyki kursu. Zwraca kod błędu, jeśli coś się nie zgadza.
+Pierwszy sprawdza duplikaty identyfikatorów, kompletność ćwiczeń i zgodność liczby luk z
+liczbą odpowiedzi. Drugi pilnuje, żeby nakładka krótsza o jeden element nie zostawiła po
+cichu jednego ćwiczenia w poprzednim języku. Oba zwracają kod błędu, jeśli coś się nie zgadza.
 
 Nowe zdania włoskie nie mają jeszcze nagrania i odezwą się głosem systemowym. Żeby je dograć:
 

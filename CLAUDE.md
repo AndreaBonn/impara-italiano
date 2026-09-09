@@ -264,10 +264,10 @@ z poprzedniej wersji tego pliku.
 | Co | Ile |
 |---|---|
 | Jednostki / lekcje / ćwiczenia | 32 / 150 / 1514 |
-| Pozycje słownika / rozmowy / hasła gramatyczne | 1410 / 10 / 42 |
+| Pozycje słownika / rozmowy / hasła gramatyczne | 1412 / 14 / 42 |
 | Czytanki / zadania pisane / zbiory par minimalnych | 12 / 6 / 5 |
 | Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
-| Typy ćwiczeń obecnych w danych | **13** (`truefalse` 12 wystąpień, wszystkie z pytań do czytanek) |
+| Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 2657 plików mp3, 34 MB |
 | Klucze interfejsu na język | 671 × 5 języków |
 | Testy jednostkowe | 371 przebiegów, zielone |

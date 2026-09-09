@@ -60,12 +60,42 @@
 
   var state = defaultState();
 
+  /**
+   * Wczytuje stan, przeprowadzając starszy zapis przez schodki migracji.
+   *
+   * Do niedawna warunkiem było `parsed.schema === SCHEMA`, równość ścisła,
+   * a `migrateUp` wisiało wyłącznie pod `importState`. Zapis o innym numerze
+   * schematu był więc po cichu pomijany: bez błędu, bez śladu, z pustym
+   * profilem na ekranie i bez możliwości odkręcenia tego przez ucznia.
+   * Nie wybuchało tylko dlatego, że nikt jeszcze nie podniósł schematu —
+   * czyli wybuchłoby przy pierwszym podniesieniu, w najgorszym momencie.
+   *
+   * Kierunki nie są symetryczne i nie mają prawa być:
+   * - starszy zapis (`schema < SCHEMA`) idzie przez `MIGRATIONS` — wiemy,
+   *   jak go podnieść, bo sami napisaliśmy każdy stopień;
+   * - zapis z przyszłości (`schema > SCHEMA`) jest odrzucany w całości.
+   *   Wczytanie połowiczne byłoby gorsze niż odmowa: pola o zmienionym
+   *   znaczeniu weszłyby do stanu wyglądając poprawnie. To samo robi
+   *   `validateImport` przy imporcie z pliku.
+   *
+   * `MIGRATIONS` jest przypisywane niżej w tym pliku, ale `load()` woła
+   * dopiero `app.js` po wykonaniu całego modułu, więc tablica jest gotowa.
+   */
   function load() {
     try {
       var raw = global.localStorage.getItem(STORE_KEY);
       if (raw) {
         var parsed = JSON.parse(raw);
-        if (parsed && parsed.schema === SCHEMA) state = merge(defaultState(), parsed);
+        if (!parsed || typeof parsed.schema !== "number") return;
+        if (parsed.schema > SCHEMA) return;
+        if (parsed.schema === SCHEMA) { state = merge(defaultState(), parsed); return; }
+
+        var podniesiony = migrateUp(parsed);
+        /* Stopień może nie istnieć: wtedy numer się nie ruszy i zapis
+           zostaje nietknięty na dysku, zamiast wejść w niespójnym kształcie. */
+        if (podniesiony.schema !== SCHEMA) return;
+        state = podniesiony;
+        save();
         return;
       }
       var old = global.localStorage.getItem(STORE_KEY_V1);

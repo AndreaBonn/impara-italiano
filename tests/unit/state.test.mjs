@@ -451,3 +451,68 @@ describe("potarcie tylko przy braku miejsca", () => {
     assert.ok(Object.keys(box.Core.state.errors).length < 40, "coś ustąpiło miejsca");
   });
 });
+
+/* ============================================================
+   T010 — load() a schodki migracji.
+
+   Defekt utajony, znaleziony przy planowaniu F1, niezależny od FSRS:
+   `load()` (core.js:68) przyjmuje zapis WYŁĄCZNIE przy `schema === SCHEMA`
+   i nigdy nie woła `migrateUp`. Schodki migracji są podpięte tylko pod
+   `importState` (core.js:698). Zapis o innym numerze schematu jest więc
+   po cichu pomijany, bez błędu i bez śladu: uczeń widzi pusty profil i
+   nie ma jak się domyślić, co się stało ani tego odkręcić.
+
+   Dziś to nie wybucha, bo nikt jeszcze nie podniósł schematu. Wybuchłoby
+   przy pierwszym podniesieniu, czyli w najgorszym możliwym momencie —
+   dlatego naprawa idzie TERAZ, osobno od decyzji o FSRS (R1 w
+   specs/002-corso-irrinunciabile/riconciliazione.md).
+
+   Te testy mają być czerwone przed poprawką z T011.
+   ============================================================ */
+describe("load: zapis starszego schematu przechodzi przez migracje", () => {
+  /** Zapis w kształcie v1: fiszka kluczowana włoskim RAZEM z polskim. */
+  function zapisV1(over) {
+    return JSON.stringify(Object.assign({
+      schema: 1,
+      xp: 40,
+      lessons: { "a1-u01-l1": { done: true, score: 8, total: 10 } },
+      srs: {
+        "un caffe|kawa": { it: "un caffè", pl: "kawa", ef: 2.5, reps: 3, interval: 9, due: 111 }
+      }
+    }, over));
+  }
+
+  test("postępy z zapisu v1 pod kluczem v2 nie przepadają", () => {
+    const box = loadEngine({ seed: { [KEY]: zapisV1() } });
+    box.Core.load();
+
+    assert.equal(box.Core.state.xp, 40, "XP przechodzi przez migrację");
+    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "postęp lekcji przechodzi");
+    assert.equal(box.Core.state.schema, SCHEMA, "po migracji numer schematu jest bieżący");
+  });
+
+  test("fiszka v1 zostaje przekluczowana na sam włoski", () => {
+    const box = loadEngine({ seed: { [KEY]: zapisV1() } });
+    box.Core.load();
+
+    const klucze = Object.keys(box.Core.state.srs);
+    assert.equal(klucze.length, 1, "jedna fiszka, jeden klucz");
+    assert.ok(!klucze[0].includes("|"), "klucz nie niesie już tłumaczenia");
+    assert.equal(box.Core.state.srs[klucze[0]].tr.pl, "kawa", "glosa ląduje pod językiem");
+    assert.equal(box.Core.state.srs[klucze[0]].interval, 9, "harmonogram zostaje nietknięty");
+  });
+
+  test("zapis bieżącego schematu wczytuje się jak dotąd", () => {
+    const box = loadEngine({ seed: { [KEY]: saved({ xp: 7, settings: { rate: 0.8 } }) } });
+    box.Core.load();
+    assert.equal(box.Core.state.xp, 7);
+    assert.equal(box.Core.state.settings.rate, 0.8);
+  });
+
+  test("zapis z przyszłości jest odrzucany, a nie wczytywany połowicznie", () => {
+    const box = loadEngine({ seed: { [KEY]: saved({ schema: SCHEMA + 1, xp: 999 }) } });
+    box.Core.load();
+    assert.equal(box.Core.state.xp, 0, "nic z nowszego pliku nie wchodzi do stanu");
+    assert.equal(box.Core.state.schema, SCHEMA, "stan zostaje na swoim schemacie");
+  });
+});

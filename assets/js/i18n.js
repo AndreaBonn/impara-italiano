@@ -170,6 +170,19 @@
     });
   }
 
+  /**
+   * Zadania pisemne. Polecenie i lista kontrolna są w nakładce, bo je
+   * czyta uczeń; przyjmowane wersje włoskie zostają w warstwie neutralnej.
+   */
+  function applyWriting(lang) {
+    (global.WRITING || []).forEach(function (w) {
+      var p = get(lang, "write:" + w.id);
+      if (!p) return;
+      copy(w, p, ["title", "brief", "checklist"]);
+      byIndex(w.items, (p.items || []).map(function (x) { return x.q; }), "q");
+    });
+  }
+
   function applyStrings(lang) {
     var reg = global.Core && global.Core.registry;
     if (reg) reg.levels.forEach(function (lv) { applyLevel(lv, lang); });
@@ -177,6 +190,7 @@
     applyRef(lang);
     applyPhonetics(lang);
     applyReadings(lang);
+    applyWriting(lang);
   }
 
   /* ═══════════════════════════════════════════════════════════

@@ -187,7 +187,10 @@
       '<button class="btn btn--ghost btn--sm js-sounds">' + esc(t("sound.open")) + "</button></div>" +
       '<div class="list-row" style="margin-top:12px"><span class="list-row__main"><b>' +
       esc(t("read.title")) + "</b><span>" + esc(t("read.hubHint")) + "</span></span>" +
-      '<button class="btn btn--ghost btn--sm js-read">' + esc(t("read.open")) + "</button></div>");
+      '<button class="btn btn--ghost btn--sm js-read">' + esc(t("read.open")) + "</button></div>" +
+      '<div class="list-row" style="margin-top:12px"><span class="list-row__main"><b>' +
+      esc(t("write.title")) + "</b><span>" + esc(t("write.hubHint")) + "</span></span>" +
+      '<button class="btn btn--ghost btn--sm js-write">' + esc(t("write.open")) + "</button></div>");
 
     el().querySelectorAll(".js-topic").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -196,6 +199,7 @@
     });
     el().querySelector(".js-sounds").addEventListener("click", function () { App.go("suoni"); });
     el().querySelector(".js-read").addEventListener("click", function () { App.go("lettura"); });
+    el().querySelector(".js-write").addEventListener("click", function () { App.go("scrittura"); });
   };
 
   /**

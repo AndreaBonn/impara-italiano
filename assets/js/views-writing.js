@@ -1,0 +1,188 @@
+/* ============================================================
+   views-writing.js — pisanie po włosku bez sprawdzającego.
+
+   Bez backendu nikt nie oceni wypracowania, więc kurs mówi wprost,
+   czego NIE ocenia. To, co da się zmierzyć, mierzy writing.js:
+   zadeklarowane konstrukcje albo są w tekście, albo ich nie ma.
+   Reszta — sens, brzmienie, spójność — zostaje uczniowi, z modelem
+   do porównania i krótką listą pytań, na które odpowiada sam.
+
+   BEZPIECZEŃSTWO: tekst ucznia trafia do DOM wyłącznie przez
+   textContent. Nigdy przez innerHTML, także w podglądzie i w
+   podsumowaniu. Ten tekst wychodzi z aplikacji przez eksport stanu i
+   może wejść do cudzej przeglądarki przez import — więc jest treścią
+   niezaufaną, choć napisał ją właściciel profilu.
+
+   Skrypt klasyczny. Wymaga core.js, writing.js, exercises.js, views.js.
+   ============================================================ */
+(function (global) {
+  "use strict";
+
+  var esc = Core.esc;
+  var t = function (k, v) { return I18n.t(k, v); };
+  var set = Views.shell.set;
+  var pageHead = Views.shell.head;
+
+  function zadania() { return global.WRITING || []; }
+  function zadanie(id) { return zadania().filter(function (w) { return w.id === id; })[0]; }
+
+  Views.scrittura = function (params) {
+    var w = params && params.id ? zadanie(params.id) : null;
+    if (w) return widok(w);
+
+    set(pageHead(t("write.kicker"), t("write.title"), t("write.intro")) +
+      '<div class="stack">' + zadania().map(function (x) {
+        var zapis = Writing.load(x.id);
+        return '<div class="list-row"><span class="chip chip--cefr">' + esc(x.cefr || "") + "</span>" +
+          '<span class="list-row__main"><b>' + esc(x.title || x.titleIt) + "</b>" +
+          "<span>" + esc(t(x.kind === "translate" ? "write.kindTranslate" : "write.kindCompose")) +
+          (zapis ? " · " + esc(t("write.saved", { n: zapis.words })) : "") + "</span></span>" +
+          '<button class="btn btn--primary btn--sm js-open" data-id="' + esc(x.id) + '">' +
+          esc(t(zapis ? "write.reopen" : "write.open")) + "</button></div>";
+      }).join("") + "</div>");
+
+    Views.shell.root().querySelectorAll(".js-open").forEach(function (b) {
+      b.addEventListener("click", function () { App.go("scrittura", { id: b.getAttribute("data-id") }); });
+    });
+  };
+
+  function widok(w) {
+    set('<button class="btn btn--ghost btn--sm js-back" style="margin-bottom:14px">' + esc(t("write.back")) + "</button>" +
+      pageHead(t("write.kicker") + " · " + esc(w.cefr), w.title || w.titleIt, w.brief || "") +
+      '<div id="writeBox"></div>');
+    Views.shell.root().querySelector(".js-back").addEventListener("click", function () { App.go("scrittura"); });
+
+    var box = document.getElementById("writeBox");
+    if (w.kind === "translate") return tlumaczenie(w, box);
+    return kompozycja(w, box);
+  }
+
+  /* ---------------- Tłumaczenie zdanie po zdaniu ---------------- */
+
+  /**
+   * Zwykłe ćwiczenia `trans`: zdanie źródłowe z nakładki, przyjmowane
+   * wersje włoskie z warstwy neutralnej. Żadnego nowego typu — dzięki
+   * temu wynik trafia do quaderno błędów tą samą drogą co wszystko inne.
+   */
+  function tlumaczenie(w, box) {
+    var zbudowane = (w.items || []).map(function (it, i) {
+      return Ex.build({ t: "trans", dir: "toIt", q: it.q || "", a: it.a }, i, "write-" + w.id);
+    });
+    box.innerHTML = zbudowane.map(function (b) { return b.html; }).join("") +
+      '<div id="writeSum" style="margin-top:18px"></div>';
+
+    var wezly = box.querySelectorAll(".exq");
+    var zrobione = 0, dobre = 0;
+    zbudowane.forEach(function (b, i) {
+      b.wire(wezly[i], function (ok) {
+        if (ok) dobre++;
+        if (++zrobione === zbudowane.length) {
+          document.getElementById("writeSum").innerHTML =
+            '<div class="summary"><div class="summary__score">' + dobre + "/" + zbudowane.length + "</div>" +
+            '<p class="summary__msg">' + esc(t("write.transDone")) + "</p></div>";
+        }
+      });
+    });
+    Ex.wireSpeakers(box);
+  }
+
+  /* ---------------- Kompozycja ---------------- */
+
+  function kompozycja(w, box) {
+    var zapis = Writing.load(w.id);
+
+    box.innerHTML =
+      '<div class="card" style="margin-bottom:16px"><h3 style="font-size:1rem;margin-bottom:8px">' +
+      esc(t("write.mustUse")) + "</h3>" + listaWymagan(w, null) + "</div>" +
+      '<label for="writeText" class="sr-only">' + esc(t("write.yourText")) + "</label>" +
+      '<textarea id="writeText" class="field js-text" rows="10" ' +
+      'placeholder="' + esc(t("write.placeholder", { n: w.minWords || 40 })) + '"></textarea>' +
+      '<p class="exq__sub js-count" style="margin:8px 0 14px"></p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button class="btn btn--primary js-check">' + esc(t("write.check")) + "</button>" +
+      '<button class="btn btn--ghost js-model" hidden>' + esc(t("write.showModel")) + "</button></div>" +
+      '<div id="writeResult" style="margin-top:18px"></div>';
+
+    var ta = box.querySelector(".js-text");
+    /* Tekst z poprzedniej sesji wchodzi jako WARTOŚĆ pola, nie jako HTML. */
+    if (zapis) ta.value = zapis.text;
+
+    var licznik = box.querySelector(".js-count");
+    function odswiezLicznik() {
+      licznik.textContent = t("write.words", { n: Writing.wordCount(ta.value) });
+    }
+    ta.addEventListener("input", odswiezLicznik);
+    odswiezLicznik();
+
+    box.querySelector(".js-check").addEventListener("click", function () {
+      var wynik = Writing.analyse(ta.value, w.requires);
+      Writing.save(w.id, ta.value, wynik);
+      pokazWynik(w, box, wynik, ta.value);
+      box.querySelector(".js-model").hidden = false;
+    });
+
+    box.querySelector(".js-model").addEventListener("click", function () {
+      pokazModel(w, document.getElementById("writeResult"));
+    });
+  }
+
+  /** Lista wymagań; z wynikiem po sprawdzeniu, bez niego przed. */
+  function listaWymagan(w, wynik) {
+    return '<div class="stack">' + (w.requires || []).map(function (req, i) {
+      var r = wynik ? wynik[i] : null;
+      var opis = req.verb
+        ? t("write.reqVerb", { verb: req.verb, tense: nazwaCzasu(req.tense) })
+        : req.any ? t("write.reqAny", { list: req.any.join(", ") })
+          : t("write.reqWord", { word: req.word });
+      return '<div class="list-row"><span class="list-row__main"><b>' + esc(opis) + "</b>" +
+        (r && r.hit ? "<span>" + esc(t("write.foundAs", { form: r.hit })) + "</span>" : "") + "</span>" +
+        (r ? '<span class="chip' + (r.found ? " chip--green" : "") + '">' +
+          esc(t(r.found ? "write.yes" : "write.no")) + "</span>" : "") + "</div>";
+    }).join("") + "</div>";
+  }
+
+  function nazwaCzasu(key) {
+    var lista = (global.Verbs && Verbs.TENSES) || [];
+    for (var i = 0; i < lista.length; i++) if (lista[i].key === (key || "pres")) return lista[i].labelIt;
+    return key || "pres";
+  }
+
+  function pokazWynik(w, box, wynik, tekst) {
+    var znalezione = wynik.filter(function (r) { return r.found; }).length;
+    var slowa = Writing.wordCount(tekst);
+    var host = document.getElementById("writeResult");
+
+    host.innerHTML = '<h2 style="font-size:1.2rem;margin-bottom:10px">' + esc(t("write.whatWeChecked")) + "</h2>" +
+      listaWymagan(w, wynik) +
+      '<p class="exq__sub" style="margin-top:12px">' +
+      esc(t("write.summary", { found: znalezione, total: wynik.length, words: slowa, min: w.minWords || 0 })) + "</p>" +
+      '<div class="card card--contrast" style="margin-top:16px"><h3 style="font-size:1rem;margin-bottom:6px">' +
+      esc(t("write.notChecked")) + "</h3><p>" + esc(t("write.notCheckedText")) + "</p>" +
+      '<div class="stack" style="margin-top:10px">' + (w.checklist || []).map(function (c) {
+        return '<div class="list-row"><span class="list-row__main"><b>' + esc(c) + "</b></span></div>";
+      }).join("") + "</div></div>";
+  }
+
+  function pokazModel(w, host) {
+    if (host.querySelector(".js-model-box")) return;
+    var d = document.createElement("div");
+    d.className = "card js-model-box";
+    d.style.marginTop = "16px";
+    var h = document.createElement("h3");
+    h.style.fontSize = "1rem";
+    h.style.marginBottom = "6px";
+    h.textContent = t("write.model");
+    var p = document.createElement("p");
+    /* Model jest włoski i pochodzi z kursu, ale wstawiamy go jako tekst:
+       jedna reguła dla całego widoku jest łatwiejsza do utrzymania niż
+       wyjątek, o którym ktoś kiedyś zapomni. */
+    p.textContent = w.model || "";
+    var nota = document.createElement("p");
+    nota.className = "exq__sub";
+    nota.style.marginTop = "8px";
+    nota.textContent = t("write.modelNote");
+    d.appendChild(h); d.appendChild(p); d.appendChild(nota);
+    host.appendChild(d);
+  }
+
+})(window);

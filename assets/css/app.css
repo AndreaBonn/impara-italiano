@@ -559,6 +559,9 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
 }
 .field:focus{outline:none;border-color:var(--rosa-deep);box-shadow:0 0 0 4px oklch(0.605 0.160 16 / .14);}
 .field-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+/* Wypracowanie potrzebuje szerokości i wysokości, których pole jednoliniowe
+   nie daje: 420 px na tekst o osiemdziesięciu słowach to pisanie w rurce. */
+textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize:vertical;}
 
 /* tokens (ordinamento) */
 .tok-target{

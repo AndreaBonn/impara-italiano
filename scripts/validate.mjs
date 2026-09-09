@@ -60,7 +60,7 @@ run("assets/js/i18n.js");
 const dataFiles = readdirSync(join(ROOT, "data", "core"))
   .filter(f => /^[abc]\d-\d+\.js$/.test(f))
   .sort();
-const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js"];
+const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js", "writing.js"];
 ALL.forEach(f => run(join("data", "core", f)));
 /* Migawka warstwy neutralnej ZANIM nakładka wpisze teksty ucznia: po
    applyStrings te same obiekty niosą już tłumaczenia i skan nic nie znaczy. */
@@ -69,6 +69,7 @@ const neutralneDane = JSON.parse(JSON.stringify({
   conversations: sandbox.CONVERSATIONS || [],
   grammar: (sandbox.GRAMMAR_REF || []).map(s => ({ items: (s.items || []).map(i => ({ id: i.id, cefr: i.cefr })) })),
   phonetics: sandbox.PHONETICS || [],
+  writing: (sandbox.WRITING || []).map(w => ({ id: w.id, titleIt: w.titleIt, model: w.model, items: (w.items || []).map(i => ({ a: i.a })) })),
   readings: (sandbox.READINGS || []).map(r => ({ id: r.id, titleIt: r.titleIt, sentences: r.sentences, questions: r.questions }))
 }));
 
@@ -212,6 +213,31 @@ const readIds = new Set();
   }
   (r.questions || []).forEach((q, i) => checkExercise(q, `czytanka ${r.id}#${i + 1}`));
   if (r.tag) usedTags.push({ where: `czytanka ${r.id}`, tag: r.tag });
+});
+
+/* Zadania pisemne */
+const writeIds = new Set();
+(sandbox.WRITING || []).forEach(w => {
+  if (writeIds.has(w.id)) errors.push(`Duplikat id zadania pisemnego: ${w.id}`);
+  writeIds.add(w.id);
+  if (!w.title) errors.push(`Zadanie ${w.id}: brak tytułu w nakładce`);
+  if (!w.brief) errors.push(`Zadanie ${w.id}: brak polecenia w nakładce`);
+  if (w.kind === "compose") {
+    if (!Array.isArray(w.requires) || !w.requires.length) errors.push(`Zadanie ${w.id}: brak wymagań`);
+    if (!w.model) errors.push(`Zadanie ${w.id}: brak tekstu modelowego`);
+    (w.requires || []).forEach((r, i) => {
+      if (!r.verb && !r.word && !r.any) errors.push(`Zadanie ${w.id}, wymaganie ${i}: puste`);
+    });
+  } else if (w.kind === "translate") {
+    if (!Array.isArray(w.items) || !w.items.length) errors.push(`Zadanie ${w.id}: brak zdań`);
+    (w.items || []).forEach((it, i) => {
+      if (!Array.isArray(it.a) || !it.a.length) errors.push(`Zadanie ${w.id}, zdanie ${i}: brak wersji włoskiej`);
+      if (!it.q) errors.push(`Zadanie ${w.id}, zdanie ${i}: brak zdania źródłowego w nakładce`);
+    });
+  } else {
+    errors.push(`Zadanie ${w.id}: nieznany rodzaj „${w.kind}”`);
+  }
+  if (w.tag) usedTags.push({ where: `zadanie ${w.id}`, tag: w.tag });
 });
 
 /* Pary minimalne */

@@ -398,8 +398,26 @@
    * Dzięki temu uczeń, który przełączy się na angielski, nie gubi harmonogramu
    * powtórek: ta sama karta zyskuje drugą glosę.
    */
+  /**
+   * Dokłada fiszkę. Zwraca klucz albo `null`, gdy treść jest odrzucona.
+   *
+   * ODRZUCENIE KLUCZY ZASTRZEŻONYCH. `merge()` filtruje `__proto__`,
+   * `constructor` i `prototype`, ale ta droga jej nie przechodzi: idzie
+   * prosto przez `cardKey` do `state.srs[k] = {…}`, a `norm()` podkreśleń
+   * nie rusza. Fiszka o takiej treści ustawiłaby PROTOTYP obiektu zamiast
+   * założyć w nim właściwość — zniknęłaby z `Object.keys` i z zapisu, a
+   * odczyt dowolnego brakującego klucza zacząłby trafiać w podstawiony
+   * obiekt. Cicho, bo nic się nie wywraca.
+   *
+   * Do tej pory nieosiągalne: fiszki zakładał wyłącznie kurs. Import cudzej
+   * talii z pliku czyni z tego wektor, więc obrona wchodzi razem z nim.
+   * Odrzucamy zamiast przemianowywać: to nie są włoskie słowa i nie ma
+   * czego ratować, a przemianowanie zostawiłoby w talii klucz, którego
+   * uczeń nie umie z niczym powiązać.
+   */
   function addCard(it, tr, src) {
     var k = cardKey(it);
+    if (!k || isForbidden(k)) return null;
     var lang = state.settings.lang;
     var card = state.srs[k];
     if (!card) {
@@ -942,7 +960,7 @@
     norm: norm, fold: fold, stripAccents: stripAccents, levenshtein: levenshtein,
     similarity: similarity, checkOpen: checkOpen,
     today: today, touchDay: touchDay,
-    cardKey: cardKey, addCard: addCard, cardTr: cardTr,
+    cardKey: cardKey, addCard: addCard, cardTr: cardTr, isForbidden: isForbidden,
     schedule: schedule, gradeCard: gradeCard,
     dueCards: dueCards, dueCount: dueCount,
     lessonState: lessonState, isLessonDone: isLessonDone,

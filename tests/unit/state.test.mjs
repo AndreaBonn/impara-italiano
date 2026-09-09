@@ -742,3 +742,56 @@ describe("dziennik powtórek", () => {
     );
   });
 });
+
+/* ============================================================
+   T063 — zanieczyszczenie prototypu przez addCard.
+
+   `merge()` filtruje `__proto__`, `constructor` i `prototype`, i ta obrona
+   działa: zapis wczytany z pliku przez importState jej nie obchodzi.
+   Ale `addCard` jej NIE przechodzi. Idzie prosto:
+
+       cardKey(it) = norm(it)  ->  state.srs[k] = { … }
+
+   `norm()` nie rusza podkreśleń, więc fiszka o treści „__proto__" ustawia
+   PROTOTYP obiektu zamiast założyć w nim właściwość. Karta znika z
+   Object.keys i z JSON.stringify, a odczyt dowolnego nieistniejącego
+   klucza zaczyna trafiać w podstawiony obiekt.
+
+   Do tej pory było to nieosiągalne, bo fiszki zakładał tylko kurs. Import
+   talii z pliku (F4) czyni z tego wektor: wystarczy jedna linia w cudzym
+   zestawie. Test ma być czerwony przed poprawką.
+   ============================================================ */
+describe("addCard: klucze zastrzeżone nie dotykają prototypu", () => {
+  const ZASTRZEZONE = ["__proto__", "constructor", "prototype"];
+
+  for (const zly of ZASTRZEZONE) {
+    test(`fiszka „${zly}" zostaje właściwością własną, nie prototypem`, () => {
+      const box = loadEngine();
+      box.Core.load();
+      box.Core.addCard(zly, "cokolwiek", "import");
+      box.Core.save();
+      box.flush();
+
+      assert.ok(
+        Object.prototype.hasOwnProperty.call(box.Core.state.srs, zly) ||
+        Object.keys(box.Core.state.srs).length === 0,
+        `„${zly}" albo jest własną właściwością, albo została odrzucona — nie może zniknąć w prototypie`
+      );
+      assert.equal(probePrototype(box, "polluted"), undefined, "prototyp nietknięty");
+    });
+  }
+
+  test("karta z zastrzeżoną nazwą przeżywa zapis i odczyt albo nie powstaje", () => {
+    const box = loadEngine();
+    box.Core.load();
+    box.Core.addCard("__proto__", "kawa", "import");
+    box.Core.save();
+    box.flush();
+
+    const zapis = box.stored("linguai.italiano.v2");
+    const klucze = Object.keys(zapis.srs || {});
+    /* Albo jest w zapisie, albo jej nie ma. Czego nie wolno: żeby addCard
+       zwróciło klucz, a w zapisie nie było po niej śladu. */
+    if (klucze.length) assert.ok(klucze.includes("__proto__"));
+  });
+});

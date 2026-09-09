@@ -222,5 +222,99 @@ LINGUAI.addStrings("pl", {
       { task: "Zapytaj, czy możesz zapłacić kartą.", tr: "Mogę zapłacić kartą?" },
       { tr: "Oczywiście, terminal jest tutaj. Dziękuję i miłego wieczoru." }
     ]
+  },
+  "conv:treno-perso": {
+    title: "Przy okienku, po nieudanym pociągu",
+    setting: "Dworzec, wtorek rano. Przed tobą kasa i kolejka, za tobą pociąg, którego już nie ma.",
+    closing: "Ta sama rozmowa kosztuje osiem euro albo zero. Różnicę zrobiło jedno zdanie na początku.",
+    turns: [
+      { tr: "Dzień dobry, słucham." },
+      { task: "Powiedz, co się stało z twoim pociągiem.", opts: [
+        { tr: "Uciekł mi pociąg do Bolonii o 9:20." },
+        { tr: "Mój pociąg do Bolonii został odwołany." }
+      ] },
+      { tr: "Za pociąg, na który się nie zdążyło, nie ma zwrotu. Bilet mogę wystawić na nowo, z dopłatą różnicy." },
+      { tr: "Następny do Bolonii odjeżdża o 11:40. To osiem euro." },
+      { tr: "Odwołany przez strajk, przykro mi. W takim wypadku zmiana nic nie kosztuje." },
+      { tr: "Następny do Bolonii odjeżdża o 11:40. Bez dopłaty." },
+      { task: "Zdecyduj, czy bierzesz pociąg o 11:40.", opts: [
+        { tr: "Dobrze, wezmę ten o 11:40." },
+        { tr: "Jest coś wcześniej?" }
+      ] },
+      { tr: "Świetnie. Peron siódmy, wagon czwarty." },
+      { tr: "Wcześniej jest tylko regionalny o 10:15, ale jedzie dwie i pół godziny." },
+      { task: "Wybierz między regionalnym a czekaniem.", opts: [
+        { tr: "Trudno, wezmę regionalny." },
+        { tr: "W takim razie poczekam na ten o 11:40." }
+      ] },
+      { tr: "Regionalny o 10:15, peron trzeci." },
+      { tr: "Oto bilet. Dobrej podróży!" },
+      { task: "Podziękuj i pożegnaj się.", tr: "Dziękuję bardzo, miłego dnia." },
+      { tr: "Do widzenia." }
+    ]
+  },
+  "conv:casa-visita": {
+    title: "Oglądanie mieszkania",
+    setting: "Sobotnie popołudnie, drugie piętro bez windy. Pośredniczka otwiera drzwi i czeka na twoją reakcję.",
+    closing: "O cenę się pyta albo nie. Tu widać, ile kosztowało jej niezapytanie.",
+    turns: [
+      { tr: "No więc, to jest salon. Jak się podoba?" },
+      { task: "Powiedz pierwsze wrażenie.", opts: [
+        { tr: "Podoba mi się, ale jest mniejszy niż na zdjęciach." },
+        { tr: "Jest bardzo jasny, podoba mi się." }
+      ] },
+      { tr: "Zdjęcia zawsze trochę zwodzą. Ale to dobre trzydzieści pięć metrów, bez zmarnowanych korytarzy." },
+      { tr: "O tak, wystawa południowa: zimą ogrzewanie rzadko się włącza." },
+      { tr: "Czynsz administracyjny to osiemdziesiąt euro miesięcznie, z ogrzewaniem." },
+      { tr: "Najem to siedemset euro." },
+      { task: "Zapytaj o to, co cię teraz najbardziej interesuje.", opts: [
+        { tr: "Czy cena podlega negocjacji?" },
+        { tr: "Od kiedy jest wolne?" }
+      ] },
+      { tr: "Przy umowie na cztery lata właściciel schodzi do sześciuset pięćdziesięciu." },
+      { tr: "Jest wolne od pierwszego przyszłego miesiąca." },
+      { tr: "Od pierwszego przyszłego miesiąca. Cena zostaje jednak ta sama, siedemset." },
+      { task: "Zdecyduj, czy bierzesz mieszkanie.", opts: [
+        { tr: "Biorę je." },
+        { tr: "Przemyślę to i dam znać." }
+      ] },
+      { tr: "Doskonale. Wyślę umowę mailem do jutra." },
+      { tr: "Odezwiemy się w najbliższych dniach." },
+      { tr: "Jasne, proszę to spokojnie przemyśleć. Numer do mnie już jest." },
+      { task: "Podziękuj i pożegnaj się.", tr: "Dziękuję, do widzenia." },
+      { tr: "Do widzenia." }
+    ]
+  },
+  "conv:medico-gola": {
+    title: "U lekarza, z bólem gardła",
+    setting: "Poniedziałek, przychodnia rejonowa. Czterdzieści minut w poczekalni, pięć w gabinecie.",
+    closing: "To samo gardło, dwie różne recepty. Zdecydowało jedno zdanie o przełykaniu.",
+    turns: [
+      { tr: "Dzień dobry, proszę usiąść. Słucham." },
+      { task: "Opisz objawy.", opts: [
+        { tr: "Od trzech dni boli mnie gardło i mam gorączkę." },
+        { tr: "Od trzech dni boli mnie gardło, ale bez gorączki." }
+      ] },
+      { tr: "Trzy dni z gorączką. Ile pokazywał termometr?" },
+      { tr: "Trzydzieści osiem i pół to sporo. Proszę otworzyć usta." },
+      { tr: "Brak gorączki to już dobra wiadomość. Proszę otworzyć usta." },
+      { tr: "Gardło jest mocno zaczerwienione. Trudno przełykać?" },
+      { task: "Powiedz, czy przełykanie sprawia trudność.", opts: [
+        { tr: "Tak, ciężko mi przełykać." },
+        { tr: "Nie, po prostu mi przeszkadza." }
+      ] },
+      { tr: "W takim razie przepisuję antybiotyk: jedna tabletka co dwanaście godzin, przez sześć dni." },
+      { tr: "W takim razie bez antybiotyku: płukanki z wody z solą i dużo ciepłych płynów." },
+      { tr: "W każdym razie odpoczynek. Jeśli po trzech dniach nie będzie lepiej, proszę wrócić." },
+      { task: "Zadaj pytanie o codzienne życie.", opts: [
+        { tr: "Muszę zostać w domu i nie iść do pracy?" },
+        { tr: "Mogę uprawiać sport?" }
+      ] },
+      { tr: "Wystawię zwolnienie na trzy dni, wyślę je pracodawcy." },
+      { tr: "Sportu nie, przynajmniej dopóki gardło jest w takim stanie. Spacery tak." },
+      { tr: "Do zobaczenia. Życzę szybkiego powrotu do zdrowia." },
+      { task: "Podziękuj i pożegnaj się.", tr: "Dziękuję, panie doktorze, do widzenia." },
+      { tr: "Do widzenia." }
+    ]
   }
 });

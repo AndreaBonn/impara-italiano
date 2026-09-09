@@ -228,5 +228,99 @@ LINGUAI.addStrings("de", {
       { task: "Frag, ob du mit Karte zahlen kannst.", tr: "Kann ich mit Karte zahlen?" },
       { tr: "Natürlich, das Kartengerät ist hier. Danke und einen schönen Abend." }
     ]
+  },
+  "conv:treno-perso": {
+    title: "Am Schalter, nach einem verpassten Zug",
+    setting: "Der Bahnhof, Dienstagmorgen. Vor dir der Schalter und die Schlange, hinter dir ein Zug, der weg ist.",
+    closing: "Dasselbe Gespräch kostet acht Euro oder nichts. Den Unterschied machte ein Satz am Anfang.",
+    turns: [
+      { tr: "Guten Tag, bitte?" },
+      { task: "Sag, was mit deinem Zug passiert ist.", opts: [
+        { tr: "Ich habe den Zug um 9:20 nach Bologna verpasst." },
+        { tr: "Mein Zug nach Bologna wurde gestrichen." }
+      ] },
+      { tr: "Ein verpasster Zug wird nicht erstattet. Das Ticket kann ich aber neu ausstellen, gegen die Differenz." },
+      { tr: "Der nächste nach Bologna fährt um 11:40. Das macht acht Euro." },
+      { tr: "Wegen des Streiks gestrichen, das tut mir leid. In dem Fall kostet die Umbuchung nichts." },
+      { tr: "Der nächste nach Bologna fährt um 11:40. Sie zahlen nichts." },
+      { task: "Entscheide, ob du den um 11:40 nimmst.", opts: [
+        { tr: "Gut, ich nehme den um 11:40." },
+        { tr: "Gibt es etwas früher?" }
+      ] },
+      { tr: "Perfekt. Gleis sieben, Wagen vier." },
+      { tr: "Früher gibt es nur den Regionalzug um 10:15, der braucht aber zweieinhalb Stunden." },
+      { task: "Wähle zwischen dem Regionalzug und Warten.", opts: [
+        { tr: "Egal, ich nehme den Regionalzug." },
+        { tr: "Dann warte ich auf den um 11:40." }
+      ] },
+      { tr: "Regionalzug um 10:15, Gleis drei." },
+      { tr: "Hier ist Ihr Ticket. Gute Reise!" },
+      { task: "Bedank dich und verabschiede dich.", tr: "Vielen Dank, einen schönen Tag." },
+      { tr: "Auf Wiedersehen." }
+    ]
+  },
+  "conv:casa-visita": {
+    title: "Wohnungsbesichtigung",
+    setting: "Samstagnachmittag, zweiter Stock ohne Aufzug. Die Maklerin öffnet die Tür und wartet auf deine Reaktion.",
+    closing: "Nach dem Preis fragt man oder eben nicht. Hier sieht man, was das Nichtfragen gekostet hat.",
+    turns: [
+      { tr: "Also, das ist das Wohnzimmer. Was meinen Sie?" },
+      { task: "Sag deinen ersten Eindruck.", opts: [
+        { tr: "Es gefällt mir, aber es ist kleiner als auf den Fotos." },
+        { tr: "Es ist sehr hell, es gefällt mir." }
+      ] },
+      { tr: "Fotos täuschen immer ein wenig. Es sind aber fünfunddreißig Quadratmeter, ohne verlorene Flure." },
+      { tr: "Ja, nach Süden ausgerichtet: Im Winter springt die Heizung selten an." },
+      { tr: "Die Nebenkosten betragen achtzig Euro im Monat, Heizung inklusive." },
+      { tr: "Die Miete beträgt siebenhundert Euro." },
+      { task: "Frag das, was dich jetzt am meisten interessiert.", opts: [
+        { tr: "Ist der Preis verhandelbar?" },
+        { tr: "Ab wann ist sie frei?" }
+      ] },
+      { tr: "Bei einem Vierjahresvertrag geht der Eigentümer auf sechshundertfünfzig runter." },
+      { tr: "Sie ist ab dem Ersten des nächsten Monats frei." },
+      { tr: "Ab dem Ersten des nächsten Monats. Der Preis bleibt allerdings bei siebenhundert." },
+      { task: "Entscheide, ob du die Wohnung nimmst.", opts: [
+        { tr: "Ich nehme sie." },
+        { tr: "Ich denke darüber nach und melde mich." }
+      ] },
+      { tr: "Sehr gut. Ich schicke Ihnen den Vertrag bis morgen per Mail." },
+      { tr: "Wir hören uns in den nächsten Tagen." },
+      { tr: "Natürlich, lassen Sie sich Zeit. Meine Nummer haben Sie ja." },
+      { task: "Bedank dich und verabschiede dich.", tr: "Danke, auf Wiedersehen." },
+      { tr: "Auf Wiedersehen." }
+    ]
+  },
+  "conv:medico-gola": {
+    title: "Beim Arzt, mit Halsschmerzen",
+    setting: "Montag, Praxis im Viertel. Vierzig Minuten im Wartezimmer, fünf im Sprechzimmer.",
+    closing: "Derselbe Hals, zwei verschiedene Rezepte. Entschieden hat ein Satz übers Schlucken.",
+    turns: [
+      { tr: "Guten Tag, setzen Sie sich. Erzählen Sie." },
+      { task: "Beschreib deine Symptome.", opts: [
+        { tr: "Ich habe seit drei Tagen Halsschmerzen und Fieber." },
+        { tr: "Ich habe seit drei Tagen Halsschmerzen, aber kein Fieber." }
+      ] },
+      { tr: "Drei Tage mit Fieber. Wie hoch war es?" },
+      { tr: "Achtunddreißig fünf ist viel. Öffnen Sie bitte den Mund." },
+      { tr: "Kein Fieber ist schon eine gute Nachricht. Öffnen Sie bitte den Mund." },
+      { tr: "Der Hals ist stark gerötet. Fällt Ihnen das Schlucken schwer?" },
+      { task: "Sag, ob das Schlucken schwerfällt.", opts: [
+        { tr: "Ja, das Schlucken fällt mir schwer." },
+        { tr: "Nein, es stört nur." }
+      ] },
+      { tr: "Dann verschreibe ich Ihnen ein Antibiotikum: eine Tablette alle zwölf Stunden, sechs Tage lang." },
+      { tr: "Dann kein Antibiotikum: Gurgeln mit Salzwasser und viel warme Flüssigkeit." },
+      { tr: "In jedem Fall Ruhe. Wenn es nach drei Tagen nicht besser ist, kommen Sie wieder." },
+      { task: "Stell eine Frage zum Alltag.", opts: [
+        { tr: "Muss ich zu Hause bleiben und nicht arbeiten?" },
+        { tr: "Darf ich Sport machen?" }
+      ] },
+      { tr: "Ich schreibe Ihnen eine Krankmeldung für drei Tage und schicke sie selbst an Ihren Arbeitgeber." },
+      { tr: "Sport nein, zumindest solange der Hals so ist. Spazieren ja." },
+      { tr: "Wir sehen uns. Gute Besserung." },
+      { task: "Bedank dich beim Arzt und verabschiede dich.", tr: "Danke, Herr Doktor, auf Wiedersehen." },
+      { tr: "Auf Wiedersehen." }
+    ]
   }
 });

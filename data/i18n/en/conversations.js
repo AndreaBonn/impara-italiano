@@ -226,5 +226,99 @@ LINGUAI.addStrings("en", {
       { task: "Ask whether you can pay by card.", tr: "Can I pay by card?" },
       { tr: "Of course, the card reader is right here. Thank you and have a good evening." }
     ]
+  },
+  "conv:treno-perso": {
+    title: "At the counter, after a train that got away",
+    setting: "The station, Tuesday morning. In front of you a ticket window and a queue, behind you a train that is gone.",
+    closing: "The same conversation costs eight euros or nothing. One sentence at the start made the difference.",
+    turns: [
+      { tr: "Good morning, how can I help?" },
+      { task: "Say what happened to your train.", opts: [
+        { tr: "I missed the 9:20 train to Bologna." },
+        { tr: "My train to Bologna was cancelled." }
+      ] },
+      { tr: "A missed train is not refunded. I can reissue the ticket, though, if you pay the difference." },
+      { tr: "The next one to Bologna leaves at 11:40. That will be eight euros." },
+      { tr: "Cancelled because of the strike, I am sorry. In that case the change costs nothing." },
+      { tr: "The next one to Bologna leaves at 11:40. You pay nothing." },
+      { task: "Decide whether to take the 11:40.", opts: [
+        { tr: "All right, I will take the 11:40." },
+        { tr: "Is there anything earlier?" }
+      ] },
+      { tr: "Perfect. Platform seven, coach four." },
+      { tr: "Earlier there is only the regional at 10:15, but it takes two and a half hours." },
+      { task: "Choose between the regional and waiting.", opts: [
+        { tr: "Never mind, I will take the regional." },
+        { tr: "Then I will wait for the 11:40." }
+      ] },
+      { tr: "The 10:15 regional, platform three." },
+      { tr: "Here is your ticket. Have a good trip!" },
+      { task: "Say thank you and goodbye.", tr: "Thank you very much, have a good day." },
+      { tr: "Goodbye." }
+    ]
+  },
+  "conv:casa-visita": {
+    title: "Viewing a flat",
+    setting: "Saturday afternoon, second floor, no lift. The agent opens the door and waits for your reaction.",
+    closing: "You either ask about the price or you do not. Here you can see what not asking cost.",
+    turns: [
+      { tr: "So, this is the living room. What do you think?" },
+      { task: "Give your first impression.", opts: [
+        { tr: "I like it, but it is smaller than it looked in the photos." },
+        { tr: "It is very bright, I like it." }
+      ] },
+      { tr: "Photos always mislead a little. Still, it is thirty-five square metres, with no wasted corridors." },
+      { tr: "It is, it faces south: in winter the heating barely comes on." },
+      { tr: "The building charges are eighty euros a month, heating included." },
+      { tr: "The rent is seven hundred euros." },
+      { task: "Ask the one thing you care about now.", opts: [
+        { tr: "Is the price negotiable?" },
+        { tr: "When is it available?" }
+      ] },
+      { tr: "On a four-year contract the owner comes down to six hundred and fifty." },
+      { tr: "It is free from the first of next month." },
+      { tr: "From the first of next month. The price stays as it is, though: seven hundred." },
+      { task: "Decide whether you take the flat.", opts: [
+        { tr: "I will take it." },
+        { tr: "I will think about it and let you know." }
+      ] },
+      { tr: "Very good. I will email you the contract by tomorrow." },
+      { tr: "We will be in touch in the next few days." },
+      { tr: "Of course, take your time. You have my number." },
+      { task: "Thank them and say goodbye.", tr: "Thank you, goodbye." },
+      { tr: "Goodbye." }
+    ]
+  },
+  "conv:medico-gola": {
+    title: "At the doctor's, with a sore throat",
+    setting: "Monday, the local surgery. Forty minutes in the waiting room, five in the office.",
+    closing: "The same throat, two different prescriptions. One sentence about swallowing decided it.",
+    turns: [
+      { tr: "Good morning, have a seat. Tell me." },
+      { task: "Describe your symptoms.", opts: [
+        { tr: "I have had a sore throat for three days and a fever." },
+        { tr: "I have had a sore throat for three days, but no fever." }
+      ] },
+      { tr: "Three days with a fever. How high did it go?" },
+      { tr: "Thirty-eight and a half is high. Open your mouth, please." },
+      { tr: "No fever is good news already. Open your mouth, please." },
+      { tr: "The throat is very red. Is it hard to swallow?" },
+      { task: "Say whether swallowing is difficult.", opts: [
+        { tr: "Yes, it is hard to swallow." },
+        { tr: "No, it is just uncomfortable." }
+      ] },
+      { tr: "Then I will prescribe an antibiotic: one tablet every twelve hours, for six days." },
+      { tr: "Then no antibiotic: gargle with salt water, and plenty of warm liquids." },
+      { tr: "In any case, rest. If it is not better after three days, come back." },
+      { task: "Ask about everyday life.", opts: [
+        { tr: "Do I have to stay home from work?" },
+        { tr: "Can I do sport?" }
+      ] },
+      { tr: "I will write you a three-day sick note and send it to your employer myself." },
+      { tr: "No sport, at least while the throat is like this. Walking, yes." },
+      { tr: "See you. I hope you get well soon." },
+      { task: "Thank the doctor and say goodbye.", tr: "Thank you, doctor, goodbye." },
+      { tr: "Goodbye." }
+    ]
   }
 });

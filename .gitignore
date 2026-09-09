@@ -21,3 +21,7 @@ Thumbs.db
 .playwright-mcp/
 test-results/
 playwright-report/
+
+# dziennik pracy — zostaje na dysku i nadal się go uzupełnia,
+# ale nie wchodzi do repozytorium: to notatnik wewnętrzny, nie dokumentacja kursu
+docs/REPORT_ATTIVITA.md

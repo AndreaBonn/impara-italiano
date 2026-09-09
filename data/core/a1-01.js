@@ -300,6 +300,7 @@ LINGUAI.addUnits("A1", [
           ]
         },
         vocab: [
+          { it: "essere" },
           { it: "mi chiamo…" },
           { it: "come ti chiami?" },
           { it: "di dove sei?" },
@@ -358,6 +359,7 @@ LINGUAI.addUnits("A1", [
           ]
         },
         vocab: [
+          { it: "avere" },
           { it: "ho fame" },
           { it: "ho sete" },
           { it: "ho freddo / caldo" },

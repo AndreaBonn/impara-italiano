@@ -30,9 +30,38 @@
 (function (global) {
   "use strict";
 
-  /** Formy wielowyrazowe („sono andato") rozcinamy: indeks jest na słowa. */
+  /**
+   * Formy wielowyrazowe („sono andato", „era entrato") rozcinamy, ale
+   * POSIŁKOWNIK ZOSTAJE POZA INDEKSEM.
+   *
+   * Wcześniej wchodziły oba słowa, więc „era" trafiało do indeksu przy
+   * każdym czasowniku z „essere" (trapassato: era entrato, era rimasto...),
+   * a „hanno" przy każdym z „avere". Dotknięcie „era" w tekście pokazywało
+   * pierwszy z kilkunastu bezładnie zebranych czasowników, a nie „essere".
+   * Zmierzone: „era" rozstrzygało się na 12 haseł, „hanno" na 65.
+   *
+   * Same posiłkowniki nie znikają z indeksu: „essere" i „avere" odmieniają
+   * się jak każdy inny czasownik i wnoszą swoje formy proste.
+   */
+  var POSILKOWE = { ho: 1, hai: 1, ha: 1, abbiamo: 1, avete: 1, hanno: 1,
+    avevo: 1, avevi: 1, aveva: 1, avevamo: 1, avevate: 1, avevano: 1,
+    avrò: 1, avrai: 1, avrà: 1, avremo: 1, avrete: 1, avranno: 1,
+    abbia: 1, abbiate: 1, abbiano: 1, avrei: 1, avresti: 1, avrebbe: 1,
+    avremmo: 1, avreste: 1, avrebbero: 1, avessi: 1, avesse: 1, avessimo: 1,
+    aveste: 1, avessero: 1, ebbi: 1, ebbe: 1, ebbero: 1, avemmo: 1,
+    sono: 1, sei: 1, è: 1, siamo: 1, siete: 1,
+    ero: 1, eri: 1, era: 1, eravamo: 1, eravate: 1, erano: 1,
+    sarò: 1, sarai: 1, sarà: 1, saremo: 1, sarete: 1, saranno: 1,
+    sia: 1, siate: 1, siano: 1, sarei: 1, saresti: 1, sarebbe: 1,
+    saremmo: 1, sareste: 1, sarebbero: 1, fossi: 1, fosse: 1, fossimo: 1,
+    foste: 1, fossero: 1, fui: 1, fu: 1, fummo: 1, furono: 1 };
+
   function slowa(forma) {
-    return String(forma).toLowerCase().split(/\s+/).filter(Boolean);
+    var cz = String(forma).toLowerCase().split(/\s+/).filter(Boolean);
+    if (cz.length < 2) return cz;
+    return cz.filter(function (w) {
+      return !Object.prototype.hasOwnProperty.call(POSILKOWE, w);
+    });
   }
 
   /**
@@ -236,9 +265,21 @@
     zbior[w] = true;
     if (bezAkcentow(w) !== w) aliasy[bezAkcentow(w)] = w;
     /* Hasło wielowyrazowe wnosi też swoje słowa: „di solito" sprawia,
-       że „solito" przestaje być ciszą. */
+       że „solito" przestaje być ciszą.
+
+       Ale NIE wnosi posiłkowników ani wyrazów funkcyjnych. Leksykon ma
+       hasło „era tutto buonissimo", więc „era" stawało się przez nie
+       osobnym hasłem, a karta na dotknięcie „era" pokazywała tłumaczenie
+       CAŁEGO zdania: „wszystko było wyśmienite". Formy „essere" i „avere"
+       mają swoje znaczenie z odmiany tych czasowników, nie ze zdania, w
+       którym akurat stoją. */
     if (w.indexOf(" ") >= 0) {
-      w.split(/\s+/).forEach(function (x) { if (x.length > 1) zbior[x] = true; });
+      w.split(/\s+/).forEach(function (x) {
+        if (x.length <= 1) return;
+        if (Object.prototype.hasOwnProperty.call(POSILKOWE, x)) return;
+        if (funkcyjneSet[x]) return;
+        zbior[x] = true;
+      });
     }
   }
 

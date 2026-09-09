@@ -145,3 +145,28 @@ describe("lemma: hasło z akcentem, forma z tekstu bez", () => {
     assert.deepEqual(zZewnatrz(L.resolve("pèsca")), ["pèsca"]);
   });
 });
+
+describe("posiłkownik nie jest hasłem", () => {
+  /* Znalezione dotykając „era" w czytance: karta pokazywała tłumaczenie
+     CAŁEGO zwrotu z leksykonu („era tutto buonissimo" -> „wszystko było
+     wyśmienite"), bo hasło wielowyrazowe wnosiło do słownika każde swoje
+     słowo. Dodatkowo „era" i „hanno" trafiały do indeksu przy każdym
+     czasowniku z czasem złożonym, bo formy „era entrato" i „hanno detto"
+     były rozcinane po spacji razem z posiłkownikiem. */
+  test("forma złożona nie wnosi posiłkownika do indeksu", () => {
+    const L = zeSlownikiem(["entrare", "dire"], ["entrare", "dire"]);
+    /* „era entrato" i „hanno detto" istnieją jako formy, ale „era" i
+       „hanno" nie mają prowadzić do entrare ani do dire. */
+    assert.deepEqual(zZewnatrz(L.resolve("era")), []);
+    assert.deepEqual(zZewnatrz(L.resolve("hanno")), []);
+    assert.ok(L.resolve("entrato").includes("entrare"), "entrato -> entrare");
+    assert.ok(L.resolve("detto").includes("dire"), "detto -> dire");
+  });
+
+  test("formy essere i avere prowadzą do swojego czasownika", () => {
+    const L = zeSlownikiem(["essere", "avere"], ["essere", "avere"]);
+    assert.ok(L.resolve("era").includes("essere"), "era -> essere");
+    assert.ok(L.resolve("hanno").includes("avere"), "hanno -> avere");
+    assert.ok(L.resolve("fossero").includes("essere"), "fossero -> essere");
+  });
+});

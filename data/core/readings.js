@@ -583,7 +583,7 @@ window.READINGS = [
       "Da allora il due giugno è la festa nazionale, anche se per alcuni anni non fu giorno festivo."
     ],
     glossIt: ["la monarchia", "l'Assemblea Costituente", "entrò in vigore", "festivo"],
-    lexIt: ["giugno", "cinquantaquattro", "Umberto", "scegliere", "repubblica", "votare", "donna", "elezione", "nazionale", "referendum", "tenersi", "vincere", "cento", "voto", "risultato", "dividere", "linea", "geografico", "netto", "nord", "sud", "re", "Costituzione", "gennaio", "festa"],
+    lexIt: ["giugno", "cinquantaquattro", "Umberto II", "scegliere", "repubblica", "votare", "donna", "elezione", "nazionale", "referendum", "tenersi", "vincere", "cento", "voto", "risultato", "dividere", "linea", "geografico", "netto", "nord", "sud", "re", "Costituzione", "gennaio", "festa"],
     questions: [
       { t: "mcq", q: "Che cosa scelsero gli italiani nel 1946?", opts: ["Tra monarchia e repubblica", "Il presidente", "Il sindaco di Roma"], a: 0 },
       { t: "truefalse", q: "Le donne avevano già votato in elezioni nazionali precedenti.", a: 1 },

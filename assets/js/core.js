@@ -311,6 +311,10 @@
   var checkOpen = global.Txt.checkOpen;
   var esc = global.Txt.esc;
 
+  /* Komunikaty na ekranie siedzą w notice.js — patrz tam po powód. */
+  var toast = global.Notice.toast;
+  var notice = global.Notice.notice;
+
   /* ---------------- Dzień / passa ---------------- */
   function today() {
     var d = new Date();
@@ -907,71 +911,6 @@
     state = defaultState();
     state.settings = keep;
     save();
-  }
-
-  /* ---------------- Drobiazgi UI ---------------- */
-  function toast(msg, kind) {
-    var stack = document.getElementById("toastStack");
-    if (!stack) return;
-    var el = document.createElement("div");
-    el.className = "toast" + (kind === "ok" ? " toast--ok" : "");
-    el.textContent = msg;
-    stack.appendChild(el);
-    global.setTimeout(function () { el.remove(); }, 3200);
-  }
-
-  /* Klucze już pokazane: ten sam komunikat nie ma się mnożyć przy każdym zapisie. */
-  var noticed = {};
-
-  /**
-   * Komunikat, który zostaje na ekranie aż do zamknięcia przez ucznia.
-   *
-   * Toast znika po 3,2 sekundy i to jest właściwe dla „zapisano" albo
-   * „wybierz odpowiedź". Utrata danych nie jest wiadomością do
-   * przeoczenia między jednym ćwiczeniem a drugim, więc idzie tędy.
-   */
-  function notice(key, opts) {
-    if (noticed[key]) return;
-    var stack = document.getElementById("toastStack");
-    if (!stack) return;
-    noticed[key] = true;
-    var o = opts || {};
-
-    var el = document.createElement("div");
-    el.className = "toast toast--stuck";
-    el.setAttribute("role", "alert");
-    el.textContent = global.I18n.t(key, o.vars);
-
-    /* Przycisk akcji, gdy komunikat prosi ucznia o zrobienie czegoś.
-       Bez niego przypomnienie o kopii kończy się instrukcją „wejdź w
-       Ustawienia", czyli przerzuca na ucznia nawigację w chwili, w
-       której i tak zaraz zamknie komunikat. */
-    if (o.actionKey && o.onAction) {
-      var act = document.createElement("button");
-      act.type = "button";
-      act.className = "btn btn--primary toast__act";
-      act.textContent = global.I18n.t(o.actionKey);
-      act.addEventListener("click", function () {
-        o.onAction();
-        el.remove();
-        noticed[key] = false;
-      });
-      el.appendChild(act);
-    }
-
-    var x = document.createElement("button");
-    x.type = "button";
-    x.className = "toast__x";
-    x.textContent = "×";
-    x.setAttribute("aria-label", global.I18n.t("core.noticeDismiss"));
-    x.addEventListener("click", function () {
-      el.remove();
-      noticed[key] = false;
-      if (o.onDismiss) o.onDismiss();
-    });
-
-    el.appendChild(x);
-    stack.appendChild(el);
   }
 
   /** Deterministyczny shuffle (seed = string), by ćwiczenia nie skakały przy re-renderze. */

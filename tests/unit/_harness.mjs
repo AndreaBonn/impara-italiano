@@ -25,7 +25,12 @@ export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * na moduły ma kosztować jedną zmianę tutaj, a nie dziesięć poprawek
  * w miejscach, które nikogo nie obchodzą.
  */
-export const CORE = ["assets/js/fsrs.js", "assets/js/text.js", "assets/js/core.js"];
+export const CORE = [
+  "assets/js/fsrs.js",
+  "assets/js/text.js",
+  "assets/js/notice.js",
+  "assets/js/core.js"
+];
 
 /**
  * localStorage z kontrolowanym limitem.
@@ -97,8 +102,9 @@ function makeClock() {
 function makeDocument(toasts, notices) {
   function makeEl() {
     const attrs = {};
+    const handlers = {};
     const el = {
-      className: "", textContent: "", innerHTML: "", children: [], attrs,
+      className: "", textContent: "", innerHTML: "", children: [], attrs, handlers,
       appendChild(c) { el.children.push(c); c.parent = el; return c; },
       remove() {
         if (!el.parent) return;
@@ -108,8 +114,19 @@ function makeDocument(toasts, notices) {
       setAttribute(k, v) { attrs[k] = String(v); },
       getAttribute(k) { return attrs[k] === undefined ? null : attrs[k]; },
       removeAttribute(k) { delete attrs[k]; },
-      addEventListener() {},
-      querySelector() { return null; }, querySelectorAll() { return []; }
+      addEventListener(type, fn) { (handlers[type] = handlers[type] || []).push(fn); },
+      querySelector() { return null; }, querySelectorAll() { return []; },
+
+      /**
+       * Poza API przeglądarki — kliknięcie z testu.
+       *
+       * Uchwyty były do niedawna wyrzucane do kosza, więc przycisk
+       * „zapisz kopię" i krzyżyk zamykający istniały w teście jako dwa
+       * elementy bez zachowania: dało się sprawdzić, że są, i nic poza
+       * tym. Cała gałąź po kliknięciu (odblokowanie klucza, odłożenie
+       * przypomnienia) chodziła wyłącznie w przeglądarce.
+       */
+      fire(type) { (handlers[type] || []).slice().forEach(fn => fn({ type: type })); }
     };
     return el;
   }

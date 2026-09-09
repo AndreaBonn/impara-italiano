@@ -201,7 +201,7 @@ LINGUAI.addStrings("pl", {
       ] },
       { tr: "Świetnie. Stolik przy oknie. Proszę tędy." },
       { tr: "Stolik dla dwojga jest, w głębi sali. Proszę." },
-      { tr: "Oto menu. A do picia?" },
+      { tr: "Oto menu. Zamówią państwo coś do picia?" },
       { task: "Zamów butelkę wody niegazowanej.", tr: "Butelkę wody niegazowanej poproszę." },
       { tr: "Niegazowana, już podaję. A na pierwsze danie?" },
       { task: "Wybierz pierwsze danie.", opts: [

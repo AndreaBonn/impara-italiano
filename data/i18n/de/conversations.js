@@ -207,7 +207,7 @@ LINGUAI.addStrings("de", {
       ] },
       { tr: "Perfekt. Der Tisch am Fenster. Hier entlang, bitte." },
       { tr: "Ein Tisch für zwei ist hinten im Saal frei. Bitte." },
-      { tr: "Hier ist die Karte. Zum Trinken schon mal etwas?" },
+      { tr: "Hier ist die Karte. Möchten Sie schon etwas zu trinken bestellen?" },
       { task: "Bestell eine Flasche stilles Wasser.", tr: "Eine Flasche stilles Wasser, bitte." },
       { tr: "Still, kommt sofort. Und als ersten Gang?" },
       { task: "Wähl den ersten Gang.", opts: [

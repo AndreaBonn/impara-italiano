@@ -205,7 +205,7 @@ LINGUAI.addStrings("en", {
       ] },
       { tr: "Perfect. The table by the window. This way, please." },
       { tr: "There is a table for two at the back of the room. Please." },
-      { tr: "Here is the menu. Something to drink in the meantime?" },
+      { tr: "Here is the menu. Would you like to order something to drink in the meantime?" },
       { task: "Order a bottle of still water.", tr: "A bottle of still water, please." },
       { tr: "Still water, right away. And for the first course?" },
       { task: "Choose your first course.", opts: [

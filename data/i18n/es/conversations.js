@@ -206,7 +206,7 @@ LINGUAI.addStrings("es", {
       ] },
       { tr: "Perfecto. La mesa junto a la ventana. Por aquí, por favor." },
       { tr: "Hay una mesa para dos al fondo de la sala. Adelante." },
-      { tr: "Aquí tienen el menú. Mientras tanto, ¿para beber?" },
+      { tr: "Aquí tienen el menú. Mientras tanto, ¿quieren pedir algo de beber?" },
       { task: "Pide una botella de agua sin gas.", tr: "Una botella de agua sin gas, por favor." },
       { tr: "Sin gas, enseguida. ¿Y de primero?" },
       { task: "Elige el primer plato.", opts: [

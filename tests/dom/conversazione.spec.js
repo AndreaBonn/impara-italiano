@@ -13,6 +13,14 @@
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
+/* Dialog czeka na KONIEC nagrania, zanim pokaże następną turę, a nagrań w tych
+   rozmowach jest kilkanaście po dwie-trzy sekundy. Domyślne trzydzieści sekund
+   na test wystarczało tylko dopóki nagrań nie było i silnik schodził na
+   syntezę systemową, która w headless kończy się natychmiast: te testy były
+   szybkie przez PRZYPADEK, a nie z projektu. Odtwarzanie zostaje prawdziwe,
+   bo to ono odpalało `step()` dalej; rośnie limit. */
+test.describe.configure({ timeout: 120000 });
+
 /** Czeka, aż silnik poprosi o replikę ucznia (pole tekstowe albo wybór). */
 async function czekajNaTure(page) {
   await page.waitForSelector(".js-in, .dlg-opts", { timeout: 30000 });

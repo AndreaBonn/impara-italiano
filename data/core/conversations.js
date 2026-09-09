@@ -423,13 +423,13 @@ window.CONVERSATIONS = [
       },
       { sp: "A", id: "prenotato", it: "Perfetto. Il tavolo vicino alla finestra. Prego, da questa parte.", go: "menu" },
       { sp: "A", id: "senza", it: "Un tavolo per due c'è, in fondo alla sala. Prego." },
-      { sp: "A", id: "menu", it: "Ecco il menù. Intanto da bere?" },
+      { sp: "A", id: "menu", it: "Ecco il menù. Intanto volete ordinare da bere?" },
       {
         sp: "TY",
         hintIt: "Una bottiglia d'acqua naturale, grazie",
         accept: ["una bottiglia d'acqua naturale grazie", "acqua naturale grazie", "una naturale grazie"]
       },
-      { sp: "A", it: "Naturale, arriva subito. E di primo?" },
+      { sp: "A", it: "Naturale, arriva subito. E come primo?" },
       {
         sp: "TY",
         opts: [

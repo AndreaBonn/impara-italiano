@@ -206,7 +206,7 @@ LINGUAI.addStrings("fr", {
       ] },
       { tr: "Parfait. La table près de la fenêtre. Par ici, s'il vous plaît." },
       { tr: "Il y a une table pour deux au fond de la salle. Je vous en prie." },
-      { tr: "Voici le menu. En attendant, à boire ?" },
+      { tr: "Voici le menu. En attendant, vous voulez commander à boire ?" },
       { task: "Commandez une bouteille d'eau plate.", tr: "Une bouteille d'eau plate, s'il vous plaît." },
       { tr: "Plate, tout de suite. Et pour le premier plat ?" },
       { task: "Choisissez le premier plat.", opts: [

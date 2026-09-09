@@ -92,6 +92,14 @@ test("odmowa zostawia stan nietknięty", async ({ page }) => {
 test("przyjęcie zapisuje poziom i nie dopisuje punktów", async ({ page }) => {
   await wejscie(page);
   await przejdzCaly(page);
+  /* XP rośnie od samego ODPOWIADANIA na zadania testu (recordAnswer robi to
+     wszędzie tak samo) — mierzymy więc, czy PRZYJĘCIE wyniku dokłada coś
+     ponad to, bo właśnie tego dokładać nie wolno. */
+  const przed = await page.evaluate(() => ({
+    xp: window.Core.state.xp,
+    zrobione: window.Core.state.stats.lessonsDone
+  }));
+
   await page.locator(".js-accept").click();
   await expect(page).toHaveURL(/#\/percorso/);
 
@@ -103,8 +111,9 @@ test("przyjęcie zapisuje poziom i nie dopisuje punktów", async ({ page }) => {
   }));
 
   expect(stan.poziom).toMatch(/^(A1|A2|B1|B2|C1|C2)$/);
-  expect(stan.xp, "punktów za nieodrobione lekcje nie ma").toBe(0);
-  expect(stan.zrobione, "licznik ukończonych mówi prawdę").toBe(0);
+  expect(stan.xp, "przyjęcie wyniku nie dokłada punktów").toBe(przed.xp);
+  expect(stan.zrobione, "licznik ukończonych mówi prawdę").toBe(przed.zrobione);
+  expect(stan.zrobione, "oznaczone lekcje nie liczą się jako ukończone").toBe(0);
   /* Przy wyniku A1 nie ma czego oznaczać i to też jest poprawne. */
   expect(stan.oznaczone).toBeGreaterThanOrEqual(0);
 });

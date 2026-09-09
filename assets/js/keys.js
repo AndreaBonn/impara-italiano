@@ -106,8 +106,12 @@
       var i = parseInt(e.key, 10) - 1;
       if (opts[i]) {
         e.preventDefault();
-        var input = opts[i].querySelector("input");
-        if (input) { input.checked = input.type === "checkbox" ? !input.checked : true; }
+        /* Samo kliknięcie etykiety, bez ustawiania `checked` z ręki.
+           Etykieta i tak przekazuje aktywację swojemu polu, więc ustawienie
+           stanu wcześniej przełączało pole DWA RAZY: przy radiu nie było tego
+           widać, ale checkbox wracał do stanu wyjściowego i zaznaczenie
+           znikało. Wychodziło na jaw tylko wtedy, gdy generator wylosował
+           zadanie z wieloma odpowiedziami — czyli losowo. */
         opts[i].click();
       }
     }

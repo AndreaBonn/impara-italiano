@@ -108,15 +108,35 @@ test("przyciski paska mają rozmiar celu dotykowego", async ({ page }) => {
   expect(male, `za małe przyciski: ${male.join(", ")}`).toEqual([]);
 });
 
-test("cyfra wybiera odpowiedź tylko poza polem tekstowym", async ({ page }) => {
-  await page.goto("/index.html#/allenamento");
-  await page.waitForSelector(".js-topic");
-  await page.locator('.js-topic[data-topic="ausiliare"]').click();
-  await expect(page.locator(".exq")).toBeVisible();
+/* Zadanie „ausiliare" wypada raz jako jedna odpowiedź (radio), raz jako
+   kilka (checkbox). Sprawdzamy oba kształty wprost, zamiast czekać, aż
+   generator wylosuje ten drugi — pierwsza wersja tego testu przechodziła
+   losowo i przez to przez chwilę ukrywała prawdziwą usterkę. */
+for (const ksztalt of [
+  { t: "mcq", q: "Pytanie", opts: ["pierwsza", "druga"], a: 0 },
+  { t: "multi", q: "Pytanie", opts: ["pierwsza", "druga", "trzecia"], a: [0, 1] }
+]) {
+  test(`cyfra wybiera odpowiedź w zadaniu typu ${ksztalt.t}`, async ({ page }) => {
+    await page.goto("/index.html");
+    await page.waitForFunction(() => window.Ex && window.Keys);
 
-  const maOpcje = await page.locator(".exq .opts .opt").count();
-  test.skip(maOpcje === 0, "to podejście wylosowało zadanie bez opcji");
+    await page.evaluate(ex => {
+      const host = document.createElement("div");
+      document.getElementById("main").appendChild(host);
+      const b = window.Ex.build(ex, 0, "klawisze");
+      host.innerHTML = b.html;
+      b.wire(host.querySelector(".exq"), () => {});
+    }, ksztalt);
 
-  await page.locator("body").press("1");
-  await expect(page.locator(".exq .opts .opt").first()).toHaveClass(/is-sel/);
+    await page.locator("body").press("1");
+    await expect(page.locator(".exq .opts .opt").first()).toHaveClass(/is-sel/);
+  });
+}
+
+test("cyfra nie działa, gdy uczeń pisze w polu tekstowym", async ({ page }) => {
+  await page.goto("/index.html#/cerca");
+  await page.waitForSelector("#searchQ");
+  await page.locator("#searchQ").click();
+  await page.locator("#searchQ").type("1");
+  await expect(page.locator("#searchQ"), "cyfra ma wejść do pola, nie wybrać opcji").toHaveValue("1");
 });

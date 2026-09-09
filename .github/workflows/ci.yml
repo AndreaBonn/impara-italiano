@@ -40,6 +40,9 @@ jobs:
       - name: Kształt nakładek językowych
         run: node scripts/parity.mjs
 
+      - name: Czy guska wczyta to, co ładuje strona
+        run: node scripts/check_precache.mjs
+
       - name: Testy jednostkowe
         run: npm test
 

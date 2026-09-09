@@ -9,6 +9,7 @@
     "test:all": "npm test && npm run test:dom",
     "validate": "node scripts/validate.mjs",
     "parity": "node scripts/parity.mjs",
+    "check:precache": "node scripts/check_precache.mjs",
     "serve": "node scripts/serve.mjs"
   },
   "devDependencies": {

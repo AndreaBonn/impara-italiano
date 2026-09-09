@@ -28,7 +28,8 @@ const FIXTURES = {
   gender: { t: "gender", items: [{ it: "pane", a: "il" }, { it: "acqua", a: "l'" }], opts: ["il", "la", "l'"] },
   listen: { t: "listen", it: "Buongiorno a tutti", alt: [] },
   speak: { t: "speak", it: "Buongiorno a tutti", tr: "dzień dobry" },
-  dialogue: { t: "dialogue", lines: [{ sp: "A", it: "Ciao" }, { sp: "TY", choices: ["Ciao", "No"], a: 0 }] }
+  dialogue: { t: "dialogue", lines: [{ sp: "A", it: "Ciao" }, { sp: "TY", choices: ["Ciao", "No"], a: 0 }] },
+  minpair: { t: "minpair", a: "nonno", b: "nono", heard: "a" }
 };
 
 const TYPES = Object.keys(FIXTURES);
@@ -105,6 +106,14 @@ async function runExercise(page, type, fixture) {
       case "speak":
         check();                            // puste pola liczą się jako zła odpowiedź, ale kończą
         break;
+      case "minpair": {
+        /* Bez odsłuchania ćwiczenie odmawia sprawdzenia: to nie jest
+           przeoczenie, tylko zabezpieczenie przed rzutem monetą. */
+        root.querySelector(".js-play").click();
+        root.querySelector('input[type="radio"]').checked = true;
+        check();
+        break;
+      }
       case "dialogue":
         await sleep(1200);                  // pierwsza kwestia leci na timerze
         root.querySelector('.js-ch[data-k="0"]').click();

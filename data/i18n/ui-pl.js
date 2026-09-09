@@ -196,6 +196,26 @@ LINGUAI.addUI("pl", {
   "search.kind.talk": "rozmowa",
   "keys.barLabel": "Znaki włoskie",
 
+  /* ---------------- Rozróżnianie dźwięków ---------------- */
+  "sound.kicker": "SŁUCH",
+  "sound.title": "Pary minimalne",
+  "sound.open": "Ćwicz słuch",
+  "sound.hubHint": "Dwa wyrazy różniące się jednym dźwiękiem. Słyszysz jeden, wskazujesz który.",
+  "sound.intro": "Zanim zaczniesz poprawiać wymowę, sprawdź, czy w ogóle słyszysz różnicę. Dopóki ucho jej nie łapie, usta jej nie zrobią.",
+  "sound.setIntro": "Posłuchaj i wskaż, który wyraz padł.",
+  "sound.pairs": { one: "{n} para", few: "{n} pary", many: "{n} par", other: "{n} par" },
+  "sound.start": "Słuchaj",
+  "sound.progress": "Para {i} z {n}",
+  "sound.next": "Dalej",
+  "sound.done": "Koniec podejścia. Wróć do tego zbioru za kilka dni.",
+  "sound.doneGood": "Ucho już to łapie. Teraz spróbuj sam wymówić obie formy.",
+  "sound.again": "Jeszcze raz",
+  "sound.backList": "Inne dźwięki",
+  "ex.type.minpair": "para minimalna",
+  "ex.minpair.prompt": "Który wyraz słyszysz?",
+  "ex.minpair.play": "🔊 Odtwórz",
+  "ex.minpair.listenFirst": "Najpierw posłuchaj — bez tego to rzut monetą.",
+
   /* ---------------- Sesja dnia ---------------- */
   "nav.today": "Dziś",
   "today.kicker": "DZIŚ",

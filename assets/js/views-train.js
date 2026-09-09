@@ -179,13 +179,19 @@
           '<button class="btn btn--primary btn--sm js-topic" data-topic="' + esc(topic.id) + '">' +
           esc(t("train.start")) + "</button></div>";
       }).join("") + "</div>" +
-      '<p class="exq__sub" style="margin-top:20px">' + esc(t("train.endless")) + "</p>");
+      '<p class="exq__sub" style="margin-top:20px">' + esc(t("train.endless")) + "</p>" +
+      /* Rozróżnianie dźwięków stoi obok, a nie w tej liście: tam ćwiczy się
+         regułę, tu ucho, i jedno nie zastępuje drugiego. */
+      '<div class="list-row" style="margin-top:24px"><span class="list-row__main"><b>' +
+      esc(t("sound.title")) + "</b><span>" + esc(t("sound.hubHint")) + "</span></span>" +
+      '<button class="btn btn--ghost btn--sm js-sounds">' + esc(t("sound.open")) + "</button></div>");
 
     el().querySelectorAll(".js-topic").forEach(function (b) {
       b.addEventListener("click", function () {
         App.go("allenamento", { topic: b.getAttribute("data-topic") });
       });
     });
+    el().querySelector(".js-sounds").addEventListener("click", function () { App.go("suoni"); });
   };
 
   /**

@@ -679,6 +679,11 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 }
 .keybar__k:hover{background:var(--paper-3);border-color:var(--rosa-deep);}
 
+/* Uwaga „w twoim języku jest inaczej" — najcenniejsza treść kursu wobec
+   aplikacji, które uczą wszystkich tak samo. Wyróżniona lewą krawędzią,
+   nie tłem: tło zmieniłoby kontrast tekstu, krawędź nie. */
+.card--contrast{border-left:5px solid var(--salvia-deep);}
+
 /* ══════════════════ ZAKŁADKI ══════════════════ */
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
 /* Obramowanie z --ink-faint, nie z --line-strong: to drugie daje 1.58:1

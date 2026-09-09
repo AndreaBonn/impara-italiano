@@ -7,15 +7,25 @@
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/** Czeka, aż worker przejmie stronę. */
+/**
+ * Czeka, aż worker NAPRAWDĘ przejmie stronę.
+ *
+ * Pierwsza wersja czekała na `controller !== undefined`, a przy stronie
+ * jeszcze nieprzejętej `controller` jest **null** — warunek spełniał się
+ * natychmiast i test biegł bez workera. Wychodziło to na jaw dopiero,
+ * gdy zmiana wersji przesunęła moment przejęcia.
+ */
 async function workerGotowy(page) {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.App);
-  await page.waitForFunction(
-    () => navigator.serviceWorker && navigator.serviceWorker.controller !== undefined,
-    null, { timeout: 10000 }
-  );
   await page.evaluate(() => navigator.serviceWorker.ready);
+  if (!(await page.evaluate(() => !!navigator.serviceWorker.controller))) {
+    /* Zarejestrowany, ale ta karta wystartowała wcześniej: po odświeżeniu
+       wchodzi już pod jego kontrolą. */
+    await page.reload();
+    await page.waitForFunction(() => window.App);
+  }
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 10000 });
 }
 
 test("manifest jest kompletny i wskazuje na istniejące ikony", async ({ page, request }) => {

@@ -198,6 +198,26 @@ LINGUAI.addUI("es", {
   "search.kind.talk": "conversación",
   "keys.barLabel": "Caracteres italianos",
 
+  /* ---------------- Distinguir sonidos ---------------- */
+  "sound.kicker": "OÍDO",
+  "sound.title": "Pares mínimos",
+  "sound.open": "Entrenar el oído",
+  "sound.hubHint": "Dos palabras que se diferencian en un solo sonido. Oyes una y dices cuál.",
+  "sound.intro": "Antes de corregir la pronunciación, comprueba si oyes la diferencia. Mientras el oído no la capte, la boca no la hará.",
+  "sound.setIntro": "Escucha y señala qué palabra ha sonado.",
+  "sound.pairs": { one: "{n} par", many: "{n} pares", other: "{n} pares" },
+  "sound.start": "Escuchar",
+  "sound.progress": "Par {i} de {n}",
+  "sound.next": "Siguiente",
+  "sound.done": "Tanda terminada. Vuelve a este conjunto dentro de unos días.",
+  "sound.doneGood": "El oído ya lo distingue. Ahora prueba a decir tú las dos formas.",
+  "sound.again": "Otra vez",
+  "sound.backList": "Otros sonidos",
+  "ex.type.minpair": "par mínimo",
+  "ex.minpair.prompt": "¿Qué palabra oyes?",
+  "ex.minpair.play": "🔊 Reproducir",
+  "ex.minpair.listenFirst": "Escucha primero: sin eso es lanzar una moneda.",
+
   /* ---------------- Sesión de hoy ---------------- */
   "nav.today": "Hoy",
   "today.kicker": "HOY",

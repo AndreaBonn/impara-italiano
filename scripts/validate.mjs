@@ -13,7 +13,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const EX_TYPES = new Set([
   "mcq", "multi", "fill", "cloze", "trans", "order", "match",
-  "conj", "gender", "listen", "speak", "dialogue", "truefalse"
+  "conj", "gender", "listen", "speak", "dialogue", "truefalse",
+  /* minpair powstaje z data/core/phonetics.js w czasie działania, nie
+     stoi w żadnej lekcji — ale silnik go zna, a ta lista jest spisem
+     tego, co silnik zna, nie tego, co akurat występuje w danych. */
+  "minpair"
 ]);
 
 const levels = [];
@@ -56,8 +60,17 @@ run("assets/js/i18n.js");
 const dataFiles = readdirSync(join(ROOT, "data", "core"))
   .filter(f => /^[abc]\d-\d+\.js$/.test(f))
   .sort();
-const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js"];
+const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js", "phonetics.js"];
 ALL.forEach(f => run(join("data", "core", f)));
+/* Migawka warstwy neutralnej ZANIM nakładka wpisze teksty ucznia: po
+   applyStrings te same obiekty niosą już tłumaczenia i skan nic nie znaczy. */
+const neutralneDane = JSON.parse(JSON.stringify({
+  levels: levels,
+  conversations: sandbox.CONVERSATIONS || [],
+  grammar: (sandbox.GRAMMAR_REF || []).map(s => ({ items: (s.items || []).map(i => ({ id: i.id, cefr: i.cefr })) })),
+  phonetics: sandbox.PHONETICS || []
+}));
+
 ALL.forEach(f => run(join("data", "i18n", LANG, f)));
 sandbox.LINGUAI.applyStrings(LANG);
 
@@ -177,6 +190,45 @@ const gramIds = new Set();
     if (!it.body) errors.push(`Hasło ${it.id}: brak treści`);
   });
 });
+
+/* ---------------- Warstwa neutralna: żadnego języka ucznia ----------------
+   Sprawdzane na DANYCH, nie na tekście pliku. Grep po pliku myli się w obie
+   strony: komentarz po polsku wygląda jak wyciek, a hiszpańskie „ñ" w danych
+   przechodzi, jeśli akurat nikt go nie szukał. Czytamy więc same wartości
+   z warstwy neutralnej, ZANIM nałoży się nakładka.
+
+   Zbiór liter: te, których włoski nie używa nigdy. Włoskie à è é ì í ò ó ù ú
+   są dozwolone i nie mogą tu wejść, bo „perché" jest poprawnym włoskim.
+
+   GRANICA TEGO GATE, żeby nikt nie brał go za więcej, niż jest: łapie
+   wyłącznie litery spoza włoskiego alfabetu. Angielskie „house" ani
+   polskie „dziadek" przez niego nie przejdą — bo nie mają czego. Na to
+   nie ma automatu i zostaje czytanie danych oczami. */
+const OBCE_LITERY = /[ąęłżźćńśñçäöüßğşıåæøđčšžřůõ]/i;
+
+function skanujNeutralne(wezel, gdzie, wynik, glebokosc) {
+  if (glebokosc > 8 || wezel == null) return;
+  if (typeof wezel === "string") {
+    if (OBCE_LITERY.test(wezel)) wynik.push(`${gdzie}: „${wezel.slice(0, 60)}"`);
+    return;
+  }
+  if (Array.isArray(wezel)) {
+    wezel.forEach((v, i) => skanujNeutralne(v, `${gdzie}[${i}]`, wynik, glebokosc + 1));
+    return;
+  }
+  if (typeof wezel === "object") {
+    Object.keys(wezel).forEach(k => skanujNeutralne(wezel[k], `${gdzie}.${k}`, wynik, glebokosc + 1));
+  }
+}
+
+const wyciekiJezyka = [];
+skanujNeutralne(neutralneDane, "core", wyciekiJezyka, 0);
+wyciekiJezyka.slice(0, 10).forEach(w => {
+  errors.push(`Warstwa neutralna zawiera język ucznia — ${w}`);
+});
+if (wyciekiJezyka.length > 10) {
+  errors.push(`…i jeszcze ${wyciekiJezyka.length - 10} takich miejsc`);
+}
 
 /* Tagi zagadnień muszą wskazywać na istniejące hasło. Wymyślony tag nie
    jest błędem składni: karta błędu dostałaby etykietę, której nie da się

@@ -16,7 +16,9 @@ test("hub wymienia wszystkie zagadnienia z własnymi nazwami", async ({ page }) 
 
   /* Nazwa zagadnienia NIE może być tytułem hasła gramatycznego: tag
      „numeri" wskazuje na g-frase, czyli „strukturę zdania". */
-  const nazwy = await page.locator(".list-row b").allInnerTexts();
+  /* W hubie stoi też wiersz prowadzący do rozróżniania dźwięków, więc
+     liczymy tylko wiersze z przyciskiem zagadnienia. */
+  const nazwy = await page.locator(".list-row:has(.js-topic) b").allInnerTexts();
   expect(nazwy.filter(Boolean).length).toBe(n);
   expect(new Set(nazwy).size, "nazwy nie powtarzają się").toBe(n);
 });

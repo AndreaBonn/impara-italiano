@@ -142,11 +142,27 @@
    * Nakłada teksty wybranego języka na wszystko, co jest już wczytane.
    * Bezpieczne do wielokrotnego wywołania i do zmiany języka w locie.
    */
+  /**
+   * Pary minimalne. W warstwie neutralnej są same wyrazy włoskie; stąd
+   * przychodzą glosy i uwaga kontrastywna, pisana pod konkretny język.
+   * Polak nie słyszy długości spółgłoski, Francuz nie słyszy ruchomego
+   * akcentu — to nie jest ta sama uwaga w dwóch tłumaczeniach.
+   */
+  function applyPhonetics(lang) {
+    (global.PHONETICS || []).forEach(function (zbior) {
+      var p = get(lang, "ph:" + zbior.id);
+      if (!p) return;
+      copy(zbior, p, ["title", "note", "contrast"]);
+      objByIndex(zbior.pairs, p.pairs, ["glossA", "glossB"]);
+    });
+  }
+
   function applyStrings(lang) {
     var reg = global.Core && global.Core.registry;
     if (reg) reg.levels.forEach(function (lv) { applyLevel(lv, lang); });
     (global.CONVERSATIONS || []).forEach(function (c) { applyConversation(c, lang); });
     applyRef(lang);
+    applyPhonetics(lang);
   }
 
   /* ═══════════════════════════════════════════════════════════

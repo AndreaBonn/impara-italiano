@@ -198,6 +198,26 @@ LINGUAI.addUI("fr", {
   "search.kind.talk": "conversation",
   "keys.barLabel": "Caractères italiens",
 
+  /* ---------------- Distinguer les sons ---------------- */
+  "sound.kicker": "OREILLE",
+  "sound.title": "Paires minimales",
+  "sound.open": "Entraîner l'oreille",
+  "sound.hubHint": "Deux mots qui ne diffèrent que par un son. Tu en entends un et tu dis lequel.",
+  "sound.intro": "Avant de travailler ta prononciation, vérifie si tu entends la différence. Tant que l'oreille ne la saisit pas, la bouche ne la fera pas.",
+  "sound.setIntro": "Écoute, puis indique quel mot a été prononcé.",
+  "sound.pairs": { one: "{n} paire", many: "{n} paires", other: "{n} paires" },
+  "sound.start": "Écouter",
+  "sound.progress": "Paire {i} sur {n}",
+  "sound.next": "Suivant",
+  "sound.done": "Série terminée. Reviens à cet ensemble dans quelques jours.",
+  "sound.doneGood": "Ton oreille y est. Essaie maintenant de prononcer toi-même les deux formes.",
+  "sound.again": "Encore une fois",
+  "sound.backList": "D'autres sons",
+  "ex.type.minpair": "paire minimale",
+  "ex.minpair.prompt": "Quel mot entends-tu ?",
+  "ex.minpair.play": "🔊 Écouter",
+  "ex.minpair.listenFirst": "Écoute d'abord : sans ça, c'est un tirage à pile ou face.",
+
   /* ---------------- Séance du jour ---------------- */
   "nav.today": "Aujourd'hui",
   "today.kicker": "AUJOURD'HUI",

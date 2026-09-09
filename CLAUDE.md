@@ -71,18 +71,25 @@ Dwa miejsca wymagają uwagi:
 - **W warstwie neutralnej nie ma ani jednego słowa w języku ucznia.** Etykieta konstrukcji pisze
   się po włosku (`dopo aver + participio`, nie `+ imiesłów`), a prompt ćwiczenia po włosku
   (`Colloquiale:`, nie `Potocznie:`). Dopóki polski był jedynym językiem bazowym, taki wyciek był
-  niewidoczny: wyglądał jak poprawny tekst. Sprawdzenie to grep po `[ąęłżźćńś]` w `data/core/`
-  — jedyne trafienia to nagłówki plików.
+  niewidoczny: wyglądał jak poprawny tekst. Pilnuje tego `validate.mjs`, i to na **danych**, a nie
+  na tekście pliku: skanuje wartości warstwy neutralnej ZANIM nałoży się nakładka, więc komentarz
+  po polsku go nie myli w żadną stronę. **Granica tego gate:** łapie tylko litery spoza włoskiego
+  alfabetu (`ą ę ł ż ź ć ń ś ñ ç ä ö ü ß` …). Angielskie „house" ani polskie „dziadek" przez niego
+  nie przejdą, bo nie mają czego — na to nie ma automatu i zostaje czytanie danych oczami.
 
 Tablice łączą się **po indeksie**, więc ich długość musi być identyczna po obu stronach.
 `LINGUAI.applyStrings(lang)` (`assets/js/i18n.js`) jest idempotentne i nigdy nie nadpisuje pól
 neutralnych — dlatego drugi język można nałożyć na te same obiekty bez przeładowania strony.
 
 ### Ćwiczenie
-Typ w polu `t`. Dwanaście typów obsługiwanych w `assets/js/exercises.js`:
+Typ w polu `t`. Czternaście typów obsługiwanych w `assets/js/exercises.js`:
 `mcq`, `multi`, `truefalse`, `fill`, `trans`, `cloze`, `order`, `match`, `conj`, `gender`,
-`listen`, `speak`, `dialogue`. Każdy builder zwraca `{html, wire(root, onDone)}`.
-`onDone(ok)` wywoływane **dokładnie raz** — na tym opiera się licznik postępu lekcji.
+`listen`, `speak`, `dialogue`, `minpair`. Każdy builder zwraca `{html, wire(root, onDone)}`.
+`onDone(ok)` wywoływane **dokładnie raz** — na tym opiera się licznik postępu lekcji oraz
+przechwytywanie błędów, które owija `wire` (`assets/js/errors.js`).
+
+`minpair` nie stoi w żadnej lekcji: powstaje w czasie działania z `data/core/phonetics.js`.
+`truefalse` też nie występuje w danych, choć silnik go zna.
 
 ### Odmiana czasowników
 `Verbs.conjugate(infinito, tenseKey)` zwraca sześć form albo `null` na pozycjach bez formy
@@ -120,6 +127,21 @@ uv run --script scripts/build_audio.py          # tworzy tylko brakujące pliki
 
 Nazwy oparte na skrócie treści oznaczają, że niezmienione zdania zachowują swój plik:
 kolejne przebiegi nie generują ruchu w gicie.
+
+## Pary minimalne
+
+`data/core/phonetics.js` (same wyrazy włoskie) plus nakładki z glosami i uwagą kontrastywną.
+Ćwiczenie `minpair` odtwarza jeden z dwóch wyrazów i pyta który.
+
+**Nagranie jest warunkiem istnienia tego ćwiczenia.** Synteza systemowa myli dokładnie te
+dźwięki, o które w nim chodzi, więc zejście do niej nie byłoby gorszą jakością, tylko
+zadaniem bez odpowiedzi. Widok pomija pary, dla których nagrania brakuje.
+
+**Dopisując parę, uruchom `uv run --script scripts/check_minpairs.py`.** Głos honoruje
+akcenty nierówno: „pèsca" i „pésca" dostają różne pliki, ale „vènti" i „vénti" dają nagranie
+bajt w bajt takie samo. Para nie do odróżnienia ze słuchu uczy tylko zgadywania i nie widać
+tego ani w kodzie, ani w testach, ani na ekranie. Z tego powodu w kursie nie ma zbioru dla
+„o" otwartego i zamkniętego: żadna z trzech par nie przeszła.
 
 ## Praca bez sieci
 

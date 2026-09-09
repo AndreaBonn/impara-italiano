@@ -196,6 +196,26 @@ LINGUAI.addUI("de", {
   "search.kind.talk": "Gespräch",
   "keys.barLabel": "Italienische Zeichen",
 
+  /* ---------------- Laute unterscheiden ---------------- */
+  "sound.kicker": "GEHÖR",
+  "sound.title": "Minimalpaare",
+  "sound.open": "Gehör trainieren",
+  "sound.hubHint": "Zwei Wörter, die sich in einem Laut unterscheiden. Du hörst eines und sagst welches.",
+  "sound.intro": "Bevor du an der Aussprache arbeitest, prüf, ob du den Unterschied überhaupt hörst. Solange das Ohr ihn nicht fasst, macht ihn der Mund nicht.",
+  "sound.setIntro": "Hör zu und sag, welches Wort gefallen ist.",
+  "sound.pairs": { one: "{n} Paar", other: "{n} Paare" },
+  "sound.start": "Hören",
+  "sound.progress": "Paar {i} von {n}",
+  "sound.next": "Weiter",
+  "sound.done": "Runde vorbei. Komm in ein paar Tagen zu diesem Satz zurück.",
+  "sound.doneGood": "Dein Ohr hat es. Versuch jetzt, beide Formen selbst zu sprechen.",
+  "sound.again": "Noch einmal",
+  "sound.backList": "Andere Laute",
+  "ex.type.minpair": "Minimalpaar",
+  "ex.minpair.prompt": "Welches Wort hörst du?",
+  "ex.minpair.play": "🔊 Abspielen",
+  "ex.minpair.listenFirst": "Hör erst zu — ohne das ist es ein Münzwurf.",
+
   /* ---------------- Sitzung des Tages ---------------- */
   "nav.today": "Heute",
   "today.kicker": "HEUTE",

@@ -4,7 +4,7 @@
    onDone(ok:boolean) wywoływane raz, po sprawdzeniu.
 
    Typy: mcq | multi | fill | cloze | trans | order | match |
-         conj | gender | listen | speak | dialogue | truefalse
+         conj | gender | listen | speak | dialogue | truefalse | minpair
    ============================================================ */
 (function (global) {
   "use strict";
@@ -505,13 +505,82 @@
     return { html: html, wire: wire };
   }
 
+  /* ═══════════════ MINPAIR (para minimalna) ═══════════════ */
+  /**
+   * Słychać jeden z dwóch wyrazów, uczeń wskazuje który.
+   *
+   * ex.a, ex.b — oba wyrazy; ex.heard — „a" albo „b", ten odtwarzany.
+   *
+   * Rozróżnianie przed produkcją: dopóki ucho nie słyszy różnicy między
+   * „nonno" a „nono", usta jej nie zrobią, a poprawianie wymowy jest
+   * pilnowaniem czegoś, czego uczeń nie kontroluje. Stąd osobny typ, a
+   * nie wariant „listen": tam pisze się usłyszane zdanie, tu wybiera się
+   * między dwoma wyrazami różniącymi się jednym dźwiękiem.
+   *
+   * Nagranie jest wymagane. Synteza systemowa myli dokładnie te dźwięki,
+   * o które w tym ćwiczeniu chodzi, więc zejście do niej nie byłoby
+   * gorszą jakością, tylko ćwiczeniem bez odpowiedzi.
+   */
+  function buildMinpair(ex, idx, seed) {
+    var opts = Core.seededShuffle([{ k: "a", w: ex.a }, { k: "b", w: ex.b }], seed + "mp" + idx);
+
+    var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
+      '<p class="exq__prompt">' + esc(ex.q || t("ex.minpair.prompt")) + "</p>" +
+      '<div class="voice-box" style="text-align:left">' +
+      '<button type="button" class="btn btn--green js-play">' + t("ex.minpair.play") + "</button> " +
+      '<button type="button" class="btn btn--ghost btn--sm js-slow">' + t("ex.listen.slow") + "</button>" +
+      "</div>" +
+      '<div class="opts" role="radiogroup" aria-label="' + esc(t("ex.answersGroup")) + '">' +
+      opts.map(function (o) {
+        return '<label class="opt" data-k="' + o.k + '">' +
+          '<input type="radio" name="mp' + seed + "_" + idx + '" value="' + o.k + '">' +
+          "<span>" + esc(o.w) + "</span></label>";
+      }).join("") + "</div>" + checkBtn() + feedbackBox() + "</div>";
+
+    function wire(root, onDone) {
+      var slowo = ex.heard === "b" ? ex.b : ex.a;
+      var zagrane = false;
+
+      function graj(rate) {
+        zagrane = true;
+        Audio2.speak(slowo, rate ? { rate: rate } : {});
+      }
+      root.querySelector(".js-play").addEventListener("click", function () { graj(); });
+      root.querySelector(".js-slow").addEventListener("click", function () { graj(0.6); });
+
+      var labels = root.querySelectorAll(".opt");
+      labels.forEach(function (l) {
+        l.addEventListener("click", function () {
+          labels.forEach(function (x) { x.classList.remove("is-sel"); });
+          l.classList.add("is-sel");
+        });
+      });
+
+      root.querySelector(".js-check").addEventListener("click", function () {
+        var sel = root.querySelector('input[name="mp' + seed + "_" + idx + '"]:checked');
+        if (!sel) { Core.toast(t("ex.pickOne")); return; }
+        /* Bez odsłuchania nie ma czego sprawdzać: to byłby rzut monetą
+           zapisany w statystykach jako wiedza. */
+        if (!zagrane) { Core.toast(t("ex.minpair.listenFirst")); return; }
+
+        var ok = sel.value === (ex.heard || "a");
+        labels.forEach(function (l) {
+          if (l.getAttribute("data-k") === (ex.heard || "a")) l.classList.add("is-ok");
+          else if (l.classList.contains("is-sel")) l.classList.add("is-ko");
+        });
+        finish(root, ok, ex.why, ok ? null : slowo, onDone);
+      });
+    }
+    return { html: html, wire: wire };
+  }
+
   /* ═══════════════ Dyspozytor ═══════════════ */
   var BUILDERS = {
     mcq: buildMcq, truefalse: buildMcq, multi: buildMulti,
     fill: buildFill, trans: buildFill, cloze: buildCloze,
     order: buildOrder, match: buildMatch, conj: buildConj,
     gender: buildGender, listen: buildListen, speak: buildSpeak,
-    dialogue: buildDialogue
+    dialogue: buildDialogue, minpair: buildMinpair
   };
 
   function build(ex, idx, seed) {

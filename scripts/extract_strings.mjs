@@ -45,6 +45,7 @@ function run(file) {
 run("curriculum-index.js");
 readdirSync(CORE).filter(f => /^[abc]\d-\d+\.js$/.test(f)).sort().forEach(run);
 run("conversations.js");
+run("phonetics.js");
 
 /* ---------------- Zbieranie ---------------- */
 /** primary: głos główny · other: głos rozmówcy (tylko jeśli nigdzie indziej nie występuje) */
@@ -103,6 +104,13 @@ levels.forEach(function (lv) {
       addO(t.it);
     }
   });
+});
+
+/* Pary minimalne: KAŻDY wyraz osobno, głosem głównym. Ćwiczenie polega
+   na usłyszeniu różnicy, więc synteza systemowa — która myli dokładnie
+   te dźwięki — nie jest tu awaryjnym wyjściem, tylko końcem ćwiczenia. */
+(sandbox.PHONETICS || []).forEach(function (zbior) {
+  (zbior.pairs || []).forEach(function (para) { addP(para.a); addP(para.b); });
 });
 
 EXTRA.forEach(addP);

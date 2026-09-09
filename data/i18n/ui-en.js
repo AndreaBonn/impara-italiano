@@ -191,6 +191,26 @@ LINGUAI.addUI("en", {
   "search.kind.talk": "conversation",
   "keys.barLabel": "Italian characters",
 
+  /* ---------------- Hearing the difference ---------------- */
+  "sound.kicker": "EAR",
+  "sound.title": "Minimal pairs",
+  "sound.open": "Train your ear",
+  "sound.hubHint": "Two words that differ by one sound. You hear one and say which.",
+  "sound.intro": "Before working on your pronunciation, check whether you hear the difference at all. Until the ear catches it, the mouth will not make it.",
+  "sound.setIntro": "Listen, then say which word was spoken.",
+  "sound.pairs": { one: "{n} pair", other: "{n} pairs" },
+  "sound.start": "Listen",
+  "sound.progress": "Pair {i} of {n}",
+  "sound.next": "Next",
+  "sound.done": "Round over. Come back to this set in a few days.",
+  "sound.doneGood": "Your ear has it. Now try saying both forms yourself.",
+  "sound.again": "Go again",
+  "sound.backList": "Other sounds",
+  "ex.type.minpair": "minimal pair",
+  "ex.minpair.prompt": "Which word do you hear?",
+  "ex.minpair.play": "🔊 Play",
+  "ex.minpair.listenFirst": "Listen first — without that it is a coin toss.",
+
   /* ---------------- Today's session ---------------- */
   "nav.today": "Today",
   "today.kicker": "TODAY",

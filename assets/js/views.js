@@ -543,6 +543,13 @@
        chwili wyboru, żeby dało się go uciąć dokładnie tam). */
     var wybory = [];
 
+    /* Bez rozpoznawania mowy nota o tym stoi TUTAJ, w scenie, a nie tylko na
+       liście rozmów: uczeń wchodzi w scenę i widzi samo pole tekstowe, więc
+       brak mikrofonu wygląda jak usterka, a nie jak brak obsługi w
+       przeglądarce. Raz na przejście, nie przy każdej turze — powtarzana pod
+       dziesięcioma kolejnymi replikami przestaje być informacją. */
+    var notaSttPokazana = false;
+
     function bubble(it, pl, mine) {
       var d = document.createElement("div");
       d.className = "dlg__line" + (mine ? " dlg__line--b" : "");
@@ -595,15 +602,32 @@
         '<div class="voice-box">' +
         '<p style="font-weight:600;margin:0 0 4px">' + esc(t("talk.yourTurn", { task: turnData.task })) + "</p>" +
         (opcje ? podpowiedziWyboru(opcje) :
-          '<p class="voice-pl" style="margin-bottom:14px">' + t("ex.hintLabel", { hint: "<i>" + esc(turnData.hintIt || accepted[0]) + "</i>" }) + "</p>") +
-        (Audio2.sttSupported ? '<button type="button" class="mic js-mic" aria-label="' + esc(t("talk.speak")) + '">🎤</button><p class="voice-heard js-heard">' + t("talk.tapAndSpeak") + "</p>" : "") +
+          /* Podpowiedź jest po POLSKU (w języku ucznia), nie po włosku. Włoskie
+             zdanie w tym miejscu robiło z rozmowy przepisywanie: uczeń czytał
+             gotową replikę i wysyłał ją z powrotem, więc scena sprawdzała wzrok,
+             nie znajomość języka. Tłumaczenie tej repliki JUŻ JEST w nakładce
+             (`turns[].tr`, wszystkie pięć języków) i było używane dotąd tylko
+             w dymku — nie trzeba było dopisać ani jednego napisu.
+             Włoski wzór zostaje pod „Pokaż odpowiedź", czyli tam, gdzie uczeń
+             sięga po niego świadomie. */
+          (turnData.tr
+            ? '<p class="voice-pl" style="margin-bottom:14px">' + t("ex.hintLabel", { hint: "<i>" + esc(turnData.tr) + "</i>" }) + "</p>"
+            : "")) +
+        (Audio2.sttSupported
+          ? '<button type="button" class="mic js-mic" aria-label="' + esc(t("talk.speak")) + '">🎤</button><p class="voice-heard js-heard">' + t("talk.tapAndSpeak") + "</p>"
+          : notaSttPokazana ? ""
+            : '<div class="callout callout--trap"><b>' + t("talk.noSttLabel") + "</b> " + t("talk.noStt") + "</div>") +
         '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-        '<input type="text" class="field js-in" style="max-width:340px" placeholder="' + esc(t("talk.orType")) + '" autocomplete="off" spellcheck="false">' +
+        '<input type="text" class="field js-in" style="max-width:340px" placeholder="' + esc(t(Audio2.sttSupported ? "talk.orType" : "talk.typeAnswer")) + '" autocomplete="off" spellcheck="false">' +
         '<button class="btn btn--primary js-send">' + t("talk.send") + "</button>" +
-        '<button class="btn btn--quiet js-skip">' + t("talk.reveal") + "</button></div></div>";
+        '<button class="btn btn--quiet js-skip">' + t("talk.reveal") + "</button></div>" +
+        '<div class="fb js-fb" role="status"></div></div>';
+
+      if (!Audio2.sttSupported) notaSttPokazana = true;
 
       var heard = turn.querySelector(".js-heard");
       var input = turn.querySelector(".js-in");
+      var fb = turn.querySelector(".js-fb");
 
       /* Przy rozwidleniu wygrywa opcja NAJBLIŻSZA temu, co uczeń powiedział,
          a nie pierwsza pasująca: dwie odpowiedzi w tej samej scenie bywają
@@ -619,24 +643,71 @@
         return naj;
       }
 
-      function accept(text) {
-        var naj = wybierz(text);
-        var ok = naj.w >= PROG;
-        /* Poniżej progu nie zgadujemy kierunku: idziemy pierwszą gałęzią i
-           pokazujemy jej wzorcową odpowiedź, tak jak w dialogu liniowym. */
-        var gal = ok ? naj.o : (opcje ? opcje[0] : null);
-        var wzor = (gal && gal.accept && gal.accept[0]) || accepted[0];
-        if (ok) score++;
-        Core.recordAnswer(ok);
-        bubble(ok ? text : wzor, (gal && gal.tr) || turnData.tr || "", true);
-        if (!ok) Core.toast(t("talk.modelAnswer", { answer: wzor }));
+      /* Zła odpowiedź ZATRZYMUJE scenę. Przedtem rozmowa szła dalej, tyle że
+         w dymku stawał wzór zamiast tego, co uczeń powiedział: z ekranu
+         wyglądało to jak zaliczone, więc błąd nie miał żadnej konsekwencji,
+         a przy mikrofonie nie było nawet wiadomo, że coś poszło nie tak.
+         Wyjście z pętli jest jedno i świadome: „Pokaż odpowiedź". */
+      var bledny = false;
+
+      /* `zPola` mówi, czy odpowiedź przyszła z klawiatury, czy z mikrofonu.
+         Fokus wraca do pola TYLKO w pierwszym wypadku: po mówieniu wepchnąłby
+         na telefonie klawiaturę systemową i pasek akcentów pod scenę, której
+         uczeń wcale nie chciał pisać (ten sam wniosek co w views-lookup.js).
+         Kursor idzie na koniec, nie zaznacza całości: po pomyłce zwykle
+         poprawia się jedno słowo, a zaznaczone wszystko ginie od pierwszego
+         klawisza. */
+      function odrzuc(zPola) {
+        /* Do zeszytu błędów raz na turę, nie raz na próbę: dziesięć podejść
+           do jednego zdania to jedna pomyłka, a nie dziesięć. */
+        if (!bledny) { bledny = true; Core.recordAnswer(false); }
+        fb.className = "fb js-fb fb--ko is-on";
+        fb.textContent = t("talk.tryAgain");
+        if (zPola) {
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
+      }
+
+      /** Przejście dalej: `text` trafia do dymka, `gal` wyznacza gałąź. */
+      function idzDalej(text, gal, tr) {
+        bubble(text, tr || "", true);
         turn.innerHTML = "";
         i = dalej(opcje ? gal : turnData, i);
         setTimeout(step, 420);
       }
 
-      if (opcje) turn.querySelectorAll(".js-opt").forEach(function (b) {
-        b.addEventListener("click", function () { accept(b.getAttribute("data-opt")); });
+      function accept(text, zPola) {
+        var naj = wybierz(text);
+        if (naj.w < PROG) return odrzuc(zPola);
+        if (!bledny) score++;
+        Core.recordAnswer(true);
+        idzDalej(text, naj.o, (naj.o && naj.o.tr) || turnData.tr);
+      }
+
+      /* Rezygnacja: wzór wchodzi do transkryptu i scena idzie dalej, bez
+         punktu. Przy rozwidleniu bierzemy pierwszą gałąź — kierunku nie da
+         się zgadnąć, skoro uczeń nic nie wybrał. Wzór bierzemy z podpowiedzi,
+         nie z `accept[0]`: klucze są pisane pod porównywanie, małą literą i
+         bez interpunkcji, i w dymku wyglądałyby jak zdanie napisane byle jak. */
+      function ujawnij() {
+        var gal = opcje ? opcje[0] : null;
+        var wzor = (gal ? (gal.hintIt || (gal.accept || [])[0]) : turnData.hintIt) || accepted[0];
+        if (!bledny) { bledny = true; Core.recordAnswer(false); }
+        Audio2.speak(wzor);
+        idzDalej(wzor, gal, (gal && gal.tr) || turnData.tr);
+      }
+
+      /* Kliknięcie w gałąź NIE przechodzi przez próg podobieństwa: uczeń
+         wybrał replikę z listy, więc nie ma czego oceniać, a od kiedy zła
+         odpowiedź zatrzymuje scenę, przepuszczanie kliknięcia przez
+         porównywanie mogłoby zablokować wybór na własnej podpowiedzi. */
+      if (opcje) turn.querySelectorAll(".js-opt").forEach(function (b, n) {
+        b.addEventListener("click", function () {
+          if (!bledny) score++;
+          Core.recordAnswer(true);
+          idzDalej(b.getAttribute("data-opt"), opcje[n], opcje[n].tr);
+        });
       });
 
       if (Audio2.sttSupported) {
@@ -658,13 +729,10 @@
       }
       turn.querySelector(".js-send").addEventListener("click", function () {
         if (!input.value.trim()) { Core.toast(t("talk.emptyAnswer")); return; }
-        accept(input.value.trim());
+        accept(input.value.trim(), true);
       });
       input.addEventListener("keydown", function (e) { if (e.key === "Enter") turn.querySelector(".js-send").click(); });
-      turn.querySelector(".js-skip").addEventListener("click", function () {
-        Audio2.speak(accepted[0]);
-        Core.toast(accepted[0]);
-      });
+      turn.querySelector(".js-skip").addEventListener("click", ujawnij);
     }
 
     /* Powrót na ostatnie rozwidlenie, nie na początek. Gałąź, której się nie

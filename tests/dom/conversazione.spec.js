@@ -32,14 +32,22 @@ async function otworz(page, id) {
 }
 
 test.describe("rozmowy", () => {
+  /* Poprawne repliki z `data/core/conversations.js` (bar-mattina). Treść MA
+     teraz znaczenie: od kiedy zła odpowiedź zatrzymuje scenę, dowolne słowo
+     wpisane w pole nie przesuwa dialogu ani o jedną turę. */
+  const BAR = [
+    "buongiorno, un caffè e un cornetto per favore",
+    "vuoto grazie",
+    "posso pagare con la carta",
+    "grazie buona giornata"
+  ];
+
   test("dialog liniowy idzie po kolei i kończy się podsumowaniem", async ({ page }) => {
     await otworz(page, "bar-mattina");
-    /* Cztery repliki ucznia; treść nie ma znaczenia, bo sprawdzamy przebieg,
-       a nie ocenę. Pusta odpowiedź jest odrzucana, więc coś wpisać trzeba. */
-    for (let i = 0; i < 4; i++) {
+    for (const replika of BAR) {
       await czekajNaTure(page);
       await expect(page.locator(".dlg-opts")).toHaveCount(0);
-      await page.fill(".js-in", "buongiorno");
+      await page.fill(".js-in", replika);
       await page.click(".js-send");
     }
     await expect(page.locator(".summary__score")).toBeVisible({ timeout: 30000 });
@@ -115,5 +123,110 @@ test.describe("rozmowy", () => {
     }
     /* Mikrofon albo pole tekstowe zostaje: kliknięcie jest skrótem. */
     await expect(page.locator(".js-in")).toBeVisible();
+  });
+
+  /* ─────────────────────────────────────────────────────────────
+     Brak rozpoznawania mowy w przeglądarce.
+
+     Zgłoszone z ekranu: „nie widzę, jak mówić". Scena bez mikrofonu
+     wygląda dokładnie jak scena z usterką, bo nic w niej nie mówi,
+     że mikrofonu nie ma z powodu przeglądarki. Nota z listy rozmów
+     tego nie ratuje: uczeń czyta ją raz, a pyta trzy sceny później.
+
+     Obie strony są sprawdzane, bo test na samą NIEOBECNOŚĆ noty
+     przechodziłby także wtedy, gdyby widok przestał ją rysować w ogóle.
+     ───────────────────────────────────────────────────────────── */
+  async function otworzZeStt(page, wspierane) {
+    await page.goto("/index.html#/");
+    await page.waitForFunction(() => window.Audio2 && window.App);
+    await page.evaluate(w => { window.Audio2.sttSupported = w; }, wspierane);
+    await page.evaluate(() => App.go("conversazione", { id: "bar-mattina" }));
+    await czekajNaTure(page);
+  }
+
+  test("z rozpoznawaniem mowy scena daje mikrofon, a pole jest alternatywą", async ({ page }) => {
+    await otworzZeStt(page, true);
+    await expect(page.locator(".js-turn .js-mic")).toBeVisible();
+    await expect(page.locator(".js-turn .callout")).toHaveCount(0);
+    /* Wielokropek w podpowiedzi pola znaczy „albo": ma sens tylko wtedy,
+       gdy nad polem stoi to drugie „albo". */
+    expect(await page.getAttribute(".js-in", "placeholder")).toMatch(/^…/);
+  });
+
+  test("bez rozpoznawania mowy scena tłumaczy brak mikrofonu, raz na przejście", async ({ page }) => {
+    await otworzZeStt(page, false);
+    await expect(page.locator(".js-turn .js-mic")).toHaveCount(0);
+    await expect(page.locator(".js-turn .callout")).toBeVisible();
+    expect(await page.getAttribute(".js-in", "placeholder")).not.toMatch(/^…/);
+
+    await page.fill(".js-in", BAR[0]);
+    await page.click(".js-send");
+    await czekajNaTure(page);
+    /* Powtarzana pod każdą repliką nota przestaje być informacją. */
+    await expect(page.locator(".js-turn .callout")).toHaveCount(0);
+    await expect(page.locator(".js-in")).toBeVisible();
+  });
+
+  /* ─────────────────────────────────────────────────────────────
+     Zła odpowiedź zatrzymuje scenę.
+
+     Przedtem rozmowa szła dalej, a w dymku stawał wzór zamiast tego, co
+     uczeń powiedział: z ekranu wyglądało to jak zaliczone. Zgłoszone z
+     ekranu: „nawet jak odpowiem źle, idzie dalej jakby nigdy nic".
+     ───────────────────────────────────────────────────────────── */
+  test("zła odpowiedź nie przesuwa dialogu i mówi o tym wprost", async ({ page }) => {
+    await otworz(page, "bar-mattina");
+    const bable = await page.locator(".dlg__line").count();
+
+    await page.fill(".js-in", "spaghetti alle vongole");
+    await page.click(".js-send");
+
+    await expect(page.locator(".js-fb.is-on")).toBeVisible();
+    await expect(page.locator(".js-fb")).toHaveClass(/fb--ko/);
+    /* Ani jednego nowego dymka: scena stoi tam, gdzie stała. */
+    expect(await page.locator(".dlg__line").count()).toBe(bable);
+    await expect(page.locator(".js-in")).toBeVisible();
+    /* Wpisane słowa zostają — poprawianie własnej odpowiedzi jest sensem
+       zatrzymania, a czyszczenie pola kazałoby pisać od nowa. */
+    expect(await page.inputValue(".js-in")).toBe("spaghetti alle vongole");
+
+    /* Ta sama tura przyjmuje poprawną replikę: blokada jest na odpowiedzi,
+       nie na scenie. */
+    await page.fill(".js-in", BAR[0]);
+    await page.click(".js-send");
+    await czekajNaTure(page);
+    expect(await page.locator(".dlg__line").count()).toBeGreaterThan(bable);
+  });
+
+  test("„Pokaż odpowiedź\" jest wyjściem z tury: wzór wchodzi do transkryptu", async ({ page }) => {
+    await otworz(page, "bar-mattina");
+    await page.fill(".js-in", "qualcosa a caso");
+    await page.click(".js-send");
+    await expect(page.locator(".js-fb.is-on")).toBeVisible();
+
+    await page.click(".js-skip");
+    await czekajNaTure(page);
+    const linie = await page.locator(".dlg__it").allTextContents();
+    expect(linie.some(x => x.includes("un caffè e un cornetto"))).toBe(true);
+    /* Rezygnacja nie daje punktu: po czterech takich wynik jest zerowy. */
+    for (let n = 0; n < 3; n++) {
+      await czekajNaTure(page);
+      await page.click(".js-skip");
+    }
+    await expect(page.locator(".summary__score")).toHaveText("0/4", { timeout: 30000 });
+  });
+
+  test("podpowiedź jest w języku ucznia, włoski wzór dopiero po rezygnacji", async ({ page }) => {
+    await otworz(page, "presentarsi");
+    await czekajNaTure(page);
+    /* Włoskie zdanie w podpowiedzi robiło z rozmowy przepisywanie. */
+    const podp = await page.locator(".voice-pl").first().innerText();
+    expect(podp).toContain("Jasne, proszę!");
+    expect(podp).not.toContain("Certo, prego");
+
+    await page.click(".js-skip");
+    await czekajNaTure(page);
+    const linie = await page.locator(".dlg__it").allTextContents();
+    expect(linie.some(x => x.includes("Certo, prego"))).toBe(true);
   });
 });

@@ -11,10 +11,10 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine } from "./_harness.mjs";
+import { loadEngine, VERBS } from "./_harness.mjs";
 
 function silnik() {
-  return loadEngine({ files: ["assets/js/verbs.js"] }).sandbox.Verbs;
+  return loadEngine({ files: VERBS }).sandbox.Verbs;
 }
 
 describe("verbs: dziedziczenie po przedrostku", () => {

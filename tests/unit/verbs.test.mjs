@@ -17,9 +17,9 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine } from "./_harness.mjs";
+import { loadEngine, VERBS } from "./_harness.mjs";
 
-const V = loadEngine({ files: ["assets/js/verbs.js"] }).sandbox.Verbs;
+const V = loadEngine({ files: VERBS }).sandbox.Verbs;
 
 /** Odmiana jako zwykła tablica z tego realmu — vm ma własny Array. */
 function formy(inf, tense, gender) {

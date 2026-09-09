@@ -48,6 +48,7 @@ box.globalThis = box;
 vm.createContext(box);
 
 for (const p of [
+  "assets/js/verbs-data.js",
   "assets/js/verbs.js",
   "assets/js/lemma.js",
   "data/core/curriculum-index.js",

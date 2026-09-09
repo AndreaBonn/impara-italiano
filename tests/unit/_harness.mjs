@@ -36,6 +36,12 @@ export const CORE = [
 ];
 
 /**
+ * Silnik odmiany: tabele włoskiego przed algorytmem, ta sama kolejność
+ * co w index.html. verbs.js czyta VERB_TABLES przy wykonaniu modułu.
+ */
+export const VERBS = ["assets/js/verbs-data.js", "assets/js/verbs.js"];
+
+/**
  * localStorage z kontrolowanym limitem.
  * Prawdziwa przeglądarka rzuca QuotaExceededError przy przepełnieniu;
  * bez tego nie da się przetestować zachowania save() na pełnym dysku.

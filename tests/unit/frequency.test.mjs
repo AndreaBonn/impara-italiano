@@ -12,11 +12,11 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine } from "./_harness.mjs";
+import { loadEngine, VERBS } from "./_harness.mjs";
 
 function silnik(czytanki) {
   const box = loadEngine({
-    files: ["assets/js/verbs.js", "assets/js/lemma.js", "assets/js/frequency.js"]
+    files: [...VERBS, "assets/js/lemma.js", "assets/js/frequency.js"]
   });
   box.sandbox.READINGS = czytanki || [];
   box.sandbox.Lemma.uzyjSlownika(null);

@@ -266,7 +266,53 @@
       pres: ["siedo", "siedi", "siede", "sediamo", "sedete", "siedono"],
       cong: ["sieda", "sieda", "sieda", "sediamo", "sediate", "siedano"]
     },
-    "accorgersi": { aux: "essere", ppAgree: true, pp: "accorto", refl: true, remoto: ["mi accorsi", "ti accorgesti", "si accorse", "ci accorgemmo", "vi accorgeste", "si accorsero"] }
+    "accorgersi": { aux: "essere", ppAgree: true, pp: "accorto", refl: true, remoto: ["mi accorsi", "ti accorgesti", "si accorse", "ci accorgemmo", "vi accorgeste", "si accorsero"] },
+
+    /* ------------------------------------------------------------------
+       Imiesłowy nieregularne, których brakowało.
+
+       Zmierzone: z 45 pospolitych czasowników o nieregularnym imiesłowie
+       koniugator produkował 25 form NIEISTNIEJĄCYCH — „riduto" zamiast
+       „riso", „rotto" jako „romputo", „mosso" jako „muovuto". Imiesłów
+       wchodzi w SZEŚĆ z czternastu czasów (passato prossimo, trapassato,
+       futuro anteriore, condizionale passato, congiuntivo passato i
+       trapassato), więc jeden brak psuł sześć wierszy tabeli odmiany i
+       każde ćwiczenie na czasie złożonym z tym czasownikiem.
+
+       Wpisy są minimalne: samo `pp`. Reszta form tych czasowników jest
+       regularna albo wystarczająco bliska, a `remoto` zostaje na razie
+       regularne — to jeden czas na poziomie C2 i osobna, zadeklarowana
+       luka, nie cichy błąd.
+
+       Czasowniki z przedrostkiem dziedziczą po rdzeniu (patrz irrOf), więc
+       „ridere" naprawia też „sorridere", a „prendere" — „riprendere".
+       ------------------------------------------------------------------ */
+    ridere: { aux: "avere", pp: "riso" },
+    succedere: { aux: "essere", ppAgree: true, pp: "successo" },
+    accendere: { aux: "avere", pp: "acceso" },
+    dividere: { aux: "avere", pp: "diviso" },
+    coprire: { aux: "avere", pp: "coperto" },
+    scoprire: { aux: "avere", pp: "scoperto" },
+    crescere: { aux: "essere", ppAgree: true, pp: "cresciuto" },
+    piangere: { aux: "avere", pp: "pianto" },
+    spendere: { aux: "avere", pp: "speso" },
+    scendere: { aux: "both", ppAgree: true, pp: "sceso" },
+    rendere: { aux: "avere", pp: "reso" },
+    spingere: { aux: "avere", pp: "spinto" },
+    giungere: { aux: "essere", ppAgree: true, pp: "giunto" },
+    togliere: { aux: "avere", pp: "tolto" },
+    cogliere: { aux: "avere", pp: "colto" },
+    raccogliere: { aux: "avere", pp: "raccolto" },
+    valere: { aux: "essere", ppAgree: true, pp: "valso" },
+    parere: { aux: "essere", ppAgree: true, pp: "parso" },
+    correggere: { aux: "avere", pp: "corretto" },
+    proteggere: { aux: "avere", pp: "protetto" },
+    distruggere: { aux: "avere", pp: "distrutto" },
+    friggere: { aux: "avere", pp: "fritto" },
+    cuocere: { aux: "avere", pp: "cotto" },
+    rompere: { aux: "avere", pp: "rotto" },
+    muovere: { aux: "avere", pp: "mosso" },
+    tacere: { aux: "avere", pp: "taciuto" }
   };
 
   /* czasowniki -ire z wzorcem -isc- (lista częstotliwościowa) */

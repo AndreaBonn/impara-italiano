@@ -59,3 +59,52 @@ describe("verbs: podobieństwo końcówki to nie pokrewieństwo", () => {
     assert.ok(!formy.join(" ").includes("vad"), "żadnego tematu od andare");
   });
 });
+
+/* ============================================================
+   Imiesłowy nieregularne.
+
+   Zmierzone przed poprawką: z 45 pospolitych czasowników o nieregularnym
+   imiesłowie koniugator produkował 25 form NIEISTNIEJĄCYCH. Imiesłów
+   wchodzi w sześć z czternastu czasów, więc jeden brak psuł sześć wierszy
+   tabeli odmiany i każde ćwiczenie na czasie złożonym.
+
+   Ten test jest listą, bo tak wygląda ten defekt: nie jedna reguła, tylko
+   brakujące wpisy, i każdy kolejny brak ma się tu zgłosić po nazwie.
+   ============================================================ */
+describe("verbs: imiesłowy nieregularne", () => {
+  const PARY = [
+    ["ridere", "riso"], ["succedere", "successo"], ["accendere", "acceso"],
+    ["dividere", "diviso"], ["coprire", "coperto"], ["scoprire", "scoperto"],
+    ["crescere", "cresciuto"], ["piangere", "pianto"], ["spendere", "speso"],
+    ["scendere", "sceso"], ["rendere", "reso"], ["spingere", "spinto"],
+    ["giungere", "giunto"], ["togliere", "tolto"], ["cogliere", "colto"],
+    ["raccogliere", "raccolto"], ["valere", "valso"], ["parere", "parso"],
+    ["correggere", "corretto"], ["proteggere", "protetto"],
+    ["distruggere", "distrutto"], ["friggere", "fritto"], ["cuocere", "cotto"],
+    ["rompere", "rotto"], ["muovere", "mosso"], ["tacere", "taciuto"]
+  ];
+  for (const [inf, pp] of PARY) {
+    test(`${inf} -> ${pp}`, () => {
+      assert.equal(silnik().participle(inf), pp);
+    });
+  }
+
+  test("imiesłów wchodzi w czas złożony, nie stoi obok niego", () => {
+    const V = silnik();
+    assert.deepEqual(Array.from(V.conjugate("rompere", "passPross")),
+      ["ho rotto", "hai rotto", "ha rotto", "abbiamo rotto", "avete rotto", "hanno rotto"]);
+  });
+
+  test("przedrostek dziedziczy nowy imiesłów bez osobnego wpisu", () => {
+    const V = silnik();
+    assert.equal(V.participle("sorridere"), "sorriso");
+    assert.equal(V.participle("riscoprire"), "riscoperto");
+  });
+
+  test("regularne zostają regularne", () => {
+    const V = silnik();
+    assert.equal(V.participle("parlare"), "parlato");
+    assert.equal(V.participle("credere"), "creduto");
+    assert.equal(V.participle("dormire"), "dormito");
+  });
+});

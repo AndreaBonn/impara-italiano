@@ -20,6 +20,14 @@ import vm from "node:vm";
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 /**
+ * Silnik stanu w kolejności ładowania, tej samej co w index.html.
+ * Stała, a nie lista przepisywana w każdym pliku testu: rozbicie core.js
+ * na moduły ma kosztować jedną zmianę tutaj, a nie dziesięć poprawek
+ * w miejscach, które nikogo nie obchodzą.
+ */
+export const CORE = ["assets/js/fsrs.js", "assets/js/text.js", "assets/js/core.js"];
+
+/**
  * localStorage z kontrolowanym limitem.
  * Prawdziwa przeglądarka rzuca QuotaExceededError przy przepełnieniu;
  * bez tego nie da się przetestować zachowania save() na pełnym dysku.
@@ -135,7 +143,7 @@ function makeDocument(toasts, notices) {
  */
 export function loadEngine(options) {
   const opts = options || {};
-  const files = opts.files || ["assets/js/fsrs.js", "assets/js/core.js"];
+  const files = opts.files || CORE;
   const storage = opts.storage || makeStorage();
   const clock = makeClock();
   const toasts = [];

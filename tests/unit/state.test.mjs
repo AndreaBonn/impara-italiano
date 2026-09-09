@@ -12,7 +12,7 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine, makeStorage, probePrototype } from "./_harness.mjs";
+import { loadEngine, makeStorage, probePrototype, CORE } from "./_harness.mjs";
 
 /**
  * Obiekty z piaskownicy mają prototyp z innego realm, więc deepEqual
@@ -609,7 +609,7 @@ describe("gradeCard: FSRS na talii słownictwa", () => {
   });
 
   test("quaderno błędów nie zauważa zmiany: dalej chodzi po SM-2", () => {
-    const box = loadEngine({ files: ["assets/js/fsrs.js", "assets/js/core.js"] });
+    const box = loadEngine({ files: CORE });
     box.Core.load();
     const c = { ef: 2.5, reps: 0, interval: 0, due: Date.now(), lapses: 0 };
     box.Core.schedule(c, 5);

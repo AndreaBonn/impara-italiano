@@ -25,7 +25,7 @@
    ============================================================ */
 
 /* Podnieś przy każdej zmianie plików z PRECACHE. */
-var SW_VERSION = "v18";
+var SW_VERSION = "v19";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Nagrania są adresowane treścią, więc ich pamięć przeżywa zmianę wersji. */
@@ -37,6 +37,7 @@ var PRECACHE = [
   "./manifest.webmanifest",
   "./assets/css/app.css",
   "./assets/js/fsrs.js",
+  "./assets/js/text.js",
   "./assets/js/core.js",
   "./assets/js/i18n.js",
   "./assets/js/consent.js",

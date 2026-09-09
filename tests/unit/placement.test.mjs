@@ -7,9 +7,9 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine } from "./_harness.mjs";
+import { loadEngine, CORE } from "./_harness.mjs";
 
-const PLIKI = ["assets/js/core.js", "assets/js/placement.js"];
+const PLIKI = [...CORE, "assets/js/placement.js"];
 const KODY = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 function silnik() {

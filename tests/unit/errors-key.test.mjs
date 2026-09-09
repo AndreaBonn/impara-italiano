@@ -13,9 +13,9 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine } from "./_harness.mjs";
+import { loadEngine, CORE } from "./_harness.mjs";
 
-const PLIKI = ["assets/js/core.js", "assets/js/errors-key.js"];
+const PLIKI = [...CORE, "assets/js/errors-key.js"];
 
 function silnik() {
   const box = loadEngine({ files: PLIKI });

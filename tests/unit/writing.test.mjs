@@ -8,9 +8,9 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine } from "./_harness.mjs";
+import { loadEngine, CORE } from "./_harness.mjs";
 
-const PLIKI = ["assets/js/core.js", "assets/js/verbs.js", "assets/js/writing.js"];
+const PLIKI = [...CORE, "assets/js/verbs.js", "assets/js/writing.js"];
 
 function silnik() {
   const box = loadEngine({ files: PLIKI });

@@ -75,7 +75,16 @@
     var box = document.getElementById("readBox");
     if (tryb === "listen") return trybSluchania(r, box);
     if (tryb === "dictation") return trybDyktanda(r, box);
-    return trybCzytania(r, box);
+
+    /* Leksykon poziomu MUSI być wczytany, zanim narysujemy tekst z
+       klikalnymi słowami. Poziomy dociągają się leniwie, więc uczeń, który
+       wchodzi prosto w czytankę, ma pusty `vocabIndex` — i karta słowa
+       pokazywała puste znaczenie dla „bere", którego kurs uczy w A1.
+       Zmierzone przy pierwszym uruchomieniu, nie przewidziane. */
+    Core.loadLevelData(r.cefr, function () {
+      if (global.Lemma && Lemma.odswiez) Lemma.odswiez();   // słownik urósł
+      trybCzytania(r, box);
+    });
   }
 
   /** Glosy trudnych słów, jeśli nakładka je dała. */
@@ -90,17 +99,23 @@
   }
 
   function trybCzytania(r, box) {
-    box.innerHTML = '<div class="card"><p style="font-size:1.05rem;line-height:2">' +
+    /* Każde słowo jest klikalne. Panel trudnych słów niżej ZOSTAJE: to
+       wybór autora, czyli „na to zwróć uwagę", a dotknięcie odpowiada na
+       inne pytanie — „a tego akurat ja nie znam". Dwie różne rzeczy. */
+    box.innerHTML = '<div class="card"><p class="lk-text" style="font-size:1.05rem;line-height:2.1">' +
       r.sentences.map(function (s) {
-        return '<span style="display:inline">' + esc(s) +
+        return '<span style="display:inline">' + Lookup.zdanieKlikalne(s) +
           ' <button type="button" class="say-btn" data-say="' + esc(s) +
           '" aria-label="' + esc(t("a11y.listenTo", { what: s })) + '">🔊</button></span> ';
       }).join("") + "</p></div>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem;margin:10px 0 0">' + esc(t("read.tapHint")) + "</p>" +
       '<div style="margin-top:14px"><button class="btn btn--green js-all">' + esc(t("read.playAll")) + "</button></div>" +
       glosy(r);
 
     Ex.wireSpeakers(box);
+    Lookup.podepnij(box.querySelector(".lk-text"), r);
     box.querySelector(".js-all").addEventListener("click", function () {
+      Lookup.zamknij();
       Audio2.speakSequence(r.sentences.map(function (s) { return { it: s }; }));
     });
   }

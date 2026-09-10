@@ -233,3 +233,42 @@ for (const theme of ["light", "dark"]) {
       .toBeGreaterThanOrEqual(UI);
   });
 }
+
+/* ============================================================
+   Przycisk ghost na karcie: napis, obramowanie i stan pod kursorem.
+
+   Ghost nie ma własnego wypełnienia, więc odróżnia go od tła sama
+   krawędź — a ta wychodziła już raz na 1,58:1 w komunikacie o kopii.
+   Wzorzec chodzi w kilku miejscach kursu (trening, ścieżka nauki),
+   więc mierzy się go tam, gdzie leży na karcie, a nie raz na sztukę.
+
+   Pod kursorem para kolorów się zmienia: to osobny pomiar, nie ten sam.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`podpowiedź o teście poziomującym: kontrast w motywie ${theme}`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html#/percorso");
+    await page.waitForSelector(".js-place");
+    await page.evaluate(t => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* przejście palety */
+
+    for (const [sel, opis] of [[".list-row__main b", "nagłówek podpowiedzi"],
+                               [".list-row__main span", "zdanie podpowiedzi"],
+                               [".js-place", "przycisk testu"]]) {
+      const m = await page.evaluate(s => window.__kontrast(s), sel);
+      expect(m, `${opis} (${sel}) nie istnieje`).not.toBeNull();
+      expect(m.tekst, `${opis}: ${m.tekst.toFixed(2)}:1, próg ${TEKST}`)
+        .toBeGreaterThanOrEqual(TEKST);
+    }
+
+    const spoczynek = await page.evaluate(() => window.__kontrast(".js-place"));
+    expect(spoczynek.obramowanie, `obramowanie przycisku: ${spoczynek.obramowanie.toFixed(2)}:1`)
+      .toBeGreaterThanOrEqual(UI);
+
+    await page.hover(".js-place");
+    await page.waitForTimeout(400);
+    const kursor = await page.evaluate(() => window.__kontrast(".js-place"));
+    expect(kursor.tekst, `przycisk pod kursorem: ${kursor.tekst.toFixed(2)}:1, próg ${TEKST}`)
+      .toBeGreaterThanOrEqual(TEKST);
+  });
+}

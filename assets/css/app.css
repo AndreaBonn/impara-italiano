@@ -110,6 +110,11 @@
   --line:         oklch(0.925 0.020 16);
   --line-strong:  oklch(0.855 0.045 12);
   --line-mint:    oklch(0.880 0.040 166);
+  /* Kontur kontrolki, nie kreska ozdobna: przycisk ghost ma tło papieru,
+     więc to jedyny sygnał, że w ogóle jest przyciskiem, a WCAG 1.4.11
+     żąda przy takim sygnale 3:1. --line-strong daje na papierze 1,58:1
+     i jest dobrany do separatorów, które mają być ledwo widoczne. */
+  --line-control: oklch(0.650 0.045 12);
 
   /* --- ombre --- */
   --shadow-s: 0 1px 2px oklch(0.60 0.08 12 / 0.10);
@@ -159,6 +164,8 @@
   --line:         oklch(0.330 0.022 340);
   --line-strong:  oklch(0.420 0.035 345);
   --line-mint:    oklch(0.400 0.040 166);
+  /* W ciemnym motywie kontur idzie w drugą stronę: jaśnieje wobec papieru. */
+  --line-control: oklch(0.560 0.035 345);
 
   --shadow-s: 0 1px 2px oklch(0.10 0.02 340 / 0.5);
   --shadow-m: 0 4px 16px oklch(0.10 0.02 340 / 0.55);
@@ -381,7 +388,7 @@ button{font:inherit;color:inherit;}
 :root[data-theme="dark"] .btn--green{color:oklch(0.18 0.03 160);}
 /* Ten sam defekt co przy przycisku podstawowym, ta sama poprawka. */
 :root[data-theme="dark"] .btn--green:hover:not(:disabled){background:oklch(0.845 0.075 168);}
-.btn--ghost{background:var(--paper-2);border-color:var(--line-strong);color:var(--ink);}
+.btn--ghost{background:var(--paper-2);border-color:var(--line-control);color:var(--ink);}
 .btn--ghost:hover:not(:disabled){border-color:var(--rosa-deep);color:var(--rosa-deep);}
 .btn--quiet{background:transparent;border-color:transparent;color:var(--ink-soft);text-decoration:underline;min-height:36px;padding:6px 10px;}
 .btn--sm{min-height:36px;padding:7px 14px;font-size:.82rem;border-radius:var(--r-s);}

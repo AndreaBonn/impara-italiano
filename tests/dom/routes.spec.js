@@ -1,10 +1,10 @@
 /* ============================================================
    Każda trasa ma swój widok i ten widok coś rysuje.
 
-   Powód istnienia tego pliku siedzi w app.js:66 —
+   Powód istnienia tego pliku siedzi w router.js, w render() —
 
        var fn = Views[route];
-       if (!fn) { Views.percorso({}); route = "percorso"; }
+       if (!fn) { Views[DOMYSLNA]({}); route = DOMYSLNA; }
 
    Brakujący widok NIE wywraca aplikacji: pokazuje ścieżkę nauki. Odkąd
    ekrany mieszkają w kilkunastu plikach wczytywanych osobnymi

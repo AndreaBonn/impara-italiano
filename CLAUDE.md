@@ -50,9 +50,17 @@ nic o `srs`, `srs` nie wie nic o postępach lekcji.
 modułu; stary nie musi się zmieniać. To jest fasada, nie warstwa: nie ma tam logiki.
 
 Ta sama zasada niżej: `verbs-data.js` (tabele włoskiego) przed `verbs.js` (algorytm);
-`exercises.js` (dyspozytor + wspólne kawałki) przed `exercises-choice/text/voice.js`
-(czternaście typów, wołają `Ex.register`); `views.js` (skorupa i `Views.shell`) przed
-kilkunastoma `views-*.js`, po jednym na ekran.
+`recordings.js` (który plik mp3 dla którego zdania) przed `audio.js` (kaskada nagranie →
+synteza → cisza); `i18n.js` (napisy interfejsu) obok `i18n-merge.js` (doklejanie tekstów
+ucznia do treści kursu); `router.js` (adres, wybór widoku, `Views.onLeave`) przed `app.js`
+(pasek, motyw, przełącznik języka, start); `exercises.js` (dyspozytor + wspólne kawałki)
+przed `exercises-choice/text/voice.js` (czternaście typów, wołają `Ex.register`);
+`views.js` (skorupa i `Views.shell`) przed kilkunastoma `views-*.js`, po jednym na ekran.
+
+Kryterium podziału jest wszędzie to samo i nie jest nim długość pliku: **czysta funkcja
+osobno od tego, co dotyka przeglądarki**. Pierwsza połowa daje się sprawdzić w `node:test`
+za grosze, druga wymaga Playwrighta — i dopóki mieszkają w jednym pliku, cały plik kosztuje
+tyle, co ta droższa połowa.
 
 ## Kontrakty
 

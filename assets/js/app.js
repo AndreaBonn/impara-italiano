@@ -1,74 +1,22 @@
 /* ============================================================
-   app.js — router, powłoka, start aplikacji
+   app.js — powłoka i start aplikacji.
+
+   Router mieszka w router.js; tutaj jest to, co zna konkretne elementy
+   strony: pasek boczny, motyw, przełącznik języka i kolejność startu.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var App = {};
-  var current = { route: "percorso", params: {} };
 
-  /* ---------------- Router na hashu ---------------- */
-  function encode(route, params) {
-    var q = Object.keys(params || {}).map(function (k) {
-      return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
-    }).join("&");
-    return "#/" + route + (q ? "?" + q : "");
-  }
-
-  function decode(hash) {
-    var m = /^#\/([a-z]+)(?:\?(.*))?$/.exec(hash || "");
-    if (!m) return { route: "percorso", params: {} };
-    var params = {};
-    (m[2] || "").split("&").filter(Boolean).forEach(function (pair) {
-      var kv = pair.split("=");
-      params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
-    });
-    return { route: m[1], params: params };
-  }
-
-  App.go = function (route, params) {
-    var h = encode(route, params);
-    if (global.location.hash === h) render(route, params || {});
-    else global.location.hash = h;
+  /* Powłoka po każdym renderowaniu: zaznaczenie pozycji w pasku i
+     zamknięcie szuflady na wąskim ekranie. Router nie zna tych elementów. */
+  Router.onRender = function (route) {
+    markRail(route);
+    closeRail();
   };
 
-  function onHashChange() {
-    var d = decode(global.location.hash);
-    render(d.route, d.params);
-  }
-
-  function render(route, params) {
-    Audio2.stop();
-    /* Sprzątanie po widoku, który zostawił coś chodzącego.
-       `Audio2.stop()` wyżej wystarczało, dopóki jedynym śladem widoku był
-       dźwięk. Symulacja egzaminu ma odliczanie na `setInterval`: bez tego
-       haczyka zegar zostawał żywy po wyjściu z trasy i po pół godzinie
-       wywoływał domykanie sekcji na CUDZYM ekranie. Zmierzone: jeden
-       interwał aktywny 2,5 sekundy po `App.go("lettura")`.
-       Kontrakt jest jednorazowy: widok ustawia `Views.onLeave` przy
-       rysowaniu, router go woła i kasuje, więc nikt nie musi pamiętać
-       o wyrejestrowaniu. */
-    if (typeof Views.onLeave === "function") {
-      var sprzatnij = Views.onLeave;
-      Views.onLeave = null;
-      sprzatnij();
-    }
-    current = { route: route, params: params };
-
-    /* Domyślnie po zmianie trasy fokus ląduje na kontenerze treści, żeby
-       czytnik ekranu przeczytał nową stronę od początku. Widok, który sam
-       ustawia fokus na konkretnym polu (wyszukiwarka), podnosi tę flagę —
-       inaczej router zabierałby mu fokus zaraz po jego ustawieniu.
-       Deklaracja zamiast setTimeout: to jest kontrakt, nie wyścig. */
-    Views.keepFocus = false;
-
-    var fn = Views[route];
-    if (!fn) { Views.percorso({}); route = "percorso"; }
-    else fn(params);
-    markRail(route);
-    if (!Views.keepFocus) document.getElementById("main").focus({ preventScroll: true });
-    closeRail();
-  }
+  App.go = function (route, params) { Router.go(route, params); };
 
   function markRail(route) {
     document.querySelectorAll(".rail__item").forEach(function (b) {
@@ -229,7 +177,7 @@
       applyTheme(Core.state.settings.theme || "light");
       renderLangPicker();
       App.refreshRail();
-      render(current.route, current.params);
+      Router.render(Router.current.route, Router.current.params);
       // milczące niepowodzenie zostawiłoby część kursu w poprzednim języku
       if (missing.length) Core.toast(I18n.t("lang.partial", { n: missing.length }));
     });
@@ -256,7 +204,7 @@
       var t = Core.state.settings.theme === "dark" ? "light" : "dark";
       Core.state.settings.theme = t; Core.save(); applyTheme(t);
     });
-    global.addEventListener("hashchange", onHashChange);
+    Router.listen();
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") { Audio2.stop(); closeRail(); }
     });
@@ -271,14 +219,14 @@
 
   /** Pierwsze renderowanie: poziom, do którego uczeń wraca. */
   function startRouting() {
-    var d = decode(global.location.hash);
+    var d = Router.decode(global.location.hash);
     var wanted = d.params.level || guessLevel(d);
     if (wanted) {
-      Core.loadLevelData(wanted, function () { onHashChange(); });
+      Core.loadLevelData(wanted, function () { Router.onHashChange(); });
       // pokaż szkielet od razu, nie czekając na plik
-      render(d.route, d.params);
+      Router.render(d.route, d.params);
     } else {
-      onHashChange();
+      Router.onHashChange();
     }
     App.refreshRail();
   }

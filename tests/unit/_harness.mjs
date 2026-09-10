@@ -168,6 +168,38 @@ export function glos(name, lang) {
 }
 
 /**
+ * Adres strony i zdarzenia okna.
+ *
+ * Router pisze do `location.hash` i czeka, aż przeglądarka odda mu
+ * `hashchange`; sam się nie woła. Atrapa, która tylko zapamiętuje napis,
+ * pokazywałaby przejście na trasę jako martwe przypisanie — dlatego
+ * przypisanie hasha odpala tu uchwyty, dokładnie jak w przeglądarce,
+ * i dokładnie tak samo NIE odpala ich, gdy adres się nie zmienia.
+ */
+function makeWindowEvents() {
+  const uchwyty = {};
+  let hash = "";
+
+  const location = {
+    get hash() { return hash; },
+    set hash(v) {
+      const next = String(v);
+      if (next === hash) return;
+      hash = next;
+      (uchwyty.hashchange || []).slice().forEach((fn) => fn({ type: "hashchange" }));
+    }
+  };
+
+  return {
+    location: location,
+    addEventListener(type, fn) { (uchwyty[type] = uchwyty[type] || []).push(fn); },
+    /** Poza API przeglądarki: wejście „z zewnątrz", np. z zakładki. */
+    idzNa(nowy) { location.hash = nowy; },
+    uchwyty: uchwyty
+  };
+}
+
+/**
  * Minimalny DOM: tyle, ile dotyka core.js (toast i komunikat trwały).
  *
  * `toasts` zbiera same napisy — do prostych sprawdzeń. `notices` trzyma
@@ -230,16 +262,42 @@ function makeDocument(toasts, notices) {
     appendChild(el) { wstrzykniete.push(el.src); czekajace.push(el); return el; }
   };
 
+  /**
+   * Elementy strony zamawiane przez test (`box.el("main")`).
+   *
+   * Domyślnie `getElementById` oddaje null dla wszystkiego poza stosem
+   * toastów, bo tyle wystarczało silnikowi stanu. Router sięga po
+   * `#main`, żeby przestawić na nie fokus po zmianie trasy: bez tego
+   * jedynym sposobem sprawdzenia routera byłaby przeglądarka. Nieznane
+   * id nadal oddaje null — atrapa, która oddaje element na każde
+   * pytanie, przepuszcza literówkę w id.
+   */
+  const naZamowienie = new Map();
+
   const document = {
     documentElement: { setAttribute() {}, getAttribute() { return null; } },
     head: head,
-    getElementById(id) { return id === "toastStack" ? stack : null; },
+    getElementById(id) {
+      if (id === "toastStack") return stack;
+      return naZamowienie.has(id) ? naZamowienie.get(id) : null;
+    },
     createElement() { return makeEl(); },
     querySelectorAll() { return []; },
     querySelector() { return null; },
     addEventListener() {}
   };
-  return { document: document, stack: stack, wstrzykniete: wstrzykniete, czekajace: czekajace };
+
+  function el(id) {
+    if (!naZamowienie.has(id)) {
+      const nowy = makeEl();
+      nowy.focused = 0;
+      nowy.focus = function () { nowy.focused++; };
+      naZamowienie.set(id, nowy);
+    }
+    return naZamowienie.get(id);
+  }
+
+  return { document: document, stack: stack, el: el, wstrzykniete: wstrzykniete, czekajace: czekajace };
 }
 
 /**
@@ -260,6 +318,7 @@ export function loadEngine(options) {
   const notices = [];
   const warnings = [];
   const audio = makeAudioEnv(opts);
+  const okno = makeWindowEvents();
 
   if (opts.seed) {
     for (const k of Object.keys(opts.seed)) {
@@ -293,6 +352,8 @@ export function loadEngine(options) {
       lang: "pl", locale() { return "pl-PL"; }, LANGS: []
     },
     Promise,
+    location: okno.location,
+    addEventListener: okno.addEventListener,
     speechSynthesis: audio.speechSynthesis,
     SpeechSynthesisUtterance: audio.Utterance,
     Audio: audio.Player
@@ -309,6 +370,10 @@ export function loadEngine(options) {
     sandbox, storage, clock, toasts, notices, warnings,
     /** Co przeglądarka „usłyszała": wypowiedzi, anulowania, odtwarzacze. */
     audio: audio.log,
+    /** Zamawia element o danym id, żeby getElementById go znalazł. */
+    el(id) { return dom.el(id); },
+    /** Adres strony; przypisanie hasha odpala hashchange jak w przeglądarce. */
+    okno: okno,
     /** Co nadal wisi na ekranie po upływie czasu — bez znikających toastów. */
     visible() { return dom.stack.children.map(c => c.textContent); },
     /** Wykonuje kolejny plik silnika w tej samej piaskownicy. */

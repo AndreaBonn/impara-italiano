@@ -34,7 +34,7 @@ const globals = require("globals");
 const KURS = [
   "Anki", "App", "Audio2", "Cils", "Consent", "Core", "Drills", "Errors", "Ex",
   "Frequency", "Fsrs", "I18n", "Keys", "Lemma", "Lex", "LINGUAI", "Lookup",
-  "Placement", "PWA", "Recorder", "Search", "Train", "Verbs", "Views", "Writing",
+  "Placement", "PWA", "Recorder", "Router", "Search", "Train", "Verbs", "Views", "Writing",
   /* dane kursu: pliki z data/ przypisują je do globalnego zakresu */
   "AUDIO_INDEX", "CONVERSATIONS", "GRAMMAR_REF", "PHONETICS", "CILS", "READINGS",
   "INTERFERENCE", "FREQUENCY", "WRITING"

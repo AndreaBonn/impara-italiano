@@ -99,11 +99,14 @@
     /* Wejście z adresem sekcji (#/guida?s=esame) ustawia fokus samo, więc
        podnosi `keepFocus` — inaczej router zaraz po renderowaniu przeniósłby
        go na kontener treści i czytnik ekranu zaczynałby od góry strony,
-       czyli od tego, przed czym link miał go uchronić. */
-    if (params && params.s) {
-      Views.keepFocus = true;
-      doSekcji(params.s);
-    }
+       czyli od tego, przed czym link miał go uchronić.
+
+       Flagę podnosi DOPIERO trafienie w sekcję. Adres z nieistniejącą nazwą
+       (stara zakładka, sekcja przemianowana) nie ustawia fokusu nigdzie, więc
+       podniesiona wcześniej flaga odbierałaby go także routerowi i czytnik
+       zostawałby tam, gdzie był przed przejściem — dokładnie ta awaria,
+       przed którą ten kod miał chronić, tylko po cichu. */
+    if (params && params.s && doSekcji(params.s)) Views.keepFocus = true;
   };
 
   /**
@@ -112,12 +115,15 @@
    * Fokus idzie razem z przewinięciem: sam scroll przesuwa obraz, ale
    * czytnik ekranu zostaje tam, gdzie był, więc kliknięcie w spisie
    * treści nie robiłoby dla niego zupełnie nic.
+   *
+   * Oddaje, czy sekcja się znalazła — na tym opiera się `keepFocus` wyżej.
    */
   function doSekcji(id) {
     var cel = el().querySelector("#g-" + CSS.escape(id));
-    if (!cel) return;
+    if (!cel) return false;
     cel.setAttribute("tabindex", "-1");
     cel.scrollIntoView({ block: "start" });
     cel.focus({ preventScroll: true });
+    return true;
   }
 })();

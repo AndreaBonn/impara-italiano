@@ -38,6 +38,19 @@ test("adres z sekcją otwiera się na niej", async ({ page }) => {
   expect(id).toBe("g-backup");
 });
 
+/* Nazwa sekcji przychodzi z adresu, więc bywa nieaktualna: stara zakładka,
+   sekcja przemianowana, literówka w linku. Widok podnosi wtedy `keepFocus`
+   tylko wtedy, gdy naprawdę ustawił fokus — inaczej odbiera go również
+   routerowi i czytnik ekranu zostaje tam, gdzie był PRZED przejściem.
+   Przypadek trafiony stoi w teście wyżej: bez niego to sprawdzenie
+   przechodziłoby też dla widoku, który nie umie skoczyć do żadnej sekcji. */
+test("adres z nieistniejącą sekcją nie zabiera fokusu treści", async ({ page }) => {
+  await page.goto("/index.html#/guida?s=nie-ma-takiej");
+  await page.waitForSelector("#g-inizio");
+  const id = await page.evaluate(() => document.activeElement.id);
+  expect(id, "fokus po wejściu z błędną nazwą sekcji").toBe("main");
+});
+
 /* Sedno pierwsze: każda trasa z mapy ma swój widok. */
 test("żaden ekran z mapy nie prowadzi donikąd", async ({ page }) => {
   await przewodnik(page);

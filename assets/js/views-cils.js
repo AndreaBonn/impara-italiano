@@ -1,8 +1,10 @@
 /* ============================================================
    views-cils.js — przejście przez symulację egzaminu.
 
-   Silnik liczący siedzi w cils.js; tutaj jest to, czego on nie umie:
-   czas, kolejność sekcji i brak drogi powrotnej.
+   Silnik liczący siedzi w cils.js, a przebieg całego podejścia (kolejność
+   sekcji, siatka odpowiedzi, punkty, sekcje z wyczerpanym czasem, wpis do
+   historii) w cils-run.js. Tutaj zostało to, czego żaden z nich nie umie:
+   zegar, rysowanie i brak drogi powrotnej.
 
    DLACZEGO NIE MA POWROTU. Na egzaminie sekcja zamknięta jest zamknięta, a
    symulator, w którym można wrócić i poprawić, mierzy co innego niż
@@ -14,8 +16,8 @@
    przeszedł całą sesję z fałszywym oczekiwaniem. To ta sama zasada, co
    przy shadowingu i przy tempie mowy.
 
-   Skrypt klasyczny. Wymaga core.js, cils.js, audio.js, writing.js,
-   recorder.js, views.js.
+   Skrypt klasyczny. Wymaga core.js, cils.js, cils-run.js, audio.js,
+   writing.js, recorder.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -26,7 +28,6 @@
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
 
-  var ORDINE = ["ascolto", "lettura", "scritta", "orale"];
   var ASCOLTI_MAX = 2;              /* all'esame i testi si sentono due volte */
   var AVVISI = [600, 300, 60];      /* secondi a cui il tempo viene annunciato */
 
@@ -62,7 +63,7 @@
   function avvia(id) {
     var s = Cils.sim(id);
     if (!s) { set(Views.shell.empty(t("cils.none"))); return; }
-    run = { sim: s, i: 0, risposte: {}, scaduta: {}, punti: {}, scritta: null, orale: null };
+    run = CilsRun.create(s);
     rysujSezione();
   }
 
@@ -124,23 +125,18 @@
 
   /* ═══════════════════ Sezioni ═══════════════════ */
 
-  function sezioneCorrente() {
-    var id = ORDINE[run.i];
-    return Cils.sezione(run.sim, id);
-  }
-
   function intestazione(sez) {
     return '<div class="cils-bar">' +
-      '<span class="cils-step">' + esc(t("cils.stepOf", { i: run.i + 1, n: ORDINE.length })) + "</span>" +
+      '<span class="cils-step">' + esc(t("cils.stepOf", { i: run.krok, n: run.ile })) + "</span>" +
       '<span class="cils-clock js-clock" aria-hidden="true">--:--</span>' +
       '<span class="sr-only js-clock-live" role="status" aria-live="polite"></span></div>' +
-      pageHead(t("cils.kicker") + " · " + esc(run.sim.titoloIt), t("cils.sec." + sez.id),
+      pageHead(t("cils.kicker") + " · " + esc(run.dane.sim.titoloIt), t("cils.sec." + sez.id),
         t("cils.minutes", { n: sez.minuti }));
   }
 
   function rysujSezione() {
     fermaTimer();
-    var sez = sezioneCorrente();
+    var sez = run.sekcja();
     if (!sez) return riepilogo();
     if (sez.id === "ascolto" || sez.id === "lettura") return sezioneChiusa(sez);
     if (sez.id === "scritta") return sezioneScritta(sez);
@@ -149,12 +145,12 @@
 
   function avanti() {
     fermaTimer();
-    run.i++;
+    run.dalej();
     rysujSezione();
   }
 
   function scadi(id) {
-    run.scaduta[id] = true;
+    run.scadla(id);
     var box = el().querySelector(".js-body");
     if (box) box.setAttribute("aria-disabled", "true");
     var avvisoEl = el().querySelector(".js-expired");
@@ -166,9 +162,7 @@
   /* ---------------- Ascolto e lettura: risposte chiuse ---------------- */
 
   function sezioneChiusa(sez) {
-    run.risposte[sez.id] = (sez.prove || []).map(function (p) {
-      return new Array((p.items || []).length);
-    });
+    run.przygotuj(sez);
 
     set(intestazione(sez) +
       '<div class="js-body">' + (sez.prove || []).map(function (p, n) {
@@ -236,7 +230,7 @@
     el().querySelectorAll('.js-body input[type="radio"]').forEach(function (r) {
       r.addEventListener("change", function () {
         var p = Number(r.getAttribute("data-p")), i = Number(r.getAttribute("data-i"));
-        run.risposte[sez.id][p][i] = Number(r.value);
+        run.odpowiedz(sez.id, p, i, Number(r.value));
       });
     });
   }
@@ -256,9 +250,7 @@
   }
 
   function chiudiChiusa(sez) {
-    var w = Cils.punteggioSezione(sez, run.risposte[sez.id]);
-    run.punti[sez.id] = w.punti;
-    run[sez.id + "Dettaglio"] = w;
+    run.zamknij(sez);
     avanti();
   }
 
@@ -291,11 +283,11 @@
     });
 
     razTylko(el().querySelector(".js-next"), function () {
-      run.scritta = { traccia: sez.tracce[scelta], testo: ta.value };
+      run.zapiszScritta(sez.tracce[scelta], ta.value);
       avanti();
     });
     avviaTimer(sez.minuti * 60, function () {
-      run.scritta = { traccia: sez.tracce[scelta], testo: ta.value };
+      run.zapiszScritta(sez.tracce[scelta], ta.value);
       scadi(sez.id);
     });
   }
@@ -334,11 +326,11 @@
     if (!powod) podepnijNagranie();
 
     razTylko(el().querySelector(".js-next"), function () {
-      run.orale = { argomento: (sez.argomenti || [])[scelto], spuntate: spuntate() };
+      run.zapiszOrale((sez.argomenti || [])[scelto], spuntate());
       avanti();
     });
     avviaTimer(sez.minuti * 60, function () {
-      run.orale = { argomento: (sez.argomenti || [])[scelto], spuntate: spuntate() };
+      run.zapiszOrale((sez.argomenti || [])[scelto], spuntate());
       scadi(sez.id);
     });
   }
@@ -391,10 +383,10 @@
 
   function riepilogo() {
     fermaTimer();
-    var e = Cils.esito(run.punti);
+    var e = run.esito();
     salva(e);
 
-    set(pageHead(t("cils.kicker") + " · " + esc(run.sim.titoloIt), t("cils.resultTitle"), "") +
+    set(pageHead(t("cils.kicker") + " · " + esc(run.dane.sim.titoloIt), t("cils.resultTitle"), "") +
       '<div class="card">' + abilitaHtml(e) +
       '<p class="cils-verdict">' + esc(t(e.verdetto === "sotto-soglia" ? "cils.verdictBelow" : "cils.verdictUnknown")) + "</p>" +
       '<p class="cils-src">' + esc(t("cils.thresholdSource")) + "</p></div>" +
@@ -403,7 +395,7 @@
       '<button class="btn btn--primary js-again">' + esc(t("cils.again")) + "</button>" +
       '<button class="btn btn--ghost js-list">' + esc(t("cils.backToList")) + "</button></div>");
 
-    el().querySelector(".js-again").addEventListener("click", function () { App.go("esame", { id: run.sim.id }); });
+    el().querySelector(".js-again").addEventListener("click", function () { App.go("esame", { id: run.dane.sim.id }); });
     el().querySelector(".js-list").addEventListener("click", function () { App.go("esame"); });
   }
 
@@ -413,16 +405,17 @@
       var val = d.misurata
         ? d.punti + " / " + d.max + " " + (d.sopraSoglia ? "✓" : "✗")
         : t("cils.notMeasured");
-      var scad = run.scaduta[a] ? " " + t("cils.expiredMark") : "";
+      var scad = run.czyScadla(a) ? " " + t("cils.expiredMark") : "";
       return "<tr><th>" + esc(t("cils.sec." + a)) + "</th><td>" + esc(val + scad) + "</td></tr>";
     }).join("") + "</tbody></table>" +
       '<p class="cils-hint">' + esc(t("cils.threshold", { n: Cils.SOGLIA_ABILITA, max: Cils.MAX_ABILITA })) + "</p>";
   }
 
   function scrittaHtml() {
-    if (!run.scritta) return "";
-    var c = Cils.controlloScritta(run.scritta.traccia, run.scritta.testo);
-    var wynik = Writing.analyse(run.scritta.testo, (run.scritta.traccia || {}).richiede || []);
+    var pisemna = run.dane.scritta;
+    if (!pisemna) return "";
+    var c = Cils.controlloScritta(pisemna.traccia, pisemna.testo);
+    var wynik = Writing.analyse(pisemna.testo, (pisemna.traccia || {}).richiede || []);
     return '<div class="card"><h2 class="cils-h">' + esc(t("cils.sec.scritta")) + "</h2>" +
       '<p class="cils-hint">' + esc(t("cils.writingNotScored")) + "</p>" +
       '<p class="cils-count">' + esc(t("cils.wordsOf", { n: c.parole, min: c.minimo, max: c.massimo })) +
@@ -431,38 +424,23 @@
          to część zadania egzaminacyjnego, nie napis interfejsu, więc
          tłumaczenie zmieniłoby polecenie i kosztowałoby 18 kluczy razy pięć. */
       '<ul class="cils-check">' + wynik.map(function (r, i) {
-        var wym = ((run.scritta.traccia || {}).richiede || [])[i] || {};
+        var wym = ((pisemna.traccia || {}).richiede || [])[i] || {};
         return "<li>" + (r.found ? "✓" : "✗") + " " + esc(wym.etichetta || r.key) + "</li>";
       }).join("") + "</ul></div>";
   }
 
   function oraleHtml() {
-    if (!run.orale) return "";
+    var ustna = run.dane.orale;
+    if (!ustna) return "";
     return '<div class="card"><h2 class="cils-h">' + esc(t("cils.sec.orale")) + "</h2>" +
       '<p class="cils-hint">' + esc(t("cils.oralNotScored")) + "</p>" +
-      "<p>" + esc(run.orale.argomento || "") + "</p>" +
-      '<p class="cils-count">' + esc(t("cils.selfChecked", { n: run.orale.spuntate })) + "</p></div>";
+      "<p>" + esc(ustna.argomento || "") + "</p>" +
+      '<p class="cils-count">' + esc(t("cils.selfChecked", { n: ustna.spuntate })) + "</p></div>";
   }
 
-  /**
-   * Zapis przebiegu. Kontener jest DOKŁADANY w core.js, więc starszy profil
-   * dostaje go pustym i numer schematu się nie rusza.
-   */
+  /** Zapis przebiegu do historii ucznia; kształt wpisu i sufit są w cils-run.js. */
   function salva(e) {
-    var st = Core.state.cils;
-    /* Array.isArray, nie truthy: import z `cils.runs` innego typu przechodzi
-       walidację (sprawdza tylko pole najwyższego poziomu), a `push` na
-       stringu rzuciłby wyjątek w środku rysowania podsumowania. */
-    if (!st || !Array.isArray(st.runs)) return;
-    st.runs.push({
-      sim: run.sim.id,
-      ts: Date.now(),
-      punti: { ascolto: run.punti.ascolto || 0, lettura: run.punti.lettura || 0 },
-      scadute: Object.keys(run.scaduta),
-      verdetto: e.verdetto
-    });
-    if (st.runs.length > 50) st.runs = st.runs.slice(-50);
-    Core.save();
+    CilsRun.zapisz(run, e, Date.now());
   }
 
 })(window);

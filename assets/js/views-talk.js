@@ -306,7 +306,14 @@
           mic.classList.add("is-rec");
           Audio2.listen({
             oninterim: function (x) { heard.innerHTML = "…" + esc(x); },
-            onerror: function (e) { mic.classList.remove("is-rec"); heard.textContent = t(e === "not-allowed" ? "ex.stt.denied" : "ex.stt.failed"); },
+            /* A refusal is a decision, not a failure: "recording failed, try
+               again" would send the student back to the thing they just
+               declined. The text field next to the microphone is already
+               there, so here it is enough to point at it. */
+            onerror: function (e) {
+              mic.classList.remove("is-rec");
+              heard.textContent = t(e === "no-consent" ? "ex.stt.noConsent" : e === "not-allowed" ? "ex.stt.denied" : "ex.stt.failed");
+            },
             onend: function (text) {
               mic.classList.remove("is-rec");
               if (!text) { heard.textContent = t("ex.stt.nothing"); return; }

@@ -168,6 +168,7 @@ LINGUAI.addUI("de", {
   /* ---------------- Spracherkennung ---------------- */
   "ex.stt.listening": "Hört zu…",
   "ex.stt.denied": "Zugriff auf das Mikrofon verweigert. Erlaub ihn in den Browsereinstellungen.",
+  "ex.stt.noConsent": "Ohne Einwilligung bleibt die Spracherkennung aus. Antworte schriftlich im Feld unten.",
   "ex.stt.failed": "Die Aufnahme ist fehlgeschlagen. Versuch es noch einmal.",
   "ex.stt.nothing": "Ich habe nichts verstanden. Versuch es noch einmal.",
   "ex.stt.heard": "Ich habe gehört: {text}",

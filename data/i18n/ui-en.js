@@ -163,6 +163,7 @@ LINGUAI.addUI("en", {
   /* ---------------- Speech recognition ---------------- */
   "ex.stt.listening": "Listening…",
   "ex.stt.denied": "Microphone access denied. Allow it in your browser settings.",
+  "ex.stt.noConsent": "Without consent, speech recognition stays off. Answer in writing in the field below.",
   "ex.stt.failed": "Recording failed. Try again.",
   "ex.stt.nothing": "I didn't catch anything. Try again.",
   "ex.stt.heard": "I heard: {text}",

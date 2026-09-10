@@ -170,6 +170,7 @@ LINGUAI.addUI("fr", {
   /* ---------------- Reconnaissance vocale ---------------- */
   "ex.stt.listening": "À l'écoute…",
   "ex.stt.denied": "Accès au micro refusé. Autorise-le dans les réglages du navigateur.",
+  "ex.stt.noConsent": "Sans consentement, la reconnaissance vocale reste désactivée. Réponds par écrit dans le champ ci-dessous.",
   "ex.stt.failed": "L'enregistrement a échoué. Réessaie.",
   "ex.stt.nothing": "Je n'ai rien capté. Réessaie.",
   "ex.stt.heard": "J'ai entendu : {text}",

@@ -90,6 +90,46 @@ test.describe("zgoda na rozpoznawanie mowy", () => {
     expect(drugi).toBe("bez pytania");
   });
 
+  /* audio.js promises that without consent the course behaves exactly as it
+     does without support, because the views know how to turn the exercise
+     into a written one. That was true for the conversation, which always
+     draws a text field next to the microphone, and false for the 150 `speak`
+     exercises: their branch is chosen while the markup is built and nobody
+     rewrote it afterwards. A refusal left a microphone, a "recording failed"
+     message and no way to finish the exercise. */
+  test("refusing consent turns a speak exercise into a written one", async ({ page }) => {
+    await page.goto("/index.html");
+    await page.waitForFunction(() => window.Ex && window.I18n);
+
+    await page.evaluate(() => {
+      window.Audio2.speak = () => {};
+      const host = document.createElement("div");
+      host.id = "probe-speak";
+      document.getElementById("main").appendChild(host);
+      const built = window.Ex.build({ t: "speak", it: "Buongiorno a tutti", tr: "dzień dobry" }, 0, "probe");
+      host.innerHTML = built.html;
+      window.__zaliczone = [];
+      built.wire(host.firstElementChild, ok => window.__zaliczone.push(ok));
+    });
+
+    await page.click("#probe-speak .js-mic");
+    await page.waitForSelector("#sttConsent");
+    await page.click("#sttConsent .js-no");
+
+    /* The microphone goes away instead of inviting a second refusal, and the
+       message says what to do now rather than reporting a failure that did
+       not happen. */
+    await expect(page.locator("#probe-speak .js-mic")).toHaveCount(0);
+    await expect(page.locator("#probe-speak .js-heard"))
+      .toHaveText(await page.evaluate(() => window.I18n.t("ex.stt.noConsent")));
+
+    const pole = page.locator("#probe-speak .js-in");
+    await expect(pole).toBeVisible();
+    await pole.fill("Buongiorno a tutti");
+    await page.click("#probe-speak .js-check");
+    expect(await page.evaluate(() => window.__zaliczone)).toEqual([true]);
+  });
+
   test("okno zgody jest dialogiem i trzyma fokus", async ({ page }) => {
     await page.goto("/index.html#/shadowing");
     await page.waitForSelector(".sh-it");

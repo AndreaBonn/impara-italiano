@@ -168,6 +168,7 @@ LINGUAI.addUI("pl", {
   /* ---------------- Rozpoznawanie mowy ---------------- */
   "ex.stt.listening": "Słucham…",
   "ex.stt.denied": "Brak zgody na mikrofon. Zezwól w ustawieniach przeglądarki.",
+  "ex.stt.noConsent": "Bez zgody rozpoznawanie mowy nie działa. Odpowiedz pisemnie w polu poniżej.",
   "ex.stt.failed": "Nie udało się nagrać. Spróbuj ponownie.",
   "ex.stt.nothing": "Nic nie usłyszałam. Spróbuj jeszcze raz.",
   "ex.stt.heard": "Usłyszałam: {text}",

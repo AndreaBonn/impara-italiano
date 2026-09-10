@@ -54,6 +54,11 @@
   /* ═══════════════ SPEAK (pronunciation) ═══════════════ */
   function buildSpeak(ex, idx) {
     var supported = Audio2.sttSupported;
+
+    function poleTekstowe() {
+      return '<input type="text" class="field js-in" placeholder="' + esc(t("ex.speak.ph")) + '" autocomplete="off" spellcheck="false">';
+    }
+
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + t("ex.speak.prompt") + "</p>" +
       '<div class="voice-box">' +
@@ -62,14 +67,29 @@
       (supported
         ? '<button type="button" class="mic js-mic" aria-label="' + esc(t("ex.speak.mic")) + '">🎤</button>' +
           '<p class="voice-heard js-heard">' + t("ex.speak.hint") + "</p>"
-        : '<p class="voice-heard">' + t("ex.speak.noStt") + "</p>" +
-          '<input type="text" class="field js-in" placeholder="' + esc(t("ex.speak.ph")) + '" autocomplete="off" spellcheck="false">') +
+        : '<p class="voice-heard js-heard">' + t("ex.speak.noStt") + "</p>" + poleTekstowe()) +
       "</div>" +
       '<div style="margin-top:14px">' + checkBtn(supported ? t("ex.speak.pass") : t("ex.check")) + "</div>" +
       feedbackBox() + "</div>";
 
     function wire(root, onDone) {
       var score = -1;
+      var pisane = !supported;
+
+      /* Consent refused: audio.js promises we then behave exactly as without
+         support, and the written branch was already chosen when this markup
+         was built. Nobody would rewrite it on its own, so the refusal left a
+         microphone the student had just declined and a check button that
+         demanded a recording — an exercise with no way out. */
+      function naPisanie() {
+        pisane = true;
+        var box = root.querySelector(".voice-box");
+        box.querySelector(".js-mic").remove();
+        box.querySelector(".js-heard").textContent = t("ex.stt.noConsent");
+        box.insertAdjacentHTML("beforeend", poleTekstowe());
+        root.querySelector(".js-check").textContent = t("ex.check");
+      }
+
       if (supported) {
         var mic = root.querySelector(".js-mic");
         var heard = root.querySelector(".js-heard");
@@ -82,6 +102,7 @@
             oninterim: function (partial) { heard.innerHTML = "…" + esc(partial); },
             onerror: function (err) {
               mic.classList.remove("is-rec");
+              if (err === "no-consent") { naPisanie(); return; }
               heard.textContent = t(err === "not-allowed" ? "ex.stt.denied" : "ex.stt.failed");
             },
             onend: function (text, alts) {
@@ -96,7 +117,7 @@
       }
       root.querySelector(".js-check").addEventListener("click", function () {
         var ok, why;
-        if (supported) {
+        if (!pisane) {
           if (score < 0) { Core.toast(t("ex.speak.recordFirst")); return; }
           ok = score >= 70;
           why = t(ok ? "ex.speak.ok" : "ex.speak.retry");

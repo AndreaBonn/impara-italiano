@@ -12,7 +12,7 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine, VERBS } from "./_harness.mjs";
+import { loadEngine, CORE, VERBS } from "./_harness.mjs";
 
 function silnik(czytanki) {
   const box = loadEngine({
@@ -114,5 +114,69 @@ describe("frequency: najbliższe braki", () => {
     const s = silnik();
     const braki = s.Frequency.brakujace(LISTA, { casa: true, libro: true, mangiare: true }, {}, 2);
     assert.equal(Array.from(braki).length, 2);
+  });
+});
+
+describe("frequency: skąd biorą się dwa zbiory", () => {
+  /* Widok pokrycia porównuje dwa zbiory: czego uczy kurs i co uczeń ma
+     w talii. Oba są budowane tu, i oba mogą po cichu wyjść puste — wtedy
+     ekran mówi „0% pokrycia" i wygląda to na wynik nauki, nie na usterkę. */
+  function zSilnikiem() {
+    const box = loadEngine({
+      files: [...CORE, ...VERBS, "assets/js/lemma.js", "assets/js/frequency.js"]
+    });
+    box.Core.load();
+    box.sandbox.READINGS = [];
+    box.sandbox.Lemma.uzyjSlownika(null);
+    box.sandbox.Lemma.odswiez();
+    return box;
+  }
+
+  test("zbiór ucznia to klucze talii, czyli sam włoski", () => {
+    const box = zSilnikiem();
+    box.Core.addCard("il caffè", "kawa", "a1-u01-l1");
+    const uczen = box.sandbox.Frequency.slownikUcznia();
+
+    /* Klucz jest znormalizowany (bez akcentów i wielkich liter), bo lista
+       częstości też podaje formy w tej postaci: gdyby zbiory były w dwóch
+       zapisach, uczeń widziałby braki dokładnie tam, gdzie słowo umie. */
+    assert.deepEqual(Object.keys(uczen), ["il caffe"],
+      "klucz fiszki to znormalizowany włoski, bez tłumaczenia: to on jest tożsamością");
+  });
+
+  test("pusta talia daje pusty zbiór, a nie wyjątek", () => {
+    const box = zSilnikiem();
+    assert.deepEqual(Object.keys(box.sandbox.Frequency.slownikUcznia()), []);
+  });
+
+  test("zbiór kursu bierze się z leksykonu wczytanych lekcji", () => {
+    const box = zSilnikiem();
+    box.sandbox.Registry.registerLevel({
+      code: "A1", dataFiles: [], units: [{
+        id: "u1",
+        lessons: [{ id: "l1", vocab: [{ it: "il caffè" }, { it: "la casa" }], exercises: [] }]
+      }]
+    });
+    const kurs = box.sandbox.Frequency.slownikKursu();
+
+    assert.ok(kurs["caffè"], "zwroty wielowyrazowe wchodzą rozłożone na słowa");
+    assert.ok(kurs["casa"]);
+    assert.ok(!kurs["xyzzy"]);
+  });
+
+  test("kurs bez wczytanego poziomu daje zbiór pusty, nie wywraca widoku", () => {
+    const box = zSilnikiem();
+    assert.deepEqual(Object.keys(box.sandbox.Frequency.slownikKursu()), []);
+  });
+});
+
+describe("frequency bez lematyzatora", () => {
+  test("bez Lemma zbiór kursu jest pusty, zamiast wywracać ekran pokrycia", () => {
+    /* lemma.js jest wczytywany osobnym <script>; zapomniany znacznik zabiera
+       cały słownik kursu. Ekran ma wtedy pokazać zero pokrycia, a nie paść —
+       usterkę widać po liczbie, a nie po pustej stronie. */
+    const box = loadEngine({ files: [...CORE, "assets/js/frequency.js"] });
+    box.Core.load();
+    assert.deepEqual(Object.keys(box.sandbox.Frequency.slownikKursu()), []);
   });
 });

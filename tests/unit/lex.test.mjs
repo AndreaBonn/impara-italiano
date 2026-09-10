@@ -178,3 +178,16 @@ describe("regresje z przeglądu", () => {
     });
   });
 });
+
+describe("liczba mnoga: wyrazy niezmienne", () => {
+  /* Reguły kończą się na samogłosce; wyraz z akcentem na końcu albo
+     zakończony spółgłoską nie ma reguły i ZOSTAJE. Bez tej gałęzi klucz
+     odpowiedzi brzmiałby „cittài" i uczeń dostawałby błąd za formę poprawną. */
+  test("wyraz z akcentem na ostatniej sylabie nie zmienia formy", () => {
+    assert.equal(lex().pluralOf({ s: "città", g: "f" }), "città");
+  });
+
+  test("zapożyczenie zakończone spółgłoską też zostaje", () => {
+    assert.equal(lex().pluralOf({ s: "yogurt", g: "m" }), "yogurt");
+  });
+});

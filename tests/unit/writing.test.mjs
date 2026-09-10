@@ -199,3 +199,19 @@ describe("regresje z przeglądu", () => {
     assert.equal(znajdz(box, "Sono andata via.", [{ verb: "andare", tense: "passPross" }])[0].found, true);
   });
 });
+
+describe("odczyt wypracowania", () => {
+  test("zapisany tekst wraca po ponownym wejściu", () => {
+    /* Wypracowanie jest jedyną treścią w stanie, której uczeń nie odtworzy
+       dalszą nauką: potarcie przy pełnej pamięci go nie rusza, a widok musi
+       je znaleźć po powrocie na ekran. */
+    const box = silnik();
+    box.sandbox.Writing.save("w1", "Ciao, sono a Roma.", []);
+    assert.equal(box.sandbox.Writing.load("w1").text, "Ciao, sono a Roma.");
+  });
+
+  test("zadanie nietknięte nie ma wypracowania i nie udaje pustego", () => {
+    const box = silnik();
+    assert.equal(box.sandbox.Writing.load("w2"), null);
+  });
+});

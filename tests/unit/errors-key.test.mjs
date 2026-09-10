@@ -137,3 +137,120 @@ describe("klucz karty", () => {
     assert.ok(po.indexOf(stary) < 0, "stary klucz nie wskazuje już na nic");
   });
 });
+
+describe("firma pola złożonego", () => {
+  /* Ćwiczenia niosą w warstwie neutralnej pola zagnieżdżone (linie dialogu,
+     pary, elementy z własną odpowiedzią). Firma musi po nich zejść: gdyby
+     obiekt zwijała do „[object Object]", dwa różne ćwiczenia tego samego
+     typu miałyby jedną tożsamość i jedną kartę na dwa. */
+  test("obiekt w środku ćwiczenia wchodzi do firmy razem z wartościami", () => {
+    const box = silnik();
+    const a = { t: "dialogue", lines: [{ sp: "A", it: "Ciao", a: 0 }] };
+    const b = { t: "dialogue", lines: [{ sp: "A", it: "Buonasera", a: 0 }] };
+
+    assert.notEqual(box.sandbox.Errors.sigOf(a), box.sandbox.Errors.sigOf(b));
+  });
+
+  test("kolejność kluczy w zagnieżdżonym obiekcie nie zmienia firmy", () => {
+    /* JSON z pliku danych i obiekt zbudowany w kodzie mają te same pola w
+       innej kolejności; różna firma znaczyłaby osieroconą kartę. */
+    const box = silnik();
+    const a = { t: "dialogue", lines: [{ sp: "A", it: "Ciao", a: 0 }] };
+    const b = { t: "dialogue", lines: [{ a: 0, it: "Ciao", sp: "A" }] };
+
+    assert.equal(box.sandbox.Errors.sigOf(a), box.sandbox.Errors.sigOf(b));
+  });
+});
+
+describe("odnajdywanie ćwiczenia po kluczu", () => {
+  const LEKCJA = {
+    id: "a1-u01-l1",
+    tags: ["g-presente"],
+    exercises: [{ t: "mcq", a: 1 }, { t: "fill", a: ["sono"] }]
+  };
+
+  function zKursem() {
+    const box = silnik();
+    box.sandbox.Registry.registerLevel({
+      code: "A1", dataFiles: [], units: [{ id: "a1-u01", lessons: [LEKCJA] }]
+    });
+    return box;
+  }
+
+  test("klucz autorski wraca ze swoim ćwiczeniem, lekcją i numerem", () => {
+    /* Powtórka pokazuje PRAWDZIWE ćwiczenie z lekcji, nie osobną fiszkę:
+       to jest ta droga powrotna. */
+    const box = zKursem();
+    const klucz = box.sandbox.Errors.keyOf(LEKCJA, 1);
+    const znalezione = box.sandbox.Errors.locate(klucz);
+
+    assert.equal(znalezione.index, 1);
+    assert.equal(znalezione.ex, LEKCJA.exercises[1]);
+    assert.equal(znalezione.lesson.id, LEKCJA.id);
+  });
+
+  test("ćwiczenie o zmienionej treści przestaje się odnajdywać, zamiast wskazać sąsiada", () => {
+    /* Lepiej, żeby karta odeszła przez drop, niż żeby po cichu pokazywała
+       uczniowi inne zadanie niż to, na którym się pomylił. */
+    const box = zKursem();
+    const klucz = box.sandbox.Errors.keyOf(LEKCJA, 0);
+    LEKCJA.exercises[0] = { t: "mcq", a: 2 };
+
+    assert.equal(box.sandbox.Errors.locate(klucz), null);
+    LEKCJA.exercises[0] = { t: "mcq", a: 1 };
+  });
+
+  test("klucz wskazujący nieistniejącą lekcję nie odnajduje niczego", () => {
+    const box = zKursem();
+    assert.equal(box.sandbox.Errors.locate("nie-ma#abc#0"), null);
+  });
+
+  test("klucz o innym kształcie nie jest kluczem autorskim", () => {
+    const box = zKursem();
+    assert.equal(box.sandbox.Errors.locate("cokolwiek"), null);
+    assert.equal(box.sandbox.Errors.locate("a#b#c#d"), null);
+  });
+
+  test("klucz zadania z generatora jest rozpoznawany po przedrostku", () => {
+    const box = zKursem();
+    const klucz = box.sandbox.Errors.generatedKey("art-det", "7");
+
+    assert.ok(klucz.indexOf("art-det") > 0);
+    assert.notEqual(klucz.split("#").length, 3, "inny kształt niż klucz autorski");
+    /* Bez wczytanych generatorów zadanie nie powstaje: locate ma wtedy
+       oddać null, a nie zbudować kartę bez treści. */
+    assert.equal(box.sandbox.Errors.locate(klucz), null);
+  });
+});
+
+describe("odnajdywanie zadania z generatora", () => {
+  test("klucz niesie temat i ziarno, a ziarno wyznacza treść zadania", () => {
+    /* Zadania są generowane z ziarna, więc karta nie musi trzymać treści:
+       para (temat, ziarno) wystarczy, żeby zbudować je jeszcze raz, co do
+       słowa. Gdyby generator przestał być czystą funkcją ziarna, powtórka
+       pokazywałaby inne zadanie niż to, które poszło źle. */
+    const box = loadEngine({
+      files: [...CORE, "assets/js/errors-key.js", "assets/js/drills-lex.js", "assets/js/drills.js"]
+    });
+    box.Core.load();
+    const temat = box.sandbox.Drills.TOPICS[0].id;
+    const klucz = box.sandbox.Errors.generatedKey(temat, "7");
+    const znalezione = box.sandbox.Errors.locate(klucz);
+
+    assert.equal(znalezione.generated, true);
+    assert.equal(znalezione.topicId, temat);
+    assert.equal(znalezione.seed, "7");
+    assert.ok(znalezione.ex && znalezione.ex.t, "zadanie odbudowane, nie sam opis klucza");
+
+    /* Dowodem, że ziarno naprawdę wchodzi w treść, jest RÓŻNICA: dwa klucze
+       o innym ziarnie muszą dać dwa różne zadania. Porównanie z drugim
+       wywołaniem generatora byłoby porównaniem z samym sobą, bo locate()
+       woła dokładnie tę funkcję. */
+    const inne = box.sandbox.Errors.locate(box.sandbox.Errors.generatedKey(temat, "8"));
+    assert.notDeepEqual(
+      JSON.parse(JSON.stringify(znalezione.ex)),
+      JSON.parse(JSON.stringify(inne.ex)),
+      "inne ziarno, inne zadanie"
+    );
+  });
+});

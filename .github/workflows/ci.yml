@@ -52,7 +52,7 @@ jobs:
       # Próg, nie ozdoba: refaktor, który po cichu wypina przetestowaną
       # gałąź z suity, przechodzi „npm test" na zielono i zatrzymuje się tutaj.
       - name: Pokrycie silnika
-        run: node scripts/coverage.mjs --min 88
+        run: node scripts/coverage.mjs --min 99
 
       - name: Testy w przeglądarce
         run: npm run test:dom

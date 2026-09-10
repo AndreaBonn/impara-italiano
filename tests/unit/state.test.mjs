@@ -239,6 +239,21 @@ describe("pełna pamięć: co ustępuje miejsca", () => {
     assert.ok(zostale["swieza"], "karta z trzema pomyłkami i bez serii zostaje");
   });
 
+  test("liczniki drilli ustępują przed wypracowaniami: wracają same przy dalszej nauce", () => {
+    /* Kolejność potarcia jest listą tego, co uczeń odzyska bez wysiłku.
+       Licznik podejść do generatora odbuduje się przy pierwszym treningu;
+       wypracowanie to zdania, których nie napisze nikt inny. */
+    const box = zapchany(4000);
+    for (let i = 0; i < 30; i++) box.Core.state.drills["temat-" + i] = { podejscia: i, wypelniacz: "x".repeat(200) };
+    box.Core.state.writing["w1"] = { text: "Ciao, sono a Roma.", ts: 1, words: 4, found: 1, total: 1 };
+    box.Core.save();
+    box.flush();
+
+    const zapis = box.stored(KEY);
+    assert.ok(Object.keys(zapis.drills).length < 30, "część liczników wyrzucona");
+    assert.equal(zapis.writing["w1"].text, "Ciao, sono a Roma.", "wypracowanie zostaje nietknięte");
+  });
+
   test("komunikat o utracie danych zostaje na ekranie, nie znika po chwili", () => {
     const box = zapchany(4000);
     box.Core.save();

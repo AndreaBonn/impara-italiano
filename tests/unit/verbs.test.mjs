@@ -228,3 +228,15 @@ describe("wejścia spoza kontraktu", () => {
     assert.deepEqual(formy("xyzare", "pres"), ["xyzo", "xyzi", "xyza", "xyziamo", "xyzate", "xyzano"]);
   });
 });
+
+describe("wejście, które nie jest bezokolicznikiem", () => {
+  /* Wyszukiwarka i konjugator przyjmują to, co uczeń wpisze. Słowo bez
+     końcówki bezokolicznika ma dostać tabelę zbudowaną regułą pierwszej
+     koniugacji, a nie null: pusty ekran wygląda jak awaria, a odmiana
+     „nie tego czasownika" jest widoczna od razu. */
+  test("słowo bez -are/-ere/-ire odmienia się jak pierwsza koniugacja", () => {
+    const out = formy("blurb", "pres");
+    assert.equal(out.length, 6);
+    assert.equal(out[0], "blurbo");
+  });
+});

@@ -40,6 +40,11 @@ const argv = process.argv.slice(2);
 const progIdx = argv.indexOf("--min");
 const PROG = progIdx >= 0 ? Number(argv[progIdx + 1]) : null;
 
+/* Domyślnie lista niewykonanych linii jest ucinana, żeby raport mieścił się
+   na ekranie. `--pelne` pokazuje ją w całości — po to, żeby dopisanie testu
+   nie wymagało liczenia linii ręcznie. */
+const PELNE = argv.indexOf("--pelne") >= 0;
+
 /* ---------------- Uruchomienie testów ze zrzutem V8 ---------------- */
 
 function zrzut() {
@@ -169,7 +174,9 @@ const calosc = razem ? (100 * pokryte) / razem : 0;
 
 console.log("plik".padEnd(22) + "  pokr%   linie   niewykonane");
 for (const w of wiersze) {
-  const lista = w.puste.length > 12 ? w.puste.slice(0, 12).join(",") + ",…" : w.puste.join(",");
+  const lista = !PELNE && w.puste.length > 12
+    ? w.puste.slice(0, 12).join(",") + ",…"
+    : w.puste.join(",");
   console.log(
     w.rel.replace("assets/js/", "").padEnd(22) +
     w.pct.toFixed(1).padStart(7) +

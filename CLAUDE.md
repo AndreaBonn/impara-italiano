@@ -57,10 +57,18 @@ ucznia do treści kursu); `router.js` (adres, wybór widoku, `Views.onLeave`) pr
 przed `exercises-choice/text/voice.js` (czternaście typów, wołają `Ex.register`);
 `views.js` (skorupa i `Views.shell`) przed kilkunastoma `views-*.js`, po jednym na ekran.
 
+Ta sama zasada dotyczy dwóch ekranów, na których przebieg jest czymś więcej niż rysowaniem:
+`talk-run.js` (rozmowa: rozwidlenia, wynik, powrót na ostatni wybór) przed `views-talk.js`,
+a `cils-run.js` (podejście do egzaminu: kolejność sekcji, siatka odpowiedzi, wpis do
+historii) przed `views-cils.js`. Widok w obu wypadkach rysuje i podpina zdarzenia; nie
+trzyma stanu.
+
 Kryterium podziału jest wszędzie to samo i nie jest nim długość pliku: **czysta funkcja
 osobno od tego, co dotyka przeglądarki**. Pierwsza połowa daje się sprawdzić w `node:test`
 za grosze, druga wymaga Playwrighta — i dopóki mieszkają w jednym pliku, cały plik kosztuje
-tyle, co ta droższa połowa.
+tyle, co ta droższa połowa. Odwrotnie też: nie dzielimy dlatego, że plik jest długi.
+`store.js` i `verbs-data.js` zostają w całości, bo rozbicie ich rozdzieliłoby rzeczy, które
+muszą się zgadzać (tożsamość rekordu w stanie, tabele jednego języka).
 
 ## Kontrakty
 
@@ -298,6 +306,7 @@ node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
+node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
 ```
 
 Wszystkie te bramki chodzą też same, przy każdym `push`, z
@@ -330,14 +339,25 @@ z poprzedniej wersji tego pliku.
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
 | Klucze interfejsu na język | 671 × 5 języków |
-| Pliki silnika | 53 w `assets/js/`, 10 551 linii |
-| Testy jednostkowe | 555 przebiegów w 24 plikach, zielone |
+| Pliki silnika | 58 w `assets/js/`, 11 012 linii |
+| Testy jednostkowe | 717 przebiegów w 30 plikach, zielone |
 | Testy DOM | 198 przebiegów w 26 plikach, zielone |
+| Pokrycie silnika testami jednostkowymi | 99,8% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
 „29 testów jednostkowych, 17 DOM". Były prawdziwe w dniu wprowadzenia suity i przestały być
 prawdziwe bez niczyjej decyzji — dlatego liczby stoją teraz w tabeli z podanym poleceniem,
 które je odtwarza.
+
+`coverage.mjs` mierzy, ile silnika naprawdę wykonują testy jednostkowe — wbudowane
+`--experimental-test-coverage` pokazuje tu 100% i jest to liczba bez treści, bo pliki
+silnika wchodzą przez `node:vm` i licznik ich nie widzi. Próg w CI (99) jest po to, żeby
+refaktor, który po cichu wypina przetestowaną gałąź z suity, zatrzymał się tam, a nie
+przeszedł na zielono. Osiem linii, których nie pokrywa i nie ma pokryć: `apply(root)`
+w `i18n.js` (przepisywanie napisów w gotowym HTML — sprawdzają je testy DOM na każdym
+ekranie), gałąź obiektowa w serializatorze `errors-key.js` (żadne pole ćwiczenia nie
+niesie dziś obiektu) i awaryjny imperfekt w `verbs.js` dla wpisu `IRR` bez własnej
+tabeli. Trzy deklaracje, nie trzy przeoczenia.
 
 `parity.mjs` jest bramką dla nowego języka. Nakładki łączą się z warstwą neutralną **po indeksie**,
 więc tablica krótsza o jeden element niczego nie wywraca: jedno ćwiczenie po cichu zostaje w
@@ -353,17 +373,25 @@ Suity testowe pilnują rzeczy, których żaden z powyższych skryptów nie widzi
 mianownik: każda z nich broni przed awarią, która NIE wywraca kursu — bo te, które go
 wywracają, widać bez testu.
 
-- `tests/unit/` — stan. `merge`, `load`, `save`, `importState`, harmonogram SM-2
-  i próg zaliczenia lekcji. Silnik wjeżdża do `node:vm` tym samym wzorcem, co
-  w `validate.mjs`; czas i `localStorage` są podstawione, bo `save()` jest
-  zdebouncowane na 180 ms, a pełnej kwoty nie da się wywołać inaczej.
-  Atrapa DOM trzyma uchwyty zdarzeń (`el.fire("click")`) i kolejkę wstrzykiwanych
-  skryptów (`box.settleScripts([nieudane])`) — bez nich nie da się sprawdzić ani
-  zamknięcia komunikatu, ani tego, co się dzieje, gdy plik poziomu nie wejdzie.
-- `tests/unit/audio.test.mjs` — zgodność skrótów z Pythonem. Nazwa nagrania liczy się
-  dwa razy, w dwóch językach; rozjazd nie daje błędu, tylko cichy zjazd na syntezę
-  systemową. Test sprawdza wszystkie zdania z `scripts/audio-strings.json` wobec
-  **plików na dysku**, a nie wobec drugiej implementacji skrótu.
+- `tests/unit/` — stan i cała logika, która nie dotyka DOM-u. Silnik wjeżdża do
+  `node:vm` tym samym wzorcem, co w `validate.mjs`; czas i `localStorage` są
+  podstawione, bo `save()` jest zdebouncowane na 180 ms, a pełnej kwoty nie da
+  się wywołać inaczej.
+  Piaskownica (`tests/unit/_harness.mjs`) udaje dokładnie tyle przeglądarki, ile
+  trzeba, żeby przejść gałąź, której inaczej nie da się przejść: uchwyty zdarzeń
+  (`el.fire("click")`), kolejkę wstrzykiwanych skryptów (`box.settleScripts`),
+  syntezator i odtwarzacz (`voices`, `zachowaniePlay`, `brakSyntezy`),
+  rozpoznawanie mowy (`brakRozpoznawania`, `startRzuca`), adres z `hashchange`,
+  ustaloną datę (`now` — passa liczy się po dniach) oraz pobieranie pliku
+  (`box.pobrania`). Każda z tych atrap ma powód wypisany przy niej.
+- `tests/unit/recordings.test.mjs` — zgodność skrótów z Pythonem. Nazwa nagrania
+  liczy się dwa razy, w dwóch językach; rozjazd nie daje błędu, tylko cichy zjazd
+  na syntezę systemową. Test sprawdza wszystkie zdania z
+  `scripts/audio-strings.json` wobec **plików na dysku**, a nie wobec drugiej
+  implementacji skrótu.
+- `tests/unit/audio.test.mjs` — kaskada nagranie → synteza → cisza i bramka zgody
+  przed rozpoznawaniem mowy. To jedyne miejsce, z którego coś opuszcza
+  przeglądarkę ucznia, więc odmowa i brak zgody mają tu swoje testy.
 - `tests/dom/exercises.spec.js` — kontrakt: `onDone(ok)` woła się **dokładnie raz** dla
   każdego z 14 typów. Na tym opiera się licznik postępu: drugie wywołanie niczego
   nie wywraca, tylko po cichu zawyża wynik.
@@ -371,7 +399,7 @@ wywracają, widać bez testu.
   z odpowiedzią dobrą, raz ze złą. Kontrakt wyżej przepuszcza builder, który każdą
   odpowiedź uznaje za błędną: to nadal „dokładnie raz".
 - `tests/dom/routes.spec.js` — każda trasa ma zarejestrowany widok. Router przy braku
-  widoku pokazuje ścieżkę nauki zamiast paść (`app.js`), więc zapomniany `<script>`
+  widoku pokazuje ścieżkę nauki zamiast paść (`router.js`), więc zapomniany `<script>`
   wygląda jak działający kurs z jedną pozycją menu prowadzącą gdzie indziej.
 - `tests/dom/contrast.spec.js` — kontrast liczony **przez przeglądarkę**, w obu
   motywach. Paleta jest w OKLCH, a zewnętrzne narzędzia a11y czytają

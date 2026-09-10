@@ -169,3 +169,148 @@ describe("co jest do powtórki", () => {
     assert.equal(wg["g-nome-genere"].length, 1);
   });
 });
+
+describe("zadania z generatora", () => {
+  /* Zadanie generowane ma inną tożsamość niż ćwiczenie autorskie: tag
+     przychodzi od generatora, nie od lekcji, a klucz z pary (temat, ziarno).
+     Rozróżnienie jest ZADEKLAROWANE w karcie (`kind`), bo dwie specie o
+     różnej granulacji mieszkają w jednym zbiorze i widok musi wiedzieć,
+     którą trzyma. */
+  const ZADANIE = { topicId: "art-det", seed: "7", tag: "g-articoli" };
+
+  test("dobra odpowiedź za pierwszym razem nie zakłada karty", () => {
+    const box = silnik();
+    assert.equal(box.sandbox.Errors.recordGenerated(ZADANIE, true), null);
+    assert.deepEqual(Object.keys(box.Core.state.errors), []);
+  });
+
+  test("pomyłka zakłada kartę z tagiem generatora i deklaracją rodzaju", () => {
+    const box = silnik();
+    const karta = box.sandbox.Errors.recordGenerated(ZADANIE, false);
+
+    assert.equal(karta.kind, "generated");
+    assert.equal(karta.tag, "g-articoli");
+    assert.equal(karta.srcId, "art-det");
+    assert.ok(box.Core.state.errors[karta.key], "karta leży w zbiorze pod swoim kluczem");
+  });
+
+  test("to samo ziarno to ta sama karta, inne ziarno to druga", () => {
+    const box = silnik();
+    box.sandbox.Errors.recordGenerated(ZADANIE, false);
+    box.sandbox.Errors.recordGenerated(ZADANIE, false);
+    assert.equal(Object.keys(box.Core.state.errors).length, 1, "dwie pomyłki na tym samym zadaniu to jedna karta");
+
+    box.sandbox.Errors.recordGenerated({ topicId: "art-det", seed: "8", tag: "g-articoli" }, false);
+    assert.equal(Object.keys(box.Core.state.errors).length, 2);
+  });
+
+  test("dwie poprawne z rzędu wyprowadzają zadanie z quaderno", () => {
+    const box = silnik();
+    const klucz = box.sandbox.Errors.recordGenerated(ZADANIE, false).key;
+    box.sandbox.Errors.recordGenerated(ZADANIE, true);
+    assert.ok(box.Core.state.errors[klucz], "po pierwszej poprawnej karta zostaje");
+
+    box.sandbox.Errors.recordGenerated(ZADANIE, true);
+    assert.equal(box.Core.state.errors[klucz], undefined);
+  });
+
+  test("brak zadania nie zakłada karty i nie wywraca sesji", () => {
+    const box = silnik();
+    assert.equal(box.sandbox.Errors.recordGenerated(null, false), null);
+  });
+});
+
+describe("przechwytywanie odpowiedzi z ćwiczeń", () => {
+  /* Owinięte jest samo `wire` w Ex.build, nie trzynaście builderów: przy
+     czternastym typie nie ma czego zapomnieć, a pominięcie nie dałoby
+     żadnego objawu — quaderno po prostu zostawałoby puste. */
+  function zEx() {
+    const box = silnik();
+    const zbudowane = [];
+    const Ex = {
+      build(ex, idx, seed) {
+        zbudowane.push({ ex, idx, seed });
+        return {
+          html: "",
+          wire(root, onDone) { root.onDone = onDone; return root; }
+        };
+      }
+    };
+    box.sandbox.Ex = Ex;
+    box.sandbox.Registry.registerLevel({
+      code: "A1", dataFiles: [], units: [{ id: "a1-u02", lessons: [LEKCJA] }]
+    });
+    return { box, Ex, zbudowane };
+  }
+
+  /** Buduje ćwiczenie i odpowiada na nie, tak jak robi to widok lekcji. */
+  function odpowiedz(Ex, ex, idx, seed, ok) {
+    const uchwyt = {};
+    Ex.build(ex, idx, seed).wire(uchwyt, uchwyt.zewnetrzne);
+    uchwyt.onDone(ok);
+    return uchwyt;
+  }
+
+  test("pomyłka w toku lekcji trafia do quaderno bez udziału widoku", () => {
+    const { box, Ex } = zEx();
+    box.sandbox.Errors.install(Ex);
+    odpowiedz(Ex, LEKCJA.exercises[1], 1, LEKCJA.id, false);
+
+    const karty = Object.values(box.Core.state.errors);
+    assert.equal(karty.length, 1);
+    assert.equal(karty[0].srcId, LEKCJA.id);
+  });
+
+  test("zwrotka widoku nadal dostaje swój wynik, dokładnie raz", () => {
+    /* Na tym wisi licznik postępu lekcji: drugie wywołanie nie wywraca
+       niczego, tylko po cichu zawyża wynik. */
+    const { box, Ex } = zEx();
+    box.sandbox.Errors.install(Ex);
+
+    const wyniki = [];
+    const uchwyt = {};
+    Ex.build(LEKCJA.exercises[0], 0, LEKCJA.id).wire(uchwyt, (ok) => wyniki.push(ok));
+    uchwyt.onDone(true);
+
+    assert.deepEqual(wyniki, [true]);
+  });
+
+  test("drugie założenie nie owija budowania po raz drugi", () => {
+    /* Podwójne owinięcie zapisywałoby każdą pomyłkę dwa razy: karta by się
+       nie zdublowała (klucz ten sam), ale harmonogram przeskoczyłby o dwa. */
+    const { box, Ex } = zEx();
+    assert.equal(box.sandbox.Errors.install(Ex), true);
+    assert.equal(box.sandbox.Errors.install(Ex), false);
+
+    odpowiedz(Ex, LEKCJA.exercises[0], 0, LEKCJA.id, false);
+    const karta = Object.values(box.Core.state.errors)[0];
+    assert.equal(karta.lapses, 1, "jedna pomyłka to jedno potknięcie, nie dwa");
+  });
+
+  test("ćwiczenie budowane poza lekcją nie zakłada karty pod cudzym kluczem", () => {
+    /* Ekran treningu buduje ćwiczenia z dowolnym ziarnem: bez tego strażnika
+       powstawałaby karta wskazująca lekcję, w której tego zadania nie ma. */
+    const { box, Ex } = zEx();
+    box.sandbox.Errors.install(Ex);
+
+    odpowiedz(Ex, LEKCJA.exercises[0], 0, "nie-ma-takiej-lekcji", false);
+    odpowiedz(Ex, LEKCJA.exercises[0], 0, 12345, false);
+    assert.deepEqual(Object.keys(box.Core.state.errors), []);
+  });
+
+  test("numer ćwiczenia niezgodny z lekcją też nie zakłada karty", () => {
+    const { box, Ex } = zEx();
+    box.sandbox.Errors.install(Ex);
+
+    /* To ćwiczenie stoi w lekcji pod numerem 1, nie 0. */
+    odpowiedz(Ex, LEKCJA.exercises[1], 0, LEKCJA.id, false);
+    assert.deepEqual(Object.keys(box.Core.state.errors), []);
+  });
+
+  test("bez Ex w ogóle install milczy, zamiast rzucać", () => {
+    /* W testach jednostkowych silnika stanu Ex nie istnieje, a quaderno
+       ma działać także bez ćwiczeń. */
+    const box = silnik();
+    assert.equal(box.sandbox.Errors.install(undefined), false);
+  });
+});

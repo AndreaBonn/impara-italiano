@@ -126,17 +126,47 @@ function makeAudioEnv(opts) {
     wypowiedzi: [],        // SpeechSynthesisUtterance oddane do speak()
     anulowania: 0,
     odtwarzacze: [],       // instancje Audio, w kolejności powstania
+    rozpoznania: [],       // instancje SpeechRecognition, w kolejności powstania
     zachowaniePlay: opts.zachowaniePlay || "ok"
   };
 
   function Utterance(text) { this.text = text; }
 
   const speechSynthesis = opts.brakSyntezy ? null : {
-    getVoices() { return log.voices; },
-    speak(u) { log.wypowiedzi.push(u); },
+    /* Kopia, nie ta sama tablica: przeglądarka też oddaje nową listę przy
+       każdym wywołaniu. Bez tego dopisanie głosu w teście byłoby widoczne
+       w silniku BEZ odświeżenia listy, więc test na `onvoiceschanged`
+       przechodziłby także wtedy, gdyby tej gałęzi w ogóle nie było. */
+    getVoices() { return log.voices.slice(); },
+    speak(u) {
+      /* Część WebView na Androidzie rzuca stąd wyjątkiem zamiast milczeć. */
+      if (opts.mowaRzuca) throw new Error("speak niedostępne");
+      log.wypowiedzi.push(u);
+    },
     cancel() { log.anulowania++; },
-    addEventListener() {}
+    /* Przeglądarki sprzed 2018 nie mają addEventListener na syntezatorze,
+       tylko `onvoiceschanged`. Ta gałąź istnieje właśnie dla nich. */
+    addEventListener: opts.starySyntezator ? undefined : function () {}
   };
+
+  /**
+   * Rozpoznawanie mowy. To jedyne miejsce w kursie, z którego coś opuszcza
+   * przeglądarkę ucznia (przeglądarki wysyłają nagranie na serwer dostawcy),
+   * więc bramka zgody przed pierwszym uruchomieniem jest tu treścią, nie
+   * ozdobą — a bez tej atrapy nie dawała się przejść ani w jedną, ani
+   * w drugą stronę.
+   */
+  function Recognition() {
+    const rec = {
+      lang: "", interimResults: false, maxAlternatives: 0, continuous: true,
+      onstart: null, onresult: null, onerror: null, onend: null,
+      starty: 0, przerwania: 0,
+      start() { rec.starty++; if (opts.startRzuca) throw new Error("nie da się"); },
+      abort() { rec.przerwania++; }
+    };
+    log.rozpoznania.push(rec);
+    return rec;
+  }
 
   function Player() {
     const el = {
@@ -151,6 +181,9 @@ function makeAudioEnv(opts) {
           return Promise.reject(e);
         }
         if (log.zachowaniePlay === "blad") return Promise.reject(new Error("nie wczytano"));
+        /* Przed 2016 play() nie oddawał obietnicy: kod ma wtedy zgłosić
+           start od razu, zamiast czekać na then(), który nie przyjdzie. */
+        if (log.zachowaniePlay === "bez-obietnicy") return undefined;
         return Promise.resolve();
       },
       zagrania: 0
@@ -159,12 +192,41 @@ function makeAudioEnv(opts) {
     return el;
   }
 
-  return { log, speechSynthesis, Utterance, Player };
+  return {
+    log, speechSynthesis, Utterance, Player,
+    Recognition: opts.brakRozpoznawania ? undefined : Recognition
+  };
 }
 
 /** Głos systemowy do listy `voices`: tyle pól, ile czyta pickVoice(). */
 export function glos(name, lang) {
   return { name: name, lang: lang || "it-IT" };
+}
+
+/**
+ * Zegar kalendarzowy piaskownicy.
+ *
+ * Passa liczy się po DNIACH, nie po milisekundach: `touchDay()` porównuje
+ * dzisiejszą datę z ostatnią zapisaną i od tego zależy, czy seria rośnie,
+ * czy zaczyna się od nowa. Test, który wpisuje wczorajszą datę wyliczoną z
+ * prawdziwego zegara, przechodzi zawsze poza jedną minutą na dobę — o
+ * północy data zmienia się w połowie testu i wychodzi „usterka passy".
+ *
+ * Podstawiamy więc CAŁĄ datę, nie samo `Date.now()`: `new Date()` bez
+ * argumentów oddaje ustalony moment, a `new Date("2026-03-01T00:00:00")`
+ * dalej parsuje napis, bo tego używa liczenie odstępu między dniami.
+ *
+ * @param {number} [now] moment w milisekundach; bez niego prawdziwy zegar
+ */
+function makeDate(now) {
+  if (now === undefined) return Date;
+  return class Zegar extends Date {
+    constructor(...args) {
+      if (args.length === 0) super(now);
+      else super(...args);
+    }
+    static now() { return now; }
+  };
 }
 
 /**
@@ -225,6 +287,12 @@ function makeDocument(toasts, notices) {
       addEventListener(type, fn) { (handlers[type] = handlers[type] || []).push(fn); },
       querySelector() { return null; }, querySelectorAll() { return []; },
 
+      /* Pobranie kopii zapasowej idzie przez kliknięcie w <a download>,
+         którego nikt nie widzi. Bez tej metody cała ta gałąź kończyła się
+         wyjątkiem w atrapie i nie dawała się przejść. */
+      click() { el.klikniecia++; el.fire("click"); },
+      klikniecia: 0,
+
       /**
        * Poza API przeglądarki — kliknięcie z testu.
        *
@@ -273,6 +341,7 @@ function makeDocument(toasts, notices) {
    * pytanie, przepuszcza literówkę w id.
    */
   const naZamowienie = new Map();
+  const utworzone = [];
 
   const document = {
     documentElement: { setAttribute() {}, getAttribute() { return null; } },
@@ -281,7 +350,10 @@ function makeDocument(toasts, notices) {
       if (id === "toastStack") return stack;
       return naZamowienie.has(id) ? naZamowienie.get(id) : null;
     },
-    createElement() { return makeEl(); },
+    /* Utworzone elementy zostają na liście: pobranie kopii dzieje się
+       przez <a download>, którego nigdzie nie ma w drzewie strony, więc
+       bez tej listy nie da się sprawdzić ani nazwy pliku, ani adresu. */
+    createElement() { const el = makeEl(); utworzone.push(el); return el; },
     querySelectorAll() { return []; },
     querySelector() { return null; },
     addEventListener() {}
@@ -297,7 +369,10 @@ function makeDocument(toasts, notices) {
     return naZamowienie.get(id);
   }
 
-  return { document: document, stack: stack, el: el, wstrzykniete: wstrzykniete, czekajace: czekajace };
+  return {
+    document: document, stack: stack, el: el, utworzone: utworzone,
+    wstrzykniete: wstrzykniete, czekajace: czekajace
+  };
 }
 
 /**
@@ -307,6 +382,9 @@ function makeDocument(toasts, notices) {
  * @param {string[]} [options.files]   pliki do wykonania, domyślnie sam core.js
  * @param {object}   [options.storage] gotowe localStorage (np. z limitem)
  * @param {object}   [options.seed]    wpisy do localStorage przed wczytaniem
+ * @param {number}   [options.now]     ustalony moment dla `new Date()` i `Date.now()`
+ * @param {Array}    [options.voices]  głosy systemowe widziane przez audio.js
+ * @param {string}   [options.zachowaniePlay] czym kończy się play(): ok | not-allowed | blad
  * @returns {object} piaskownica: Core, storage, clock, toasts, run()
  */
 export function loadEngine(options) {
@@ -319,6 +397,8 @@ export function loadEngine(options) {
   const warnings = [];
   const audio = makeAudioEnv(opts);
   const okno = makeWindowEvents();
+  /** Co poszło na dysk ucznia: treść pobranych plików i zwolnione uchwyty. */
+  const pobrania = { blobs: [], zwolnione: [] };
 
   if (opts.seed) {
     for (const k of Object.keys(opts.seed)) {
@@ -332,7 +412,7 @@ export function loadEngine(options) {
       log() {}, error() {}, info() {},
       warn(...a) { warnings.push(a.join(" ")); }
     },
-    Intl, JSON, Math, Date, Object, Array, String, Number, Boolean,
+    Intl, JSON, Math, Date: makeDate(opts.now), Object, Array, String, Number, Boolean,
     RegExp, Error, TypeError, Map, Set, BigInt, TextEncoder,
     isNaN, parseInt, parseFloat, encodeURIComponent, decodeURIComponent,
     localStorage: storage,
@@ -356,7 +436,23 @@ export function loadEngine(options) {
     addEventListener: okno.addEventListener,
     speechSynthesis: audio.speechSynthesis,
     SpeechSynthesisUtterance: audio.Utterance,
-    Audio: audio.Player
+    SpeechRecognition: audio.Recognition,
+    Audio: audio.Player,
+
+    /* Pobranie pliku z kopią zapasową. Blob trzyma treść w polu, zamiast ją
+       zamykać jak przeglądarka: sensem tej gałęzi jest to, CO wyszło na dysk
+       (czy znacznik kopii był już przestawiony w chwili serializacji), więc
+       atrapa, która oddaje nieczytelny uchwyt, sprawdzałaby tylko, że nie
+       rzuciło wyjątkiem. */
+    Blob: function (czesci, opcje) {
+      this.tresc = (czesci || []).join("");
+      this.type = (opcje || {}).type || "";
+      pobrania.blobs.push(this);
+    },
+    URL: {
+      createObjectURL(b) { return "blob:" + pobrania.blobs.indexOf(b); },
+      revokeObjectURL(u) { pobrania.zwolnione.push(u); }
+    }
   };
   sandbox.window = sandbox;
   sandbox.self = sandbox;
@@ -372,6 +468,10 @@ export function loadEngine(options) {
     audio: audio.log,
     /** Zamawia element o danym id, żeby getElementById go znalazł. */
     el(id) { return dom.el(id); },
+    /** Pliki, które kurs wypuścił na dysk ucznia. */
+    pobrania: pobrania,
+    /** Elementy zbudowane przez document.createElement, w kolejności. */
+    get utworzone() { return dom.utworzone; },
     /** Adres strony; przypisanie hasha odpala hashchange jak w przeglądarce. */
     okno: okno,
     /** Co nadal wisi na ekranie po upływie czasu — bez znikających toastów. */

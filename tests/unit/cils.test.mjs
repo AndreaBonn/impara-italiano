@@ -138,3 +138,19 @@ describe("dane symulacji", () => {
     })));
   });
 });
+
+describe("czego w danych nie ma", () => {
+  test("nieznana symulacja nie wraca pierwszą lepszą", () => {
+    /* Adres z zakładki może wskazywać symulację, której już nie ma:
+       podstawienie innej pokazałoby uczniowi cudzy egzamin bez słowa. */
+    const C = silnik();
+    assert.equal(C.sim("nie-ma-takiej"), null);
+    assert.equal(C.sim(), C.simulazioni()[0], "bez id wolno wziąć pierwszą");
+  });
+
+  test("nieznana sekcja to null, nie pusta sekcja", () => {
+    const C = silnik();
+    assert.equal(C.sezione(C.sim("sim-1"), "nie-ma"), null);
+    assert.equal(C.sezione(null, "ascolto"), null);
+  });
+});

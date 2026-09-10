@@ -262,3 +262,240 @@ describe("ocena wymowy", () => {
     assert.ok(A.scoreSpeech("buongiorno a tutte", [], "Buongiorno a tutti") >= 70);
   });
 });
+
+describe("rozpoznawanie mowy: bramka zgody", () => {
+  /* To JEDYNE miejsce w kursie, z którego coś opuszcza przeglądarkę ucznia:
+     przeglądarki, które dają SpeechRecognition, wysyłają nagranie na serwer
+     dostawcy. Bramka stoi w Audio2.listen, a nie w trzech widokach, które je
+     wołają, bo obrona rozłożona po miejscach wywołania działa do pierwszego
+     nowego miejsca wywołania. */
+  function zeZgoda(box, udzielona) {
+    const zapytania = [];
+    box.sandbox.Consent = {
+      udzielona() { return udzielona; },
+      zZgoda(tak, nie) { zapytania.push({ tak, nie }); }
+    };
+    return zapytania;
+  }
+
+  test("bez zgody mikrofon nie rusza, tylko pyta", () => {
+    const box = silnik();
+    const zapytania = zeZgoda(box, false);
+    box.sandbox.Audio2.listen({});
+
+    assert.equal(zapytania.length, 1, "pytanie zadane");
+    assert.equal(box.audio.rozpoznania.length, 0, "i ani jednego bajtu głosu przed odpowiedzią");
+  });
+
+  test("odmowa kończy się tak samo jak brak obsługi, nie pustym ekranem", () => {
+    /* Widoki umieją już zamienić ćwiczenie na pisane, gdy rozpoznawania nie
+       ma: odmowa wchodzi w tę samą ścieżkę zamiast dokładać nową. */
+    const box = silnik();
+    const zapytania = zeZgoda(box, false);
+    const bledy = [];
+    box.sandbox.Audio2.listen({ onerror: (k) => bledy.push(k) });
+
+    zapytania[0].nie();
+    assert.deepEqual(bledy, ["no-consent"]);
+    assert.equal(box.audio.rozpoznania.length, 0);
+  });
+
+  test("po udzieleniu zgody nasłuch rusza sam, bez drugiego kliknięcia", () => {
+    const box = silnik();
+    const zapytania = zeZgoda(box, false);
+    box.sandbox.Audio2.listen({});
+
+    box.sandbox.Consent.udzielona = () => true;
+    zapytania[0].tak();
+
+    assert.equal(box.audio.rozpoznania.length, 1);
+    assert.equal(box.audio.rozpoznania[0].starty, 1);
+  });
+
+  test("ze zgodą już udzieloną nie ma o co pytać drugi raz", () => {
+    const box = silnik();
+    const zapytania = zeZgoda(box, true);
+    box.sandbox.Audio2.listen({});
+
+    assert.equal(zapytania.length, 0);
+    assert.equal(box.audio.rozpoznania[0].lang, "it-IT", "słuchamy po włosku, nie w języku przeglądarki");
+  });
+});
+
+describe("rozpoznawanie mowy: przebieg", () => {
+  function nasluch(box, handlers) {
+    box.sandbox.Consent = { udzielona: () => true, zZgoda() {} };
+    const uchwyt = box.sandbox.Audio2.listen(handlers || {});
+    return { rec: box.audio.rozpoznania[box.audio.rozpoznania.length - 1], uchwyt };
+  }
+
+  /** Wynik rozpoznawania w kształcie, w jakim oddaje go przeglądarka. */
+  function wynik(warianty, koncowy) {
+    const r = warianty.map((t) => ({ transcript: t }));
+    r.isFinal = koncowy;
+    r.length = warianty.length;
+    return { resultIndex: 0, results: [r] };
+  }
+
+  test("brak obsługi w przeglądarce zgłasza się od razu, a nie ciszą", () => {
+    const box = silnik({ brakRozpoznawania: true });
+    const bledy = [];
+    const uchwyt = box.sandbox.Audio2.listen({ onerror: (k) => bledy.push(k) });
+
+    assert.deepEqual(bledy, ["unsupported"]);
+    assert.equal(typeof uchwyt.abort, "function", "widok woła abort bez sprawdzania, czy jest co przerywać");
+  });
+
+  test("tekst w trakcie mówienia idzie do widoku, zanim padnie ostatnie słowo", () => {
+    const box = silnik();
+    const czesciowe = [];
+    const { rec } = nasluch(box, { oninterim: (x) => czesciowe.push(x) });
+
+    rec.onresult(wynik(["buon"], false));
+    assert.deepEqual(czesciowe, ["buon"]);
+  });
+
+  test("na koniec wracają: tekst i wszystkie warianty rozpoznania", () => {
+    /* Ocena wymowy liczy się po NAJLEPSZYM wariancie: gubienie ich zaniżałoby
+       wynik za coś, czego uczeń nie powiedział źle. */
+    const box = silnik();
+    let koniec = null;
+    const { rec } = nasluch(box, { onend: (t, alts) => { koniec = { t, alts }; } });
+
+    rec.onresult(wynik(["buongiorno a tutti", "bon giorno a tutti"], true));
+    rec.onend();
+
+    assert.equal(koniec.t, "buongiorno a tutti");
+    assert.deepEqual(Array.from(koniec.alts), ["buongiorno a tutti", "bon giorno a tutti"]);
+  });
+
+  test("odmowa mikrofonu wraca kodem, po którym widok pozna, co powiedzieć", () => {
+    const box = silnik();
+    const bledy = [];
+    const { rec } = nasluch(box, { onerror: (k) => bledy.push(k) });
+
+    rec.onerror({ error: "not-allowed" });
+    assert.deepEqual(bledy, ["not-allowed"]);
+  });
+
+  test("przerwanie z widoku zatrzymuje nasłuch", () => {
+    const box = silnik();
+    const { rec, uchwyt } = nasluch(box);
+
+    uchwyt.abort();
+    assert.equal(rec.przerwania, 1);
+  });
+
+  test("drugi nasłuch przerywa pierwszy zamiast słuchać dwoma naraz", () => {
+    const box = silnik();
+    const pierwszy = nasluch(box).rec;
+    nasluch(box);
+
+    assert.equal(pierwszy.przerwania, 1);
+    assert.equal(box.audio.rozpoznania.length, 2);
+  });
+
+  test("nieudany start zgłasza się jako błąd, a nie jako cisza", () => {
+    const box = silnik({ startRzuca: true });
+    const bledy = [];
+    nasluch(box, { onerror: (k) => bledy.push(k) });
+
+    assert.deepEqual(bledy, ["start-failed"]);
+  });
+});
+
+describe("czy zdanie ma nagranie: pytanie z widoku", () => {
+  test("Audio2.hasNatural odpowiada tak samo jak indeks", () => {
+    /* Widoki pytają przez Audio2, nie przez Recordings: to jedno przekierowanie
+       i właśnie dlatego łatwo je zerwać, nie zauważając niczego. */
+    const box = silnik();
+    assert.equal(box.sandbox.Audio2.hasNatural(Z_KURSU), true);
+    assert.equal(box.sandbox.Audio2.hasNatural(SPOZA_KURSU), false);
+    assert.equal(box.sandbox.Audio2.naturalCount, box.sandbox.Recordings.count);
+  });
+});
+
+describe("przeglądarka bez syntezatora", () => {
+  test("zdanie spoza kursu domyka zwrotkę zamiast zawiesić ćwiczenie", () => {
+    /* Bez Web Speech API (część przeglądarek mobilnych, Firefox z wyłączoną
+       syntezą) nie ma czym powiedzieć zdania spoza kursu. Widok czeka na
+       onend, żeby przejść dalej: brak wywołania zatrzymałby lekcję. */
+    const box = silnik({ brakSyntezy: true });
+    let domkniete = 0;
+    const wynik = box.sandbox.Audio2.speak(SPOZA_KURSU, { onend: () => domkniete++ });
+
+    assert.equal(wynik, false);
+    assert.equal(domkniete, 1);
+    assert.equal(box.sandbox.Audio2.ttsSupported, false, "ustawienia mają to pokazać wprost");
+  });
+
+  test("zdanie z kursu nadal leci z nagrania: nagrania nie zależą od syntezatora", () => {
+    const box = silnik({ brakSyntezy: true });
+    box.sandbox.Audio2.speak(Z_KURSU);
+    assert.equal(box.audio.odtwarzacze.length, 1);
+  });
+});
+
+describe("stare i ułomne przeglądarki", () => {
+  test("wyjątek z syntezatora nie zatrzymuje ćwiczenia", () => {
+    /* Część WebView na Androidzie rzuca z speak() zamiast milczeć. Widok
+       czeka na onend: bez domknięcia zwrotki lekcja stoi w miejscu. */
+    const box = silnik({ mowaRzuca: true });
+    let domkniete = 0;
+    const wynik = box.sandbox.Audio2.speak(SPOZA_KURSU, { onend: () => domkniete++ });
+
+    assert.equal(wynik, false);
+    assert.equal(domkniete, 1);
+  });
+
+  test("lista głosów dociąga się także bez addEventListener", () => {
+    /* Przeglądarki sprzed 2018 mają tylko `onvoiceschanged`. Bez tej gałęzi
+       getVoices() na starcie oddaje pustą listę i kurs milczy do końca sesji. */
+    const box = silnik({ starySyntezator: true, voices: [] });
+    box.audio.voices.push(glos("Isabella", "it-IT"));
+    box.sandbox.speechSynthesis.onvoiceschanged();
+
+    assert.deepEqual(box.sandbox.Audio2.italianVoices().map((v) => v.name), ["Isabella"]);
+  });
+
+  test("play() bez obietnicy zgłasza start od razu, zamiast czekać na then()", () => {
+    const box = silnik({ zachowaniePlay: "bez-obietnicy" });
+    let ruszylo = 0;
+    box.sandbox.Audio2.speak(Z_KURSU, { onstart: () => ruszylo++ });
+
+    assert.equal(ruszylo, 1, "podświetlenie zdania w dialogu wisi na onstart");
+  });
+});
+
+describe("koniec odtwarzania", () => {
+  test("skończone nagranie domyka zwrotkę widoku", () => {
+    /* Para dodatnia do testu o spóźnionym końcu: bez niej tamten
+       przechodziłby także wtedy, gdyby onend nie wołał się NIGDY. */
+    const box = silnik();
+    let domkniete = 0;
+    box.sandbox.Audio2.speak(Z_KURSU, { onend: () => domkniete++ });
+
+    box.audio.odtwarzacze[0].onended();
+    assert.equal(domkniete, 1, "lekcja przechodzi do następnego kroku po zdaniu");
+  });
+
+  test("skończona wypowiedź syntezatora też domyka zwrotkę", () => {
+    const box = silnik();
+    let domkniete = 0;
+    box.sandbox.Audio2.speak(SPOZA_KURSU, { onend: () => domkniete++ });
+
+    box.audio.wypowiedzi[0].onend();
+    assert.equal(domkniete, 1);
+  });
+
+  test("wypowiedź przerwana zmianą trasy nie woła zwrotki cudzego ekranu", () => {
+    const box = silnik();
+    let domkniete = 0;
+    box.sandbox.Audio2.speak(SPOZA_KURSU, { onend: () => domkniete++ });
+    const wypowiedz = box.audio.wypowiedzi[0];
+
+    box.sandbox.Audio2.stop();
+    wypowiedz.onend();
+    assert.equal(domkniete, 0);
+  });
+});

@@ -112,6 +112,41 @@ describe("fsrs: własności, których wektory nie pokazują wprost", () => {
     );
   });
 
+  test("karta w nauce przechodzi do obiegu po ostatnim kroku, a nie kręci się w kółko", () => {
+    /* Kroki nauki (1 min, 10 min) są rozbiegiem, nie stanem docelowym:
+       po ostatnim z nich karta wchodzi do obiegu z odstępem liczonym ze
+       stabilności. Bez tego przejścia nowe słowo wracałoby co dziesięć
+       minut w nieskończoność i sesja nigdy by się nie kończyła. */
+    const F = silnik();
+    const start = Date.UTC(2026, 0, 1);
+    let karta = F.powtorz(null, F.DOBRZE, start);
+    assert.equal(karta.st, "learning", "pierwsza odpowiedź zostawia kartę w nauce");
+    assert.equal(karta.step, 1, "z odstępem drugiego kroku, czyli minut");
+    assert.ok(karta.due - start < 86400000, "jeszcze tej samej sesji");
+
+    karta = F.powtorz(karta, F.DOBRZE, start + 60000);
+    assert.equal(karta.st, "review", "po przejściu kroków karta wchodzi do obiegu");
+    assert.equal(karta.step, null, "i przestaje mieć numer kroku");
+    assert.ok(karta.due - (start + 60000) >= 86400000,
+      "odstęp liczony ze stabilności, nie z listy kroków");
+  });
+
+  test("karta z krokiem poza listą nie zostaje w nauce na zawsze", () => {
+    /* Profil zapisany przy dłuższej liście kroków wraca z numerem, którego
+       ta lista już nie ma. Bez tej gałęzi taka karta nie miałaby dokąd
+       przejść i wracałaby w każdej sesji, wyglądając na słowo, którego
+       uczeń „nie może zapamiętać". */
+    const F = silnik();
+    const teraz = Date.UTC(2026, 0, 5);
+    const karta = F.powtorz(
+      { st: "learning", step: 9, s: 3, d: 5, last: Date.UTC(2026, 0, 4) },
+      F.DOBRZE, teraz
+    );
+
+    assert.equal(karta.st, "review");
+    assert.equal(karta.step, null);
+  });
+
   test("odstęp nigdy nie schodzi poniżej doby ani nie przekracza limitu", () => {
     const F = silnik();
     const s = F.silnik(null);

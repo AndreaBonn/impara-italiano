@@ -163,3 +163,23 @@ describe("wystawienie w Core", () => {
     });
   });
 });
+
+describe("dziennik powtórek: sufit", () => {
+  /* Dziennik jest wejściem do PRZYSZŁEGO strojenia parametrów FSRS na
+     własnej historii, więc rośnie przy każdej powtórce i jest jedynym
+     kontenerem, który sam z siebie nie ma końca. Sufit tnie od najstarszej:
+     świeża historia opisuje pamięć taką, jaka jest teraz. */
+  test("po przekroczeniu sufitu wypada najstarsza pozycja, nie najnowsza", () => {
+    const box = swiezy();
+    const max = box.sandbox.Srs.MAX_REVIEWS;
+    const st = box.Core.state;
+    for (let n = 0; n < max; n++) st.reviews.push({ k: "x", t: n, q: 5 });
+
+    const k = karta(box, "casa", Date.now() - DZIEN);
+    box.Core.gradeCard(k, 5);
+
+    assert.equal(st.reviews.length, max, "sufit trzyma");
+    assert.equal(st.reviews[0].t, 1, "zeszła najstarsza, nie najnowsza");
+    assert.equal(st.reviews[st.reviews.length - 1].k, k, "świeża powtórka jest w środku");
+  });
+});

@@ -234,7 +234,10 @@
   global.Srs = {
     addCard: addCard, cardTr: cardTr,
     schedule: schedule, gradeCard: gradeCard,
-    dueCards: dueCards, dueCount: dueCount
+    dueCards: dueCards, dueCount: dueCount,
+    /* Wystawione jak Errors.GRADUATE_REPS: to liczba z decyzji, nie szczegół
+       implementacji, więc test ma ją czytać stąd zamiast powtarzać. */
+    MAX_REVIEWS: MAX_REVIEWS
   };
 
 })(window);

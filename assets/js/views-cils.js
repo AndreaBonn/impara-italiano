@@ -1,23 +1,24 @@
 /* ============================================================
-   views-cils.js — przejście przez symulację egzaminu.
+   views-cils.js — going through the exam simulation.
 
-   Silnik liczący siedzi w cils.js, przebieg całego podejścia (kolejność
-   sekcji, siatka odpowiedzi, punkty, sekcje z wyczerpanym czasem, wpis do
-   historii) w cils-run.js, a cały markup w cils-html.js. Tutaj zostało to,
-   czego żaden z nich nie umie: zegar, podpinanie uchwytów i brak drogi
-   powrotnej.
+   The scoring engine sits in cils.js, the run of a whole attempt (the order
+   of the sections, the answer grid, the points, the sections whose time ran
+   out, the history entry) in cils-run.js, and all the markup in
+   cils-html.js. What is left here is what none of them can do: the clock,
+   wiring up handlers and the absence of a way back.
 
-   DLACZEGO NIE MA POWROTU. Na egzaminie sekcja zamknięta jest zamknięta, a
-   symulator, w którym można wrócić i poprawić, mierzy co innego niż
-   egzamin: mierzy wiedzę bez presji czasu, czyli tę, której uczeń nie ma
-   w sali. Zegar chodzi także wtedy, gdy uczeń patrzy w sufit.
+   WHY THERE IS NO WAY BACK. At the exam a closed section is closed, and a
+   simulator you can return to and correct measures something other than the
+   exam: it measures knowledge without time pressure, that is the knowledge
+   the student does not have in the room. The clock runs while the student
+   stares at the ceiling too.
 
-   ZDANIE O GRANICY IDZIE PRZED STARTEM, nie do podsumowania. Symulator
-   ocenia dwie sprawności z czterech: kto dowiaduje się o tym na końcu,
-   przeszedł całą sesję z fałszywym oczekiwaniem. To ta sama zasada, co
-   przy shadowingu i przy tempie mowy.
+   THE SENTENCE ABOUT THE LIMIT COMES BEFORE THE START, not in the summary.
+   The simulator grades two skills out of four: whoever finds that out at
+   the end has gone through the whole session with a false expectation. It
+   is the same principle as with shadowing and with speech tempo.
 
-   Skrypt klasyczny. Wymaga core.js, cils.js, cils-run.js, cils-html.js,
+   Classic script. Requires core.js, cils.js, cils-run.js, cils-html.js,
    audio.js, writing.js, recorder.js, views.js.
    ============================================================ */
 (function (global) {
@@ -36,7 +37,7 @@
   var run = null;
   var tick = null;
 
-  /* ═══════════════════ Lista e preambolo ═══════════════════ */
+  /* ═══════════════════ The list and the preamble ═══════════════════ */
 
   Views.esame = function (params) {
     fermaTimer();
@@ -60,21 +61,22 @@
     rysujSezione();
   }
 
-  /* ═══════════════════ Timer ═══════════════════ */
+  /* ═══════════════════ The timer ═══════════════════ */
 
   function fermaTimer() {
     if (tick) { global.clearInterval(tick); tick = null; }
     if (global.Audio2) Audio2.stop();
   }
 
-  /* Router woła to przy KAŻDYM wyjściu z trasy, także przez pasek boczny,
-     hashchange i przycisk wstecz przeglądarki. Bez tego zegar żył dalej. */
+  /* The router calls this on EVERY exit from the route, including via the
+     side rail, hashchange and the browser's back button. Without it the
+     clock kept running. */
   function pilnujWyjscia() { Views.onLeave = fermaTimer; }
 
-  /* Przycisk domykający sekcję gaśnie w chwili kliknięcia. Podwójne
-     kliknięcie trafiłoby w ten sam guzik już przerysowanej sekcji i
-     przeskoczyłoby ją bez ani jednej odpowiedzi — a klika się pod zegarem,
-     więc dwuklik z nerwów jest tu regułą, nie wyjątkiem. */
+  /* The button that closes a section goes dead the moment it is clicked. A
+     double click would hit the same button on the already redrawn section
+     and skip it without a single answer — and it is clicked under a clock,
+     so a nervous double click is the rule here, not the exception. */
   function razTylko(przycisk, akcja) {
     przycisk.addEventListener("click", function () {
       if (przycisk.disabled) return;
@@ -84,12 +86,12 @@
   }
 
   /**
-   * Avvia il conto alla rovescia della sezione.
+   * Starts the section countdown.
    *
-   * L'orologio scritto si aggiorna ogni secondo ed è `aria-hidden`; la
-   * regione live riceve solo tre annunci. Un timer che parla ogni secondo
-   * rende la pagina inutilizzabile con uno screen reader, ed è il modo più
-   * facile di passare i gate automatici e fallire con l'utente vero.
+   * The written clock updates every second and is `aria-hidden`; the live
+   * region receives only three announcements. A timer that speaks every
+   * second makes the page unusable with a screen reader, and it is the
+   * easiest way to pass the automated gates and fail with a real user.
    */
   function avviaTimer(secondi, scaduto) {
     var resta = secondi;
@@ -116,7 +118,7 @@
     }
   }
 
-  /* ═══════════════════ Sezioni ═══════════════════ */
+  /* ═══════════════════ The sections ═══════════════════ */
 
   function intestazione(sez) {
     return H.barra(run.krok, run.ile) +
@@ -149,7 +151,7 @@
       .forEach(function (n) { n.disabled = true; });
   }
 
-  /* ---------------- Ascolto e lettura: risposte chiuse ---------------- */
+  /* ---------------- Listening and reading: closed answers ---------------- */
 
   function sezioneChiusa(sez) {
     run.przygotuj(sez);
@@ -190,7 +192,7 @@
     avanti();
   }
 
-  /* ---------------- Produzione scritta ---------------- */
+  /* ---------------- Written production ---------------- */
 
   function sezioneScritta(sez) {
     var scelta = 0;
@@ -218,7 +220,7 @@
     });
   }
 
-  /* ---------------- Produzione orale (non valutata) ---------------- */
+  /* ---------------- Oral production (not graded) ---------------- */
 
   function sezioneOrale(sez) {
     var powod = global.Recorder ? Recorder.powodBraku() : "rec.errNoRecorder";
@@ -285,7 +287,7 @@
     });
   }
 
-  /* ═══════════════════ Riepilogo ═══════════════════ */
+  /* ═══════════════════ The summary ═══════════════════ */
 
   function riepilogo() {
     fermaTimer();
@@ -299,7 +301,7 @@
     el().querySelector(".js-list").addEventListener("click", function () { App.go("esame"); });
   }
 
-  /** Zapis przebiegu do historii ucznia; kształt wpisu i sufit są w cils-run.js. */
+  /** Saving the run into the student's history; the entry shape and the ceiling are in cils-run.js. */
   function salva(e) {
     CilsRun.zapisz(run, e, Date.now());
   }

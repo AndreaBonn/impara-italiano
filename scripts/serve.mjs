@@ -1,15 +1,15 @@
 /* ============================================================
-   serve.mjs — statyczny serwer do testów i do pracy w przeglądarce.
+   serve.mjs — a static server for tests and for working in the browser.
 
-   Uruchomienie:  node scripts/serve.mjs [port]
-   Domyślnie 8080, albo PORT ze środowiska.
+   Usage:  node scripts/serve.mjs [port]
+   8080 by default, or PORT from the environment.
 
-   Powód istnienia zamiast `python3 -m http.server`: tamten trzyma
-   stare skrypty mimo zmian na dysku, więc strona pokazuje nieprawdę,
-   a błąd szuka się w kodzie, który już jest poprawiony. Tu każda
-   odpowiedź niesie Cache-Control: no-store.
+   Why it exists instead of `python3 -m http.server`: that one holds on to
+   old scripts despite changes on disk, so the page shows an untruth and the
+   bug is hunted in code that has already been fixed. Here every response
+   carries Cache-Control: no-store.
 
-   Bez zależności, jak reszta projektu.
+   No dependencies, like the rest of the project.
    ============================================================ */
 import { createServer } from "node:http";
 import { createReadStream, statSync } from "node:fs";
@@ -34,9 +34,9 @@ const TYPES = {
 };
 
 /**
- * Ścieżka z żądania na ścieżkę na dysku.
- * Zwraca null poza katalogiem projektu: „..” w URL-u nie ma prawa
- * wyprowadzić poza ROOT, nawet na serwerze do testów.
+ * A request path turned into a path on disk.
+ * Returns null outside the project directory: ".." in a URL has no right to
+ * lead outside ROOT, not even on a test server.
  */
 function resolvePath(url) {
   const clean = decodeURIComponent(url.split("?")[0].split("#")[0]);
@@ -51,18 +51,19 @@ function resolvePath(url) {
 }
 
 /**
- * Serwer plików projektu.
+ * A server for the project files.
  *
- * Wystawiony jako funkcja, nie tylko jako polecenie, z jednego powodu:
- * test dwóch kolejnych wydań (tests/dom/pwa-update.spec.js) potrzebuje
- * serwera, który odda sw.js o INNEJ treści za drugim razem. Przeglądarka
- * rozpoznaje nowe wydanie po bajtach tego pliku, więc bez tego nie da się
- * odtworzyć wydania inaczej niż psując plik w drzewie roboczym.
+ * Exposed as a function and not only as a command, for one reason: the test
+ * of two successive releases (tests/dom/pwa-update.spec.js) needs a server
+ * that returns sw.js with DIFFERENT content the second time. The browser
+ * recognises a new release by the bytes of that file, so without this there
+ * is no way to reproduce a release other than by breaking the file in the
+ * working tree.
  *
  * @param {object} [opcje]
  * @param {Record<string, () => string>} [opcje.podmiany]
- *        adres -> funkcja oddająca treść; pytana przy KAŻDYM żądaniu,
- *        żeby dało się zmienić wydanie w trakcie testu
+ *        address -> a function returning the content; asked on EVERY
+ *        request, so that the release can be changed mid-test
  */
 export function serwer(opcje) {
   const podmiany = (opcje && opcje.podmiany) || {};
@@ -91,8 +92,8 @@ export function serwer(opcje) {
   });
 }
 
-/* Nasłuch tylko przy uruchomieniu z wiersza poleceń: zaimportowanie tego
-   pliku w teście nie ma zajmować portu. */
+/* Listening only when started from the command line: importing this file in
+   a test must not occupy a port. */
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   serwer().listen(PORT, () => {
     process.stdout.write(`serve: http://localhost:${PORT} (no-store)\n`);

@@ -1,18 +1,18 @@
 /* ============================================================
-   Porównywanie tekstu (assets/js/text.js).
+   Text comparison (assets/js/text.js).
 
-   Te funkcje decydują o tym, czy odpowiedź ucznia zostanie uznana za
-   dobrą. Pomyłka tutaj nie wywraca niczego na ekranie: po prostu kurs
-   zaczyna odrzucać poprawne zdania albo przyjmować błędne, a jedynym
-   objawem jest uczeń, który przestaje ufać ocenom.
+   These functions decide whether the student's answer counts as correct. A
+   mistake here overturns nothing on screen: the course simply starts
+   rejecting correct sentences or accepting wrong ones, and the only symptom
+   is a student who stops trusting the marking.
 
-   Trzy niezmienniki, które trzeba czytać razem z kodem, bo z samego
-   podpisu funkcji nie widać ani jednego:
-   - fold() zachowuje DŁUGOŚĆ (search.js tnie oryginał po indeksach
-     policzonych na tekście złożonym),
-   - norm() zwęża białe znaki i dlatego długości NIE zachowuje,
-   - similarity() liczy zawsze bez akcentów, także wtedy, gdy checkOpen
-     porównuje z akcentami — stąd „źle, ale prawie” na samym akcencie.
+   Three invariants that have to be read together with the code, because not
+   one of them is visible from a function signature:
+   - fold() preserves the LENGTH (search.js slices the original by indexes
+     computed on the folded text),
+   - norm() collapses whitespace and therefore does NOT preserve the length,
+   - similarity() always computes without accents, including when checkOpen
+     compares with them — hence "wrong, but almost" on an accent alone.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -21,36 +21,36 @@ import { loadEngine, CORE } from "./_harness.mjs";
 const T = loadEngine({ files: ["assets/js/text.js"] }).sandbox.Txt;
 
 describe("detypo", () => {
-  test("apostrof z klawiatury telefonu staje się maszynowym", () => {
+  test("an apostrophe from a phone keyboard becomes a typewriter one", () => {
     assert.equal(T.detypo("l’autore"), "l'autore");
   });
 
-  test("wszystkie cztery warianty apostrofu schodzą do jednego", () => {
+  test("all four apostrophe variants collapse into one", () => {
     assert.equal(T.detypo("a’b‘c`d´e"), "a'b'c'd'e");
   });
 
-  test("cudzysłowy drukarskie, w tym polski otwierający, schodzą do prostego", () => {
+  test("typographic quotation marks, including the Polish opening one, collapse into the straight one", () => {
     assert.equal(T.detypo("„cytat” “inny”"), '"cytat" "inny"');
   });
 
-  test("zamiana jest znak w znak, więc długość zostaje ta sama", () => {
+  test("the swap is character for character, so the length stays the same", () => {
     const przed = "„l’autore” ‘x’";
     assert.equal(T.detypo(przed).length, przed.length);
   });
 
-  test("brak wejścia daje pusty napis, nie wyjątek", () => {
+  test("no input yields an empty string, not an exception", () => {
     assert.equal(T.detypo(null), "");
     assert.equal(T.detypo(undefined), "");
     assert.equal(T.detypo(""), "");
   });
 
-  test("liczba przechodzi przez napis, a nie wywraca się na replace", () => {
+  test("a number goes through as a string rather than blowing up on replace", () => {
     assert.equal(T.detypo(42), "42");
   });
 });
 
 describe("fold", () => {
-  test("zdejmuje akcenty i wielkość liter", () => {
+  test("it removes the accents and the letter case", () => {
     assert.equal(T.fold("Perché È Così"), "perche e cosi");
   });
 
@@ -58,37 +58,37 @@ describe("fold", () => {
     assert.equal(T.fold("L’Autore"), "l'autore");
   });
 
-  test("NIE zwęża białych znaków: search.js tnie oryginał po tych indeksach", () => {
+  test("it does NOT collapse whitespace: search.js slices the original by these indexes", () => {
     assert.equal(T.fold("  due   spazi  "), "  due   spazi  ");
   });
 
-  test("długość wyniku równa się długości wejścia dla każdego akcentu", () => {
+  test("the length of the result equals the length of the input for every accent", () => {
     ["caffè", "città", "perché", "così", "più", "à á è é ì í ò ó ù ú"].forEach(s => {
       assert.equal(T.fold(s).length, s.length, `zmiana długości na „${s}”`);
     });
   });
 
-  test("litery spoza włoskiego alfabetu zostają nietknięte", () => {
+  test("letters outside the Italian alphabet are left untouched", () => {
     assert.equal(T.fold("ñ ç ł"), "ñ ç ł");
   });
 });
 
 describe("norm", () => {
-  test("zwęża białe znaki i przycina brzegi", () => {
+  test("it collapses whitespace and trims the edges", () => {
     assert.equal(T.norm("  io   mangio  "), "io mangio");
   });
 
-  test("znaki przestankowe zamieniają się w spację, nie znikają bez śladu", () => {
+  test("punctuation turns into a space rather than vanishing without trace", () => {
     assert.equal(T.norm("io,mangio"), "io mangio");
     assert.equal(T.norm("Sì! Certo… (davvero?)"), "si certo davvero");
   });
 
-  test("spacje wokół apostrofu są ściągane: „l ' autore” to „l'autore”", () => {
+  test("the spaces around an apostrophe are pulled together: \"l ' autore\" is \"l'autore\"", () => {
     assert.equal(T.norm("l ' autore"), "l'autore");
     assert.equal(T.norm("l'autore"), "l'autore");
   });
 
-  test("domyślnie zdejmuje akcenty", () => {
+  test("by default it removes the accents", () => {
     assert.equal(T.norm("Perché"), "perche");
   });
 
@@ -96,7 +96,7 @@ describe("norm", () => {
     assert.equal(T.norm("Perché sì", { keepAccents: true }), "perché sì");
   });
 
-  test("pusty napis i sam odstęp dają pusty wynik", () => {
+  test("an empty string and a lone space give an empty result", () => {
     assert.equal(T.norm(""), "");
     assert.equal(T.norm("   "), "");
     assert.equal(T.norm(null), "");
@@ -104,7 +104,7 @@ describe("norm", () => {
 });
 
 describe("levenshtein", () => {
-  test("ten sam napis ma odległość zero", () => {
+  test("the same string has a distance of zero", () => {
     assert.equal(T.levenshtein("parlare", "parlare"), 0);
   });
 
@@ -112,7 +112,7 @@ describe("levenshtein", () => {
     assert.equal(T.levenshtein("kitten", "sitting"), 3);
   });
 
-  test("wobec pustego napisu odległość to długość drugiego, z obu stron", () => {
+  test("against an empty string the distance is the length of the other one, from both sides", () => {
     assert.equal(T.levenshtein("", "abc"), 3);
     assert.equal(T.levenshtein("abc", ""), 3);
     assert.equal(T.levenshtein("", ""), 0);
@@ -122,35 +122,35 @@ describe("levenshtein", () => {
     assert.equal(T.levenshtein("mangio", "mangi"), T.levenshtein("mangi", "mangio"));
   });
 
-  test("jedna litera różnicy to jeden, nie zero", () => {
+  test("one letter of difference is one, not zero", () => {
     assert.equal(T.levenshtein("mangio", "mangia"), 1);
   });
 });
 
 describe("similarity", () => {
-  test("identyczne napisy dają 1", () => {
+  test("identical strings give 1", () => {
     assert.equal(T.similarity("parlare", "parlare"), 1);
   });
 
-  test("dwa puste napisy dają 1, a nie dzielenie przez zero", () => {
+  test("two empty strings give 1 rather than a division by zero", () => {
     assert.equal(T.similarity("", ""), 1);
     assert.ok(Number.isFinite(T.similarity("", "abc")));
   });
 
-  test("nic wspólnego daje 0, a nie liczbę ujemną", () => {
+  test("nothing in common gives 0, not a negative number", () => {
     assert.equal(T.similarity("xyz", "abcdefgh"), 0);
   });
 
-  test("literówka daje wynik wysoki, ale nie równy 1", () => {
+  test("a typo gives a high result, but not equal to 1", () => {
     const s = T.similarity("parlare", "parlere");
     assert.ok(s > 0.8 && s < 1, `oczekiwane 0.8 < s < 1, było ${s}`);
   });
 
-  test("różnica na samym akcencie znika, bo porównanie idzie po norm()", () => {
+  test("a difference on the accent alone disappears, because the comparison goes through norm()", () => {
     assert.equal(T.similarity("perché", "perche"), 1);
   });
 
-  test("wynik nigdy nie wychodzi poza przedział 0..1", () => {
+  test("the result never leaves the 0..1 range", () => {
     [["", "a"], ["a", ""], ["abc", "xyz"], ["ciao", "ciao ciao ciao"]].forEach(([a, b]) => {
       const s = T.similarity(a, b);
       assert.ok(s >= 0 && s <= 1, `poza przedziałem: ${a}/${b} = ${s}`);
@@ -159,60 +159,61 @@ describe("similarity", () => {
 });
 
 describe("checkOpen", () => {
-  test("trafiona odpowiedź jest dobra i nie jest „prawie”", () => {
+  test("a correct answer is right and is not \"almost\"", () => {
     const r = T.checkOpen("io mangio", ["io mangio"]);
     assert.equal(r.ok, true);
     assert.equal(r.near, false);
     assert.equal(r.sim, 1);
   });
 
-  test("wystarczy trafić w którykolwiek z wariantów", () => {
+  test("hitting any one of the variants is enough", () => {
     assert.equal(T.checkOpen("tu mangi", ["io mangio", "tu mangi"]).ok, true);
   });
 
-  test("odpowiedź niechlujna, ale trafiona co do treści, przechodzi", () => {
+  test("a sloppy answer that is right in substance passes", () => {
     assert.equal(T.checkOpen("  IO   MANGIO! ", ["io mangio"]).ok, true);
   });
 
-  test("literówka nie jest dobra, ale jest „prawie” i wskazuje wzorzec", () => {
+  test("a typo is not right, but it is \"almost\" and it points at the model", () => {
     const r = T.checkOpen("io mangiu", ["io mangio"]);
     assert.equal(r.ok, false);
     assert.equal(r.near, true);
     assert.equal(r.best, "io mangio");
   });
 
-  test("odpowiedź kompletnie inna nie jest ani dobra, ani „prawie”", () => {
+  test("a completely different answer is neither right nor \"almost\"", () => {
     const r = T.checkOpen("xyz", ["io mangio", "tu mangi"]);
     assert.equal(r.ok, false);
     assert.equal(r.near, false);
     assert.equal(r.sim, 0);
   });
 
-  /* Bez tego progu „ho” wobec „io” wychodzi 0.5 podobieństwa na dwóch
-     literach i kurs zachęcałby ucznia, że był blisko, przy strzale. */
-  test("napis do dwóch znaków nigdy nie jest „prawie”", () => {
+  /* Without that threshold "ho" against "io" comes out at 0.5 similarity on
+     two letters and the course would encourage the student that they were
+     close, on a pure guess. */
+  test("a string of up to two characters is never \"almost\"", () => {
     assert.equal(T.checkOpen("ho", ["io"]).near, false);
   });
 
-  test("pojedynczy wariant można podać bez tablicy", () => {
+  test("a single variant can be given without an array", () => {
     assert.equal(T.checkOpen("ciao", "ciao").ok, true);
   });
 
-  test("bez trybu ścisłego brak akcentu przechodzi", () => {
+  test("without strict mode a missing accent passes", () => {
     assert.equal(T.checkOpen("perche", ["perché"], false).ok, true);
   });
 
-  test("w trybie ścisłym brak akcentu jest błędem, ale zgłoszonym jako „prawie”", () => {
+  test("in strict mode a missing accent is an error, but reported as \"almost\"", () => {
     const r = T.checkOpen("perche", ["perché"], true);
     assert.equal(r.ok, false, "akcent ma znaczenie");
-    assert.equal(r.near, true, "uczeń ma zobaczyć, że chodzi o drobiazg");
+    assert.equal(r.near, true, "the student should see that it is a detail");
   });
 
-  test("w trybie ścisłym trafiony akcent nadal przechodzi", () => {
+  test("in strict mode a correct accent still passes", () => {
     assert.equal(T.checkOpen("perché", ["perché"], true).ok, true);
   });
 
-  test("pusta odpowiedź nie przechodzi, ale oddaje wzorzec do pokazania", () => {
+  test("an empty answer does not pass, but it returns the model to be shown", () => {
     const r = T.checkOpen("", ["io mangio"]);
     assert.equal(r.ok, false);
     assert.equal(r.best, "io mangio");
@@ -220,29 +221,29 @@ describe("checkOpen", () => {
 });
 
 describe("esc", () => {
-  test("zamyka wszystkie pięć znaków, którymi da się wyjść ze znacznika", () => {
+  test("it closes all five characters that can break out of a tag", () => {
     assert.equal(T.esc(`<b>"a" & 'b'</b>`), "&lt;b&gt;&quot;a&quot; &amp; &#39;b&#39;&lt;/b&gt;");
   });
 
-  test("ampersand idzie pierwszy, więc encje nie są podwójnie kodowane w kółko", () => {
+  test("the ampersand goes first, so entities are not double-encoded over and over", () => {
     assert.equal(T.esc("&lt;"), "&amp;lt;");
   });
 
-  test("zwykły tekst przechodzi bez zmian", () => {
+  test("ordinary text passes through unchanged", () => {
     assert.equal(T.esc("caffè macchiato"), "caffè macchiato");
   });
 
-  test("brak wejścia daje pusty napis", () => {
+  test("no input yields an empty string", () => {
     assert.equal(T.esc(null), "");
     assert.equal(T.esc(undefined), "");
   });
 });
 
 describe("wystawienie w Core", () => {
-  /* Wydzielenie do text.js miało nie ruszyć ani jednego z dwudziestu
-     modułów, które wołają Core.norm i Core.esc. To jest ten warunek,
-     sprawdzony na tożsamości funkcji, a nie na podobnym wyniku. */
-  test("Core oddaje DOKŁADNIE te funkcje, nie własne kopie", () => {
+  /* Splitting text.js out was meant to leave untouched every one of the
+     twenty modules calling Core.norm and Core.esc. This is that condition,
+     checked on the identity of the functions and not on a similar result. */
+  test("Core returns EXACTLY these functions, not copies of its own", () => {
     const Core = loadEngine({ files: CORE }).sandbox.Core;
     ["norm", "fold", "stripAccents", "levenshtein", "similarity", "checkOpen", "esc"]
       .forEach(nazwa => {

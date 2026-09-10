@@ -1,14 +1,14 @@
 # ============================================================
-# Bramki, które do tej pory istniały tylko wtedy, gdy ktoś pamiętał,
-# żeby je uruchomić. Kolejność jest od najtańszej do najdroższej:
-# validate i parity kończą się w sekundach, testy DOM potrzebują
-# przeglądarki i minuty, więc błąd w danych ma się zgłosić wcześniej.
+# The gates that until now existed only when somebody remembered to run
+# them. The order goes from the cheapest to the most expensive: validate and
+# parity finish in seconds, the DOM tests need a browser and a minute, so an
+# error in the data has to report itself earlier.
 #
-# Serwera nie podnosimy tutaj: playwright.config.js ma własne
-# `webServer` (scripts/serve.mjs) z reuseExistingServer wyłączonym.
+# We do not start a server here: playwright.config.js has its own
+# `webServer` (scripts/serve.mjs) with reuseExistingServer switched off.
 #
-# Node 24, nie 20: `npm test` podaje glob "tests/unit/**/*.test.mjs"
-# prosto do `node --test`, a to działa dopiero od Node 21.
+# Node 24, not 20: `npm test` passes the glob "tests/unit/**/*.test.mjs"
+# straight to `node --test`, and that only works from Node 21 on.
 # ============================================================
 name: CI
 
@@ -28,44 +28,45 @@ jobs:
           node-version: '24'
           cache: npm
 
-      - name: Instalacja zależności deweloperskich
+      - name: Install the dev dependencies
         run: npm ci
 
-      - name: Przeglądarka do testów DOM
+      - name: Browser for the DOM tests
         run: npx playwright install --with-deps chromium
 
-      - name: Poprawność kodu
+      - name: Code correctness
         run: npm run lint
 
-      - name: Spójność danych kursu
+      - name: Consistency of the course data
         run: node scripts/validate.mjs
 
-      - name: Kształt nakładek językowych
+      - name: Shape of the language overlays
         run: node scripts/parity.mjs
 
-      - name: Czy guska wczyta to, co ładuje strona
+      - name: Can the worker load what the page loads
         run: node scripts/check_precache.mjs
 
-      # Przeglądarka rozpoznaje wydanie po bajtach sw.js. Bez świeżego
-      # odcisku poprawka wychodzi jako wydanie, którego nikt nie zobaczy,
-      # i uczeń nie dostaje komunikatu o aktualizacji.
-      - name: Czy nowe wydanie ma jak się ogłosić
+      # The browser recognises a release by the bytes of sw.js. Without a
+      # fresh fingerprint a fix goes out as a release nobody will see, and the
+      # student gets no update message.
+      - name: Can a new release announce itself
         run: node scripts/check_swversion.mjs
 
-      - name: Testy jednostkowe
+      - name: Unit tests
         run: npm test
 
-      # Pokrycie mówi, że linia się wykonała; to mówi, że ktoś ją sprawdza.
-      # Asercja, która przechodzi także nad pustym wynikiem, ma 100% pokrycia
-      # i zero treści — różnicę widać wyłącznie tutaj. Stoi przed pokryciem,
-      # bo uruchamia dwa pliki testów, a nie całą suitę: ~4 s wobec ~20 s.
-      - name: Czy testy widzą czerwone
+      # Coverage says a line was executed; this says somebody checks it. An
+      # assertion that also passes over an empty result has 100% coverage and
+      # zero content — the difference shows only here. It stands before
+      # coverage, because it runs two test files rather than the whole suite:
+      # ~4 s against ~20 s.
+      - name: Can the tests see red
         run: npm run test:mutations
 
-      # Próg, nie ozdoba: refaktor, który po cichu wypina przetestowaną
-      # gałąź z suity, przechodzi „npm test" na zielono i zatrzymuje się tutaj.
-      - name: Pokrycie silnika
+      # A threshold, not a decoration: a refactor that silently unhooks a
+      # tested branch from the suite passes "npm test" green and stops here.
+      - name: Engine coverage
         run: node scripts/coverage.mjs --min 99
 
-      - name: Testy w przeglądarce
+      - name: Browser tests
         run: npm run test:dom

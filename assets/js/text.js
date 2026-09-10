@@ -1,15 +1,15 @@
 /* ============================================================
-   text.js — porównywanie tekstu: normalizacja, odległość, ocena odpowiedzi.
+   text.js — text comparison: normalization, distance, answer grading.
 
-   Wyjęte z core.js, bo nie ma z nim nic wspólnego poza historią. Te
-   funkcje nie dotykają stanu, localStorage ani DOM: dostają napis i
-   oddają napis albo liczbę. Dopóki siedziały w module stanu, ich test
-   wymagał zbudowania całej piaskownicy ze sterowalnym zegarem i pamięcią
-   — czyli aparatury dla rzeczy, która jej nie potrzebuje.
+   Pulled out of core.js, with which it has nothing in common but history.
+   These functions touch neither state, nor localStorage, nor the DOM:
+   they take a string and return a string or a number. As long as they
+   lived inside the state module, testing them meant building the whole
+   sandbox with a controllable clock and storage — an apparatus for
+   something that does not need it.
 
-   Core dalej wystawia je pod swoimi nazwami (Core.norm, Core.esc, …),
-   więc żaden z dwudziestu modułów, które ich używają, nie zmienia ani
-   jednej linijki.
+   Core still exposes them under its own names (Core.norm, Core.esc, …),
+   so none of the twenty modules that use them changes a single line.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -21,12 +21,12 @@
   }
 
   /**
-   * Znaki typograficzne na maszynowe. Wymiana jest ZNAK W ZNAK, więc nie
-   * przesuwa pozycji w tekście — to jest warunek, na którym stoi
-   * podświetlanie wyników wyszukiwania (search.js).
+   * Typographic characters to typewriter ones. The swap is CHARACTER FOR
+   * CHARACTER, so it does not shift positions in the text — that is the
+   * condition search result highlighting rests on (search.js).
    *
-   * Klawiatura telefonu i edytor tekstu dają „’", nie „'". Bez tej wymiany
-   * uczeń, który wkleja albo pisze na iOS, nigdy nie trafia w „l'autore".
+   * Phone keyboards and word processors produce "’", not "'". Without this
+   * swap a student who pastes or types on iOS never matches "l'autore".
    */
   function detypo(s) {
     return String(s == null ? "" : s)
@@ -35,16 +35,16 @@
   }
 
   /**
-   * Składanie do porównań: małe litery, ujednolicone apostrofy, zdjęte
-   * akcenty. Białych znaków NIE zwęża, w odróżnieniu od norm(): dzięki
-   * temu długość jest zachowana i po indeksach z tekstu złożonego można
-   * ciąć oryginał.
+   * Folding for comparisons: lower case, unified apostrophes, accents
+   * stripped. It does NOT collapse whitespace, unlike norm(): that way
+   * the length is preserved and the original can be sliced by indexes
+   * taken from the folded text.
    */
   function fold(s) {
     return stripAccents(detypo(s).toLowerCase());
   }
 
-  /** Normalizuje odpowiedź ucznia do porównania. */
+  /** Normalizes the student's answer for comparison. */
   function norm(s, opts) {
     opts = opts || {};
     var t = detypo(s)
@@ -57,7 +57,7 @@
     return t;
   }
 
-  /** Odległość Levenshteina (do „prawie dobrze" i oceny wymowy). */
+  /** Levenshtein distance (for "almost right" and pronunciation scoring). */
   function levenshtein(a, b) {
     if (a === b) return 0;
     if (!a.length) return b.length;
@@ -74,7 +74,7 @@
     return prev[b.length];
   }
 
-  /** Podobieństwo 0..1 na bazie Levenshteina. */
+  /** Similarity 0..1 based on Levenshtein. */
   function similarity(a, b) {
     var x = norm(a), y = norm(b);
     if (!x && !y) return 1;
@@ -83,8 +83,8 @@
   }
 
   /**
-   * Sprawdza odpowiedź otwartą wobec listy akceptowanych wariantów.
-   * Zwraca {ok, near, best} — „near" to literówka (podobieństwo ≥ 0.85).
+   * Checks an open answer against a list of accepted variants.
+   * Returns {ok, near, best} — "near" means a typo (similarity >= 0.85).
    */
   function checkOpen(input, accepted, strictAccents) {
     var list = Array.isArray(accepted) ? accepted : [accepted];

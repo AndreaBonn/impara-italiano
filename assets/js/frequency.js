@@ -1,25 +1,26 @@
 /* ============================================================
-   frequency.js — ile prawdziwego włoskiego uczeń już posiada.
+   frequency.js — how much real Italian the student already owns.
 
-   XP i passa mierzą wierność aplikacji: rosną, bo się wraca. Ten moduł
-   mierzy JĘZYK. „Znasz 847 z 2000 najczęstszych form, czyli mniej więcej
-   58% tego, co pada w zdaniu" to zdanie, które da się sprawdzić poza
-   kursem, i dlatego znaczy coś, czego licznik punktów nie znaczy.
+   XP and the streak measure loyalty to the application: they grow because
+   you come back. This module measures the LANGUAGE. "You know 847 of the
+   2000 most frequent forms, that is roughly 58% of what occurs in a
+   sentence" is a statement that can be verified outside the course, and
+   that is why it means something a points counter does not.
 
-   DWIE LICZBY, NIE JEDNA, i to jest sedno:
+   TWO NUMBERS, NOT ONE, and that is the point:
 
-   - POKRYCIE KURSU — ile z tych form kurs w ogóle uczy. To sufit: wyżej
-     uczeń nie wejdzie, choćby przerobił wszystko. Jest własnością KURSU
-     i mierzy nas, nie jego.
-   - POKRYCIE UCZNIA — ile ma w swojej talii. To jego stan.
+   - COURSE COVERAGE — how many of these forms the course teaches at all.
+     That is the ceiling: the student cannot go higher even after doing
+     everything. It is a property of the COURSE and measures us, not them.
+   - STUDENT COVERAGE — how many they have in their deck. That is their state.
 
-   Zlanie ich w jeden procent byłoby wygodne i nieuczciwe: uczeń w 100%
-   „gotowy" nadal nie znałby form, których nikt mu nie pokazał, a różnica
-   między tymi dwiema liczbami jest właśnie tym, co kursowi zostaje do
-   zrobienia.
+   Merging them into one percentage would be convenient and dishonest: a
+   student who is 100% "ready" would still not know the forms nobody showed
+   them, and the difference between those two numbers is exactly what the
+   course has left to do.
 
-   Moduł jest CZYSTY: dostaje dane, zwraca liczby. Bez DOM, bez stanu.
-   Skrypt klasyczny.
+   The module is PURE: it takes data and returns numbers. No DOM, no state.
+   Classic script.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -27,12 +28,13 @@
   var Frequency = {};
 
   /**
-   * Czy ta forma jest „posiadana" według podanego zbioru haseł.
+   * Whether this form is "owned" according to a given set of entries.
    *
-   * Przechodzi przez resolver, więc talia z „bere" zalicza formę „bevo",
-   * a nie tylko dosłowne trafienie. Bez tego kroku licznik pokazywałby
-   * uczniowi braki tam, gdzie słowo umie — i to systematycznie, bo lista
-   * częstości jest listą FORM, a talia jest talią HASEŁ.
+   * It goes through the resolver, so a deck holding "bere" counts the form
+   * "bevo" and not only a literal hit. Without that step the counter would
+   * show the student gaps where they know the word — and systematically so,
+   * because the frequency list is a list of FORMS while the deck is a deck
+   * of ENTRIES.
    */
   function posiadana(forma, zbior) {
     if (Object.prototype.hasOwnProperty.call(zbior, forma)) return true;
@@ -46,11 +48,11 @@
   }
 
   /**
-   * Pokrycie listy częstości przez zbiór haseł.
+   * Coverage of the frequency list by a set of entries.
    *
-   * @param {Array} words  [[forma, ile], …] z data/core/frequenza.js
-   * @param {object} zbior mapa hasło -> cokolwiek (liczy się klucz)
-   * @param {number} tokenow całkowita liczba tokenów korpusu
+   * @param {Array} words  [[form, count], …] from data/core/frequenza.js
+   * @param {object} zbior a map entry -> anything (the key is what counts)
+   * @param {number} tokenow the total number of tokens in the corpus
    * @returns {{znane:number, wszystkie:number, udzialTokenow:number}}
    */
   function pokrycie(words, zbior, tokenow) {
@@ -61,13 +63,13 @@
     return {
       znane: znane,
       wszystkie: (words || []).length,
-      /* Udział w tekście, nie w liście: 200 słów funkcyjnych waży więcej
-         niż 1800 rzeczowników, i uczeń ma to widzieć. */
+      /* The share of the text, not of the list: 200 function words weigh
+         more than 1800 nouns, and the student should see that. */
       udzialTokenow: tokenow ? trafione / tokenow : 0
     };
   }
 
-  /** Zbiór haseł, których uczy kurs: leksykon lekcji plus słowa czytanek. */
+  /** The set of entries the course teaches: the lesson lexicon plus the words of the readings. */
   function slownikKursu() {
     var L = global.Lemma;
     var reg = (global.Core && global.Core.registry) || {};
@@ -75,7 +77,7 @@
     return {};
   }
 
-  /** Zbiór haseł, które uczeń ma w talii. Klucz fiszki to sam włoski. */
+  /** The set of entries the student has in their deck. A card key is the Italian alone. */
   function slownikUcznia() {
     var out = {};
     var srs = (global.Core && global.Core.state && global.Core.state.srs) || {};
@@ -84,37 +86,37 @@
   }
 
   /**
-   * Najczęstsze formy, których uczeń NIE ma, a kurs ich uczy.
+   * The most frequent forms the student does NOT have but the course teaches.
    *
-   * Warunek „kurs ich uczy" jest istotny: podsuwanie słowa, do którego nie
-   * ma glosy ani nagrania, przenosi na ucznia pracę, której nie umie
-   * wykonać. Braki spoza kursu są widoczne w różnicy dwóch liczb, nie na
-   * liście do klikania.
+   * The "the course teaches it" condition matters: offering a word with no
+   * gloss and no recording shifts onto the student work they cannot do.
+   * Gaps outside the course are visible in the difference between the two
+   * numbers, not in a list to click.
    */
   /**
-   * Hasło kursu, do którego sprowadza się ta forma. Puste = kurs go nie zna.
+   * The course entry this form reduces to. Empty = the course does not know it.
    *
-   * Wynik jest tym, co trafi na fiszkę, więc widok ma pokazywać TO, a nie
-   * formę z listy. Pierwsza wersja pokazywała formę i dodawała hasło:
-   * uczeń widział „ha", słyszał „ha" (bez nagrania, bo nagrany jest
-   * bezokolicznik) i dostawał kartę „avere".
+   * The result is what ends up on the card, so the view must show THAT and
+   * not the form from the list. The first version showed the form and added
+   * the entry: the student saw "ha", heard "ha" (with no recording, because
+   * what is recorded is the infinitive) and got an "avere" card.
    */
   function hasloKursu(forma, kurs) {
     var L = global.Lemma;
     if (!L) return Object.prototype.hasOwnProperty.call(kurs, forma) ? forma : "";
 
-    /* Najpierw bezokolicznik, jeśli to forma czasownika. Ta kolejność jest
-       całą poprawką: „ha" i „ho" SĄ w słowniku kursu jako osobne wyrazy,
-       bo zwroty wielowyrazowe rozkładamy na słowa — więc sprawdzenie
-       dosłowne wygrywało i lista braków pokazywała cztery razy „avere"
-       pod czterema różnymi formami. */
+    /* The infinitive first, if this is a verb form. That order is the whole
+       fix: "ha" and "ho" ARE in the course dictionary as separate words,
+       because we break multi-word expressions into words — so the literal
+       check won and the list of gaps showed "avere" four times under four
+       different forms. */
     var inf = L.lemat(forma);
     if (inf && Object.prototype.hasOwnProperty.call(kurs, inf)) return inf;
 
     if (Object.prototype.hasOwnProperty.call(kurs, forma)) return forma;
 
-    /* Reguły liczby mnogiej są heurystyką, więc idą na końcu: „casa" nie
-       ma się zwinąć do „caso" tylko dlatego, że kurs zna oba. */
+    /* The plural rules are a heuristic, so they come last: "casa" must not
+       collapse into "caso" just because the course knows both. */
     var k = L.kandydaci(forma);
     for (var i = 0; i < k.length; i++) {
       if (Object.prototype.hasOwnProperty.call(kurs, k[i])) return k[i];
@@ -123,14 +125,14 @@
   }
 
   /**
-   * Najczęstsze HASŁA, których uczeń nie ma, a kurs ich uczy.
+   * The most frequent ENTRIES the student does not have but the course teaches.
    *
-   * Zwijane po haśle, nie po formie. Lista częstości ma osobno „ho", „ha",
-   * „hai", „hanno" — bez zwinięcia pierwsza piątka braków to cztery razy
-   * to samo słowo, co wygląda jak usterka i marnuje jedyne miejsce, w
-   * którym podsuwamy uczniowi coś do zrobienia.
+   * Collapsed by entry, not by form. The frequency list holds "ho", "ha",
+   * "hai", "hanno" separately — without collapsing, the first five gaps are
+   * the same word four times, which looks like a bug and wastes the one
+   * place where we offer the student something to do.
    *
-   * Ranga to najlepsza (najniższa) z rang jego form, częstość — suma.
+   * The rank is the best (lowest) rank of its forms, the frequency their sum.
    */
   function brakujace(words, kurs, uczen, limit) {
     var wg = {};

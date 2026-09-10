@@ -3,20 +3,20 @@
 # requires-python = ">=3.10"
 # dependencies = ["edge-tts>=7.0"]
 # ///
-"""Generuje pliki MP3 dla wszystkich włoskich napisów kursu.
+"""Generates the MP3 files for every Italian string in the course.
 
-Wejście : scripts/audio-strings.json  (produkuje go scripts/extract_strings.mjs)
-Wyjście : audio/<xx>/<hash>.mp3  oraz  data/audio-index.js
+Input : scripts/audio-strings.json  (produced by scripts/extract_strings.mjs)
+Output: audio/<xx>/<hash>.mp3  and  data/audio-index.js
 
-Nazwa pliku to 64-bitowy skrót FNV-1a treści napisu, ten sam po stronie
-przeglądarki (assets/js/audio.js). Dzięki temu ponowne uruchomienie po
-dopisaniu lekcji tworzy wyłącznie nowe pliki: istniejące nie zmieniają
-nazwy ani zawartości, więc historia gita nie puchnie.
+The file name is a 64-bit FNV-1a hash of the string's content, the same one
+used on the browser side (assets/js/audio.js). Thanks to that, a rerun after
+adding a lesson creates only new files: the existing ones change neither name
+nor content, so the git history does not swell.
 
-Uruchomienie:
+Usage:
     node scripts/extract_strings.mjs && uv run --script scripts/build_audio.py
-    uv run --script scripts/build_audio.py --dry-run     # tylko podsumowanie
-    uv run --script scripts/build_audio.py --force       # nadpisz istniejące
+    uv run --script scripts/build_audio.py --dry-run     # a summary only
+    uv run --script scripts/build_audio.py --force       # overwrite existing ones
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ MASK64 = 0xFFFFFFFFFFFFFFFF
 
 
 def audio_hash(text: str) -> str:
-    """FNV-1a 64-bit po bajtach UTF-8. Odpowiednik funkcji hashText() w audio.js."""
+    """FNV-1a 64-bit over UTF-8 bytes. The counterpart of hashText() in audio.js."""
     h = FNV_OFFSET
     for byte in text.encode("utf-8"):
         h = ((h ^ byte) * FNV_PRIME) & MASK64
@@ -63,7 +63,7 @@ def target_path(digest: str) -> Path:
 
 
 async def synth(text: str, voice: str, dest: Path) -> None:
-    """Syntezuje i przekodowuje do MP3 mono o niskim bitrate."""
+    """Synthesises and transcodes to a low-bitrate mono MP3."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
         raw = Path(tmp.name)
@@ -76,7 +76,7 @@ async def synth(text: str, voice: str, dest: Path) -> None:
                     last = None
                     break
                 last = RuntimeError("pusty plik")
-            except Exception as exc:  # noqa: BLE001 - retry na błędach sieci
+            except Exception as exc:  # noqa: BLE001 - retry on network errors
                 last = exc
             await asyncio.sleep(1.5 * (attempt + 1))
         if last is not None:
@@ -92,7 +92,7 @@ async def synth(text: str, voice: str, dest: Path) -> None:
 
 
 def write_index(digests: list[str]) -> None:
-    """Zapisuje zbiór skrótów jako jeden ciąg — mniejszy niż tablica stringów."""
+    """Writes the set of hashes as a single string — smaller than an array of strings."""
     blob = "".join(sorted(digests))
     INDEX_FILE.write_text(
         "/* audio-index.js — wygenerowane przez scripts/build_audio.py.\n"
@@ -119,7 +119,7 @@ async def main() -> int:
         return 1
 
     data = json.loads(STRINGS_FILE.read_text(encoding="utf-8"))
-    jobs: list[tuple[str, str, str]] = []  # (tekst, głos, skrót)
+    jobs: list[tuple[str, str, str]] = []  # (text, voice, hash)
     seen: set[str] = set()
     for text in data["primary"]:
         d = audio_hash(text)

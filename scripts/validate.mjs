@@ -1,8 +1,8 @@
 /* ============================================================
-   validate.mjs — kontrola spójności danych kursu
-   Uruchomienie:  node scripts/validate.mjs
-   Sprawdza: duplikaty id, brakujące pola, poprawność ćwiczeń,
-   zgodność odpowiedzi mcq z liczbą opcji, statystyki.
+   validate.mjs — a consistency check on the course data
+   Usage:  node scripts/validate.mjs
+   It checks: duplicate ids, missing fields, exercise correctness, whether
+   the mcq answer agrees with the number of options, and the statistics.
    ============================================================ */
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -14,9 +14,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const EX_TYPES = new Set([
   "mcq", "multi", "fill", "cloze", "trans", "order", "match",
   "conj", "gender", "listen", "speak", "dialogue", "truefalse",
-  /* minpair powstaje z data/core/phonetics.js w czasie działania, nie
-     stoi w żadnej lekcji — ale silnik go zna, a ta lista jest spisem
-     tego, co silnik zna, nie tego, co akurat występuje w danych. */
+  /* minpair is produced from data/core/phonetics.js at runtime and stands
+     in no lesson — but the engine knows it, and this list is an inventory of
+     what the engine knows, not of what happens to occur in the data. */
   "minpair"
 ]);
 
@@ -53,7 +53,7 @@ function run(path) {
   }
 }
 
-/* Język wyjaśnień do sprawdzenia:  node scripts/validate.mjs [pl|en] */
+/* The language of explanations to check:  node scripts/validate.mjs [pl|en] */
 const LANG = process.argv[2] || "pl";
 
 run("assets/js/i18n.js");
@@ -63,8 +63,9 @@ const dataFiles = readdirSync(join(ROOT, "data", "core"))
   .sort();
 const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js", "writing.js"];
 ALL.forEach(f => run(join("data", "core", f)));
-/* Migawka warstwy neutralnej ZANIM nakładka wpisze teksty ucznia: po
-   applyStrings te same obiekty niosą już tłumaczenia i skan nic nie znaczy. */
+/* A snapshot of the neutral layer BEFORE the overlay writes the student's
+   texts in: after applyStrings those same objects already carry
+   translations and the scan means nothing. */
 const neutralneDane = JSON.parse(JSON.stringify({
   levels: levels,
   conversations: sandbox.CONVERSATIONS || [],
@@ -77,11 +78,11 @@ const neutralneDane = JSON.parse(JSON.stringify({
 ALL.forEach(f => run(join("data", "i18n", LANG, f)));
 sandbox.LINGUAI.applyStrings(LANG);
 
-/* ---------------- Walidacja ---------------- */
+/* ---------------- Validation ---------------- */
 const ids = new Map();
 let nUnits = 0, nLessons = 0, nEx = 0, nVocab = 0;
 const exByType = {};
-/* {where, tag} zbierane przy lekcjach i ćwiczeniach, weryfikowane po GRAMMAR_REF */
+/* {where, tag} collected at lessons and exercises, verified against GRAMMAR_REF */
 const usedTags = [];
 
 function checkExercise(ex, where) {
@@ -142,8 +143,8 @@ function checkLesson(l, lv, unit) {
   if (!l.titleIt) errors.push(`${l.id}: brak titleIt`);
   if (!l.title) errors.push(`${l.id}: brak title`);
 
-  /* Tagi zagadnień: zbierane tutaj, sprawdzane niżej, bo lista poprawnych
-     id powstaje dopiero przy czytaniu GRAMMAR_REF. */
+  /* Topic tags: collected here, checked below, because the list of valid ids
+     only comes into being when GRAMMAR_REF is read. */
   if (!Array.isArray(l.tags) || !l.tags.length) {
     errors.push(`${l.id}: brak tags — quaderno błędów nie ma czym oznaczyć karty`);
   } else {
@@ -172,7 +173,7 @@ levels.forEach(lv => {
   });
 });
 
-/* konwersacje */
+/* conversations */
 const convIds = new Set();
 (sandbox.CONVERSATIONS || []).forEach(c => {
   if (convIds.has(c.id)) errors.push(`Duplikat id rozmowy: ${c.id}`);
@@ -192,21 +193,22 @@ const convIds = new Set();
 });
 
 /* ════════════════════════════════════════════════════════════════
-   Rozmowy rozgałęzione: trzy rzeczy, których nie widać z danych.
+   Branching conversations: three things the data does not show.
 
-   Cel, którego nie ma, nie wywala silnika — `indeksTury` zwraca wtedy
-   koniec dialogu, więc rozmowa po prostu URYWA SIĘ w środku i wygląda
-   na skończoną. Tura, do której nic nie prowadzi, jest napisana, jest
-   przetłumaczona, jest nagrana i nikt jej nigdy nie zobaczy. A pętla
-   bez wyjścia zapętla ucznia bez żadnego komunikatu.
+   A target that does not exist does not crash the engine — `indeksTury`
+   then returns the end of the dialogue, so the conversation simply BREAKS
+   OFF in the middle and looks finished. A turn nothing leads to is written,
+   translated, recorded, and nobody will ever see it. And a loop with no way
+   out loops the student with no message at all.
 
-   Osiągalność liczymy PO grafie, nie po numerach: przy skokach kolejność
-   w tablicy nie mówi już, co po czym idzie.
+   Reachability is computed OVER the graph, not by numbers: once there are
+   jumps, the order in the array no longer says what follows what.
    ════════════════════════════════════════════════════════════════ */
-/** Krawędzie grafu: dla każdej tury lista numerów tur, do których prowadzi.
-    Liczone RAZ, bo to jedyne miejsce, które zgłasza skok w pustkę — przy
-    liczeniu w locie ten sam błąd wypadłby tyle razy, ile razy iteruje
-    punkt stały niżej. Numer >= długości tablicy znaczy „koniec dialogu". */
+/** The graph edges: for every turn, the list of turn numbers it leads to.
+    Computed ONCE, because this is the only place that reports a jump into
+    the void — computed on the fly, the same error would come out as many
+    times as the fixed point below iterates. A number >= the array length
+    means "the end of the dialogue". */
 function krawedzieGrafu(c) {
   const tury = c.turns || [];
   const poId = new Map();
@@ -239,9 +241,9 @@ function sprawdzGraf(c) {
     if (!osiagalne.has(i)) errors.push(`Rozmowa ${c.id} tura ${i}: nieosiągalna z początku dialogu`);
   });
 
-  /* Wyjście istnieje, jeśli z tury da się dojść za koniec tablicy. Liczymy
-     wstecz do punktu stałego, a nie rekurencją: graf z rozwidleniami ma
-     cykle i rekurencja wpadłaby w pierwszy z nich. */
+  /* An exit exists if from a turn you can reach past the end of the array.
+     We compute backwards to a fixed point rather than recursively: a graph
+     with branches has cycles and recursion would fall into the first one. */
   const wychodzi = new Set();
   for (let rosnie = true; rosnie;) {
     rosnie = false;
@@ -256,7 +258,7 @@ function sprawdzGraf(c) {
   });
 }
 
-/* gramatyka */
+/* grammar */
 const gramIds = new Set();
 (sandbox.GRAMMAR_REF || []).forEach(sec => {
   (sec.items || []).forEach(it => {
@@ -266,7 +268,7 @@ const gramIds = new Set();
   });
 });
 
-/* ---------------- Czytanki ---------------- */
+/* ---------------- The readings ---------------- */
 const readIds = new Set();
 (sandbox.READINGS || []).forEach(r => {
   if (readIds.has(r.id)) errors.push(`Duplikat id czytanki: ${r.id}`);
@@ -276,8 +278,8 @@ const readIds = new Set();
   }
   if (!r.titleIt) errors.push(`Czytanka ${r.id}: brak titleIt`);
   if (!r.title) errors.push(`Czytanka ${r.id}: brak tytułu w nakładce`);
-  /* Glosy łączą się PO INDEKSIE, więc różna długość to cicha dziura:
-     ostatnie słowo dostałoby tłumaczenie poprzedniego albo żadne. */
+  /* The glosses join BY INDEX, so a different length is a silent hole: the
+     last word would get the previous one's translation, or none. */
   if (r.glossIt && (!r.gloss || r.gloss.length !== r.glossIt.length)) {
     errors.push(`Czytanka ${r.id}: ${(r.glossIt || []).length} słów, ${(r.gloss || []).length} glos`);
   }
@@ -288,7 +290,7 @@ const readIds = new Set();
   if (r.tag) usedTags.push({ where: `czytanka ${r.id}`, tag: r.tag });
 });
 
-/* Zadania pisemne */
+/* The writing tasks */
 const writeIds = new Set();
 (sandbox.WRITING || []).forEach(w => {
   if (writeIds.has(w.id)) errors.push(`Duplikat id zadania pisemnego: ${w.id}`);
@@ -313,7 +315,7 @@ const writeIds = new Set();
   if (w.tag) usedTags.push({ where: `zadanie ${w.id}`, tag: w.tag });
 });
 
-/* Pary minimalne */
+/* The minimal pairs */
 (sandbox.PHONETICS || []).forEach(z => {
   if (!Array.isArray(z.pairs) || !z.pairs.length) errors.push(`Zbiór ${z.id}: brak par`);
   (z.pairs || []).forEach((para, i) => {
@@ -323,19 +325,21 @@ const writeIds = new Set();
   if (z.tag) usedTags.push({ where: `zbiór ${z.id}`, tag: z.tag });
 });
 
-/* ---------------- Warstwa neutralna: żadnego języka ucznia ----------------
-   Sprawdzane na DANYCH, nie na tekście pliku. Grep po pliku myli się w obie
-   strony: komentarz po polsku wygląda jak wyciek, a hiszpańskie „ñ" w danych
-   przechodzi, jeśli akurat nikt go nie szukał. Czytamy więc same wartości
-   z warstwy neutralnej, ZANIM nałoży się nakładka.
+/* ---------------- The neutral layer: no student language ----------------
+   Checked against the DATA, not against the text of the file. A grep over
+   the file errs both ways: a Polish comment looks like a leak, and a Spanish
+   "ñ" in the data passes if nobody happened to look for it. So we read the
+   values of the neutral layer alone, BEFORE the overlay is applied.
 
-   Zbiór liter: te, których włoski nie używa nigdy. Włoskie à è é ì í ò ó ù ú
-   są dozwolone i nie mogą tu wejść, bo „perché" jest poprawnym włoskim.
+   The set of letters: the ones Italian never uses. The Italian à è é ì í ò ó
+   ù ú are allowed and must not enter here, because "perché" is correct
+   Italian.
 
-   GRANICA TEGO GATE, żeby nikt nie brał go za więcej, niż jest: łapie
-   wyłącznie litery spoza włoskiego alfabetu. Angielskie „house" ani
-   polskie „dziadek" przez niego nie przejdą — bo nie mają czego. Na to
-   nie ma automatu i zostaje czytanie danych oczami. */
+   THE LIMIT OF THIS GATE, so that nobody takes it for more than it is: it
+   catches only letters outside the Italian alphabet. Neither the English
+   "house" nor the Polish "dziadek" will be caught — there is nothing in
+   them to catch. There is no automaton for that and what remains is reading
+   the data with your eyes. */
 const OBCE_LITERY = /[ąęłżźćńśñçäöüßğşıåæøđčšžřůõ]/i;
 
 function skanujNeutralne(wezel, gdzie, wynik, glebokosc) {
@@ -362,9 +366,9 @@ if (wyciekiJezyka.length > 10) {
   errors.push(`…i jeszcze ${wyciekiJezyka.length - 10} takich miejsc`);
 }
 
-/* Tagi zagadnień muszą wskazywać na istniejące hasło. Wymyślony tag nie
-   jest błędem składni: karta błędu dostałaby etykietę, której nie da się
-   przetłumaczyć ani kliknąć, i widać by to było dopiero w interfejsie. */
+/* Topic tags have to point at an existing entry. An invented tag is not a
+   syntax error: a mistake card would get a label that cannot be translated
+   or clicked, and it would only show in the interface. */
 const tagsNieznane = new Map();
 usedTags.forEach(u => {
   if (gramIds.has(u.tag)) return;
@@ -375,7 +379,7 @@ tagsNieznane.forEach((gdzie, tag) => {
   errors.push(`Nieznany tag „${tag}” (${gdzie.length}×, np. ${gdzie[0]}) — brak takiego hasła w GRAMMAR_REF`);
 });
 
-/* ---------------- Raport ---------------- */
+/* ---------------- The report ---------------- */
 console.log("\n=== STATYSTYKI ===");
 levels.forEach(lv => {
   const lessons = lv.units.reduce((n, u) => n + (u.lessons || []).length + (u.test ? 1 : 0), 0);

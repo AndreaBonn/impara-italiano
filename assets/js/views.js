@@ -1,14 +1,15 @@
 /* ============================================================
-   views.js — skorupa ekranów: montaż w #main i wspólne kawałki HTML.
+   views.js — the screen shell: mounting into #main and the shared HTML pieces.
 
-   Był to plik z ośmioma ekranami naraz. Każdy z nich mieszka teraz w
-   swoim views-*.js, tak jak od dawna mieszkały rozmowy, trening i sesja
-   dnia. Tutaj zostało to, co wszystkie dzielą — i `runCards`, przebieg
-   talii fiszek, którego używają dwa ekrany (powtórki i sesja dnia).
+   This used to be a file with eight screens at once. Each of them now
+   lives in its own views-*.js, the way conversations, training and the
+   daily session have for a long time. What is left here is what they all
+   share — plus `runCards`, the flashcard deck run used by two screens
+   (reviews and the daily session).
 
-   `Views.shell` powstaje na KOŃCU tego pliku, więc wszystkie moduły
-   ekranów muszą ładować się po nim. Kolejność między nimi jest obojętna:
-   każdy dokłada własną trasę do `Views` i nie czyta pozostałych.
+   `Views.shell` is created at the END of this file, so all the screen
+   modules must load after it. The order among them does not matter: each
+   adds its own route to `Views` and reads none of the others.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -31,13 +32,13 @@
   }
 
   /**
-   * Odnośnik „jak to działa" do konkretnej sekcji przewodnika.
+   * A "how does this work" link to a specific section of the guide.
    *
-   * Wstawia go ekran, podpina go `set` — tak samo jak głośniki. Ekran,
-   * który musiałby pamiętać o podpięciu zdarzenia, prędzej czy później
-   * zapomni, a wynik będzie wyglądał jak działający przycisk, który nic
-   * nie robi. To jest zresztą powód, dla którego przewodnik jest trasą,
-   * a nie oknem: do okna nie da się odesłać z ekranu, którego dotyczy.
+   * The screen inserts it, `set` wires it up — just like the speakers. A
+   * screen that had to remember to attach the event would sooner or later
+   * forget, and the result would look like a working button that does
+   * nothing. That is, incidentally, why the guide is a route and not a
+   * dialog: you cannot link into a dialog from the screen it is about.
    */
   function guideLink(sekcja) {
     return '<p class="guide-link"><button class="btn btn--quiet js-guide-link" data-sekcja="' +
@@ -66,14 +67,15 @@
   }
 
   /**
-   * Przebieg talii fiszek w podanym kontenerze.
+   * The flashcard deck run inside a given container.
    *
-   * Wydzielone z zakładki Powtórek, bo sesja dnia (views-today.js)
-   * potrzebuje tego samego przebiegu. Bez tego sesja kończyłaby się
-   * odesłaniem gdzie indziej, czyli tym, czemu ma zapobiegać.
+   * Split out of the Reviews tab, because the daily session
+   * (views-today.js) needs the same run. Without it the session would end
+   * by sending the student somewhere else, which is the very thing it is
+   * there to prevent.
    *
-   * onFinish(dobre, wszystkie) decyduje, co pokazać na końcu: zakładka
-   * pokazuje podsumowanie talii, sesja dnia idzie do następnej części.
+   * onFinish(right, total) decides what to show at the end: the tab shows
+   * a deck summary, the daily session moves on to the next part.
    */
   function runCards(box, due, onFinish) {
     var i = 0, right = 0;
@@ -124,10 +126,10 @@
   }
 
   /**
-   * Skorupa widoku, wystawiona dla modułów, które dokładają własne trasy
-   * (views-train.js). Bez tego taki moduł musiałby powtórzyć u siebie
-   * set/pageHead/el — trzy kopie tego samego, rozjeżdżające się przy
-   * pierwszej zmianie nagłówka.
+   * The view shell, exposed for the modules that add routes of their own
+   * (views-train.js). Without it such a module would have to repeat
+   * set/pageHead/el locally — three copies of the same thing, drifting
+   * apart at the first change to the header.
    */
   Views.shell = { set: set, head: pageHead, root: el, empty: empty, pct: pct,
                   runCards: runCards, guideLink: guideLink };

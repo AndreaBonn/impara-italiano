@@ -3,22 +3,24 @@
 # requires-python = ">=3.10"
 # dependencies = ["edge-tts>=7.0"]
 # ///
-"""Czy pary minimalne naprawdę brzmią różnie?
+"""Do the minimal pairs really sound different?
 
-Ćwiczenie „posłuchaj i wybierz" ma sens wyłącznie wtedy, gdy dwa nagrania
-się różnią. Głos honoruje akcenty nierówno: „pèsca" i „pésca" dostają
-różne pliki, ale „vènti" i „vénti" dają nagranie bajt w bajt takie samo.
-Para, której nikt nie odróżni ze słuchu, uczy tylko zgadywania — i nie
-widać tego ani w kodzie, ani w testach, ani na ekranie.
+The "listen and choose" exercise only makes sense when the two recordings
+differ. The voice honours accents unevenly: "pesca" with a grave and with an
+acute accent get different files, but "venti" with each of them yields a
+byte-for-byte identical recording. A pair nobody can tell apart by ear
+teaches only guessing — and it shows neither in the code, nor in the tests,
+nor on screen.
 
-Ten skrypt syntetyzuje obie strony każdej pary z data/core/phonetics.js
-i porównuje bajty. Wymaga sieci (edge-tts).
+This script synthesises both sides of every pair from
+data/core/phonetics.js and compares the bytes. It needs a network
+(edge-tts).
 
-Uruchomienie:
+Usage:
     uv run --script scripts/check_minpairs.py
     uv run --script scripts/check_minpairs.py --set ph-doppie
 
-Kod wyjścia 1 przy choćby jednej parze nie do odróżnienia.
+Exit code 1 if even one pair is indistinguishable.
 """
 
 from __future__ import annotations
@@ -39,11 +41,11 @@ VOICE = "it-IT-IsabellaNeural"
 
 
 def czytaj_zbiory() -> list[dict]:
-    """Wyciąga window.PHONETICS z pliku JS bez uruchamiania go."""
+    """Extracts window.PHONETICS from the JS file without running it."""
     src = PHONETICS.read_text(encoding="utf-8")
     start = src.index("[", src.index("window.PHONETICS"))
-    # zdejmujemy komentarze blokowe i zamieniamy klucze na cytowane: to nie
-    # jest pełny parser JS, tylko tyle, ile trzeba dla tego jednego pliku
+    # we strip the block comments and quote the keys: this is not a full JS
+    # parser, only as much as this one file needs
     body = src[start : src.rindex("]") + 1]
     body = re.sub(r"/\*.*?\*/", "", body, flags=re.S)
     body = re.sub(r"(\w+):", r'"\1":', body)

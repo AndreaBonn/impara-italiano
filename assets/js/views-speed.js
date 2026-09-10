@@ -1,24 +1,25 @@
 /* ============================================================
-   views-speed.js — zrozumieć, kiedy nikt nie zwalnia.
+   views-speed.js — understanding when nobody slows down.
 
-   CO TU JEST, A CZEGO NIE MA, i dlaczego. Ta faza miała uczyć mowy
-   łączonej: raddoppiamento, elizji, asymilacji. Bramka `check_connected.py`
-   nie rozstrzygnęła, czy lektor te zjawiska w ogóle realizuje — cztery
-   wersje miary, żadna nie oddzieliła „zrealizowane" od „inna treść".
-   Napisanie ćwiczeń o podwojeniu, którego może w nagraniu nie być, dałoby
-   zadania bez poprawnej odpowiedzi; kurs ma już taki precedens i wtedy
-   zbiór po prostu nie powstał.
+   WHAT IS HERE AND WHAT IS NOT, and why. This phase was meant to teach
+   connected speech: raddoppiamento, elision, assimilation. The
+   `check_connected.py` gate did not settle whether the narrator realises
+   those phenomena at all — four versions of the measure, none of which
+   separated "realised" from "different content". Writing exercises about a
+   doubling that may not be in the recording would produce tasks with no
+   correct answer; the course already has such a precedent and back then the
+   set simply was not created.
 
-   Zostaje więc to, co da się zweryfikować bez pomiaru akustycznego:
-   TEMPO. Nie jest to namiastka. „Rozumiem, kiedy czytają wolno" to
-   dokładnie ten poziom, na którym staje większość uczących się, i różnica
-   między 0,75 a 1,25 jest słyszalna dla każdego, bez żadnej analizy widma.
+   What is left is what can be verified without acoustic measurement: TEMPO.
+   It is not a substitute. "I understand when they read slowly" is exactly
+   the level most learners get stuck at, and the difference between 0.75 and
+   1.25 is audible to anyone, with no spectral analysis at all.
 
-   Zdanie leci NAJPIERW w tempie naturalnym, a spowolnienie jest osobnym
-   przyciskiem. Odwrotna kolejność — wolno, potem normalnie — uczy słuchać
-   wolnego włoskiego, którego nikt poza kursem nie mówi.
+   A sentence plays at natural speed FIRST, and slowing down is a separate
+   button. The other order — slow, then normal — teaches listening to a slow
+   Italian that nobody outside the course speaks.
 
-   Skrypt klasyczny. Wymaga core.js, audio.js, views.js.
+   Classic script. Requires core.js, audio.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -29,9 +30,9 @@
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
 
-  /* Trzy tempa. 1 jest pierwsze i domyślne; 0,75 to nie „dla początkujących",
-     tylko koło ratunkowe, a 1,25 jest tam, bo prawdziwa rozmowa bywa szybsza
-     niż lektor i to też trzeba kiedyś usłyszeć. */
+  /* Three speeds. 1 is first and the default; 0.75 is not "for beginners"
+     but a lifebuoy, and 1.25 is there because real conversation is
+     sometimes faster than the narrator and that has to be heard too. */
   var TEMPA = [
     { r: 1, key: "sp.normal" },
     { r: 0.75, key: "sp.slow" },
@@ -96,8 +97,8 @@
       var p = el().querySelector(".js-it");
       p.textContent = lista[i].it;
       p.hidden = false;
-      /* Informacja zwrotna bez oceny: mówimy, CO się stało, nie czy dobrze.
-         Ucho i tak wie; liczba by tu tylko kłamała. */
+      /* Feedback without a grade: we say WHAT happened, not whether it was
+         good. The ear knows anyway; a number here would only lie. */
       stan(t(potrzebowalWolniej ? "sp.usedSlow" : "sp.fullSpeed"));
     });
 

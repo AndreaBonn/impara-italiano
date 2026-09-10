@@ -1,18 +1,19 @@
 /* ============================================================
-   views-welcome.js — ekran pierwszego uruchomienia.
+   views-welcome.js — the first-run screen.
 
-   Kurs ma piętnaście pozycji w pasku i żadna nie mówi „zacznij tutaj".
-   Uczeń, który otwiera go pierwszy raz, ma przed sobą trzy różne
-   decyzje naraz: od którego poziomu, w jakiej kolejności, czym się
-   różni Trening od Powtórek. Ten ekran zdejmuje pierwszą z nich
-   i zostawia resztę na później.
+   The course has fifteen entries in the rail and none of them says "start
+   here". A student opening it for the first time faces three different
+   decisions at once: from which level, in what order, and how Training
+   differs from Reviews. This screen takes the first one away and leaves the
+   rest for later.
 
-   Pokazuje się WYŁĄCZNIE przy pustym profilu (app.js, startRouting)
-   i znika po pierwszym wyborze — nie jest zakładką i nie ma pozycji
-   w pasku. Uczeń, który zamknie kartę bez wyboru, zobaczy go znowu:
-   znacznik stawia dopiero decyzja, nie samo wyświetlenie.
+   It appears ONLY with an empty profile (app.js, startRouting) and
+   disappears after the first choice — it is not a tab and has no entry in
+   the rail. A student who closes the tab without choosing will see it
+   again: the marker is set by the decision, not by the screen being shown.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function () {
   "use strict";
@@ -23,7 +24,7 @@
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
 
-  /** Jedna z trzech dróg: nagłówek, zdanie wyjaśniające i przycisk. */
+  /** One of the three roads: a heading, an explaining sentence and a button. */
   function droga(klucz, klasaPrzycisku, etykieta) {
     return '<div class="list-row list-row--stack"><span class="list-row__main">' +
       "<b>" + esc(t("welcome." + klucz + "Title")) + "</b>" +
@@ -38,18 +39,18 @@
       droga("test", "btn--ghost", t("place.start")) +
       droga("look", "btn--quiet", t("welcome.lookGo")) +
       "</div>" +
-      /* Przewodnik jest linkiem pod wyborem, nie czwartą drogą: kto tu
-         trafia, ma odpowiedzieć na jedno pytanie, a nie zacząć czytać. */
+      /* The guide is a link under the choice, not a fourth road: whoever
+         lands here is meant to answer one question, not start reading. */
       '<p style="margin-top:20px"><button class="btn btn--quiet js-guide">' +
       esc(t("welcome.guide")) + "</button></p>");
 
-    /* Wybór jest tym, co kończy powitanie — nie wyświetlenie ekranu.
-       Odwrotnie: kto zamknął kartę w trakcie czytania, wróciłby do
-       kursu bez tej jednej odpowiedzi, której ekran miał mu udzielić. */
+    /* The choice is what ends the welcome — not the screen being shown.
+       Otherwise: whoever closed the tab while reading would come back to the
+       course without the one answer this screen was meant to give them. */
     el().querySelector(".js-zero").addEventListener("click", function () { odZera(); });
     el().querySelector(".js-test").addEventListener("click", function () { wybrano("piazzamento"); });
     el().querySelector(".js-look").addEventListener("click", function () { wybrano("percorso"); });
-    /* Przewodnik nie kończy powitania: uczeń ma wrócić i wybrać. */
+    /* The guide does not end the welcome: the student is meant to come back and choose. */
     el().querySelector(".js-guide").addEventListener("click", function () { App.go("guida"); });
   };
 
@@ -60,16 +61,17 @@
   }
 
   /**
-   * „Zaczynam od zera" prowadzi do PIERWSZEJ LEKCJI, nie do spisu poziomów.
+   * "Starting from scratch" leads to the FIRST LESSON, not to the level list.
    *
-   * Dwa powody. Podpis przycisku obiecuje lekcję („pierwsza lekcja A1, od
-   * przywitania"), a spis poziomów jest o jeden wybór dalej — czyli znowu
-   * wyborem, którego ten ekran miał ucznia pozbawić. Drugi: na ścieżce
-   * czeka pasek „nie wiesz, od którego poziomu zacząć", czyli dokładnie to
-   * pytanie, na które przed chwilą odpowiedział.
+   * Two reasons. The button's caption promises a lesson ("the first A1
+   * lesson, from saying hello"), and the level list is one choice further —
+   * that is, another choice this screen was meant to spare the student. The
+   * second: the path has a "not sure which level to start from" bar
+   * waiting, which is exactly the question they have just answered.
    *
-   * Gdy poziom nie zdążył się wczytać, zostaje ścieżka nauki: pusty ekran
-   * lekcji byłby gorszy niż spis, z którego widać, że kurs w ogóle jest.
+   * When the level has not finished loading, the learning path is what
+   * remains: an empty lesson screen would be worse than a list that at
+   * least shows the course exists.
    */
   function odZera() {
     var poziom = Core.registry.levels[0];

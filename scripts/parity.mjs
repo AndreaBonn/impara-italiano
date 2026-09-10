@@ -1,17 +1,17 @@
 /* ============================================================
-   parity.mjs — czy każdy język mówi to samo, co polski?
+   parity.mjs — does every language say the same as Polish?
 
-   Nakładki łączą się z warstwą neutralną PO INDEKSIE, więc krótsza
-   tablica nie jest błędem składni: jest cichą dziurą, którą widać
-   dopiero w przeglądarce, na jednej lekcji, w jednym ćwiczeniu.
-   Ten skrypt porównuje KSZTAŁT (klucze i długości tablic, nie treść)
-   każdej nakładki z polską i wypisuje różnice.
+   The overlays join the neutral layer BY INDEX, so a shorter array is not a
+   syntax error: it is a silent hole visible only in the browser, in one
+   lesson, in one exercise. This script compares the SHAPE (keys and array
+   lengths, not content) of every overlay with the Polish one and prints the
+   differences.
 
-   Polski jest odniesieniem, bo jest kompletny i sprawdzony.
+   Polish is the reference, because it is complete and checked.
 
-   Uruchomienie:  node scripts/parity.mjs [kod-języka …]
-   Bez argumentów sprawdza wszystkie katalogi w data/i18n/.
-   Kończy się kodem 1 przy jakiejkolwiek różnicy — nadaje się do CI.
+   Usage:  node scripts/parity.mjs [language-code …]
+   With no arguments it checks every directory in data/i18n/.
+   It exits with code 1 on any difference — suitable for CI.
    ============================================================ */
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -21,13 +21,13 @@ import vm from "node:vm";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const I18N = join(ROOT, "data", "i18n");
 const REFERENCE = "pl";
-/* Ile różnic wypisać. Liczy się zawsze wszystkie; to jest tylko próg
-   czytelności listy. PARITY_MAX=0 wypisuje wszystko. */
+/* How many differences to print. All of them are always counted; this is
+   only a readability threshold for the list. PARITY_MAX=0 prints everything. */
 const MAX_SHOWN = process.env.PARITY_MAX === undefined
   ? 40
   : (Number(process.env.PARITY_MAX) || Infinity);
 
-/** Mapa kod → locale czytana z silnika, żeby nie mieć drugiej kopii. */
+/** The code -> locale map read from the engine, so as not to keep a second copy. */
 function engineLocales() {
   const sandbox = { window: {}, console, Intl, document: { documentElement: { setAttribute() {} }, querySelectorAll: () => [] } };
   sandbox.window = sandbox;
@@ -36,7 +36,7 @@ function engineLocales() {
   return sandbox.I18n.LOCALE;
 }
 
-/* ---------------- Wczytanie nakładek jednego języka ---------------- */
+/* ---------------- Loading one language's overlays ---------------- */
 
 function loadLang(lang) {
   const bag = {};
@@ -51,7 +51,7 @@ function loadLang(lang) {
   return bag;
 }
 
-/* ---------------- Napisy interfejsu: data/i18n/ui-<lang>.js ---------------- */
+/* ---------------- Interface strings: data/i18n/ui-<lang>.js ---------------- */
 
 function loadUI(lang) {
   const path = join(I18N, `ui-${lang}.js`);
@@ -65,10 +65,10 @@ function loadUI(lang) {
 }
 
 /**
- * Kategorie liczby mnogiej wymagane przez CLDR dla danego locale.
- * Angielski ma dwie, polski cztery, hiszpański i francuski trzy.
- * Nakładka skopiowana z angielskiej przechodzi milczkiem: brakującą
- * kategorię `plural()` podmienia na `other`, więc wychodzi „1 dni".
+ * The plural categories CLDR requires for a given locale.
+ * English has two, Polish four, Spanish and French three.
+ * An overlay copied from the English one passes silently: `plural()`
+ * substitutes `other` for a missing category, so out comes "1 dni".
  */
 function pluralCategories(locale) {
   return new Intl.PluralRules(locale).resolvedOptions().pluralCategories;
@@ -94,17 +94,18 @@ function checkUI(lang, locale, ref, out) {
   });
 }
 
-/* ---------------- Kształt: klucze i długości, bez treści ---------------- */
+/* ---------------- The shape: keys and lengths, no content ---------------- */
 
 /**
- * Pola kopiowane w całości, nie łączone po indeksie.
- * `applyStrings` podmienia `theory` jednym przypisaniem (`copy` w i18n.js),
- * więc krótsza albo inaczej zbudowana tablica nie tworzy cichej dziury:
- * lekcja po prostu pokazuje bloki z nakładki. A ponieważ CLAUDE.md wymaga,
- * żeby blok `{contrast}` pisać od nowa dla każdego języka, liczba i rodzaj
- * bloków MUSZĄ się różnić — Niemcowi trzeba powiedzieć co innego niż Polakowi
- * i w innym miejscu. Porównywanie ich kształtu zgłaszałoby jako błąd to,
- * czego kurs wymaga. Sprawdzana zostaje obecność samego klucza.
+ * The fields copied wholesale rather than joined by index.
+ * `applyStrings` replaces `theory` with a single assignment (`copy` in
+ * i18n.js), so a shorter or differently built array creates no silent hole:
+ * the lesson simply shows the blocks from the overlay. And since CLAUDE.md
+ * requires the `{contrast}` block to be written from scratch for every
+ * language, the number and kind of blocks MUST differ — a German has to be
+ * told something different from a Pole, and in a different place. Comparing
+ * their shape would report as an error the very thing the course requires.
+ * What stays checked is the presence of the key itself.
  */
 const FREE_FIELDS = ["theory"];
 
@@ -126,12 +127,12 @@ function shape(v) {
 }
 
 /**
- * Zbiera różnice kształtu, ze ścieżką do miejsca.
- * Zbiera WSZYSTKIE: przycięcie należy do wypisywania (na końcu pliku),
- * nie do zbierania. Wcześniej ta funkcja przerywała pracę po czterdziestu
- * problemach, więc dopóki brakowało czterdziestu wpisów, różnice kształtu
- * w istniejących wpisach nie były w ogóle sprawdzane — a licznik pokazywał
- * równo tyle, ile brakujących wpisów, i wyglądał na czysty.
+ * Collects the shape differences, with a path to the place.
+ * It collects ALL of them: truncation belongs to the printing (at the end of
+ * the file), not to the collecting. This function used to stop after forty
+ * problems, so as long as forty entries were missing, shape differences in
+ * the existing entries were not checked at all — and the counter showed
+ * exactly as many as there were missing entries and looked clean.
  */
 function diff(a, b, path, out) {
   const ta = a && typeof a === "object" && "n" in a && "items" in a;
@@ -154,7 +155,7 @@ function diff(a, b, path, out) {
   return out;
 }
 
-/* ---------------- Przebieg ---------------- */
+/* ---------------- The run ---------------- */
 
 const wanted = process.argv.slice(2);
 const langs = (wanted.length ? wanted : readdirSync(I18N).filter(f => statSync(join(I18N, f)).isDirectory()))
@@ -165,14 +166,15 @@ if (!existsSync(join(I18N, REFERENCE))) {
   process.exit(1);
 }
 
-/* ---------------- Kategoria asymetryczna: fałszywi przyjaciele ----------
-   Wpisy „int:" NIE mają być takie same we wszystkich językach: pułapka
-   istnieje albo nie, zależnie od tego, co uczeń ma w głowie. Porównujemy
-   je więc z DEKLARACJĄ `for` w warstwie neutralnej, a nie z polskim.
+/* ---------------- An asymmetric category: false friends ----------------
+   The "int:" entries are NOT meant to be the same in every language: the
+   trap either exists or it does not, depending on what the student has in
+   their head. So we compare them against the `for` DECLARATION in the
+   neutral layer, and not against Polish.
 
-   Wyłączenie bramki na tej kategorii (jak FREE_FIELDS dla „theory") byłoby
-   prostsze i gorsze: krótsza lista wygląda dokładnie jak lista, więc
-   brakujące wyjaśnienie nie zgłosiłoby się nigdy.
+   Disabling the gate on this category (like FREE_FIELDS for "theory") would
+   be simpler and worse: a shorter list looks exactly like a list, so a
+   missing explanation would never report itself.
    -------------------------------------------------------------------- */
 function interferenceFor() {
   const box = { window: {}, console };
@@ -186,7 +188,7 @@ function interferenceFor() {
 
 const INT = interferenceFor();
 
-/** Czy ten wpis MA istnieć w nakładce tego języka. */
+/** Whether this entry IS meant to exist in that language's overlay. */
 function oczekiwany(klucz, lang) {
   const f = INT.get(klucz);
   return f ? f.has(lang) : true;
@@ -202,7 +204,7 @@ for (const lang of langs) {
   const bag = loadLang(lang);
   const problems = [];
 
-  /* Klucze „int:" idą osobną ścieżką: obecność rozstrzyga `for`, nie polski. */
+  /* The "int:" keys take a separate path: presence is decided by `for`, not by Polish. */
   const zwykle = refKeys.filter(k => !INT.has(k));
 
   zwykle.filter(k => !(k in bag)).forEach(k => problems.push(`${k}: brak całego wpisu`));

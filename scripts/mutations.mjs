@@ -1,50 +1,52 @@
 /* ============================================================
-   mutations.mjs — czy testy jednostkowe widzą czerwone
-   Uruchomienie:  node scripts/mutations.mjs [--tylko <fragment opisu>]
+   mutations.mjs — whether the unit tests can see red
+   Usage:  node scripts/mutations.mjs [--tylko <part of a description>]
 
-   Każda pozycja w tabeli niżej psuje JEDNĄ decyzję w silniku i nazywa
-   plik testów, który ma się wtedy wywrócić. Mutacja, po której suita
-   zostaje zielona, znaczy, że tej decyzji nie pilnuje nikt.
+   Every row of the table below breaks ONE decision in the engine and names
+   the test file that must then fall over. A mutation after which the suite
+   stays green means nobody is guarding that decision.
 
-   DLACZEGO TO NIE JEST TO SAMO CO POKRYCIE. `coverage.mjs` mówi, że linia
-   się WYKONAŁA. Wykonanie nie jest sprawdzeniem: asercja
-   `assert.ok(!out.includes("js-play"))` wykonuje cały generator i przechodzi
-   także wtedy, gdy generator nie produkuje NICZEGO. Trzy takie asercje
-   napisałem w dniu, w którym powstała ta tabela, i wszystkie trzy miały
-   100% pokrycia. Wyszły dopiero tutaj:
+   WHY THIS IS NOT THE SAME AS COVERAGE. `coverage.mjs` says a line was
+   EXECUTED. Execution is not verification: the assertion
+   `assert.ok(!out.includes("js-play"))` runs the whole generator and passes
+   even when the generator produces NOTHING. I wrote three such assertions
+   on the day this table was created, and all three had 100% coverage. They
+   only came out here:
 
-   - pusty blok audio wchodzący do sekcji czytania (liczyłem przyciski,
-     a nie blok, który je opakowuje);
-   - `cils-h` jako podciąg łapiący też `cils-hint`;
-   - `cils.limit` jako podciąg łapiący `cils.limitLabel`, więc całe
-     ostrzeżenie o granicy symulatora mogło zniknąć na zielono.
+   - an empty audio block entering the reading section (I counted the
+     buttons, not the block wrapping them);
+   - `cils-h` as a substring also matching `cils-hint`;
+   - `cils.limit` as a substring matching `cils.limitLabel`, so the whole
+     warning about the simulator's limit could disappear on green.
 
-   ZASIĘG JEST WĄSKI I MA BYĆ ZADEKLAROWANY. Tabela pokrywa cztery pliki
-   (`cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`) z sześćdziesięciu
-   z górą w `assets/js/`. Wynik „34/34" nie znaczy „silnik jest sprawdzony",
-   znaczy „te 34 decyzje są sprawdzone". Dopisanie pliku z czystymi funkcjami
-   to dobry moment na dopisanie tu wiersza; obowiązku pokrycia całego silnika
-   nie ma.
+   THE SCOPE IS NARROW AND MEANT TO BE DECLARED. The table covers four files
+   (`cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`) out of the
+   sixty-odd in `assets/js/`. A result of "34/34" does not mean "the engine
+   is verified", it means "those 34 decisions are verified". Adding a file of
+   pure functions is a good moment to add a row here; there is no obligation
+   to cover the whole engine.
 
-   Wyjątkiem od „czystych funkcji" jest `pwa.js`, który czystą funkcją nie
-   jest: siedzi w nim PODPIĘCIE reguł do stanów service workera, a każda
-   pomyłka w tym podpięciu wygląda na ekranie jak brak aktualizacji, czyli
-   jak nic. Cztery mutacje niżej to cztery sposoby, na które ta funkcja
-   przestaje działać bez jednego czerwonego testu.
+   The exception to "pure functions" is `pwa.js`, which is not a pure
+   function: it holds the WIRING of the rules to the service worker states,
+   and any mistake in that wiring looks on screen like an absent update,
+   that is like nothing. The four mutations below are four ways this feature
+   stops working without a single red test.
 
-   NIE DOTYKA PLIKÓW W DRZEWIE ROBOCZYM. Zmutowana wersja leży w katalogu
-   tymczasowym, a `tests/unit/_harness.mjs` czyta ją przez `LINGUAI_PODMIANA`.
-   Pierwsza wersja mutowała plik w miejscu i przywracała go w `finally`, z
-   uchwytem na SIGINT — uchwyt był bezużyteczny, bo cała bramka jest
-   synchroniczna i pętla zdarzeń nie dochodzi do głosu przed jej końcem:
-   sygnał czekał w kolejce do samego końca przebiegu. Gorzej, samo
-   zarejestrowanie uchwytu wyłączyło domyślne ubicie procesu, więc Ctrl+C
-   przestawał zatrzymywać skrypt. Teraz nie ma czego przywracać.
+   IT DOES NOT TOUCH FILES IN THE WORKING TREE. The mutated version lives in
+   a temporary directory, and `tests/unit/_harness.mjs` reads it through
+   `LINGUAI_PODMIANA`. The first version mutated the file in place and
+   restored it in `finally`, with a SIGINT handler — the handler was useless,
+   because the whole gate is synchronous and the event loop does not get a
+   word in before it ends: the signal waited in the queue until the very end
+   of the run. Worse, merely registering the handler disabled the default
+   process kill, so Ctrl+C stopped stopping the script. Now there is nothing
+   to restore.
 
-   Trzy sposoby, na które ta bramka kończy się błędem (sprawdzone):
-   mutacja bez czerwonego, fragment nieobecny w pliku (tabela zgniła po
-   refaktorze) i fragment występujący wielokrotnie (podmiana trafiłaby w
-   pierwsze wystąpienie i mierzyłaby co innego, niż mówi opis).
+   Three ways this gate ends in an error (all verified): a mutation with no
+   red, a fragment absent from the file (the table rotted after a refactor)
+   and a fragment occurring several times (the substitution would hit the
+   first occurrence and would measure something other than its description
+   says).
    ============================================================ */
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -64,104 +66,105 @@ const T_REG = "tests/unit/pwa-rules.test.mjs";
 const T_PWA = "tests/unit/pwa.test.mjs";
 
 /**
- * Mutacje. `z` musi występować w pliku DOKŁADNIE RAZ — przy dwóch
- * wystąpieniach podmiana trafiłaby w pierwsze z nich i nikt by nie
- * zauważył, że mutacja mierzy co innego, niż mówi jej opis.
+ * The mutations. `z` must occur in the file EXACTLY ONCE — with two
+ * occurrences the substitution would hit the first of them and nobody would
+ * notice that the mutation measures something other than its description
+ * says.
  */
 const MUTACJE = [
-  /* ---- cils-html.js: siatka odpowiedzi ---- */
-  { plik: HTML, test: T_HTML, opis: "radio: jedna grupa na całą próbę",
+  /* ---- cils-html.js: the answer grid ---- */
+  { plik: HTML, test: T_HTML, opis: "radio: one group for the whole task",
     z: 'var nome = "p" + n + "i" + i;', na: 'var nome = "p" + n;' },
-  { plik: HTML, test: T_HTML, opis: "cloze: luka po każdym kawałku tekstu",
+  { plik: HTML, test: T_HTML, opis: "cloze: a gap after every piece of text",
     z: "var buco = i < (p.items || []).length", na: "var buco = i < (p.testo || []).length" },
-  { plik: HTML, test: T_HTML, opis: "odsłuch: blok audio także w czytaniu",
+  { plik: HTML, test: T_HTML, opis: "listening: the audio block in the reading section too",
     z: 'if (sez.id === "ascolto") testa += ascolti(p, n);', na: "testa += ascolti(p, n);" },
-  { plik: HTML, test: T_HTML, opis: "scritta: wszystkie tracce wybrane naraz",
+  { plik: HTML, test: T_HTML, opis: "scritta: every prompt selected at once",
     z: '(i === 0 ? " checked" : "") + "> " + esc(tr.it)', na: '" checked> " + esc(tr.it)' },
-  { plik: HTML, test: T_HTML, opis: "orale: przycisk nagrywania bez mikrofonu",
+  { plik: HTML, test: T_HTML, opis: "orale: a record button with no microphone",
     z: "(powod ? '<p class=\"cils-hint\">' + esc(t(powod)) + \"</p>\" :",
     na: "(false ? '<p class=\"cils-hint\">' + esc(t(powod)) + \"</p>\" :" },
-  { plik: HTML, test: T_HTML, opis: "orale: żaden temat nie jest wybrany z góry",
+  { plik: HTML, test: T_HTML, opis: "orale: no topic selected up front",
     z: '(i === 0 ? " checked" : "") + "> " + esc(a)', na: '"> " + esc(a)' },
 
-  /* ---- cils-html.js: lista i podsumowanie ---- */
-  { plik: HTML, test: T_HTML, opis: "lista: ostrzeżenie o granicy usunięte",
+  /* ---- cils-html.js: the list and the summary ---- */
+  { plik: HTML, test: T_HTML, opis: "list: the warning about the limit removed",
     z: 'esc(t("cils.limit")) + "</div>" +', na: '"</div>" +' },
-  { plik: HTML, test: T_HTML, opis: "lista: tylko pierwsza symulacja",
+  { plik: HTML, test: T_HTML, opis: "list: only the first simulation",
     z: "(symulacje || []).map(function (s) {", na: "(symulacje || []).slice(0, 1).map(function (s) {" },
-  { plik: HTML, test: T_HTML, opis: "lista: przycisk startu bez id symulacji",
+  { plik: HTML, test: T_HTML, opis: "list: the start button without the simulation id",
     z: 'data-id="', na: 'data-sim="' },
-  { plik: HTML, test: T_HTML, opis: "abilità: brak oznaczenia wyczerpanego czasu",
+  { plik: HTML, test: T_HTML, opis: "abilità: no marker for time that ran out",
     z: 'var scad = czyScadla(a) ? " " + t("cils.expiredMark") : "";', na: 'var scad = "";' },
-  { plik: HTML, test: T_HTML, opis: "abilità: zawsze ptaszek, nigdy krzyżyk",
+  { plik: HTML, test: T_HTML, opis: "abilità: always a tick, never a cross",
     z: 'd.punti + " / " + d.max + " " + (d.sopraSoglia ? "✓" : "✗")',
     na: 'd.punti + " / " + d.max + " ✓"' },
-  { plik: HTML, test: T_HTML, opis: "abilità: niemierzona pokazana jako wynik",
+  { plik: HTML, test: T_HTML, opis: "abilità: an unmeasured skill shown as a result",
     z: "var val = d.misurata", na: "var val = true" },
-  { plik: HTML, test: T_HTML, opis: "podsumowanie: werdykt zawsze nierozstrzygnięty",
+  { plik: HTML, test: T_HTML, opis: "summary: the verdict always undetermined",
     z: 'esc(t(esito.verdetto === "sotto-soglia" ? "cils.verdictBelow" : "cils.verdictUnknown"))',
     na: 'esc(t("cils.verdictUnknown"))' },
-  { plik: HTML, test: T_HTML, opis: "podsumowanie: bez źródła progu",
+  { plik: HTML, test: T_HTML, opis: "summary: without the source of the threshold",
     z: 'esc(t("cils.thresholdSource")) + "</p></div>" +\n      scritta',
     na: '"</p></div>" +\n      scritta' },
-  { plik: HTML, test: T_HTML, opis: "podsumowanie: karty produkcji nigdy nie wchodzą",
+  { plik: HTML, test: T_HTML, opis: "summary: the production cards never appear",
     z: "scritta(pisemna) + orale(ustna) +", na: '"" +' },
-  { plik: HTML, test: T_HTML, opis: "podsumowanie: bez powrotu do listy",
+  { plik: HTML, test: T_HTML, opis: "summary: without the way back to the list",
     z: 'class="btn btn--ghost js-list"', na: 'class="btn btn--ghost js-brak"' },
-  { plik: HTML, test: T_HTML, opis: "pisemna: karta dla nietkniętej sekcji",
+  { plik: HTML, test: T_HTML, opis: "written: a card for an untouched section",
     z: 'if (!pisemna) return "";', na: 'if (false) return "";' },
-  { plik: HTML, test: T_HTML, opis: "pisemna: etykieta wymagania zamieniona na klucz",
+  { plik: HTML, test: T_HTML, opis: "written: the requirement label replaced by the key",
     z: "esc(wym.etichetta || r.key)", na: "esc(r.key)" },
 
-  /* ---- lemma-morf.js: reguły formy ---- */
-  { plik: MORF, test: T_MORF, opis: "slowa: posiłkownik ginie też samotny",
+  /* ---- lemma-morf.js: the form rules ---- */
+  { plik: MORF, test: T_MORF, opis: "slowa: a lone auxiliary is dropped too",
     z: "if (cz.length < 2) return cz;", na: "if (false) return cz;" },
-  { plik: MORF, test: T_MORF, opis: "enklityki: próg długości za krótki",
+  { plik: MORF, test: T_MORF, opis: "enclitics: the length threshold too short",
     z: "if (w.length <= z.length + 2) return;", na: "if (w.length <= z.length) return;" },
-  { plik: MORF, test: T_MORF, opis: "enklityki: bezokolicznik bez odbudowy -e",
+  { plik: MORF, test: T_MORF, opis: "enclitics: the infinitive without rebuilding the -e",
     z: 'if (/[aei]r$/.test(rdzen)) out.push(rdzen + "e");', na: "if (false) out.push(rdzen);" },
-  { plik: MORF, test: T_MORF, opis: "reguła: amiche schodzi w nieistniejące słowo",
+  { plik: MORF, test: T_MORF, opis: "rule: amiche reduces to a non-existent word",
     z: '[/che$/, "ca"],      // amiche -> amica', na: '[/che$/, "cx"],      // amiche -> amica' },
-  { plik: MORF, test: T_MORF, opis: "stopień najwyższy: bez odbudowy twardego k",
+  { plik: MORF, test: T_MORF, opis: "superlative: without rebuilding the hard k",
     z: '[/chissim[oaie]$/, "co"],', na: '[/chissim[oaie]$/, "o"],' },
-  { plik: MORF, test: T_MORF, opis: "bezokolicznik: formy zwrotne odrzucone",
+  { plik: MORF, test: T_MORF, opis: "infinitive: reflexive forms rejected",
     z: "return /^[a-zàèéìòù]+(are|ere|ire|arsi|ersi|irsi)$/",
     na: "return /^[a-zàèéìòù]+(are|ere|ire)$/" },
-  { plik: MORF, test: T_MORF, opis: "funkcyjne: bez obniżenia wielkości liter",
+  { plik: MORF, test: T_MORF, opis: "function words: without lowering the case",
     z: "return !!funkcyjneSet[String(w).toLowerCase()];", na: "return !!funkcyjneSet[String(w)];" },
-  { plik: MORF, test: T_MORF, opis: "funkcyjne: liczebniki poza zbiorem",
+  { plik: MORF, test: T_MORF, opis: "function words: the numerals left out of the set",
     z: "FUNKCYJNE.concat(LICZEBNIKI).forEach", na: "FUNKCYJNE.forEach" },
-  { plik: MORF, test: T_MORF, opis: "akcent: toniczny nie jest zdejmowany",
+  { plik: MORF, test: T_MORF, opis: "accent: the tonic accent is not removed",
     z: "return w.replace(/[àáèéìíòóùú]/g, function (c) { return AKCENTY[c] || c; });",
     na: "return w;" },
 
-  /* ---- pwa-rules.js: reguły ogłaszania nowej wersji ---- */
-  { plik: REG, test: T_REG, opis: "zapowiedź: pierwsza wizyta jako aktualizacja",
+  /* ---- pwa-rules.js: the rules for announcing a new version ---- */
+  { plik: REG, test: T_REG, opis: "announcement: the first visit treated as an update",
     z: "return !!stan.czeka && !!stan.kontrolowana;", na: "return !!stan.czeka;" },
-  { plik: REG, test: T_REG, opis: "próg: cofnięty zegar zamyka pytania do skutku",
+  { plik: REG, test: T_REG, opis: "threshold: a clock moved back stops the questions for good",
     z: "if (teraz < ostatnie) return true;", na: "if (false) return true;" },
-  { plik: REG, test: T_REG, opis: "przeładowanie: bez strażnika pętli",
+  { plik: REG, test: T_REG, opis: "reload: without the loop guard",
     z: "return !!stan.kontrolowana && !stan.juzPrzeladowana;", na: "return !!stan.kontrolowana;" },
 
-  /* ---- pwa.js: podpięcie reguł do stanów przeglądarki ---- */
+  /* ---- pwa.js: wiring the rules to the browser states ---- */
 
-  /* Usterka pierwsza z brzegu i najtrudniejsza do zobaczenia: w chwili
-     `updatefound` worker jest w „installing", a `waiting` jest puste. */
-  { plik: PWA, test: T_PWA, opis: "zapowiedź czytana w updatefound, nie po instalacji",
+  /* The most obvious defect and the hardest to see: at the moment of
+     `updatefound` the worker is in "installing" and `waiting` is empty. */
+  { plik: PWA, test: T_PWA, opis: "announcement read at updatefound, not after installation",
     z: 'reg.addEventListener("updatefound", function () { sledz(reg.installing); });',
     na: 'reg.addEventListener("updatefound", function () { zapowiedz(reg.waiting); });' },
-  { plik: PWA, test: T_PWA, opis: "aktualizuj przeładowuje od razu, zamiast prosić workera",
+  { plik: PWA, test: T_PWA, opis: "update reloads at once instead of asking the worker",
     z: "czeka.postMessage({ typ: \"przejmij\" });", na: "global.location.reload();" },
-  { plik: PWA, test: T_PWA, opis: "aktualizuj prosi workera z chwili zapowiedzi, nie bieżącego",
+  { plik: PWA, test: T_PWA, opis: "update asks the worker from announcement time, not the current one",
     z: "var czeka = (rejestracja && rejestracja.waiting) || worker;", na: "var czeka = worker;" },
-  { plik: PWA, test: T_PWA, opis: "rejestracja tylko na „load”, bez sprawdzenia readyState",
+  { plik: PWA, test: T_PWA, opis: "registration on \"load\" only, without checking readyState",
     z: 'if (global.document.readyState === "complete") register();', na: "if (false) register();" },
-  { plik: PWA, test: T_PWA, opis: "pytanie do serwera bez progu",
+  { plik: PWA, test: T_PWA, opis: "the question to the server without a threshold",
     z: "if (!global.PwaRules.sprawdzac(ostatnieSprawdzenie, teraz)) return false;",
     na: "if (false) return false;" }
 ];
 
-/* ---------------- Uruchamianie ---------------- */
+/* ---------------- Running ---------------- */
 
 const argv = process.argv.slice(2);
 const tylkoIdx = argv.indexOf("--tylko");
@@ -172,15 +175,15 @@ for (const m of MUTACJE) {
   if (!zrodla.has(m.plik)) zrodla.set(m.plik, readFileSync(join(ROOT, m.plik), "utf8"));
 }
 
-/** Ile razy napis występuje w pliku. */
+/** How many times a string occurs in the file. */
 function ile(hay, igla) {
   return hay.split(igla).length - 1;
 }
 
 /**
- * Jeden przebieg pliku testów, z opcjonalną podmianą pliku silnika.
- * @param {string} test  ścieżka pliku testów
- * @param {object} [podmiana] mapa „ścieżka w repo" -> „ścieżka zmutowanej kopii"
+ * One run of a test file, with an optional substitution of an engine file.
+ * @param {string} test  the path of the test file
+ * @param {object} [podmiana] a map "path in the repo" -> "path of the mutated copy"
  */
 function suita(test, podmiana) {
   const env = { ...process.env };
@@ -196,8 +199,9 @@ const wyniki = [];
 let bledy = 0;
 
 try {
-  /* Zielona baseline jest warunkiem sensu: z czerwonej suity nie da się
-     odczytać, czy to mutacja ją wywróciła, czy była już rozbita. */
+  /* A green baseline is a condition of meaning: from a red suite there is no
+     way to tell whether the mutation knocked it over or it was already
+     broken. */
   for (const test of [...new Set(MUTACJE.map(m => m.test))]) {
     const { pass, fail } = suita(test);
     if (fail !== 0 || !pass) {
@@ -231,7 +235,7 @@ try {
   rmSync(katalog, { recursive: true, force: true });
 }
 
-/* ---------------- Raport ---------------- */
+/* ---------------- The report ---------------- */
 
 for (const w of wyniki) {
   console.log(`${w.stan === "CZERWONE" ? "✔" : "✖"} ${w.stan.padEnd(16)} ` +

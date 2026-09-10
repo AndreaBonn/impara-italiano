@@ -1,37 +1,41 @@
 /* ============================================================
-   lemma-morf.js — reguły włoskiej formy. Same napisy, zero słownika.
+   lemma-morf.js — the rules of Italian word form. Strings only, no dictionary.
 
-   Tu mieszka to, co da się rozstrzygnąć PATRZĄC NA WYRAZ: rozcięcie formy
-   złożonej, liczba mnoga, rodzaj, stopień najwyższy, akcent toniczny,
-   doklejone zaimki i zamknięta lista wyrazów funkcyjnych. Nic z tego nie
-   pyta o kurs i nic z tego nie wie, czego uczeń się uczył.
+   What lives here is whatever can be settled BY LOOKING AT THE WORD:
+   splitting a compound form, the plural, gender, the superlative, the
+   tonic accent, attached pronouns and a closed list of function words.
+   None of it asks about the course and none of it knows what the student
+   has studied.
 
-   Rozstrzyganie — indeks odwrotny z koniugatora, słownik kursu, aliasy
-   i kanoniczne hasła — siedzi w lemma.js i ten plik o nim nie wie.
+   The verdict — the reverse index from the conjugator, the course
+   dictionary, aliases and canonical entries — sits in lemma.js, and this
+   file knows nothing about it.
 
-   DLACZEGO GRANICA IDZIE TUTAJ. To jest podział na KANDYDATÓW i WERDYKT,
-   czyli na to, co generuje hipotezy, i na to, co je odsiewa. Reguła liczby
-   mnogiej („amiche" -> „amica") jest czystą funkcją napisu i sprawdza się
-   jednym assertem; werdykt wymaga zbudowanego słownika całego kursu. Dopóki
-   jedno stało obok drugiego, test reguły płacił cenę werdyktu.
+   WHY THE BORDER RUNS HERE. This is the split between CANDIDATES and
+   VERDICT, that is between what generates hypotheses and what filters
+   them. The plural rule ("amiche" -> "amica") is a pure function of a
+   string and is checked with a single assert; the verdict requires the
+   dictionary of the whole course to be built. As long as one stood next
+   to the other, testing the rule paid the price of the verdict.
 
-   Skrypt klasyczny, bez zależności. Musi stać PRZED lemma.js.
+   Classic script, no dependencies. Must come BEFORE lemma.js.
    ============================================================ */
 (function (global) {
   "use strict";
 
   /**
-   * Formy wielowyrazowe („sono andato", „era entrato") rozcinamy, ale
-   * POSIŁKOWNIK ZOSTAJE POZA INDEKSEM.
+   * Multi-word forms ("sono andato", "era entrato") are split, but THE
+   * AUXILIARY STAYS OUT OF THE INDEX.
    *
-   * Wcześniej wchodziły oba słowa, więc „era" trafiało do indeksu przy
-   * każdym czasowniku z „essere" (trapassato: era entrato, era rimasto...),
-   * a „hanno" przy każdym z „avere". Dotknięcie „era" w tekście pokazywało
-   * pierwszy z kilkunastu bezładnie zebranych czasowników, a nie „essere".
-   * Zmierzone: „era" rozstrzygało się na 12 haseł, „hanno" na 65.
+   * Both words used to go in, so "era" landed in the index for every verb
+   * taking "essere" (trapassato: era entrato, era rimasto...), and "hanno"
+   * for every verb taking "avere". Tapping "era" in a text showed the first
+   * of a dozen randomly collected verbs rather than "essere".
+   * Measured: "era" resolved to 12 entries, "hanno" to 65.
    *
-   * Same posiłkowniki nie znikają z indeksu: „essere" i „avere" odmieniają
-   * się jak każdy inny czasownik i wnoszą swoje formy proste.
+   * The auxiliaries themselves do not disappear from the index: "essere"
+   * and "avere" conjugate like any other verb and contribute their simple
+   * forms.
    */
   var POSILKOWE = { ho: 1, hai: 1, ha: 1, abbiamo: 1, avete: 1, hanno: 1,
     avevo: 1, avevi: 1, aveva: 1, avevamo: 1, avevate: 1, avevano: 1,
@@ -50,7 +54,7 @@
     return Object.prototype.hasOwnProperty.call(POSILKOWE, String(w).toLowerCase());
   }
 
-  /** Wyrazy formy, bez posiłkownika. Forma jednowyrazowa wraca jak stała. */
+  /** The words of a form, without the auxiliary. A single-word form comes back as it is. */
   function slowa(forma) {
     var cz = String(forma).toLowerCase().split(/\s+/).filter(Boolean);
     if (cz.length < 2) return cz;
@@ -59,21 +63,21 @@
     });
   }
 
-  /** Jednowyrazowe hasło w formie bezokolicznika. Fraza nim nie jest. */
+  /** A single-word entry in infinitive form. A phrase is not one. */
   function czasownikowe(haslo) {
     return /^[a-zàèéìòù]+(are|ere|ire|arsi|ersi|irsi)$/.test(haslo);
   }
 
   /* --------------------------------------------------------
-     Rzeczowniki i przymiotniki: liczba mnoga i rodzaj.
+     Nouns and adjectives: plural and gender.
 
-     Kolejność reguł ma znaczenie: bardziej szczegółowe pierwsze, bo
-     „amiche" ma zejść do „amica", a nie do „amiche" bez „h".
+     The order of the rules matters: the more specific ones first, because
+     "amiche" must come down to "amica" and not to "amiche" without the "h".
      -------------------------------------------------------- */
   var REGULY = [
-    /* Stopień najwyższy. „h" wchodzi po to, żeby zachować twarde „k":
-       antico -> antichissimo, więc w drugą stronę trzeba je zdjąć, inaczej
-       wychodzi „anticho" i słownik nic nie znajduje. */
+    /* The superlative. The "h" is there to preserve the hard "k":
+       antico -> antichissimo, so going back it has to be removed, otherwise
+       we get "anticho" and the dictionary finds nothing. */
     [/chissim[oaie]$/, "co"],
     [/ghissim[oaie]$/, "go"],
     [/issim[oaie]$/, "o"],
@@ -86,19 +90,19 @@
     [/gi$/, "go"],       // asparagi -> asparago
     [/gi$/, "gio"],      // orologi -> orologio
     [/ari$/, "ario"],    // proprietari -> proprietario
-    [/eri$/, "erio"],    // misteri -> misterio (rzadkie, ale tanie)
+    [/eri$/, "erio"],    // misteri -> misterio (rare, but cheap)
     [/che$/, "co"],      // poche -> poco, ricche -> ricco
     [/i$/, "io"],        // negozi -> negozio, vecchi -> vecchio
     [/i$/, "o"],         // libri -> libro
     [/i$/, "e"],         // cani -> cane
     [/i$/, "a"],         // problemi -> problema
     [/e$/, "a"],         // case -> casa
-    [/e$/, "o"],         // rzadkie, ale tanie
+    [/e$/, "o"],         // rare, but cheap
     [/a$/, "o"],         // bella -> bello
-    [/o$/, "a"]          // w drugą stronę, dla haseł zapisanych żeńsko
+    [/o$/, "a"]          // the other way round, for entries written in the feminine
   ];
 
-  /** Formy podstawowe do sprawdzenia dla słowa nie-czasownikowego. */
+  /** The base forms to try for a non-verbal word. */
   function odmienne(slowo) {
     var out = [slowo];
     REGULY.forEach(function (r) {
@@ -110,10 +114,10 @@
     return out;
   }
 
-  /* Rodzajniki, przyimki ściągnięte i cząstki: nie są w słowniku kursu
-     jako hasła, a stanowią jedną piątą każdego tekstu. Trzymamy je tu
-     jako listę zamkniętą, żeby „dotknięcie w nic" nie trafiało w słowa,
-     które i tak objaśnia pierwsza lekcja gramatyki. */
+  /* Articles, contracted prepositions and particles: they are not entries
+     in the course dictionary, yet they make up a fifth of any text. We keep
+     them here as a closed list so that "a tap into nothing" does not land
+     on words the first grammar lesson explains anyway. */
   var FUNKCYJNE = ("il lo la i gli le l un uno una un' " +
     "di a da in con su per tra fra del dello della dei degli delle dell " +
     "al allo alla ai agli alle all dal dallo dalla dai dagli dalle dall " +
@@ -124,21 +128,21 @@
     "anche ancora sempre mai poi allora però pero cosi così tutto tutta tutti tutte " +
     "c'è ce sono sia suo sua suoi sue mio mia miei mie tuo tua tuoi tue " +
     "nostro nostra nostri nostre vostro vostra vostri vostre loro " +
-    /* Formy skrócone przed apostrofem i cząstki, które w tekście stoją
-       samotnie. „c" pochodzi z „c'era", „mal" z „mal di testa": bez nich
-       dotknięcie trafiało w literę, której nie da się objaśnić. */
+    /* Shortened forms before an apostrophe, and particles that stand alone
+       in a text. "c" comes from "c'era", "mal" from "mal di testa": without
+       them a tap landed on a letter that cannot be explained. */
     "c né ne' sé se' no né mal quei lui lei esso essa io tu noi voi me te sé").split(/\s+/);
 
-  /* Liczebniki. Zbiór zamknięty, uczony w A1, a w tekstach o cenach,
-     godzinach i rozkładach jazdy siedzi ich pełno. Bez tego „quattro"
-     i „quaranta" byłyby ciszą w tekście, którego cała treść to liczby. */
+  /* Numerals. A closed set, taught at A1, and texts about prices, times and
+     timetables are full of them. Without this "quattro" and "quaranta"
+     would be silence in a text whose entire content is numbers. */
   var LICZEBNIKI = ("zero uno una due tre quattro cinque sei sette otto nove dieci " +
     "undici dodici tredici quattordici quindici sedici diciassette diciotto diciannove " +
     "venti trenta quaranta cinquanta sessanta settanta ottanta novanta cento mille mila " +
     "primo prima secondo seconda terzo terza quarto quarta quinto quinta " +
     "milione milioni miliardo miliardi " +
-    /* Formy przed apostrofem: „vent'anni", „trent'anni". Rozcinanie
-       zostawia sam człon dziesiątkowy, a to nadal liczebnik. */
+    /* Forms before an apostrophe: "vent'anni", "trent'anni". Splitting
+       leaves the tens element alone, and that is still a numeral. */
     "vent trent quarant cinquant sessant settant ottant novant").split(/\s+/);
 
   var funkcyjneSet = {};
@@ -148,10 +152,11 @@
     return !!funkcyjneSet[String(w).toLowerCase()];
   }
 
-  /* Akcent toniczny zdjęty: „pèsca" ma się znaleźć, gdy uczeń dotknie
-     „pesca". Hasło słownikowe wolno zapisać z akcentem, bo tak się je
-     podaje w słowniku i tak czyta je lektor; forma w tekście akcentu nie
-     ma i mieć nie może. Bez tego aliasu jedno z dwóch by nie działało. */
+  /* The tonic accent removed: "pèsca" must be found when the student taps
+     "pesca". A dictionary entry may be written with the accent, because
+     that is how dictionaries give it and how the narrator reads it; the
+     form in the text has no accent and cannot have one. Without this alias
+     one of the two would not work. */
   var AKCENTY = { "à": "a", "á": "a", "è": "e", "é": "e", "ì": "i", "í": "i",
     "ò": "o", "ó": "o", "ù": "u", "ú": "u" };
 
@@ -159,19 +164,19 @@
     return w.replace(/[àáèéìíòóùú]/g, function (c) { return AKCENTY[c] || c; });
   }
 
-  /* Zaimki doklejane do bezokolicznika, gerundio i trybu rozkazującego:
-     „mandarli", „preoccuparti", „dammelo". Włoski pisze je razem z
-     czasownikiem, więc bez odklejenia to jest jedno nieznane słowo. */
+  /* Pronouns attached to the infinitive, the gerund and the imperative:
+     "mandarli", "preoccuparti", "dammelo". Italian writes them together
+     with the verb, so without detaching them this is one unknown word. */
   var ENKLITYKI = ["glielo", "gliela", "glieli", "gliele", "gliene",
     "melo", "mela", "meli", "mele", "mene", "telo", "tela", "teli", "tele", "tene",
     "celo", "cela", "celi", "cele", "cene", "velo", "vela", "veli", "vele", "vene",
     "mi", "ti", "si", "ci", "vi", "lo", "la", "li", "le", "ne", "gli"];
 
   /**
-   * Odkleja zaimki od końca wyrazu i zwraca możliwe rdzenie.
+   * Detaches pronouns from the end of a word and returns the possible stems.
    *
-   * „mandarli" -> „mandar" -> „mandare": bezokolicznik traci końcowe „e"
-   * przed zaimkiem, więc rdzeń trzeba jeszcze odbudować.
+   * "mandarli" -> "mandar" -> "mandare": the infinitive loses its final "e"
+   * before the pronoun, so the stem still has to be rebuilt.
    */
   function bezEnklityk(w) {
     var out = [];

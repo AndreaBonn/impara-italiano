@@ -1,34 +1,36 @@
 /* ============================================================
-   i18n.js — napisy interfejsu w języku ucznia.
+   i18n.js — interface strings in the student's language.
 
-   I18n.t("nav.path") oddaje napis, I18n.apply(root) przepisuje elementy
-   oznaczone data-i18n w gotowym już HTML-u, I18n.set(lang) przełącza
-   język razem z atrybutem lang i formatowaniem liczb.
+   I18n.t("nav.path") returns a string, I18n.apply(root) rewrites the
+   elements marked with data-i18n in already rendered HTML, I18n.set(lang)
+   switches the language together with the lang attribute and number
+   formatting.
 
-   Plik mówił o sobie „dwie rzeczy" i był dwiema rzeczami: te napisy oraz
-   doklejanie tekstów ucznia do treści kursu. Ta druga połowa mieszka
-   teraz w i18n-merge.js. Wspólnego stanu nie miały — dwa osobne słowniki,
-   dwa osobne zestawy kluczy — więc został tu tylko podział, którego nie
-   trzeba było utrzymywać w głowie.
+   The file described itself as "two things" and was two things: these
+   strings plus attaching the student's texts to the course content. That
+   second half now lives in i18n-merge.js. They shared no state — two
+   separate dictionaries, two separate sets of keys — so all that is left
+   here is the split nobody has to keep in their head.
 
-   Lista języków (LANGS) i mapa locale (LOCALE) zostają tutaj, bo czyta je
-   przełącznik w interfejsie i scripts/parity.mjs.
+   The list of languages (LANGS) and the locale map (LOCALE) stay here,
+   because the interface switcher and scripts/parity.mjs read them.
 
-   Brak zależności zewnętrznych. Skrypt klasyczny (działa z file://).
+   No external dependencies. Classic script (works from file://).
    ============================================================ */
 (function (global) {
   "use strict";
 
   var LINGUAI = global.LINGUAI = global.LINGUAI || {};
 
-  /* Kod języka -> locale BCP-47. „en" znaczy angielski amerykański. */
+  /* Language code -> BCP-47 locale. "en" means American English. */
   var LOCALE = { pl: "pl-PL", en: "en-US", es: "es-ES", fr: "fr-FR", de: "de-DE" };
   var FALLBACK = "en";
 
   /**
-   * Języki wyjaśnień. Nazwa zawsze w tym języku, którego dotyczy (endonim):
-   * przełącznik ma być czytelny dla kogoś, kto nie rozumie języka bieżącego.
-   * Nowy język = jeden wpis tutaj plus katalog data/i18n/<code>/.
+   * Languages of explanation. The name is always in the language it refers
+   * to (the endonym): the switcher has to be readable by someone who does
+   * not understand the current language. A new language = one entry here
+   * plus a data/i18n/<code>/ directory.
    */
   var LANGS = [
     { code: "pl", flag: "🇵🇱", name: "Polski" },
@@ -39,23 +41,23 @@
   ];
 
   /* ═══════════════════════════════════════════════════════════
-     NAPISY INTERFEJSU
+     INTERFACE STRINGS
      ═══════════════════════════════════════════════════════════ */
 
-  var ui = {};          // lang -> klucz -> napis albo formy mnogie
-  var absent = {};      // klucze, których zabrakło — do I18n.missing()
+  var ui = {};          // lang -> key -> string or plural forms
+  var absent = {};      // keys that were missing — for I18n.missing()
   var current = "pl";
 
-  /** Rejestruje słownik interfejsu. Wywoływane przez data/i18n/ui-<lang>.js */
+  /** Registers an interface dictionary. Called by data/i18n/ui-<lang>.js */
   function addUI(lang, dict) {
     var bag = ui[lang] || (ui[lang] = {});
     Object.keys(dict).forEach(function (k) { bag[k] = dict[k]; });
   }
 
   /**
-   * Wybiera formę liczby wg reguł języka, nie wg „n === 1".
-   * Polski ma cztery kategorie (1 dzień, 2 dni, 5 dni), angielski dwie.
-   * Bez tego angielski pisałby „1 lessons", a polski „1 dni".
+   * Picks the number form by the rules of the language, not by "n === 1".
+   * Polish has four categories (1 dzień, 2 dni, 5 dni), English has two.
+   * Without this English would write "1 lessons" and Polish "1 dni".
    */
   function plural(forms, n, lang) {
     var cat = new Intl.PluralRules(LOCALE[lang] || lang).select(n || 0);
@@ -70,8 +72,8 @@
   }
 
   /**
-   * Napis interfejsu. Brak klucza jest widoczny, nie cichy:
-   * wraca sam klucz i ląduje w I18n.missing().
+   * An interface string. A missing key is visible, not silent:
+   * the key itself comes back and lands in I18n.missing().
    */
   function t(key, vars) {
     var lang = current;
@@ -87,16 +89,16 @@
 
   function missing() { return Object.keys(absent).sort(); }
 
-  /* ---------------- Podmiana w gotowym HTML ---------------- */
+  /* ---------------- Substitution in rendered HTML ---------------- */
 
-  /* atrybut w DOM -> atrybut, który ustawia */
+  /* DOM attribute -> the attribute it sets */
   var ATTRS = {
     "data-i18n-label": "aria-label",
     "data-i18n-content": "content",
     "data-i18n-placeholder": "placeholder"
   };
 
-  /** Przepisuje statyczne napisy pod bieżący język. */
+  /** Rewrites the static strings for the current language. */
   function apply(root) {
     var scope = root || document;
     scope.querySelectorAll("[data-i18n]").forEach(function (el) {
@@ -109,7 +111,7 @@
     });
   }
 
-  /** Zmienia język wyjaśnień: napisy, atrybut lang, formatowanie dat. */
+  /** Changes the language of explanations: strings, the lang attribute, date formatting. */
   function setLang(lang) {
     current = lang;
     document.documentElement.setAttribute("lang", LOCALE[lang] || lang);
@@ -125,14 +127,14 @@
     missing: missing,
     locale: locale,
     LANGS: LANGS,
-    // wystawione, żeby scripts/parity.mjs czytał mapę stąd zamiast ją powielać:
-    // dwie kopie rozjechałyby się przy pierwszym nowym języku
+    // exposed so that scripts/parity.mjs reads the map from here instead of
+    // duplicating it: two copies would drift apart at the first new language
     LOCALE: LOCALE,
     get lang() { return current; }
   };
 
-  /* `addUI` zostaje pod LINGUAI, nie pod I18n: data/i18n/ui-<lang>.js woła
-     ją tak od pierwszego dnia, a to są pliki danych, nie kod. */
+  /* `addUI` stays under LINGUAI, not under I18n: data/i18n/ui-<lang>.js has
+     called it that way since day one, and those are data files, not code. */
   LINGUAI.addUI = addUI;
 
   global.I18n = I18n;

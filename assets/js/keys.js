@@ -1,25 +1,26 @@
 /* ============================================================
-   keys.js — pisanie po włosku na cudzej klawiaturze.
+   keys.js — typing Italian on somebody else's keyboard.
 
-   Dwie rzeczy, obie o tarciu, nie o funkcjach:
+   Two things, both about friction rather than features:
 
-   1. Pasek znaków. „à è é ì ò ù" i apostrof nie ma na klawiaturze
-      polskiej ani amerykańskiej. Bez tego uczeń albo kopiuje znaki
-      skądinąd, albo pisze „perche" i dostaje „prawie" — czyli kurs
-      karze go za układ klawiatury, nie za znajomość włoskiego.
+   1. The character bar. "à è é ì ò ù" and the apostrophe are not on a
+      Polish or an American keyboard. Without this the student either
+      copies characters from elsewhere or writes "perche" and gets
+      "almost" — that is, the course punishes them for their keyboard
+      layout rather than for their Italian.
 
-   2. Skróty. Enter przechodzi dalej, cyfra wybiera odpowiedź.
-      Aktywne wyłącznie wtedy, gdy fokus NIE jest w polu tekstowym:
-      inaczej „1" w odpowiedzi zaczęłoby klikać opcje.
+   2. Shortcuts. Enter moves on, a digit picks an answer. Active only when
+      the focus is NOT in a text field: otherwise a "1" typed in an answer
+      would start clicking options.
 
-   Skrypt klasyczny, doczepia się do gotowego DOM. Wymaga core.js.
+   Classic script, attaches to a ready DOM. Requires core.js.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var Keys = {};
 
-  /* Akcenty włoskie plus apostrof: „l'una", „un'amica", „dell'acqua". */
+  /* The Italian accents plus the apostrophe: "l'una", "un'amica", "dell'acqua". */
   var CHARS = ["à", "è", "é", "ì", "ò", "ù", "'"];
 
   var bar = null;
@@ -34,8 +35,9 @@
       return '<button type="button" class="keybar__k" data-ch="' + c + '" tabindex="-1">' + c + "</button>";
     }).join("");
 
-    /* mousedown zamiast click: bez tego pole traci fokus, zanim zdążymy
-       wstawić znak, i kursor wraca na koniec albo znika. */
+    /* mousedown instead of click: without it the field loses focus before
+       we manage to insert the character, and the caret jumps to the end or
+       disappears. */
     el.addEventListener("mousedown", function (e) {
       var b = e.target.closest(".keybar__k");
       if (!b || !forInput) return;
@@ -45,7 +47,7 @@
     return el;
   }
 
-  /** Wstawia znak w miejscu kursora i zostawia kursor za nim. */
+  /** Inserts a character at the caret and leaves the caret after it. */
   function insert(input, ch) {
     var start = input.selectionStart, end = input.selectionEnd;
     if (start === null || start === undefined) {
@@ -58,23 +60,23 @@
     input.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  /** Czy w tym polu w ogóle pisze się po włosku. */
+  /** Whether Italian is typed in this field at all. */
   function wantsBar(el) {
     if (!el || el.tagName !== "INPUT") return false;
     if (el.type && el.type !== "text" && el.type !== "search") return false;
-    /* Pole wyszukiwania w słowniku i w kursie też przyjmuje włoski. */
+    /* The search field in the dictionary and in the course takes Italian too. */
     return !!el.closest(".exq, #srsBox, #main");
   }
 
   /**
-   * Pasek staje NAD polem, nie pod nim.
+   * The bar sits ABOVE the field, not below it.
    *
-   * Pod polem stoi zwykle przycisk „sprawdź", a pasek jest elementem
-   * unoszącym się: przykrywał go i uczeń nie mógł zatwierdzić odpowiedzi,
-   * dopóki nie kliknął gdzieś obok. Nad polem jest prompt i etykieta,
-   * czyli nic klikalnego. Gdy u góry nie ma miejsca (pole tuż pod
-   * krawędzią okna), wracamy pod spód — tam brak miejsca jest gorszy niż
-   * zasłonięty przycisk.
+   * Below the field there is usually the "check" button, and the bar is a
+   * floating element: it covered the button and the student could not
+   * submit their answer until they clicked somewhere else. Above the field
+   * there is the prompt and the label, that is nothing clickable. When
+   * there is no room above (a field right under the window edge) we fall
+   * back below — there, having no room is worse than a covered button.
    */
   var ODSTEP = 6;
 
@@ -97,7 +99,7 @@
     forInput = null;
   }
 
-  /* ---------------- Skróty ---------------- */
+  /* ---------------- Shortcuts ---------------- */
 
   function typing(el) {
     return el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
@@ -106,8 +108,9 @@
   function onKeydown(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-    /* Enter idzie dalej, gdy przycisk „dalej" czeka widoczny. Działa też
-       z pola tekstowego: tam ćwiczenie jest już sprawdzone i zablokowane. */
+    /* Enter moves on when the "next" button is visible and waiting. It
+       works from a text field too: there the exercise is already checked
+       and locked. */
     if (e.key === "Enter") {
       var next = document.querySelector(".js-next:not([hidden])");
       if (next) { e.preventDefault(); next.click(); }
@@ -116,32 +119,32 @@
 
     if (typing(e.target)) return;
 
-    /* Cyfra wybiera odpowiedź. Tylko poza polem tekstowym, inaczej
-       „1" wpisane w odpowiedzi klikałoby opcje. */
+    /* A digit picks an answer. Only outside a text field, otherwise a "1"
+       typed into an answer would click the options. */
     if (/^[1-9]$/.test(e.key)) {
       var opts = document.querySelectorAll(".exq .opts .opt");
       var i = parseInt(e.key, 10) - 1;
       if (opts[i]) {
         e.preventDefault();
-        /* Samo kliknięcie etykiety, bez ustawiania `checked` z ręki.
-           Etykieta i tak przekazuje aktywację swojemu polu, więc ustawienie
-           stanu wcześniej przełączało pole DWA RAZY: przy radiu nie było tego
-           widać, ale checkbox wracał do stanu wyjściowego i zaznaczenie
-           znikało. Wychodziło na jaw tylko wtedy, gdy generator wylosował
-           zadanie z wieloma odpowiedziami — czyli losowo. */
+        /* Just clicking the label, without setting `checked` by hand. The
+           label forwards the activation to its input anyway, so setting the
+           state beforehand toggled the input TWICE: with a radio you could
+           not see it, but a checkbox went back to its initial state and the
+           selection disappeared. It only surfaced when the generator drew a
+           multiple-answer task — that is, at random. */
         opts[i].click();
       }
     }
   }
 
-  /* ---------------- Montaż ---------------- */
+  /* ---------------- Mounting ---------------- */
 
   function install() {
     document.addEventListener("focusin", function (e) {
       if (wantsBar(e.target)) show(e.target); else hide();
     });
     document.addEventListener("focusout", function () {
-      /* Odsunięte, żeby kliknięcie w pasek zdążyło zadziałać. */
+      /* Deferred, so that a click on the bar has time to take effect. */
       global.setTimeout(function () {
         if (!document.activeElement || !wantsBar(document.activeElement)) hide();
       }, 120);

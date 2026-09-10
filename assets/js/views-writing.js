@@ -1,19 +1,20 @@
 /* ============================================================
-   views-writing.js — pisanie po włosku bez sprawdzającego.
+   views-writing.js — writing in Italian with nobody to mark it.
 
-   Bez backendu nikt nie oceni wypracowania, więc kurs mówi wprost,
-   czego NIE ocenia. To, co da się zmierzyć, mierzy writing.js:
-   zadeklarowane konstrukcje albo są w tekście, albo ich nie ma.
-   Reszta — sens, brzmienie, spójność — zostaje uczniowi, z modelem
-   do porównania i krótką listą pytań, na które odpowiada sam.
+   With no backend nobody will grade a composition, so the course says
+   plainly what it does NOT grade. What can be measured is measured by
+   writing.js: the declared constructions are either in the text or they are
+   not. The rest — sense, sound, coherence — is left to the student, with a
+   model to compare against and a short list of questions they answer
+   themselves.
 
-   BEZPIECZEŃSTWO: tekst ucznia trafia do DOM wyłącznie przez
-   textContent. Nigdy przez innerHTML, także w podglądzie i w
-   podsumowaniu. Ten tekst wychodzi z aplikacji przez eksport stanu i
-   może wejść do cudzej przeglądarki przez import — więc jest treścią
-   niezaufaną, choć napisał ją właściciel profilu.
+   SECURITY: the student's text reaches the DOM only through textContent.
+   Never through innerHTML, including in the preview and the summary. That
+   text leaves the application through the state export and may enter
+   somebody else's browser through an import — so it is untrusted content,
+   even though the owner of the profile wrote it.
 
-   Skrypt klasyczny. Wymaga core.js, writing.js, exercises.js, views.js.
+   Classic script. Requires core.js, writing.js, exercises.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -57,12 +58,13 @@
     return kompozycja(w, box);
   }
 
-  /* ---------------- Tłumaczenie zdanie po zdaniu ---------------- */
+  /* ---------------- Sentence-by-sentence translation ---------------- */
 
   /**
-   * Zwykłe ćwiczenia `trans`: zdanie źródłowe z nakładki, przyjmowane
-   * wersje włoskie z warstwy neutralnej. Żadnego nowego typu — dzięki
-   * temu wynik trafia do quaderno błędów tą samą drogą co wszystko inne.
+   * Plain `trans` exercises: the source sentence from the overlay, the
+   * accepted Italian versions from the neutral layer. No new type — which
+   * is why the result reaches the mistake notebook the same way as
+   * everything else.
    */
   function tlumaczenie(w, box) {
     var zbudowane = (w.items || []).map(function (it, i) {
@@ -86,7 +88,7 @@
     Ex.wireSpeakers(box);
   }
 
-  /* ---------------- Kompozycja ---------------- */
+  /* ---------------- The composition ---------------- */
 
   function kompozycja(w, box) {
     var zapis = Writing.load(w.id);
@@ -104,7 +106,7 @@
       '<div id="writeResult" style="margin-top:18px"></div>';
 
     var ta = box.querySelector(".js-text");
-    /* Tekst z poprzedniej sesji wchodzi jako WARTOŚĆ pola, nie jako HTML. */
+    /* Text from the previous session enters as the field's VALUE, not as HTML. */
     if (zapis) ta.value = zapis.text;
 
     var licznik = box.querySelector(".js-count");
@@ -126,7 +128,7 @@
     });
   }
 
-  /** Lista wymagań; z wynikiem po sprawdzeniu, bez niego przed. */
+  /** The list of requirements; with results after checking, without them before. */
   function listaWymagan(w, wynik) {
     return '<div class="stack">' + (w.requires || []).map(function (req, i) {
       var r = wynik ? wynik[i] : null;
@@ -173,9 +175,9 @@
     h.style.marginBottom = "6px";
     h.textContent = t("write.model");
     var p = document.createElement("p");
-    /* Model jest włoski i pochodzi z kursu, ale wstawiamy go jako tekst:
-       jedna reguła dla całego widoku jest łatwiejsza do utrzymania niż
-       wyjątek, o którym ktoś kiedyś zapomni. */
+    /* The model is Italian and comes from the course, but we insert it as
+       text: one rule for the whole view is easier to maintain than an
+       exception somebody will forget one day. */
     p.textContent = w.model || "";
     var nota = document.createElement("p");
     nota.className = "exq__sub";

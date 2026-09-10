@@ -2,19 +2,20 @@
 # requires-python = ">=3.10"
 # dependencies = ["anki"]
 # ///
-"""check_anki.py — czy nasz eksport wchodzi do prawdziwego Anki.
+"""check_anki.py — does our export go into a real Anki.
 
-Nie atrapa: `anki.collection.Collection.import_csv` to ten sam kod, który
-chodzi w programie na biurku. Sprawdzamy kontrakt PLIKU — separator,
-cytowanie, kodowanie, mapowanie kolumn na pola — czyli to, co da się w tym
-formacie zepsuć po cichu.
+Not a double: `anki.collection.Collection.import_csv` is the same code that
+runs in the desktop program. We check the contract of the FILE — the
+separator, the quoting, the encoding, the mapping of columns onto fields —
+that is, whatever can be broken silently in this format.
 
-Czego NIE sprawdzamy: kreatora graficznego (jaki separator zgadnie, jaką
-talię zaproponuje). To wymaga człowieka przy oknie.
+What we do NOT check: the graphical wizard (which separator it guesses, which
+deck it proposes). That needs a human at the window.
 
-Znalezione tym gate'em za pierwszym razem: nazwy kolumn „Italiano/Traduzione"
-nie mapują się na pola typu notatki, więc import przechodził bez błędu i
-zostawiał DRUGIE POLE PUSTE. Widać to dopiero w zaimportowanej notatce.
+Found by this gate the first time it ran: the column names
+"Italiano/Traduzione" do not map onto the note type's fields, so the import
+went through without an error and left the SECOND FIELD EMPTY. You only see
+it in an imported note.
 
     node scripts/gen_anki_sample.mjs /tmp/mazzo.tsv
     uv run --script scripts/check_anki.py /tmp/mazzo.tsv
@@ -30,9 +31,9 @@ ATTESE = 40
 with tempfile.TemporaryDirectory() as d:
     col = Collection(str(Path(d) / "prova.anki2"))
     prima = col.card_count()
-    # get_csv_metadata legge le direttive del file (#separator, #columns,
-    # #tags column) esattamente come fa il desktop: se il nostro intestazione
-    # è sbagliata, si vede qui e non a valle.
+    # get_csv_metadata reads the file directives (#separator, #columns,
+    # #tags column) exactly as the desktop does: if our header is wrong, it
+    # shows here and not downstream.
     meta = col.get_csv_metadata(str(TSV), None)
     print("separatore riconosciuto:", meta.delimiter, "| colonne:", len(meta.column_labels),
           "| html:", meta.is_html, "| colonna tag:", meta.tags_column)
@@ -42,9 +43,10 @@ with tempfile.TemporaryDirectory() as d:
     print(f"note importate: {len(note_ids)} (attese {ATTESE})")
 
     def leggibile(v):
-        """Con #html:false Anki ESCAPA per preservare il letterale: l'apostrofo
-        diventa &#x27; e il ritorno a capo <br>. A schermo tornano identici,
-        quindi il confronto giusto è dopo l'unescape, non sul campo grezzo."""
+        """With #html:false Anki ESCAPES in order to preserve the literal: the
+        apostrophe becomes &#x27; and the line break <br>. On screen they come
+        back identical, so the right comparison is after unescaping, not on the
+        raw field."""
         return html.unescape(re.sub(r"<br\s*/?>", "\n", v))
 
     campi = {}

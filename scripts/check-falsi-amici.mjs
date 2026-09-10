@@ -1,24 +1,25 @@
 /* ============================================================
-   check-falsi-amici.mjs — czego parity.mjs o tej kategorii nie wie.
+   check-falsi-amici.mjs — what parity.mjs does not know about this category.
 
-   `parity.mjs` pilnuje ZGODNOŚCI: czy nakładka ma wpis wtedy i tylko
-   wtedy, gdy `for` wymienia ten język. To wystarcza, żeby nic nie zniknęło
-   po cichu, i nie wystarcza do niczego więcej.
+   `parity.mjs` enforces CONSISTENCY: whether an overlay has an entry if and
+   only if `for` lists that language. That is enough to keep anything from
+   disappearing silently, and it is not enough for anything more.
 
-   Ten skrypt pilnuje tego, co jest właściwością kategorii jako całości:
+   This script enforces what is a property of the category as a whole:
 
-   - ILE wpisów przypada na język. Lista fałszywych przyjaciół z ośmioma
-     pozycjami nie jest krótką listą, tylko obietnicą bez pokrycia;
-   - czy każde włoskie słowo i każde zdanie MA NAGRANIE. To jedyny powód,
-     dla którego ta kategoria leży w `data/core/`: bez nagrania ćwiczenie
-     rodzi się nieme i nie ma po co istnieć;
-   - czy w warstwie neutralnej nie wyciekło słowo w języku ucznia.
+   - HOW MANY entries there are per language. A false-friends list with
+     eight items is not a short list, it is a promise with nothing behind it;
+   - whether every Italian word and every sentence HAS A RECORDING. That is
+     the only reason this category lives in `data/core/`: without a
+     recording the exercise is born mute and has no reason to exist;
+   - whether a word in the student's language leaked into the neutral layer.
 
-   Próg jest DECYZJĄ PRODUKTOWĄ, nie pomiarem, i dlatego stoi tutaj jako
-   stała z nazwą, a nie zaszyty w warunku (C5 planu).
+   The threshold is a PRODUCT DECISION, not a measurement, and that is why
+   it stands here as a named constant rather than buried in a condition
+   (C5 of the plan).
 
-       node scripts/check-falsi-amici.mjs          # raport
-       node scripts/check-falsi-amici.mjs --gate   # kod 1 przy naruszeniu
+       node scripts/check-falsi-amici.mjs          # a report
+       node scripts/check-falsi-amici.mjs --gate   # exit code 1 on a violation
    ============================================================ */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -30,7 +31,7 @@ const LANGS = ["pl", "en", "es", "fr", "de"];
 const MIN_NA_JEZYK = 30;
 const GATE = process.argv.includes("--gate");
 
-/* Piaskownica: warstwa neutralna plus wszystkie nakładki naraz. */
+/* The sandbox: the neutral layer plus all the overlays at once. */
 const store = {};
 const box = {
   console, JSON, Object, Array, String,
@@ -54,13 +55,14 @@ const DANE = box.INTERFERENCE || [];
 const INDEKS = box.AUDIO_INDEX || "";
 
 /**
- * FNV-1a 64-bit — ta sama funkcja co audio.js i build_audio.py.
+ * FNV-1a 64-bit — the same function as in audio.js and build_audio.py.
  *
- * `norm()` w audio.js zwęża białe znaki i przycina, i NIC WIĘCEJ: wielkość
- * liter zostaje. Pierwsza wersja tego gate'a dokładała `toLowerCase()` i
- * meldowała brak nagrania dla wszystkich 83 zdań — bo zdanie zaczyna się
- * wielką literą, a hasła są małą. Rozjazd normalizacji nie daje błędu,
- * tylko cichy brak trafienia; to samo ostrzeżenie stoi w CLAUDE.md.
+ * `norm()` in audio.js collapses whitespace and trims, and NOTHING MORE:
+ * the letter case stays. The first version of this gate added
+ * `toLowerCase()` and reported a missing recording for all 83 sentences —
+ * because a sentence starts with a capital while the entries are lower
+ * case. A drift in normalisation produces no error, only a silent miss; the
+ * same warning stands in CLAUDE.md.
  */
 function hash(text) {
   let h = 0xcbf29ce484222325n;
@@ -74,7 +76,7 @@ function hash(text) {
 
 const problemy = [];
 
-/* 1. Ile wpisów na język. */
+/* 1. How many entries per language. */
 const licznik = Object.fromEntries(LANGS.map(l => [l, 0]));
 for (const v of DANE) for (const l of v.for || []) if (l in licznik) licznik[l]++;
 
@@ -88,7 +90,7 @@ for (const l of LANGS) {
   if (!ok) problemy.push(`${l}: ${n} wpisów, próg ${MIN_NA_JEZYK}`);
 }
 
-/* 2. Czy wyjaśnienie istnieje i nie jest puste tam, gdzie `for` je zapowiada. */
+/* 2. Whether the explanation exists and is not empty where `for` announces it. */
 for (const v of DANE) {
   for (const l of v.for || []) {
     const p = (store[l] || {})["int:" + v.id];
@@ -99,7 +101,7 @@ for (const v of DANE) {
   }
 }
 
-/* 3. Nagrania. To jest powód istnienia pliku w data/core/. */
+/* 3. The recordings. That is why this file lives in data/core/. */
 const bezAudio = [];
 for (const v of DANE) {
   for (const napis of [v.it, v.ex]) {
@@ -113,9 +115,10 @@ if (bezAudio.length) {
   problemy.push(`${bezAudio.length} napisów bez nagrania — uruchom extract_strings.mjs i build_audio.py`);
 }
 
-/* 4. Wyciek języka ucznia do warstwy neutralnej. Ten sam test, co w
-   validate.mjs, powtórzony tutaj, bo ta kategoria powstaje z generatora i
-   pomyłka w tabeli źródłowej trafiłaby prosto do danych. */
+/* 4. A leak of the student's language into the neutral layer. The same test
+   as in validate.mjs, repeated here, because this category is produced by a
+   generator and a mistake in the source table would go straight into the
+   data. */
 const OBCE = /[ąęłżźćńśñçäöüßáíúõâêôõ]/;
 for (const v of DANE) {
   for (const pole of ["it", "ex"]) {

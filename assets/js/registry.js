@@ -1,20 +1,20 @@
 /* ============================================================
-   registry.js — struktura kursu i dociąganie jej na żądanie.
+   registry.js — the course structure and pulling it in on demand.
 
-   Wyjęte z core.js: to jedyna część tamtego pliku, która nie dotyczy
-   ucznia, tylko materiału. Trzyma poziomy, jednostki i lekcje, buduje
-   po nich indeksy, i wstrzykuje pliki danych, gdy uczeń wchodzi na
-   poziom albo zmienia język wyjaśnień.
+   Pulled out of core.js: it is the only part of that file that is not
+   about the student but about the material. It holds levels, units and
+   lessons, builds indexes over them, and injects data files when the
+   student enters a level or changes the language of explanations.
 
-   Ładuje się PRZED core.js, bo core czyta stąd indeks słownictwa przy
-   wykonaniu modułu. Zależność idzie w jedną stronę: registry nie wie
-   nic o postępach, fiszkach ani o Core.
+   It loads BEFORE core.js, because core reads the vocabulary index from
+   here while its module body runs. The dependency goes one way: the
+   registry knows nothing about progress, cards or Core.
 
-   Dwie rzeczy nieoczywiste, obie wynikają z braku kroku budowania:
-   - pliki wchodzą przez <script>, nie przez fetch, bo kurs ma działać
-     także z file://, gdzie fetch jest zabroniony przez CORS;
-   - warstwa neutralna idzie przed nakładką z tekstami i dopiero po obu
-     woła się applyStrings — kolejność trzyma s.async = false.
+   Two non-obvious things, both consequences of having no build step:
+   - files come in through <script>, not through fetch, because the course
+     must also work from file://, where fetch is forbidden by CORS;
+   - the neutral layer goes before the text overlay and applyStrings is
+     only called after both — s.async = false keeps the order.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -23,19 +23,19 @@
   var Store = global.Store;
   var save = Store.save;
 
-  /* ---------------- Rejestr kursu ---------------- */
+  /* ---------------- Course registry ---------------- */
   var registry = {
     levels: [],          // [{code, cefrLabel, dataFiles, name, desc, units}]
     byCode: {},          // code -> level
     lessonIndex: {},     // lessonId -> {lesson, unit, level}
-    vocabIndex: {},      // norm(włoski) -> tłumaczenie w bieżącym języku
+    vocabIndex: {},      // norm(italian) -> translation in the current language
     loaded: {}           // code -> true
   };
 
-  /* ---------------- Rejestracja danych kursu ---------------- */
+  /* ---------------- Registering course data ---------------- */
   function registerLevel(level) {
     if (registry.byCode[level.code]) {
-      // ponowne wczytanie: podmiana jednostek
+      // loaded again: swap the units
       registry.byCode[level.code].units = level.units;
     } else {
       registry.levels.push(level);
@@ -63,7 +63,7 @@
 
   function getLesson(id) { return registry.lessonIndex[id] || null; }
 
-  /** Dokłada jednostki do już zarejestrowanego poziomu (dane dzielone na pliki). */
+  /** Adds units to an already registered level (data split across files). */
   function addUnits(code, units) {
     var lv = registry.byCode[code];
     if (!lv) return;
@@ -71,7 +71,7 @@
     reindex();
   }
 
-  /** Wstrzykuje skrypty po kolei (s.async = false trzyma kolejność). */
+  /** Injects scripts one after another (s.async = false keeps the order). */
   function loadScripts(paths, cb) {
     var i = 0, failed = [];
     function next() {
@@ -87,7 +87,7 @@
     next();
   }
 
-  /* Pliki tekstów wczytane już dla danego języka: "lang/plik.js" -> true */
+  /* Text files already loaded for a given language: "lang/file.js" -> true */
   var i18nLoaded = {};
 
   var I18N_DIR = "data/i18n/";
@@ -97,7 +97,7 @@
       .map(function (f) { return I18N_DIR + lang + "/" + f; });
   }
 
-  /** Zapamiętuje tylko to, co naprawdę się wczytało: nieudane ma być ponowione. */
+  /** Remembers only what actually loaded: a failure must be retried. */
   function markI18n(paths, failed) {
     paths.forEach(function (p) {
       if (p.indexOf(I18N_DIR) !== 0 || failed.indexOf(p) >= 0) return;
@@ -106,9 +106,9 @@
   }
 
   /**
-   * Ładuje pliki danych poziomu na żądanie (działa też z file://).
-   * Najpierw warstwa neutralna, potem teksty w języku ucznia — kolejność
-   * trzyma loadScripts, a scalenie idzie dopiero po wczytaniu obu.
+   * Loads a level's data files on demand (works from file:// too).
+   * The neutral layer first, then the texts in the student's language —
+   * loadScripts keeps the order, and merging happens only once both are in.
    */
   function loadLevelData(code, cb) {
     var lv = registry.byCode[code];
@@ -122,9 +122,9 @@
     loadScripts(paths, function (failed) {
       markI18n(paths, failed);
       global.LINGUAI.applyStrings(lang);
-      // reindex jeszcze raz: addUnits zbudował indeks, zanim nakładka wpisała tłumaczenia
+      // reindex once more: addUnits built the index before the overlay wrote the translations in
       reindex();
-      // częściowe niepowodzenie nie blokuje poziomu: liczy się, czy cokolwiek się wczytało
+      // a partial failure does not block the level: what counts is whether anything loaded
       var got = (lv.units || []).length > 0;
       registry.loaded[code] = got ? true : "error";
       if (failed.length && got) console.warn("[LinguAI] Nie wczytano: " + failed.join(", "));
@@ -132,16 +132,17 @@
     });
   }
 
-  /* Pliki tekstów wczytywane od razu przy starcie, niezależne od poziomu. */
+  /* Text files loaded eagerly at startup, independent of any level. */
   var EAGER_FILES = ["curriculum-index.js", "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js", "writing.js", "interference.js"];
 
   /**
-   * Zmienia język wyjaśnień. Warstwa neutralna zostaje w pamięci taka, jaka jest:
-   * dociągamy tylko brakujące nakładki i nakładamy je na te same obiekty, bo
-   * scalanie jest idempotentne. Stąd brak przeładowania strony.
+   * Changes the language of explanations. The neutral layer stays in memory
+   * as it is: we only pull the missing overlays and apply them on top of the
+   * same objects, because merging is idempotent. Hence no page reload.
    *
-   * cb(missing) — lista plików, których nie udało się wczytać. Niepusta oznacza,
-   * że część kursu została w poprzednim języku; wywołujący ma to pokazać, nie zignorować.
+   * cb(missing) — the list of files that failed to load. A non-empty list
+   * means part of the course stayed in the previous language; the caller
+   * must show that, not ignore it.
    */
   function setLanguage(lang, cb) {
     var files = EAGER_FILES.slice();
@@ -154,7 +155,7 @@
     loadScripts(paths, function (failed) {
       markI18n(paths, failed);
       global.LINGUAI.applyStrings(lang);
-      reindex();   // słownik fiszek musi wskazywać na glosy w nowym języku
+      reindex();   // the card dictionary must point at glosses in the new language
       cb && cb(failed);
     });
   }
@@ -168,7 +169,7 @@
     EAGER_FILES: EAGER_FILES
   };
 
-  /* Pliki danych kursu wołają te dwie przy wczytaniu. */
+  /* The course data files call these two when they load. */
   global.LINGUAI = global.LINGUAI || {};
   global.LINGUAI.registerLevel = registerLevel;
   global.LINGUAI.addUnits = addUnits;

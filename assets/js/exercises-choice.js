@@ -1,16 +1,17 @@
 /* ============================================================
-   exercises-choice.js — typy, w których uczeń WYBIERA: z listy, z par, ze słuchu.
+   exercises-choice.js — the types where the student CHOOSES: from a list,
+   from pairs, by ear.
 
-   Wydzielone z exercises.js, w którym czternaście typów leżało w jednym
-   pliku na 610 linii. Podział idzie po tym, CO ROBI UCZEŃ, bo to jest oś,
-   na której te typy naprawdę się różnią: wybór z listy sprawdza się
-   porównaniem indeksu, wpisana odpowiedź przechodzi przez checkOpen z
-   tolerancją literówki, a głos wymaga nagrania i progu podobieństwa.
+   Split out of exercises.js, where fourteen types sat in a single 610-line
+   file. The split follows WHAT THE STUDENT DOES, because that is the axis
+   on which these types really differ: a choice from a list is checked by
+   comparing an index, a typed answer goes through checkOpen with typo
+   tolerance, and the voice needs a recording and a similarity threshold.
 
-   Kontrakt bez zmian: builder oddaje {html, wire(root, onDone)}, a
-   `onDone(ok)` woła się DOKŁADNIE RAZ. Wspólne kawałki (nagłówek, przycisk
-   sprawdzania, zakończenie) przychodzą z `Ex.kit`, dyspozytor zostaje w
-   exercises.js. Ładuje się PO nim, bo `Ex.register` powstaje tam.
+   The contract is unchanged: a builder returns {html, wire(root, onDone)},
+   and `onDone(ok)` is called EXACTLY ONCE. The shared pieces (header,
+   check button, ending) come from `Ex.kit`, the dispatcher stays in
+   exercises.js. This loads AFTER it, because `Ex.register` is created there.
    ============================================================ */
 (function () {
   "use strict";
@@ -67,7 +68,7 @@
 
 
 
-  /* ═══════════════ MULTI (kilka poprawnych) ═══════════════ */
+  /* ═══════════════ MULTI (several correct answers) ═══════════════ */
   function buildMulti(ex, idx, seed) {
     var opts = Core.seededShuffle(ex.opts.map(function (o, i) { return { txt: o, i: i }; }), seed + "m" + idx);
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
@@ -103,7 +104,7 @@
     return { html: html, wire: wire };
   }
 
-  /* ═══════════════ MATCH (pary) ═══════════════ */
+  /* ═══════════════ MATCH (pairs) ═══════════════ */
   function buildMatch(ex, idx, seed) {
     var left = ex.pairs.map(function (p, i) { return { t: p.it, i: i }; });
     var right = Core.seededShuffle(ex.pairs.map(function (p, i) { return { t: p.tr, i: i }; }), seed + "r" + idx);
@@ -147,7 +148,7 @@
     return { html: html, wire: wire };
   }
 
-  /* ═══════════════ GENDER (rodzajnik / rodzaj) ═══════════════ */
+  /* ═══════════════ GENDER (article / gender) ═══════════════ */
   function buildGender(ex, idx, seed) {
     var items = Core.seededShuffle(ex.items.slice(), seed + "g" + idx);
     var opts = ex.opts || ["il", "lo", "la", "l'", "i", "gli", "le"];
@@ -181,21 +182,22 @@
     return { html: html, wire: wire };
   }
 
-  /* ═══════════════ MINPAIR (para minimalna) ═══════════════ */
+  /* ═══════════════ MINPAIR (minimal pair) ═══════════════ */
   /**
-   * Słychać jeden z dwóch wyrazów, uczeń wskazuje który.
+   * One of two words is heard, the student points at which one.
    *
-   * ex.a, ex.b — oba wyrazy; ex.heard — „a" albo „b", ten odtwarzany.
+   * ex.a, ex.b — both words; ex.heard — "a" or "b", the one played.
    *
-   * Rozróżnianie przed produkcją: dopóki ucho nie słyszy różnicy między
-   * „nonno" a „nono", usta jej nie zrobią, a poprawianie wymowy jest
-   * pilnowaniem czegoś, czego uczeń nie kontroluje. Stąd osobny typ, a
-   * nie wariant „listen": tam pisze się usłyszane zdanie, tu wybiera się
-   * między dwoma wyrazami różniącymi się jednym dźwiękiem.
+   * Discrimination before production: as long as the ear does not hear the
+   * difference between "nonno" and "nono", the mouth will not make it, and
+   * correcting pronunciation is policing something the student does not
+   * control. Hence a type of its own rather than a "listen" variant: there
+   * you write down the sentence you heard, here you choose between two
+   * words differing by a single sound.
    *
-   * Nagranie jest wymagane. Synteza systemowa myli dokładnie te dźwięki,
-   * o które w tym ćwiczeniu chodzi, więc zejście do niej nie byłoby
-   * gorszą jakością, tylko ćwiczeniem bez odpowiedzi.
+   * A recording is required. System synthesis confuses exactly the sounds
+   * this exercise is about, so falling back to it would not be lower
+   * quality but an exercise with no answer.
    */
   function buildMinpair(ex, idx, seed) {
     var opts = Core.seededShuffle([{ k: "a", w: ex.a }, { k: "b", w: ex.b }], seed + "mp" + idx);
@@ -235,8 +237,8 @@
       root.querySelector(".js-check").addEventListener("click", function () {
         var sel = root.querySelector('input[name="mp' + seed + "_" + idx + '"]:checked');
         if (!sel) { Core.toast(t("ex.pickOne")); return; }
-        /* Bez odsłuchania nie ma czego sprawdzać: to byłby rzut monetą
-           zapisany w statystykach jako wiedza. */
+        /* With nothing listened to there is nothing to check: it would be a
+           coin toss recorded in the statistics as knowledge. */
         if (!zagrane) { Core.toast(t("ex.minpair.listenFirst")); return; }
 
         var ok = sel.value === (ex.heard || "a");

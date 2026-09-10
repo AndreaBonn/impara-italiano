@@ -1,22 +1,22 @@
 /* ============================================================
-   check_precache.mjs — czy guska umie wczytać to, co ładuje strona
-   Uruchomienie:  node scripts/check_precache.mjs
+   check_precache.mjs — whether the worker can load what the page loads
+   Usage:  node scripts/check_precache.mjs
 
-   Projekt nie ma kroku budowania, więc lista plików w `PRECACHE`
-   (sw.js) jest przepisywana ręcznie i CLAUDE.md prosi człowieka, żeby
-   po dopisaniu skryptu do index.html nie zapomniał dopisać go też tam.
-   Zapomniane dopisanie nie boli od razu: kurs działa z siecią i pada
-   dopiero przy pierwszym starcie bez niej, na brakującym skrypcie.
-   Ten skrypt zamienia tę prośbę w bramkę.
+   The project has no build step, so the list of files in `PRECACHE`
+   (sw.js) is written out by hand and CLAUDE.md asks a human not to forget
+   to add a script there too after adding it to index.html. Forgetting does
+   not hurt immediately: the course works with a network and only fails at
+   the first offline start, on the missing script. This script turns that
+   request into a gate.
 
-   Porównanie idzie w JEDNĄ stronę: index.html → PRECACHE. Odwrotna
-   zgłaszałaby fałszywy alarm, bo `PRECACHE` z założenia trzyma pliki
-   dociągane w czasie działania (nakładki ui-*.js, kroje pisma, ikony),
-   których w index.html nie ma i być nie musi.
+   The comparison goes ONE way: index.html -> PRECACHE. The other direction
+   would raise a false alarm, because `PRECACHE` deliberately holds files
+   pulled at runtime (the ui-*.js overlays, the fonts, the icons) which are
+   not in index.html and do not have to be.
 
-   `PRECACHE` czytamy wykonując sw.js w piaskownicy, a nie wyrażeniem
-   regularnym po nawiasach: tak samo robi validate.mjs z danymi kursu,
-   i tak samo nie da się tego oszukać przecinkiem w komentarzu.
+   We read `PRECACHE` by running sw.js in a sandbox rather than with a
+   regular expression over brackets: validate.mjs does the same with the
+   course data, and it cannot be fooled by a comma in a comment either.
    ============================================================ */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -25,17 +25,17 @@ import vm from "node:vm";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/** Ujednolica zapis ścieżki: index.html pisze „assets/x", PRECACHE „./assets/x". */
+/** Unifies the path spelling: index.html writes "assets/x", PRECACHE "./assets/x". */
 function norm(sciezka) {
   return sciezka.replace(/^\.\//, "").replace(/^\//, "").split("?")[0].split("#")[0];
 }
 
-/* ---------------- PRECACHE z sw.js ---------------- */
+/* ---------------- PRECACHE from sw.js ---------------- */
 
 function precache() {
-  /* `self` musi istnieć i przyjmować addEventListener, bo sw.js rejestruje
-     trzy zdarzenia zaraz po deklaracjach. Nic z tego nie wołamy — interesuje
-     nas wyłącznie tablica, która stoi wyżej. */
+  /* `self` has to exist and accept addEventListener, because sw.js registers
+     three events right after the declarations. We call none of them — the
+     only thing we care about is the array standing above. */
   const box = {
     console,
     self: { addEventListener() {}, skipWaiting() {}, clients: { claim() {} } },
@@ -51,18 +51,19 @@ function precache() {
   return { lista: box.PRECACHE.map(norm), wersja: box.SW_VERSION };
 }
 
-/* ---------------- Zasoby z index.html ---------------- */
+/* ---------------- The resources from index.html ---------------- */
 
 /**
- * Wyciąga to, czego strona potrzebuje do pierwszego uruchomienia:
- * wszystkie `<script src>` oraz arkusz stylów i manifest z `<link>`.
- * Ikony i favicon zostają poza: favicon jest wpisany jako data: URI,
- * a ikony PWA wczytuje system, nie parser strony.
+ * Extracts what the page needs for its first run: every `<script src>` plus
+ * the stylesheet and the manifest from `<link>`. The icons and the favicon
+ * stay out: the favicon is written as a data: URI, and the PWA icons are
+ * loaded by the system, not by the page parser.
  */
 function zasobyStrony() {
-  /* Komentarze wycinamy PRZED szukaniem: zakomentowany <script src> nie jest
-     wczytywany przez przeglądarkę, więc żądanie go w PRECACHE zatrzymałoby CI
-     na pliku, którego nikt nie potrzebuje. Bramka ma łapać brak, nie nadmiar. */
+  /* Comments are stripped BEFORE searching: a commented-out <script src> is
+     not loaded by the browser, so demanding it in PRECACHE would stop CI on a
+     file nobody needs. The gate is meant to catch what is missing, not what
+     is superfluous. */
   const html = readFileSync(join(ROOT, "index.html"), "utf8").replace(/<!--[\s\S]*?-->/g, "");
   const out = [];
 
@@ -80,7 +81,7 @@ function zasobyStrony() {
   return out;
 }
 
-/* ---------------- Porównanie ---------------- */
+/* ---------------- The comparison ---------------- */
 
 const { lista, wersja } = precache();
 const wPamieci = new Set(lista);

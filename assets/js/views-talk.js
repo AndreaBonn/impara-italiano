@@ -1,26 +1,26 @@
 /* ============================================================
-   views-talk.js — rozmowy na głos: lista scen i sama scena.
+   views-talk.js — spoken conversations: the scene list and the scene itself.
 
-   Wyjęte z views.js bez zmiany zachowania. Powód jest jeden i widać go
-   po długości: silnik rozmowy urósł o rozwidlenia, powrót na ostatni
-   wybór i zatrzymywanie sceny na złej odpowiedzi, i przy 277 liniach
-   był największym blokiem pliku, w którym mieszka piętnaście innych
-   ekranów. Osobny plik nie czyni go krótszym, ale przestaje go mieszać
-   z resztą.
+   Pulled out of views.js with no change of behaviour. There is one reason
+   and the length shows it: the conversation engine grew branches, a return
+   to the last choice and stopping the scene on a wrong answer, and at 277
+   lines it was the biggest block of a file housing fifteen other screens. A
+   separate file does not make it shorter, but it stops mixing it with the
+   rest.
 
-   Skorupa widoku (`set`, `pageHead`, `el`, `empty`) przychodzi z
-   `Views.shell`, tak samo jak w views-shadow.js i views-train.js —
-   trzy kopie tych samych czterech funkcji rozjechałyby się przy
-   pierwszej zmianie nagłówka.
+   The view shell (`set`, `pageHead`, `el`, `empty`) comes from
+   `Views.shell`, the same as in views-shadow.js and views-train.js — three
+   copies of the same four functions would drift apart at the first change
+   to the header.
 
-   Sam PRZEBIEG sceny (gdzie jesteśmy, wynik, rozwidlenia, powrót na
-   ostatni wybór) siedzi w talk-run.js. Tutaj zostało to, co widać:
-   dymki, pole odpowiedzi, mikrofon i podsumowanie. Podział idzie po
-   testowalności, nie po długości — tamta połowa daje się przejść w
-   node:test do końca, ta wymaga przeglądarki.
+   The RUN of the scene itself (where we are, the result, the branches, the
+   return to the last choice) sits in talk-run.js. What is left here is what
+   you see: the bubbles, the answer field, the microphone and the summary.
+   The split follows testability, not length — that half can be played to
+   the end in node:test, this one needs a browser.
 
-   Skrypt klasyczny. Wymaga core.js, audio.js, exercises.js, talk-run.js,
-   views.js (po nim, bo konsumuje Views.shell) oraz danych z
+   Classic script. Requires core.js, audio.js, exercises.js, talk-run.js,
+   views.js (after it, because it consumes Views.shell) and the data from
    data/core/conversations.js.
    ============================================================ */
 (function (global) {
@@ -66,16 +66,17 @@
     var dlg = el().querySelector(".js-dlg");
     var turn = el().querySelector(".js-turn");
 
-    /* Przebieg (gdzie jesteśmy, wynik, rozwidlenia, powrót) siedzi w
-       talk-run.js: nie dotyka DOM-u i daje się przejść w teście do końca,
-       czego z tym plikiem nie da się zrobić inaczej niż przeglądarką. */
+    /* The run (where we are, the result, the branches, the return) sits in
+       talk-run.js: it does not touch the DOM and can be played to the end in
+       a test, which cannot be done with this file other than in a browser. */
     var run = Talk.create(conv);
 
-    /* Bez rozpoznawania mowy nota o tym stoi TUTAJ, w scenie, a nie tylko na
-       liście rozmów: uczeń wchodzi w scenę i widzi samo pole tekstowe, więc
-       brak mikrofonu wygląda jak usterka, a nie jak brak obsługi w
-       przeglądarce. Raz na przejście, nie przy każdej turze — powtarzana pod
-       dziesięcioma kolejnymi replikami przestaje być informacją. */
+    /* Without speech recognition the note about it stands HERE, in the
+       scene, and not only in the conversation list: the student enters a
+       scene and sees only a text field, so a missing microphone looks like a
+       fault rather than like missing browser support. Once per run, not at
+       every turn — repeated under ten successive lines it stops being
+       information. */
     var notaSttPokazana = false;
 
     function bubble(it, pl, mine) {
@@ -102,17 +103,19 @@
       renderTurn(turnData);
     }
 
-    /* Przy rozwidleniu obie możliwości są POKAZANE. To nie jest test pamięci:
-       uczeń ma zdecydować, co powiedzieć, a nie odgadnąć, czego kurs oczekuje.
-       Mikrofon i pole tekstowe zostają — kliknięcie jest skrótem, nie jedyną
-       drogą, więc scena nadal daje się przejść głosem. */
+    /* At a branch both possibilities are SHOWN. This is not a memory test:
+       the student is meant to decide what to say, not to guess what the
+       course expects. The microphone and the text field stay — clicking is a
+       shortcut, not the only road, so the scene can still be played by
+       voice. */
     function podpowiedziWyboru(opcje) {
       return '<p class="voice-pl" style="margin-bottom:10px">' + esc(t("talk.chooseOne")) + "</p>" +
         '<div class="dlg-opts">' + opcje.map(function (o) {
-          /* Wysyłamy TREŚĆ PODPOWIEDZI, nie klucz odpowiedzi: klucze są
-             pisane bez wielkich liter i bez interpunkcji, pod porównywanie,
-             i w dymku wyglądałyby jak zdanie napisane byle jak. `norm()`
-             w `similarity` i tak sprowadza jedno do drugiego. */
+          /* We send the TEXT OF THE HINT, not the answer key: the keys are
+             written without capitals and without punctuation, for comparison,
+             and in a bubble they would look like a carelessly written
+             sentence. `norm()` inside `similarity` reduces one to the other
+             anyway. */
           var wzor = o.hintIt || (o.accept && o.accept[0]) || "";
           return '<button type="button" class="dlg-opt js-opt" data-opt="' + esc(wzor) + '">' +
             "<i>" + esc(o.hintIt || wzor) + "</i>" +
@@ -120,24 +123,26 @@
         }).join("") + "</div>";
     }
 
-    // parametr nazywa się turnData, nie t: `t` to helper tłumaczeń w tym pliku
+    // the parameter is called turnData, not t: `t` is the translation helper in this file
     function renderTurn(turnData) {
-      /* Znakiem punktu powrotu jest długość transkryptu: po powrocie na
-         rozwidlenie ucinamy dymki dokładnie tam, gdzie uczeń wybierał. */
+      /* The mark of a return point is the length of the transcript: after
+         returning to a branch we cut the bubbles exactly where the student
+         was choosing. */
       run.beginTurn(dlg.children.length);
       var opcje = turnData.opts || null;
       turn.innerHTML =
         '<div class="voice-box">' +
         '<p style="font-weight:600;margin:0 0 4px">' + esc(t("talk.yourTurn", { task: turnData.task })) + "</p>" +
         (opcje ? podpowiedziWyboru(opcje) :
-          /* Podpowiedź jest po POLSKU (w języku ucznia), nie po włosku. Włoskie
-             zdanie w tym miejscu robiło z rozmowy przepisywanie: uczeń czytał
-             gotową replikę i wysyłał ją z powrotem, więc scena sprawdzała wzrok,
-             nie znajomość języka. Tłumaczenie tej repliki JUŻ JEST w nakładce
-             (`turns[].tr`, wszystkie pięć języków) i było używane dotąd tylko
-             w dymku — nie trzeba było dopisać ani jednego napisu.
-             Włoski wzór zostaje pod „Pokaż odpowiedź", czyli tam, gdzie uczeń
-             sięga po niego świadomie. */
+          /* The hint is in the STUDENT'S LANGUAGE, not in Italian. An
+             Italian sentence in this place turned the conversation into
+             copying: the student read a ready-made line and sent it back, so
+             the scene tested eyesight rather than knowledge of the language.
+             The translation of that line ALREADY EXISTS in the overlay
+             (`turns[].tr`, all five languages) and had so far been used only
+             in the bubble — not one string had to be added.
+             The Italian model stays under "Show the answer", that is where
+             the student reaches for it deliberately. */
           (turnData.tr
             ? '<p class="voice-pl" style="margin-bottom:14px">' + t("ex.hintLabel", { hint: "<i>" + esc(turnData.tr) + "</i>" }) + "</p>"
             : "")) +
@@ -157,19 +162,21 @@
       var input = turn.querySelector(".js-in");
       var fb = turn.querySelector(".js-fb");
 
-      /* Zła odpowiedź ZATRZYMUJE scenę. Przedtem rozmowa szła dalej, tyle że
-         w dymku stawał wzór zamiast tego, co uczeń powiedział: z ekranu
-         wyglądało to jak zaliczone, więc błąd nie miał żadnej konsekwencji,
-         a przy mikrofonie nie było nawet wiadomo, że coś poszło nie tak.
-         Wyjście z pętli jest jedno i świadome: „Pokaż odpowiedź".
+      /* A wrong answer STOPS the scene. Before, the conversation went on,
+         except that the bubble held the model line instead of what the
+         student said: on screen it looked like a pass, so a mistake had no
+         consequence at all, and with the microphone you could not even tell
+         something had gone wrong. There is one deliberate way out of the
+         loop: "Show the answer".
 
-         `zPola` mówi, czy odpowiedź przyszła z klawiatury, czy z mikrofonu.
-         Fokus wraca do pola TYLKO w pierwszym wypadku: po mówieniu wepchnąłby
-         na telefonie klawiaturę systemową i pasek akcentów pod scenę, której
-         uczeń wcale nie chciał pisać (ten sam wniosek co w views-lookup.js).
-         Kursor idzie na koniec, nie zaznacza całości: po pomyłce zwykle
-         poprawia się jedno słowo, a zaznaczone wszystko ginie od pierwszego
-         klawisza. */
+         `zPola` says whether the answer came from the keyboard or from the
+         microphone. The focus returns to the field ONLY in the first case:
+         after speaking it would push the system keyboard and the accent bar
+         onto a phone under a scene the student did not want to type in at
+         all (the same conclusion as in views-lookup.js). The caret goes to
+         the end and does not select everything: after a mistake you usually
+         correct one word, and a full selection is lost at the first
+         keystroke. */
       function odrzuc(wynik, zPola) {
         if (wynik.pierwszaPomylka) Core.recordAnswer(false);
         fb.className = "fb js-fb fb--ko is-on";
@@ -180,7 +187,7 @@
         }
       }
 
-      /** Przejście dalej: tekst z przebiegu trafia do dymka, scena rusza. */
+      /** Moving on: the text from the run lands in the bubble, the scene proceeds. */
       function idzDalej(wynik) {
         bubble(wynik.tekst, wynik.tr, true);
         turn.innerHTML = "";
@@ -194,7 +201,7 @@
         idzDalej(wynik);
       }
 
-      /* Rezygnacja: wzór wchodzi do transkryptu i scena idzie dalej, bez punktu. */
+      /* Giving up: the model line enters the transcript and the scene moves on, with no point. */
       function ujawnij() {
         var wynik = run.reveal();
         if (wynik.pierwszaPomylka) Core.recordAnswer(false);
@@ -202,10 +209,11 @@
         idzDalej(wynik);
       }
 
-      /* Kliknięcie w gałąź NIE przechodzi przez próg podobieństwa: uczeń
-         wybrał replikę z listy, więc nie ma czego oceniać, a od kiedy zła
-         odpowiedź zatrzymuje scenę, przepuszczanie kliknięcia przez
-         porównywanie mogłoby zablokować wybór na własnej podpowiedzi. */
+      /* A click on a branch does NOT go through the similarity threshold:
+         the student picked a line from a list, so there is nothing to grade,
+         and since a wrong answer stops the scene, running the click through
+         the comparison could block the choice on the course's own
+         suggestion. */
       if (opcje) turn.querySelectorAll(".js-opt").forEach(function (b, n) {
         b.addEventListener("click", function () {
           var wynik = run.choose(n);
@@ -239,9 +247,9 @@
       turn.querySelector(".js-skip").addEventListener("click", ujawnij);
     }
 
-    /* Powrót na ostatnie rozwidlenie, nie na początek. Gałąź, której się nie
-       wybrało, jest tym, po co w ogóle są rozwidlenia; kazać przechodzić od
-       nowa cały dialog, żeby ją zobaczyć, znaczy nie pokazać jej nikomu. */
+    /* A return to the last branch, not to the beginning. The branch you did
+       not take is what branches are for in the first place; making someone
+       replay the whole dialogue to see it means showing it to nobody. */
     function wrocDoWyboru() {
       var w = run.rewind();
       if (!w) return;

@@ -1,30 +1,30 @@
 /* ============================================================
-   drills-lex.js — zamknięty leksykon włoski dla generatorów.
+   drills-lex.js — a closed Italian lexicon for the generators.
 
-   Wyłącznie włoski: ani jednego słowa w języku ucznia. Generator
-   produkuje ćwiczenia z reguł, więc glosy są niepotrzebne — a gdyby
-   tu były, dopisanie języka wymagałoby ich tłumaczenia i plik
-   przestałby być neutralny.
+   Italian only: not a single word in the student's language. The
+   generator produces exercises from rules, so glosses are unnecessary —
+   and if they were here, adding a language would require translating them
+   and the file would stop being neutral.
 
-   Formy nie są przepisane z tabel, tylko wyprowadzane regułami tam,
-   gdzie reguła istnieje: rodzajnik z fonologii, liczba mnoga z
-   końcówki. To ten sam pomysł, co Verbs.conjugate — treści nie da
-   się rozjechać z kluczem odpowiedzi, bo klucz liczy się z tej samej
-   funkcji, co pytanie.
+   The forms are not transcribed from tables but derived by rule wherever
+   a rule exists: the article from phonology, the plural from the ending.
+   It is the same idea as Verbs.conjugate — the content cannot drift away
+   from the answer key, because the key is computed by the same function
+   as the question.
 
-   Skrypt klasyczny, bez zależności.
+   Classic script, no dependencies.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var Lex = {};
 
-  /* ---------------- Rzeczowniki ---------------- */
+  /* ---------------- Nouns ---------------- */
 
   /**
-   * s = liczba pojedyncza, g = rodzaj, p = nieregularna mnoga (jeśli jest).
-   * Regularną mnogą wyprowadza pluralOf(), więc nie ma jej tutaj: dwa
-   * zapisy tej samej formy rozjechałyby się przy pierwszej poprawce.
+   * s = singular, g = gender, p = irregular plural (when there is one).
+   * The regular plural is derived by pluralOf(), so it is not here: two
+   * records of the same form would drift apart at the first correction.
    */
   var NOUNS = [
     { s: "libro", g: "m" }, { s: "tavolo", g: "m" }, { s: "quaderno", g: "m" },
@@ -53,15 +53,15 @@
     { s: "mano", g: "f", p: "mani" }, { s: "moglie", g: "f", p: "mogli" }
   ];
 
-  /* ---------------- Rodzajnik: fonologia, nie tabela ---------------- */
+  /* ---------------- The article: phonology, not a table ---------------- */
 
   var VOWEL = /^[aeiouàèéìòù]/i;
-  /* lo / gli przed: s+spółgłoska, z, gn, ps, pn, x, y, i+samogłoska */
+  /* lo / gli before: s+consonant, z, gn, ps, pn, x, y, i+vowel */
   var LO = /^(s[^aeiouàèéìòù]|z|gn|ps|pn|x|y|i[aeiou])/i;
 
   /**
-   * Rodzajnik określony dla podanego słowa. `word` to pierwszy wyraz
-   * grupy: „il vecchio libro" bierze rodzajnik od „vecchio", nie od „libro".
+   * The definite article for a given word. `word` is the first word of the
+   * group: "il vecchio libro" takes its article from "vecchio", not "libro".
    */
   function definite(word, gender, plural) {
     var w = String(word || "");
@@ -70,15 +70,16 @@
       return VOWEL.test(w) ? "l'" : "la";
     }
     if (plural) return (LO.test(w) || VOWEL.test(w)) ? "gli" : "i";
-    /* LO sprawdzane PRZED samogłoską, bo jeden z jego warunków to i+samogłoska
-       („lo iodio"): przy odwrotnej kolejności ta gałąź była martwa i wychodziło
-       „l'iodio". Dziś w leksykonie nie ma takiego słowa — i właśnie dlatego
-       reguła musi być poprawna teraz, a nie kiedy ktoś je dopisze. */
+    /* LO is tested BEFORE the vowel, because one of its conditions is
+       i+vowel ("lo iodio"): in the opposite order that branch was dead and
+       "l'iodio" came out. There is no such word in the lexicon today — and
+       that is exactly why the rule has to be right now, and not when
+       somebody adds one. */
     if (LO.test(w)) return "lo";
     return VOWEL.test(w) ? "l'" : "il";
   }
 
-  /** Rodzajnik nieokreślony. Liczby mnogiej nie ma — tam wchodzi partitivo. */
+  /** The indefinite article. There is no plural — the partitivo goes there. */
   function indefinite(word, gender) {
     var w = String(word || "");
     if (gender === "f") return VOWEL.test(w) ? "un'" : "una";
@@ -86,11 +87,11 @@
   }
 
   /**
-   * Liczba mnoga wyprowadzona z końcówki; nieregularne siedzą w NOUNS.p
+   * The plural derived from the ending; the irregular ones sit in NOUNS.p
    *
-   * Uwaga na wyrazy proparoksytoniczne na -ico: „medico" daje „medici",
-   * nie „medichi". Twardnienie -co → -chi dotyczy tych z akcentem na
-   * przedostatniej („parco" → „parchi"), więc -ico sprawdzamy PRZED -co.
+   * Beware of proparoxytone words in -ico: "medico" gives "medici", not
+   * "medichi". The hardening -co -> -chi applies to those stressed on the
+   * penultimate syllable ("parco" -> "parchi"), so -ico is tested BEFORE -co.
    */
   function pluralOf(noun) {
     if (noun.p) return noun.p;
@@ -103,14 +104,14 @@
     if (/go$/.test(s)) return s.slice(0, -2) + "ghi";
     if (/io$/.test(s)) return s.slice(0, -2) + "i";
     if (/[oe]$/.test(s)) return s.slice(0, -1) + "i";
-    return s;                                   // niezmienne: città, yogurt
+    return s;                                   // invariable: città, yogurt
   }
 
-  /* ---------------- Przymiotniki ---------------- */
+  /* ---------------- Adjectives ---------------- */
 
   /**
-   * type "o" odmienia się na cztery formy (rosso/rossa/rossi/rosse),
-   * type "e" na dwie (grande/grandi). Trzeciej klasy w tym zbiorze nie ma.
+   * type "o" inflects into four forms (rosso/rossa/rossi/rosse),
+   * type "e" into two (grande/grandi). There is no third class in this set.
    */
   var ADJ = [
     { s: "rosso", t: "o" }, { s: "nuovo", t: "o" }, { s: "vecchio", t: "o" },
@@ -123,7 +124,7 @@
     { s: "giovane", t: "e" }, { s: "veloce", t: "e" }, { s: "gentile", t: "e" }
   ];
 
-  /** Forma przymiotnika zgodna z rodzajem i liczbą. */
+  /** The adjective form agreeing in gender and number. */
   function adjForm(adj, gender, plural) {
     var base = adj.s;
     if (adj.t === "e") {
@@ -131,9 +132,9 @@
       return base.slice(0, -1) + "i";
     }
     var stem = base.slice(0, -1);
-    /* -co/-go twardnieją w męskiej mnogiej: bianco → bianchi.
-       Ale nie te na -ico z akcentem na trzeciej sylabie od końca:
-       „simpatico" daje „simpatici", nie „simpatichi". */
+    /* -co/-go harden in the masculine plural: bianco -> bianchi.
+       But not those in -ico stressed on the third syllable from the end:
+       "simpatico" gives "simpatici", not "simpatichi". */
     if (plural && gender === "m") {
       if (/ico$/.test(base)) return stem + "i";
       if (/[cg]$/.test(stem)) return stem + "hi";
@@ -147,12 +148,12 @@
     return stem + (gender === "f" ? "a" : "o");
   }
 
-  /* ---------------- Czasowniki: wybór posiłkowego ---------------- */
+  /* ---------------- Verbs: choosing the auxiliary ---------------- */
 
   /**
-   * aux: "avere", "essere" albo "both" — te ostatnie zmieniają znaczenie
-   * razem z posiłkowym (è cambiato / ha cambiato), więc ćwiczenie musi
-   * przyjąć obie odpowiedzi.
+   * aux: "avere", "essere" or "both" — the last ones change meaning along
+   * with the auxiliary (è cambiato / ha cambiato), so the exercise has to
+   * accept both answers.
    */
   var VERBS = [
     { inf: "mangiare", aux: "avere" }, { inf: "parlare", aux: "avere" },
@@ -180,19 +181,20 @@
     { inf: "passare", aux: "both" }, { inf: "vivere", aux: "both" }
   ];
 
-  /* ---------------- Przyimki ---------------- */
+  /* ---------------- Prepositions ---------------- */
 
-  /* Przyimki, które łączą się z rodzajnikiem. „con" dziś już zwykle nie. */
+  /* The prepositions that combine with the article. "con" usually no longer does. */
   var PREPS = ["di", "a", "da", "in", "su"];
   var ARTICLES = ["il", "lo", "l'", "la", "i", "gli", "le"];
 
   /**
-   * Przyimek ściągnięty z rodzajnikiem, z reguły a nie z tabeli.
+   * A preposition contracted with the article, by rule rather than from a
+   * table.
    *
-   * Rozbicie jest na dwie części: temat przyimka (di → de, in → ne,
-   * reszta bez zmian) i końcówka zależna wyłącznie od rodzajnika.
-   * Iloczyn 5 × 7 daje wszystkie 35 form; tabela z 35 wpisami mówiłaby
-   * to samo, tylko bez powodu.
+   * The split has two parts: the preposition stem (di -> de, in -> ne, the
+   * rest unchanged) and a suffix depending on the article alone. The
+   * product 5 × 7 gives all 35 forms; a table of 35 entries would say the
+   * same thing, only without a reason.
    */
   var PREP_STEM = { di: "de", a: "a", da: "da", in: "ne", su: "su" };
   var ART_SUFFIX = { "il": "l", "lo": "llo", "l'": "ll'", "la": "lla", "i": "i", "gli": "gli", "le": "lle" };

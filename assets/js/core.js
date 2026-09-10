@@ -1,32 +1,33 @@
 /* ============================================================
-   core.js — postępy ucznia: zaliczone lekcje, passa, XP, kopia zapasowa.
+   core.js — the student's progress: lessons passed, streak, XP, backup.
 
-   Był to plik na 1100 linii, w którym mieszkało pięć niezależnych rzeczy.
-   Wyprowadzone kolejno: porównywanie tekstu (text.js), komunikaty na
-   ekranie (notice.js), zapis stanu (store.js), struktura kursu
-   (registry.js) i talia powtórek (srs.js). Zostało to, co odpowiada na
-   jedno pytanie: co uczeń już zrobił.
+   This used to be an 1100-line file housing five independent things.
+   Taken out one by one: text comparison (text.js), on-screen messages
+   (notice.js), state persistence (store.js), the course structure
+   (registry.js) and the review deck (srs.js). What is left answers a
+   single question: what has the student already done.
 
-   `Core` jest nadal fasadą całego silnika i wystawia tamte moduły pod
-   dotychczasowymi nazwami — dwadzieścia plików woła Core.norm, Core.save
-   i Core.addCard i nie ma powodu, żeby wiedziały o podziale. Nowy kod
-   może wołać moduł wprost; stary nie musi się zmieniać.
+   `Core` is still the facade of the whole engine and re-exposes those
+   modules under their existing names — twenty files call Core.norm,
+   Core.save and Core.addCard and there is no reason for them to know
+   about the split. New code may call a module directly; old code does not
+   have to change.
    ============================================================ */
 (function (global) {
   "use strict";
 
-  /* ---------------- Stan trwały ----------------
-     Cały zapis i odczyt siedzi w store.js: to on trzyma `state`, jego
-     schemat, migracje i pamięć przeglądarki. Postępy lekcji sięgają stąd
-     po dwie rzeczy: bieżący stan i prośbę o zapis.
+  /* ---------------- Persistent state ----------------
+     All reading and writing sits in store.js: it owns `state`, its schema,
+     the migrations and browser storage. Lesson progress reaches in here for
+     two things: the current state and a request to save.
      ------------------------------------------------------- */
   var Store = global.Store;
   var save = Store.save;
 
-  /* ---------------- Moduły wystawiane dalej przez Core ----------------
-     Nic poniżej nie jest w tym pliku używane: to jest fasada. Postępy
-     lekcji nie wołają ani rejestru, ani talii, ani tożsamości fiszki —
-     dlatego dały się rozdzielić.
+  /* ---------------- Modules re-exposed by Core ----------------
+     Nothing below is used in this file: this is a facade. Lesson progress
+     calls neither the registry, nor the deck, nor the card identity — which
+     is why they could be separated at all.
      ------------------------------------------------------- */
   var isForbidden = Store.isForbidden;
   var cardKey = Store.cardKey;
@@ -34,11 +35,11 @@
   var registry = Registry.registry;
   var Srs = global.Srs;
 
-  /* ---------------- Porównywanie tekstu ----------------
-     Implementacja siedzi w text.js: to są funkcje czyste, a stan im do
-     niczego nie służy. Tutaj zostaje sam skrót nazwy, żeby reszta pliku
-     czytała się jak dotąd, i ponowne wystawienie w Core na końcu — bo
-     dwadzieścia modułów woła Core.norm, nie Txt.norm.
+  /* ---------------- Text comparison ----------------
+     The implementation sits in text.js: these are pure functions and state
+     is of no use to them. Only the short name stays here, so the rest of the
+     file reads as it did, plus the re-export in Core at the end — because
+     twenty modules call Core.norm, not Txt.norm.
      ------------------------------------------------------- */
   var stripAccents = global.Txt.stripAccents;
   var fold = global.Txt.fold;
@@ -48,11 +49,11 @@
   var checkOpen = global.Txt.checkOpen;
   var esc = global.Txt.esc;
 
-  /* Komunikaty na ekranie siedzą w notice.js — patrz tam po powód. */
+  /* On-screen messages sit in notice.js — see there for the reason. */
   var toast = global.Notice.toast;
   var notice = global.Notice.notice;
 
-  /* ---------------- Dzień / passa ---------------- */
+  /* ---------------- Day / streak ---------------- */
   function today() {
     var d = new Date();
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
@@ -75,7 +76,7 @@
     save();
   }
 
-  /* ---------------- Postęp lekcji ---------------- */
+  /* ---------------- Lesson progress ---------------- */
   function lessonState(id) {
     return Store.state.lessons[id] || null;
   }
@@ -102,9 +103,10 @@
     if (!wasDone && Store.state.lessons[id].done) {
       Store.state.stats.lessonsDone += 1;
       Store.state.xp += 20;
-      /* Bramka stoi TUTAJ, a nie w widoku końca lekcji: recordLesson woła
-         też ekran rozmów, a przy następnym widoku, który go zawoła, nie
-         ma o czym pamiętać. Ten sam wzorzec co zgoda w consent.js. */
+      /* The gate sits HERE, not in the end-of-lesson view: recordLesson is
+         also called by the conversation screen, and the next view that calls
+         it has nothing to remember it by. The same pattern as consent in
+         consent.js. */
       if (backupDue()) {
         notice("core.backupDue", {
           vars: { n: lessonsSinceBackup() },
@@ -127,7 +129,7 @@
     save();
   }
 
-  /* ---------------- Postęp jednostek i poziomów ---------------- */
+  /* ---------------- Unit and level progress ---------------- */
   function unitProgress(unit) {
     var ids = (unit.lessons || []).map(function (l) { return l.id; });
     if (unit.test) ids.push(unit.test.id);
@@ -144,7 +146,7 @@
     return { done: done, total: total, pct: total ? done / total : 0 };
   }
 
-  /** Pierwsza nieukończona lekcja poziomu — „gdzie jestem". */
+  /** The first unfinished lesson of a level — "where am I". */
   function nextLesson(level) {
     for (var i = 0; i < (level.units || []).length; i++) {
       var u = level.units[i];
@@ -156,21 +158,22 @@
     return null;
   }
 
-  /* ---------------- Kopia zapasowa ---------------- */
-  /* Co ile UKOŃCZONYCH lekcji przypominać o kopii. Powtórzone podejście
-     do zdanej już lekcji nie liczy się: nie przybyło niczego, co można
-     stracić. Liczba trafia też do napisu przez {n}, więc zmiana tutaj
-     zmienia komunikat i nie wymaga ruszania pięciu plików z napisami. */
+  /* ---------------- Backup ---------------- */
+  /* Every how many FINISHED lessons to remind about a backup. Retaking a
+     lesson already passed does not count: nothing new appeared that could be
+     lost. The number also reaches the message through {n}, so changing it
+     here changes the message and does not require touching five files of
+     strings. */
   var BACKUP_EVERY = 10;
 
   /**
-   * Ile lekcji uczeń ukończył od ostatniego zamknięcia sprawy: albo od
-   * zapisanej kopii, albo od odłożenia przypomnienia na później.
+   * How many lessons the student has finished since the matter was last
+   * settled: either since a saved copy or since the reminder was deferred.
    *
-   * Dwa pola, nie jedno: `at` znaczy „tyle postępów jest zabezpieczone"
-   * i przesuwa je WYŁĄCZNIE zapis kopii. Gdyby przesuwało je też
-   * zamknięcie komunikatu, kurs uznałby odłożenie na później za
-   * zrobioną kopię i skłamałby o tym, co uczeń ma na dysku.
+   * Two fields, not one: `at` means "this much progress is secured" and ONLY
+   * saving a copy moves it. If dismissing the message moved it too, the
+   * course would treat "later" as a copy made and would lie about what the
+   * student has on disk.
    */
   function lessonsSinceBackup() {
     var b = Store.state.backup || {};
@@ -188,13 +191,13 @@
   }
 
   /**
-   * „Nie teraz": następne przypomnienie po kolejnych dziesięciu lekcjach.
+   * "Not now": the next reminder after another ten lessons.
    *
-   * Bez tego zamknięcie komunikatu zdejmuje tylko blokadę powtórzeń w
-   * notice(), więc przy przekroczonym progu przypomnienie wraca po
-   * NAJBLIŻSZEJ lekcji i tak po każdej następnej. Prośba o kopię co
-   * dziesięć lekcji jest przypomnieniem, ta sama prośba co lekcję jest
-   * powodem, żeby przestać czytać komunikaty tego kursu.
+   * Without this, dismissing the message only lifts the repeat lock in
+   * notice(), so once the threshold is passed the reminder comes back after
+   * the VERY NEXT lesson and after each one that follows. Asking for a copy
+   * every ten lessons is a reminder; the same request every lesson is a
+   * reason to stop reading this course's messages.
    */
   function snoozeBackup() {
     var b = Store.state.backup || {};
@@ -203,12 +206,12 @@
   }
 
   /**
-   * Zapisuje stan do pliku i przesuwa próg przypomnienia.
+   * Writes the state to a file and moves the reminder threshold.
    *
-   * Znacznik idzie PRZED serializacją, nie po niej: plik ma nieść już
-   * nową wartość `backup.at`. Odwrotna kolejność wypuszcza kopię ze
-   * starym znacznikiem, więc uczeń, który ją kiedyś odzyska, dostaje
-   * przypomnienie natychmiast — o kopii, którą właśnie wgrał.
+   * The marker goes BEFORE serialization, not after: the file must already
+   * carry the new `backup.at`. The other order releases a copy with the old
+   * marker, so a student who restores it some day gets a reminder
+   * immediately — about the copy they have just loaded.
    */
   function downloadBackup() {
     markBackup();
@@ -220,7 +223,7 @@
     global.setTimeout(function () { global.URL.revokeObjectURL(a.href); }, 1000);
   }
 
-  /** Deterministyczny shuffle (seed = string), by ćwiczenia nie skakały przy re-renderze. */
+  /** Deterministic shuffle (seed = string), so exercises do not jump on re-render. */
   function seededShuffle(arr, seed) {
     var a = arr.slice(), h = 2166136261;
     for (var i = 0; i < String(seed).length; i++) {
@@ -234,7 +237,7 @@
     return a;
   }
 
-  /* ---------------- Eksport modułu ---------------- */
+  /* ---------------- Module export ---------------- */
   var Core = {
     STORE_KEY: Store.KEY,
     registry: registry,

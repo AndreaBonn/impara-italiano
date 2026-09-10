@@ -1,38 +1,41 @@
 /* ============================================================
-   talk-run.js — przebieg rozmowy: gdzie jesteśmy, co się liczy, dokąd dalej.
+   talk-run.js — the run of a conversation: where we are, what counts, where next.
 
-   Wyjęte z views-talk.js, gdzie ta logika mieszkała wewnątrz funkcji
-   rysującej dymki. Nie chodzi o długość pliku: chodzi o to, że rozmowa
-   ma rozwidlenia, powrót na ostatni wybór i wynik, a każda z tych rzeczy
-   psuje się po cichu. Zła gałąź wygląda jak inna scena, zgubiony punkt
-   wygląda jak surowsza ocena, a powrót na złe miejsce wygląda jak dialog
-   napisany od nowa. Żadnej z nich nie widać w przeglądarce bez przejścia
-   całej sceny do końca — i dlatego przez cały czas nie miały testu.
+   Pulled out of views-talk.js, where this logic lived inside the function
+   drawing the bubbles. It is not about file length: it is that a
+   conversation has branches, a return to the last choice and a result, and
+   every one of those breaks silently. The wrong branch looks like a
+   different scene, a lost point looks like harsher marking, and returning
+   to the wrong place looks like a dialogue rewritten from scratch. None of
+   them is visible in a browser without playing the whole scene to the end —
+   and that is why they had no test all this time.
 
-   Ten plik nie wie nic o DOM-ie i nic nie zapisuje. Oddaje opis przejścia
-   („idź dalej z tym tekstem", „stój, to pierwsza pomyłka"), a widok
-   zamienia go na dymek, komunikat i wpis w quaderno błędów.
+   This file knows nothing about the DOM and saves nothing. It returns a
+   description of a transition ("go on with this text", "stop, that is the
+   first mistake"), and the view turns it into a bubble, a message and an
+   entry in the mistake notebook.
 
-   TRZY DECYZJE, które ten kod trzyma i które łatwo cofnąć przez pomyłkę:
+   THREE DECISIONS this code holds and which are easy to undo by accident:
 
-   - Zła odpowiedź ZATRZYMUJE scenę. Wcześniej rozmowa szła dalej, tyle że
-     w dymku stawał wzór zamiast tego, co uczeń powiedział: z ekranu
-     wyglądało to na zaliczone, więc pomyłka nie miała konsekwencji.
-   - Przy rozwidleniu wygrywa gałąź NAJBLIŻSZA wypowiedzi, nie pierwsza
-     pasująca: dwie repliki w tej samej scenie bywają podobne („tylko kawa"
-     / „kawa i deser") i pierwsza z brzegu wysyłałaby ucznia tam, gdzie
-     nie prosił.
-   - Do quaderno błędów pomyłka trafia RAZ NA TURĘ, nie raz na próbę:
-     dziesięć podejść do jednego zdania to jedna pomyłka, nie dziesięć.
+   - A wrong answer STOPS the scene. Previously the conversation went on,
+     except that the bubble held the model line instead of what the student
+     said: on screen it looked like a pass, so a mistake had no consequence.
+   - At a branch the winner is the branch CLOSEST to the utterance, not the
+     first that matches: two lines in the same scene are sometimes similar
+     ("just a coffee" / "coffee and dessert") and the first at hand would
+     send the student somewhere they did not ask to go.
+   - A mistake reaches the notebook ONCE PER TURN, not once per attempt: ten
+     attempts at one sentence are one mistake, not ten.
 
-   Skrypt klasyczny. Wymaga Core (similarity).
+   Classic script. Requires Core (similarity).
    ============================================================ */
 (function (global) {
   "use strict";
 
-  /* Próg podobieństwa, powyżej którego wypowiedź uchodzi za tę replikę.
-     Niżej niż w ćwiczeniach pisanych, bo rozpoznawanie mowy gubi końcówki
-     i interpunkcję, a rozmowa ma iść dalej, nie egzaminować ortografii. */
+  /* The similarity threshold above which an utterance counts as that line.
+     Lower than in written exercises, because speech recognition loses
+     endings and punctuation, and a conversation is meant to move on rather
+     than examine spelling. */
   var PROG = 0.72;
 
   function create(conv) {
@@ -43,46 +46,47 @@
     var przejsteTury = 0;
     var bledny = false;
 
-    /* Punkty wyboru odwiedzone w tym przejściu. `znak` jest nieprzezroczysty:
-       widok wkłada tam swoją miarę transkryptu, żeby po powrocie uciąć go
-       dokładnie w miejscu wyboru. Ten plik go nie czyta. */
+    /* The choice points visited during this run. `znak` is opaque: the view
+       puts its own measure of the transcript there, so that after a return
+       it can cut it exactly at the point of choice. This file does not read
+       it. */
     var wybory = [];
 
-    /** Nieznany cel skoku = koniec rozmowy; validate.mjs tego nie przepuści. */
+    /** An unknown jump target = the end of the conversation; validate.mjs will not let it through. */
     function indeksTury(id) {
       for (var n = 0; n < tury.length; n++) if (tury[n].id === id) return n;
       return tury.length;
     }
 
-    /** Tura z polem `go` mówi, dokąd iść; bez niego idziemy o jeden dalej. */
+    /** A turn with a `go` field says where to go; without it we move on by one. */
     function dalej(skad, teraz) {
       return skad && skad.go ? indeksTury(skad.go) : teraz + 1;
     }
 
     function biezaca() { return i < tury.length ? tury[i] : null; }
 
-    /** Repliki ucznia mają `sp: "TY"`; reszta należy do rozmówcy. */
+    /** The student's lines have `sp: "TY"`; the rest belong to the other speaker. */
     function mojaTura() {
       var t = biezaca();
       return !!t && t.sp === "TY";
     }
 
-    /** Przejście przez replikę rozmówcy: nic się nie liczy, idziemy dalej. */
+    /** Passing through the other speaker's line: nothing counts, we move on. */
     function advance() {
       var t = biezaca();
       if (t) i = dalej(t, i);
       return biezaca();
     }
 
-    /** Wzory przyjmowane w tej turze: z pierwszej gałęzi albo z samej tury. */
+    /** The models accepted in this turn: from the first branch or from the turn itself. */
     function przyjmowane(t) {
       if (t.opts) return t.opts[0].accept || [];
       return t.accept || [t.it];
     }
 
     /**
-     * Początek repliki ucznia. Liczy turę do wyniku i — przy rozwidleniu —
-     * zapisuje punkt powrotu ZANIM cokolwiek się wydarzy.
+     * The start of the student's line. Counts the turn towards the result
+     * and — at a branch — records the return point BEFORE anything happens.
      */
     function beginTurn(znak) {
       var t = biezaca();
@@ -94,7 +98,7 @@
       return t;
     }
 
-    /** Gałąź najbliższa temu, co uczeń powiedział, razem z jej podobieństwem. */
+    /** The branch closest to what the student said, together with its similarity. */
     function dopasuj(text) {
       var t = biezaca();
       var kandydaci = (t && t.opts) || [{ accept: przyjmowane(t || {}) }];
@@ -109,14 +113,14 @@
       return naj;
     }
 
-    /** Odnotowuje pomyłkę. `true` znaczy „pierwsza w tej turze". */
+    /** Records a mistake. `true` means "the first one in this turn". */
     function pomylka() {
       if (bledny) return false;
       bledny = true;
       return true;
     }
 
-    /** Przejście dalej z podanym tekstem w dymku. */
+    /** Moving on with the given text in the bubble. */
     function idzDalej(tekst, gal, tr) {
       var t = biezaca();
       i = dalej(t && t.opts ? gal : t, i);
@@ -124,7 +128,7 @@
     }
 
     /**
-     * Odpowiedź ucznia — z klawiatury albo z mikrofonu.
+     * The student's answer — from the keyboard or from the microphone.
      * @returns {{ok:boolean, tekst?:string, tr?:string, punkt?:boolean, pierwszaPomylka?:boolean}}
      */
     function answer(text) {
@@ -140,10 +144,10 @@
     }
 
     /**
-     * Klik w gałąź. NIE przechodzi przez próg podobieństwa: uczeń wybrał
-     * replikę z listy, więc nie ma czego oceniać — a od kiedy zła odpowiedź
-     * zatrzymuje scenę, porównywanie mogłoby zablokować wybór na własnej
-     * podpowiedzi.
+     * A click on a branch. It does NOT go through the similarity threshold:
+     * the student picked a line from a list, so there is nothing to grade —
+     * and since a wrong answer stops the scene, comparing could block the
+     * choice on the course's own suggestion.
      */
     function choose(n) {
       var t = biezaca();
@@ -159,12 +163,14 @@
     }
 
     /**
-     * Rezygnacja: wzór wchodzi do transkryptu i scena idzie dalej, bez punktu.
+     * Giving up: the model line enters the transcript and the scene moves
+     * on, with no point scored.
      *
-     * Wzór bierzemy z podpowiedzi, nie z `accept[0]`: klucze są pisane pod
-     * porównywanie, małą literą i bez interpunkcji, i w dymku wyglądałyby
-     * jak zdanie napisane byle jak. Przy rozwidleniu bierzemy pierwszą gałąź
-     * — kierunku nie da się zgadnąć, skoro uczeń nic nie wybrał.
+     * We take the model from the hint, not from `accept[0]`: the keys are
+     * written for comparison, in lower case and without punctuation, and in
+     * a bubble they would look like a carelessly written sentence. At a
+     * branch we take the first one — the direction cannot be guessed when
+     * the student chose nothing.
      */
     function reveal() {
       var t = biezaca();
@@ -177,9 +183,9 @@
     }
 
     /**
-     * Powrót na ostatnie rozwidlenie, nie na początek. Gałąź, której się nie
-     * wybrało, jest tym, po co w ogóle są rozwidlenia; kazać przechodzić od
-     * nowa cały dialog, żeby ją zobaczyć, znaczy nie pokazać jej nikomu.
+     * A return to the last branch, not to the beginning. The branch you did
+     * not take is what branches are for in the first place; making someone
+     * replay the whole dialogue to see it means showing it to nobody.
      */
     function rewind() {
       var w = wybory.pop();

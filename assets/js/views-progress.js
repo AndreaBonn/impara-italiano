@@ -1,12 +1,13 @@
 /* ============================================================
-   views-progress.js — postępy: passa, celność, dwa tygodnie wstecz.
+   views-progress.js — progress: the streak, accuracy, the last two weeks.
 
-   Ekran wydzielony z views.js, w którym leżało osiem ekranów naraz.
-   Wzorzec jest ten sam, którym chodzą już views-talk.js, views-train.js
-   i views-today.js: skorupa (set, pageHead, el, empty) przychodzi z
-   `Views.shell`, a plik dokłada własną trasę do `Views`.
+   A screen split out of views.js, which held eight screens at once. The
+   pattern is the same one views-talk.js, views-train.js and views-today.js
+   already use: the shell (set, pageHead, el, empty) comes from
+   `Views.shell`, and the file adds a route of its own to `Views`.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function () {
   "use strict";
@@ -17,13 +18,13 @@
   var pageHead = Views.shell.head;
   var pct = Views.shell.pct;
   /* ═══════════════════════════════════════════════════════════
-     POSTĘPY
+     PROGRESS
      ═══════════════════════════════════════════════════════════ */
   Views.progressi = function () {
     var s = Core.state;
     var acc = (s.stats.correct + s.stats.wrong) ? Math.round(100 * s.stats.correct / (s.stats.correct + s.stats.wrong)) : 0;
 
-    // skróty dni bierzemy z Intl, nie z tablicy: inaczej każdy język wymaga własnej
+    // the day abbreviations come from Intl, not from an array: otherwise every language needs its own
     var weekday = new Intl.DateTimeFormat(I18n.locale(), { weekday: "short" });
     var days = [];
     for (var d = 13; d >= 0; d--) {
@@ -41,10 +42,10 @@
       '<div class="stat-card"><b>' + s.xp + "</b><span>" + esc(t("prog.points")) + "</span></div></div>" +
 
       '<h2 style="font-size:1.2rem;margin-bottom:12px">' + t("prog.lastTwoWeeks") + "</h2>" +
-      /* Czternaście kolumn ze skrótami dni nie mieści się na 375 px: skróty
-         mają własną szerokość minimalną i wypychają wykres poza ekran.
-         Zamiast ucinać etykiety, przewijamy w poziomie — to ten sam wzorzec,
-         którym owinięte są tabele odmiany. */
+      /* Fourteen columns of day abbreviations do not fit in 375 px: the
+         abbreviations have a minimum width of their own and push the chart
+         off screen. Instead of truncating the labels we scroll horizontally
+         — the same pattern the conjugation tables are wrapped in. */
       '<div class="card" style="margin-bottom:28px"><div class="table-wrap" style="border:0"><div style="display:flex;gap:6px;align-items:flex-end;height:130px;min-width:320px">' +
       days.map(function (x) {
         var h = Math.max(4, Math.round(100 * x.v / max));

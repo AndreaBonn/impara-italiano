@@ -1,45 +1,45 @@
 /* ============================================================
-   Komunikaty na ekranie (assets/js/notice.js).
+   On-screen messages (assets/js/notice.js).
 
-   Dwa rodzaje i różnią się jedną rzeczą: czy uczeń MUSI je zobaczyć.
-   Toast znika sam po 3,2 s i wolno go przegapić. Komunikat trwały
-   zostaje do zamknięcia, bo mówi o utracie danych albo prosi o kopię
-   zapasową — a to są jedyne dwie rzeczy w kursie, których nie da się
-   odzyskać dalszą nauką.
+   Two kinds, differing in one thing: whether the student MUST see them. A
+   toast disappears on its own after 3.2 s and may be missed. A persistent
+   message stays until dismissed, because it speaks of data loss or asks for
+   a backup — and those are the only two things in the course that cannot be
+   recovered by studying further.
 
-   Gałąź po kliknięciu (odblokowanie klucza, wywołanie onAction i
-   onDismiss) do niedawna nie miała żadnego testu jednostkowego, bo
-   atrapa DOM wyrzucała uchwyty zdarzeń. Teraz je trzyma i można je
-   odpalić przez el.fire("click").
+   The branch after a click (unlocking the key, calling onAction and
+   onDismiss) had no unit test at all until recently, because the DOM double
+   threw away the event handlers. Now it keeps them and they can be fired
+   through el.fire("click").
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { loadEngine } from "./_harness.mjs";
 
-/** Sam moduł komunikatów, bez stanu i bez SRS — nie są mu potrzebne. */
+/** The message module alone, with no state and no SRS — it needs neither. */
 function swiezy() {
   return loadEngine({ files: ["assets/js/notice.js"] });
 }
 
-/** Przyciski komunikatu w kolejności dokładania: akcja (jeśli jest), potem krzyżyk. */
+/** The message buttons in the order they are added: the action (if any), then the cross. */
 function przyciski(el) { return el.children; }
 
 describe("toast", () => {
-  test("napis trafia na ekran", () => {
+  test("the string reaches the screen", () => {
     const box = swiezy();
     box.sandbox.Notice.toast("zapisano");
     assert.deepEqual(box.visible(), ["zapisano"]);
   });
 
-  test("znika po upływie czasu, w odróżnieniu od komunikatu trwałego", () => {
+  test("it disappears after the time is up, unlike a persistent message", () => {
     const box = swiezy();
     box.sandbox.Notice.toast("zapisano");
-    assert.equal(box.visible().length, 1, "najpierw widoczny");
+    assert.equal(box.visible().length, 1, "visible at first");
     box.flush();
-    assert.equal(box.visible().length, 0, "po czasie już nie");
+    assert.equal(box.visible().length, 0, "no longer after the time");
   });
 
-  test("odmiana „ok” dokłada własną klasę, zwykły toast nie", () => {
+  test("the \"ok\" variant adds a class of its own, a plain toast does not", () => {
     const box = swiezy();
     box.sandbox.Notice.toast("gotowe", "ok");
     box.sandbox.Notice.toast("uwaga");
@@ -47,14 +47,14 @@ describe("toast", () => {
     assert.doesNotMatch(box.notices[1].className, /toast--ok/);
   });
 
-  test("napis idzie przez textContent, więc znaczniki zostają napisem", () => {
+  test("the string goes through textContent, so markup stays a string", () => {
     const box = swiezy();
     box.sandbox.Notice.toast("<b>x</b>");
     assert.equal(box.notices[0].textContent, "<b>x</b>");
-    assert.equal(box.notices[0].innerHTML, "", "nic nie poszło jako HTML");
+    assert.equal(box.notices[0].innerHTML, "", "nothing went in as HTML");
   });
 
-  test("ten sam napis dwa razy to dwa toasty: powtórzenie nie jest tu wadą", () => {
+  test("the same string twice is two toasts: repetition is not a fault here", () => {
     const box = swiezy();
     box.sandbox.Notice.toast("zapisano");
     box.sandbox.Notice.toast("zapisano");
@@ -62,17 +62,17 @@ describe("toast", () => {
   });
 });
 
-describe("komunikat trwały", () => {
-  test("zostaje na ekranie po upływie czasu toastu", () => {
+describe("a persistent message", () => {
+  test("it stays on screen after the toast time is up", () => {
     const box = swiezy();
     box.sandbox.Notice.notice("core.saveBlocked");
     box.flush();
     assert.equal(box.visible().length, 1);
     assert.match(box.notices[0].className, /toast--stuck/);
-    assert.equal(box.notices[0].getAttribute("role"), "alert", "czytnik ekranu ma przerwać lekturę");
+    assert.equal(box.notices[0].getAttribute("role"), "alert", "a screen reader is meant to interrupt its reading");
   });
 
-  test("ten sam klucz nie mnoży się przy każdym zapisie", () => {
+  test("the same key does not multiply on every save", () => {
     const box = swiezy();
     box.sandbox.Notice.notice("core.saveBlocked");
     box.sandbox.Notice.notice("core.saveBlocked");
@@ -80,20 +80,20 @@ describe("komunikat trwały", () => {
     assert.equal(box.visible().length, 1);
   });
 
-  test("inny klucz to inny komunikat, blokada dotyczy klucza, nie ekranu", () => {
+  test("a different key is a different message; the lock is on the key, not on the screen", () => {
     const box = swiezy();
     box.sandbox.Notice.notice("core.saveBlocked");
     box.sandbox.Notice.notice("core.storagePruned");
     assert.equal(box.visible().length, 2);
   });
 
-  test("zmienne trafiają do tłumaczenia, a nie giną po drodze", () => {
+  test("the variables reach the translation rather than getting lost on the way", () => {
     const box = swiezy();
     box.sandbox.Notice.notice("core.backupDue", { vars: { n: 10 } });
     assert.match(box.visible()[0], /n=10/);
   });
 
-  test("bez stosu komunikatów nic się nie dzieje i nic nie wybucha", () => {
+  test("with no message stack nothing happens and nothing blows up", () => {
     const box = swiezy();
     box.sandbox.document.getElementById = () => null;
     assert.doesNotThrow(() => box.sandbox.Notice.notice("core.saveBlocked"));
@@ -101,8 +101,8 @@ describe("komunikat trwały", () => {
   });
 });
 
-describe("zamknięcie komunikatu", () => {
-  test("krzyżyk zdejmuje komunikat z ekranu", () => {
+describe("dismissing a message", () => {
+  test("the cross takes the message off the screen", () => {
     const box = swiezy();
     box.sandbox.Notice.notice("core.saveBlocked");
     const x = przyciski(box.notices[0])[0];
@@ -111,7 +111,7 @@ describe("zamknięcie komunikatu", () => {
     assert.equal(box.visible().length, 0);
   });
 
-  test("krzyżyk woła onDismiss dokładnie raz", () => {
+  test("the cross calls onDismiss exactly once", () => {
     const box = swiezy();
     let ile = 0;
     box.sandbox.Notice.notice("core.backupDue", { onDismiss: () => ile++ });
@@ -119,37 +119,37 @@ describe("zamknięcie komunikatu", () => {
     assert.equal(ile, 1);
   });
 
-  /* Bez odblokowania klucza komunikat zamknięty raz nie wróciłby nigdy:
-     blokada powtórzeń jest po to, żeby nie mnożył się w jednej sesji, a
-     nie po to, żeby wyłączyć go do końca nauki. */
-  test("po zamknięciu ten sam klucz może przyjść jeszcze raz", () => {
+  /* Without unlocking the key a message dismissed once would never return:
+     the repeat lock is there so that it does not multiply within one
+     session, not so that it is switched off for the rest of the course. */
+  test("after dismissal the same key may come again", () => {
     const box = swiezy();
     box.sandbox.Notice.notice("core.saveBlocked");
     przyciski(box.notices[0])[0].fire("click");
     box.sandbox.Notice.notice("core.saveBlocked");
-    assert.equal(box.visible().length, 1, "wrócił");
+    assert.equal(box.visible().length, 1, "it came back");
   });
 });
 
-describe("przycisk akcji", () => {
+describe("the action button", () => {
   const opcje = (spy) => ({ actionKey: "core.backupSave", onAction: spy });
 
-  test("jest tylko wtedy, gdy komunikat o coś prosi", () => {
+  test("it exists only when the message asks for something", () => {
     const box = swiezy();
     box.sandbox.Notice.notice("core.saveBlocked");
-    assert.equal(przyciski(box.notices[0]).length, 1, "sam krzyżyk");
+    assert.equal(przyciski(box.notices[0]).length, 1, "the cross alone");
 
     box.sandbox.Notice.notice("core.backupDue", opcje(() => {}));
-    assert.equal(przyciski(box.notices[1]).length, 2, "akcja i krzyżyk");
+    assert.equal(przyciski(box.notices[1]).length, 2, "the action and the cross");
   });
 
-  test("sam klucz napisu bez uchwytu nie tworzy martwego przycisku", () => {
+  test("a string key alone with no handler does not create a dead button", () => {
     const box = swiezy();
     box.sandbox.Notice.notice("core.backupDue", { actionKey: "core.backupSave" });
     assert.equal(przyciski(box.notices[0]).length, 1);
   });
 
-  test("kliknięcie woła akcję i zdejmuje komunikat", () => {
+  test("a click calls the action and takes the message down", () => {
     const box = swiezy();
     let ile = 0;
     box.sandbox.Notice.notice("core.backupDue", opcje(() => ile++));
@@ -158,29 +158,29 @@ describe("przycisk akcji", () => {
     assert.equal(box.visible().length, 0);
   });
 
-  /* Rozróżnienie, na którym stoi próg kopii zapasowej: zrobiona kopia
-     przesuwa `backup.at`, a odłożenie na później `backup.snoozed`.
-     Gdyby akcja wołała oba uchwyty, kurs uznałby zapisaną kopię za
-     odłożenie i przestałby przypominać. Oba kliknięcia w JEDNYM teście,
-     bo sprawdzana jest różnica między nimi, nie sam brak. */
-  test("onDismiss woła krzyżyk, nie wykonana akcja", () => {
+  /* The distinction the backup threshold rests on: a copy that was made
+     moves `backup.at`, while deferring moves `backup.snoozed`. If the action
+     called both handlers, the course would treat a saved copy as a deferral
+     and would stop reminding. Both clicks in ONE test, because what is
+     checked is the difference between them, not their absence. */
+  test("onDismiss is called by the cross, not by a completed action", () => {
     const box = swiezy();
     let odlozone = 0;
     const opts = { actionKey: "core.backupSave", onAction: () => {}, onDismiss: () => odlozone++ };
 
     box.sandbox.Notice.notice("core.backupDue", opts);
     przyciski(box.notices[0])[0].fire("click");
-    assert.equal(odlozone, 0, "zapisanie kopii to nie odłożenie");
+    assert.equal(odlozone, 0, "saving a copy is not deferring");
 
     box.sandbox.Notice.notice("core.backupDue", opts);
     const drugi = box.notices[1];
     przyciski(drugi)[1].fire("click");
-    assert.equal(odlozone, 1, "krzyżyk odkłada");
+    assert.equal(odlozone, 1, "the cross defers");
   });
 });
 
-describe("wystawienie w Core", () => {
-  test("Core.toast i Core.notice to te same funkcje, nie kopie", () => {
+describe("the exposure in Core", () => {
+  test("Core.toast and Core.notice are the same functions, not copies", () => {
     const box = loadEngine();
     assert.equal(box.Core.toast, box.sandbox.Notice.toast);
     assert.equal(box.Core.notice, box.sandbox.Notice.notice);

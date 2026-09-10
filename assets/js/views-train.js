@@ -1,16 +1,16 @@
 /* ============================================================
-   views-train.js — widoki treningu adaptacyjnego.
+   views-train.js — the adaptive training screens.
 
-   Na razie: zakładka „Błędy" wewnątrz Powtórek. Osobny plik, bo
-   views.js ma już 844 linie, a limit projektu to 300 na plik.
+   For now: the "Mistakes" tab inside Reviews. A separate file, because
+   views.js is already 844 lines and the project limit is 300 per file.
 
-   Zasada powtórki: pokazujemy PRAWDZIWE ćwiczenie z lekcji, a nie
-   fiszkę z osobną oceną. Uczeń robi to samo zadanie, na którym się
-   potknął, a wynik wchodzi tą samą drogą co w lekcji — przez owinięte
-   Ex.build. Dzięki temu nie ma drugiego miejsca, w którym aktualizuje
-   się harmonogram, więc nie ma czego rozjechać.
+   The principle of a review: we show the REAL exercise from the lesson, not
+   a flashcard with a grading of its own. The student does the same task
+   they stumbled on, and the result enters the same way as in a lesson —
+   through the wrapped Ex.build. That way there is no second place where the
+   schedule is updated, so there is nothing to drift apart.
 
-   Skrypt klasyczny. Wymaga core.js, errors.js, exercises.js, i18n.js.
+   Classic script. Requires core.js, errors.js, exercises.js, i18n.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -19,16 +19,16 @@
   var esc = Core.esc;
   var t = function (k, v) { return I18n.t(k, v); };
 
-  /* Skorupa widoku pożyczona z views.js: ten moduł dokłada trasę do już
-     istniejącego zestawu, a nie zakłada własnego układu strony. */
+  /* The view shell borrowed from views.js: this module adds a route to an
+     existing set rather than setting up a page layout of its own. */
   var set = Views.shell.set;
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
 
-  /** Ile kart bierzemy na jedno podejście. */
+  /** How many cards we take for one run. */
   var BATCH = 10;
 
-  /** Nazwa zagadnienia w języku ucznia — z hasła gramatycznego, nie z nowego napisu. */
+  /** The topic name in the student's language — from a grammar entry, not from a new string. */
   function tagLabel(tag) {
     var secs = global.GRAMMAR_REF || [];
     for (var i = 0; i < secs.length; i++) {
@@ -46,7 +46,7 @@
       '<button class="btn btn--primary js-path">' + esc(t("nav.path")) + "</button></div>";
   }
 
-  /** Podsumowanie „na czym stoisz": zagadnienia z liczbą otwartych kart. */
+  /** The "where you stand" summary: topics with the number of open cards. */
   function podsumowanie() {
     var wg = Errors.byTag();
     var tagi = Object.keys(wg).sort(function (a, b) { return wg[b].length - wg[a].length; });
@@ -63,8 +63,9 @@
   }
 
   /**
-   * Zakładka „Błędy". Dostaje kontener od Views.ripasso i sama decyduje,
-   * czy pokazać stan pusty, zaproszenie do powtórki, czy samą powtórkę.
+   * The "Mistakes" tab. It receives a container from Views.ripasso and
+   * decides for itself whether to show the empty state, an invitation to
+   * review, or the review itself.
    */
   Train.errorPanel = function (box) {
     var wszystkie = Object.keys(Core.state.errors).length;
@@ -93,7 +94,7 @@
     box.querySelector(".js-start").addEventListener("click", function () { przebieg(box, zalegle); });
   };
 
-  /* ---------------- Przebieg powtórki ---------------- */
+  /* ---------------- The review run ---------------- */
 
   function przebieg(box, karty) {
     var i = 0, dobre = 0, zgubione = 0;
@@ -103,9 +104,9 @@
       var karta = karty[i];
       var gdzie = Errors.locate(karta.key);
 
-      /* Treść ćwiczenia zmieniła się w kursie: nie ma czego pokazać.
-         Karta odchodzi, ale uczeń ma o tym wiedzieć — cicha strata
-         wyglądałaby jak zaliczenie. */
+      /* The exercise content has changed in the course: there is nothing to
+         show. The card goes away, but the student must know about it — a
+         silent loss would look like a pass. */
       if (!gdzie) {
         Errors.drop(karta.key);
         zgubione++;
@@ -127,8 +128,8 @@
       var korzen = box.querySelector(".exq");
       var next = box.querySelector(".js-next");
 
-      /* Ex.build jest owinięte przez errors.js, więc harmonogram karty
-         aktualizuje się sam. Tutaj zostaje tylko przejście dalej. */
+      /* Ex.build is wrapped by errors.js, so the card's schedule updates
+         itself. All that is left here is moving on. */
       zbudowane.wire(korzen, function (ok) {
         if (ok) dobre++;
         next.hidden = false;
@@ -153,19 +154,20 @@
   }
 
   /* ═══════════════════════════════════════════════════════════
-     ALLENAMENTO — ćwiczenia z generatora
+     ALLENAMENTO — the generated exercises
      ═══════════════════════════════════════════════════════════ */
 
-  /** Ile zadań w jednym podejściu. */
+  /** How many tasks in one run. */
   var DRILL_N = 10;
 
   /**
-   * Nazwa zagadnienia treningu.
+   * The name of a training topic.
    *
-   * NIE bierzemy jej z GRAMMAR_REF, choć tag tam wskazuje: „numeri" ma
-   * tag `g-frase`, którego tytuł brzmi „struktura zdania" i jako nazwa
-   * ćwiczenia wprowadzałby w błąd. Tag służy quaderno błędów do grupowania,
-   * nazwa służy uczniowi do wyboru — to dwie różne rzeczy.
+   * We do NOT take it from GRAMMAR_REF, even though the tag points there:
+   * "numeri" has the tag `g-frase`, whose title reads "sentence structure"
+   * and would be misleading as the name of an exercise. The tag serves the
+   * mistake notebook for grouping, the name serves the student for
+   * choosing — two different things.
    */
   function topicLabel(id) { return t("train.topic." + id); }
 
@@ -180,8 +182,9 @@
           esc(t("train.start")) + "</button></div>";
       }).join("") + "</div>" +
       '<p class="exq__sub" style="margin-top:20px">' + esc(t("train.endless")) + "</p>" +
-      /* Rozróżnianie dźwięków stoi obok, a nie w tej liście: tam ćwiczy się
-         regułę, tu ucho, i jedno nie zastępuje drugiego. */
+      /* Sound discrimination sits next to this list rather than in it:
+         there you practise a rule, here the ear, and one does not replace
+         the other. */
       '<div class="list-row" style="margin-top:24px"><span class="list-row__main"><b>' +
       esc(t("sound.title")) + "</b><span>" + esc(t("sound.hubHint")) + "</span></span>" +
       '<button class="btn btn--ghost btn--sm js-sounds">' + esc(t("sound.open")) + "</button></div>" +
@@ -203,12 +206,12 @@
   };
 
   /**
-   * Seria zadań jednego zagadnienia.
+   * A run of tasks on one topic.
    *
-   * Ziarno bierze się z zegara przy wejściu, więc każde podejście jest
-   * inne, ale W TRAKCIE podejścia jest stałe: karta błędu zapisuje parę
-   * (generator, ziarno) i to samo zadanie da się później odtworzyć
-   * co do znaku.
+   * The seed is taken from the clock on entry, so every run is different,
+   * but DURING a run it is fixed: a mistake card stores the pair
+   * (generator, seed) and the same task can later be reproduced character
+   * for character.
    */
   function drillSession(topicId) {
     var topic = Drills.TOPICS.filter(function (x) { return x.id === topicId; })[0];
@@ -235,8 +238,8 @@
       var korzen = box.querySelector(".exq");
       var next = box.querySelector(".js-next");
 
-      /* Zadanie z generatora nie należy do żadnej lekcji, więc owinięcie
-         Ex.build nie ma czego zapisać: quaderno dostaje je stąd, wprost. */
+      /* A generated task belongs to no lesson, so the Ex.build wrapper has
+         nothing to record: the notebook gets it from here, directly. */
       zbudowane.wire(korzen, function (ok) {
         if (ok) dobre++;
         Errors.recordGenerated(item, ok);

@@ -1,45 +1,45 @@
 /* ============================================================
-   pwa-rules.js — reguły ogłaszania nowej wersji kursu.
+   pwa-rules.js — the rules for announcing a new version of the course.
 
-   Trzy pytania i wszystkie trzy są decyzjami, nie skutkami: czy nowa
-   wersja ma być zapowiedziana, czy wolno znów zapytać serwer, czy
-   przejęcie kontroli ma przeładować stronę. Żadne z nich nie dotyka
-   ani DOM-u, ani service workera, ani zegara — biorą stan i oddają
-   „tak" albo „nie".
+   Three questions, all three of them decisions rather than effects:
+   should the new version be announced, are we allowed to ask the server
+   again, should taking over control reload the page. None of them touches
+   the DOM, the service worker or the clock — they take state and return
+   "yes" or "no".
 
-   Podział jest ten sam, którym chodzą już lemma-morf.js i cils-html.js:
-   czysta funkcja osobno od tego, co dotyka przeglądarki. Powód jest tu
-   ostrzejszy niż zwykle. Cała ta funkcja żyje w stanach workera, których
-   atrapy odtwarzają źle: test na prawdziwej sekwencji potrzebuje dwóch
-   wydań i dwóch kart, czyli Playwrighta i kilkunastu sekund. To, co da
-   się rozstrzygnąć bez przeglądarki, ma się rozstrzygać bez niej.
+   The split is the same one lemma-morf.js and cils-html.js already use:
+   a pure function apart from whatever touches the browser. The reason is
+   sharper here than usual. This whole feature lives in worker states that
+   doubles reproduce badly: a test on the real sequence needs two releases
+   and two tabs, that is Playwright and a dozen seconds. Whatever can be
+   settled without a browser should be settled without one.
 
-   Skrypt klasyczny.
+   Classic script.
    ============================================================ */
 (function (global) {
   "use strict";
 
   /**
-   * Najkrótszy odstęp między dwoma pytaniami serwera o nową wersję.
+   * The shortest gap between two questions to the server about a new version.
    *
-   * Sprawdzenie idzie przy każdym powrocie na pierwszy plan, a to na
-   * zainstalowanej aplikacji zdarza się przy każdym przełączeniu okna:
-   * bez progu przejście tam i z powrotem między dwoma aplikacjami
-   * zamienia się w serię żądań. Kwadrans jest kompromisem — uczeń, który
-   * wraca do kursu po przerwie, i tak dostaje sprawdzenie od razu, bo
-   * wchodzi przez wczytanie strony, nie przez powrót na pierwszy plan.
+   * The check runs on every return to the foreground, and on an installed
+   * app that happens on every window switch: with no threshold, going back
+   * and forth between two apps turns into a burst of requests. A quarter of
+   * an hour is a compromise — a student coming back to the course after a
+   * break gets a check immediately anyway, because they arrive through a
+   * page load, not through a return to the foreground.
    */
   var PRZERWA = 15 * 60 * 1000;
 
   /**
-   * Czy zapowiedzieć nową wersję.
+   * Whether to announce a new version.
    *
-   * Dwa warunki, nie jeden. `czeka` mówi, że nowa wersja jest gotowa i
-   * stoi w kolejce. `kontrolowana` mówi, że stronę obsługiwał JUŻ
-   * poprzedni worker w chwili jej wczytania — i bez tego drugiego
-   * warunku pierwsza wizyta wyglądałaby dokładnie jak aktualizacja,
-   * bo pierwszy worker też przechodzi przez stan „installed". Uczeń
-   * dostawałby prośbę o odświeżenie strony, którą właśnie otworzył.
+   * Two conditions, not one. `czeka` says a new version is ready and
+   * queued. `kontrolowana` says a previous worker was ALREADY serving the
+   * page when it loaded — and without that second condition the first visit
+   * would look exactly like an update, because the first worker also passes
+   * through the "installed" state. The student would be asked to refresh a
+   * page they had just opened.
    *
    * @param {{czeka: boolean, kontrolowana: boolean}} stan
    * @returns {boolean}
@@ -50,15 +50,16 @@
   }
 
   /**
-   * Czy wolno znów zapytać serwer o nową wersję.
+   * Whether we may ask the server about a new version again.
    *
-   * Zegar cofnięty (zmiana strefy, poprawka czasu) daje ujemny odstęp.
-   * Bez osobnej gałęzi wyszłoby z tego „jeszcze nie teraz" na tak długo,
-   * jak duże było cofnięcie — czyli cisza aż do przeładowania strony.
+   * A clock moved backwards (a timezone change, a time correction) yields a
+   * negative gap. Without a branch of its own that would read as "not yet"
+   * for as long as the correction was — that is, silence until the page is
+   * reloaded.
    *
-   * @param {number} ostatnie moment ostatniego sprawdzenia (ms); 0 = nigdy
-   * @param {number} teraz    moment bieżący (ms)
-   * @param {number} [przerwa] próg w ms; domyślnie PRZERWA
+   * @param {number} ostatnie moment of the last check (ms); 0 = never
+   * @param {number} teraz    the current moment (ms)
+   * @param {number} [przerwa] threshold in ms; PRZERWA by default
    * @returns {boolean}
    */
   function sprawdzac(ostatnie, teraz, przerwa) {
@@ -69,13 +70,13 @@
   }
 
   /**
-   * Czy przejęcie kontroli przez nowego workera ma przeładować stronę.
+   * Whether a new worker taking over control should reload the page.
    *
-   * `kontrolowana` odsiewa pierwszą wizytę: tam kontrolę przejmuje
-   * pierwszy worker (clients.claim w activate) i przeładowanie byłoby
-   * mignięciem ekranu bez powodu. `juzPrzeladowana` odsiewa pętlę:
-   * zdarzenie potrafi przyjść więcej niż raz, a druga próba trafiałaby
-   * już w stronę, która się właśnie wczytuje.
+   * `kontrolowana` filters out the first visit: there control is taken by
+   * the very first worker (clients.claim in activate) and a reload would be
+   * a flash of the screen for no reason. `juzPrzeladowana` filters out the
+   * loop: the event can arrive more than once, and a second attempt would
+   * hit a page that is already loading.
    *
    * @param {{kontrolowana: boolean, juzPrzeladowana: boolean}} stan
    * @returns {boolean}

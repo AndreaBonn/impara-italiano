@@ -1,16 +1,17 @@
 /* ============================================================
-   views-phonetics.js — rozróżnianie dźwięków.
+   views-phonetics.js — telling sounds apart.
 
-   Uczeń, który nie SŁYSZY różnicy między „nonno" a „nono", nie
-   wymówi jej — a poprawianie wymowy jest wtedy pilnowaniem czegoś,
-   czego on nie kontroluje. Dlatego to ćwiczenie idzie przed
-   mówieniem, nie po nim: najpierw ucho, potem usta.
+   A student who does not HEAR the difference between "nonno" and "nono"
+   will not produce it — and correcting their pronunciation is then policing
+   something they do not control. That is why this exercise comes before
+   speaking, not after it: the ear first, then the mouth.
 
-   Zbiory par siedzą w data/core/phonetics.js (same wyrazy włoskie),
-   a glosy i uwaga kontrastywna w nakładkach — pisane pod konkretny
-   język, bo problem jest inny dla Polaka, Francuza i Amerykanina.
+   The pair sets sit in data/core/phonetics.js (Italian words alone), while
+   the glosses and the contrastive note are in the overlays — written for a
+   specific language, because the problem is different for a Pole, a French
+   speaker and an American.
 
-   Skrypt klasyczny. Wymaga core.js, exercises.js, views.js.
+   Classic script. Requires core.js, exercises.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -20,13 +21,13 @@
   var set = Views.shell.set;
   var pageHead = Views.shell.head;
 
-  /** Ile par w jednym podejściu. */
+  /** How many pairs in one run. */
   var RUNDA = 10;
 
   function zbiory() { return global.PHONETICS || []; }
   function zbior(id) { return zbiory().filter(function (z) { return z.id === id; })[0]; }
 
-  /** Czy dla obu wyrazów pary są nagrania. Bez nich ćwiczenie nie ma sensu. */
+  /** Whether both words of the pair have recordings. Without them the exercise makes no sense. */
   function maNagrania(para) {
     return Audio2.hasNatural(para.a) && Audio2.hasNatural(para.b);
   }
@@ -50,14 +51,14 @@
     });
   };
 
-  /* ---------------- Przebieg ---------------- */
+  /* ---------------- The run ---------------- */
 
   function przebieg(z) {
     var pary = (z.pairs || []).filter(maNagrania);
     if (!pary.length) { App.go("suoni"); return; }
 
-    /* Losujemy z ziarnem z zegara: każde podejście inne, ale w obrębie
-       podejścia stałe, więc powrót do zadania pokazuje to samo. */
+    /* We draw with a seed from the clock: every run is different, but fixed
+       within a run, so coming back to a task shows the same thing. */
     var seed = z.id + "-" + Date.now();
     var kolejka = [];
     for (var i = 0; i < RUNDA; i++) {
@@ -104,7 +105,7 @@
       next.addEventListener("click", function () { idx++; dalej(); });
     }
 
-    /** Wyjaśnienie po odpowiedzi: co znaczy jedno, a co drugie. */
+    /** The explanation after answering: what one means and what the other does. */
     function glosa(para) {
       if (!para.glossA && !para.glossB) return "";
       return esc(para.a) + " = " + esc(para.glossA || "?") + " · " +

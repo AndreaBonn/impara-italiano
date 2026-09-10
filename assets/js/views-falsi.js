@@ -1,22 +1,22 @@
 /* ============================================================
-   views-falsi.js — fałszywi przyjaciele w twoim języku.
+   views-falsi.js — false friends in your own language.
 
-   To jest miejsce, w którym kurs robi coś, czego kurs uniwersalny zrobić
-   nie może: mówi, gdzie TWÓJ język cię zdradzi. Polak czyta „firma" i
-   widzi przedsiębiorstwo, Hiszpan czyta „burro" i widzi osła, a Anglik
-   pisze „eventualmente" myśląc, że powiedział „w końcu". To nie są te
-   same trzy uwagi w trzech tłumaczeniach.
+   This is where the course does something a universal course cannot: it
+   says where YOUR language will betray you. A Pole reads "firma" and sees a
+   company, a Spaniard reads "burro" and sees a donkey, and an English
+   speaker writes "eventualmente" thinking they said "eventually". These are
+   not the same three notes in three translations.
 
-   Dlatego lista JEST krótsza w jednym języku niż w drugim i tak ma być:
-   pułapka istnieje albo nie istnieje, zależnie od tego, co uczeń ma w
-   głowie. Widok pokazuje wyłącznie wpisy, których `for` wymienia bieżący
-   język, i mówi wprost, ile ich jest.
+   That is why the list IS shorter in one language than in another, and it
+   is meant to be: the trap either exists or does not, depending on what the
+   student has in their head. The view shows only the entries whose `for`
+   lists the current language, and says plainly how many there are.
 
-   Ćwiczenie korzysta z istniejącego typu `mcq` — żadnego nowego wpisu w
-   EX_TYPES, żadnej nowej ścieżki w silniku, żadnego nowego miejsca, w
-   którym `onDone` może zostać zawołane dwa razy.
+   The exercise uses the existing `mcq` type — no new entry in EX_TYPES, no
+   new path in the engine, no new place where `onDone` could be called
+   twice.
 
-   Skrypt klasyczny. Wymaga core.js, exercises.js, views.js.
+   Classic script. Requires core.js, exercises.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -27,7 +27,7 @@
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
 
-  /** Wpisy pertynentne dla bieżącego języka: te, które mają wyjaśnienie. */
+  /** The entries relevant to the current language: the ones that have an explanation. */
   function moje() {
     return (global.INTERFERENCE || []).filter(function (v) { return v.why; });
   }
@@ -42,8 +42,9 @@
       esc(t("fa.startQuiz")) + "</button></div>" +
       '<div class="stack">' + lista.map(karta).join("") + "</div>");
 
-    /* Napisy z nakładki przez textContent: to zdania pisane pod język, a nie
-       znaczniki, i nie ma powodu wpuszczać ich do DOM jako HTML. */
+    /* Overlay strings through textContent: these are sentences written for a
+       language, not markup, and there is no reason to let them into the DOM
+       as HTML. */
     el().querySelectorAll(".fa-card").forEach(function (node, i) {
       var v = lista[i];
       node.querySelector(".js-looks").textContent = v.looks;
@@ -72,11 +73,11 @@
       "</div>";
   }
 
-  /* ---------------- Ćwiczenie ----------------
-     Typ `mcq`, budowany w locie: pytanie „co znaczy naprawdę", trzy
-     odpowiedzi, z których jedna to znaczenie prawdziwe, a jedna to
-     dokładnie ta pułapka, w którą uczeń wpada. Dystraktor wzięty z innego
-     wpisu nie uczyłby niczego: chodzi o to, żeby wybrać MIĘDZY nimi.
+  /* ---------------- The exercise ----------------
+     An `mcq` type built on the fly: the question "what does it really
+     mean", three answers, one of which is the true meaning and one exactly
+     the trap the student falls into. A distractor taken from another entry
+     would teach nothing: the point is to choose BETWEEN them.
      ------------------------------------------------------------------- */
 
   function quiz(lista) {
@@ -112,8 +113,8 @@
         esc(t("fa.next")) + "</button></div>";
 
       var next = box.querySelector(".js-next");
-      /* onDone dokładnie raz: przycisk „dalej" pokazujemy w callbacku i
-         nie wołamy stąd niczego, co mogłoby go wywołać po raz drugi. */
+      /* onDone exactly once: the "next" button is shown inside the callback
+         and we call nothing from here that could trigger it a second time. */
       zbudowane.wire(box.querySelector(".exq"), function (ok) {
         if (ok) dobre++;
         next.hidden = false;

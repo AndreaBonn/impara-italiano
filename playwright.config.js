@@ -1,12 +1,12 @@
 /* ============================================================
-   Konfiguracja testów DOM.
+   The configuration of the DOM tests.
 
-   Serwer: scripts/serve.mjs, nie http.server — ten drugi oddaje
-   skrypty z cache mimo zmian na dysku, więc test przechodzi albo
-   pada na kodzie, którego już nie ma.
+   The server: scripts/serve.mjs, not http.server — the latter serves
+   scripts from its cache despite changes on disk, so a test passes or fails
+   on code that no longer exists.
 
-   reuseExistingServer jest wyłączone także lokalnie: serwer
-   podniesiony wcześniej ręcznie mógł startować z innego katalogu.
+   reuseExistingServer is off locally too: a server started by hand earlier
+   may have been launched from a different directory.
    ============================================================ */
 const { defineConfig, devices } = require("@playwright/test");
 
@@ -24,11 +24,11 @@ module.exports = defineConfig({
     baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    /* Mikrofon: sztuczne urządzenie i automatyczna zgoda, żeby dało się
-       przejść cały cykl nagrywania. Czego to NIE odtwarza: prawdziwej
-       odmowy uprawnienia — headless Chromium zwraca wtedy inny błąd niż
-       przeglądarka użytkownika, więc ta ścieżka zostaje niesprawdzona i
-       jest tak opisana w recorder.js. */
+    /* The microphone: a fake device and automatic consent, so that the whole
+       recording cycle can be played through. What this does NOT reproduce: a
+       real permission denial — headless Chromium then returns a different
+       error than the user's browser, so that path stays unverified and is
+       described as such in recorder.js. */
     permissions: ["microphone"],
     launchOptions: {
       args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"]

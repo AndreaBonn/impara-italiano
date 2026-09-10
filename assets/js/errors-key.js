@@ -1,43 +1,43 @@
 /* ============================================================
-   errors-key.js — tożsamość karty błędu.
+   errors-key.js — the identity of a mistake card.
 
-   Klucz: <id lekcji>#<firma treści>#<numer bliźniaka>
+   The key: <lesson id>#<content signature>#<twin number>
 
-   Trzy części, każda z powodu:
+   Three parts, each for a reason:
 
-   - id lekcji, bo w warstwie neutralnej ćwiczenie bywa ubogie.
-     Całe `mcq` to { t: "mcq", a: 1 } — pytanie i opcje siedzą w
-     nakładce, po jednej na język. Sam skrót treści zderzyłby ze
-     sobą setki ćwiczeń z całego kursu.
-   - firma treści, bo numer porządkowy przesuwa się przy pierwszej
-     wstawce w środku lekcji i karta zaczęłaby po cichu wskazywać
-     sąsiada. Firma liczona jest WYŁĄCZNIE z pól neutralnych: gdyby
-     wchodziło w nią cokolwiek z nakładki, przełączenie języka
-     osierociłoby cały quaderno.
-   - numer bliźniaka, bo w a1-u01-l1 stoją obok siebie dwa ćwiczenia
-     { t: "mcq", a: 1 }. Bez tego byłyby jedną kartą.
+   - the lesson id, because in the neutral layer an exercise is sometimes
+     bare. A whole `mcq` is { t: "mcq", a: 1 } — the question and the
+     options sit in the overlay, one per language. The content hash alone
+     would collide hundreds of exercises from across the course.
+   - the content signature, because an ordinal number shifts at the first
+     insertion in the middle of a lesson and the card would silently start
+     pointing at its neighbour. The signature is computed EXCLUSIVELY from
+     neutral fields: if anything from the overlay entered it, switching
+     languages would orphan the whole notebook.
+   - the twin number, because a1-u01-l1 has two { t: "mcq", a: 1 }
+     exercises standing next to each other. Without it they would be one card.
 
-   Skutek zamierzony: zmiana treści ćwiczenia unieważnia jego kartę.
-   Lepiej, żeby przestała się odnajdywać, niż żeby wskazała inne
-   ćwiczenie i pokazała uczniowi zdanie, którego nigdy nie widział.
+   The intended consequence: changing an exercise's content invalidates its
+   card. Better that it stops being found than that it points at another
+   exercise and shows the student a sentence they have never seen.
 
-   Oddzielone od errors.js, które prowadzi talię: to są dwie różne
-   rzeczy i testy dzielą się tak samo.
+   Separated from errors.js, which runs the deck: these are two different
+   things and the tests split the same way.
 
-   Skrypt klasyczny. Wymaga core.js; dla kart z generatora drills.js.
+   Classic script. Requires core.js; drills.js for generated cards.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var Errors = global.Errors = global.Errors || {};
 
-  /* ---------------- Skrót ---------------- */
+  /* ---------------- The hash ---------------- */
 
   /**
-   * FNV-1a 32-bit. Dwa przebiegi z różnym ziarnem sklejone w 16 znaków
-   * dają 64 bity bez BigInt, więc bez osobnej ścieżki dla starszych
-   * przeglądarek — inaczej niż w audio.js, gdzie zgodność z Pythonem
-   * wymusza dokładnie jeden wariant.
+   * FNV-1a 32-bit. Two passes with different seeds concatenated into 16
+   * characters give 64 bits without BigInt, and therefore without a
+   * separate path for older browsers — unlike audio.js, where parity with
+   * Python forces exactly one variant.
    */
   function fnv32(s, seed) {
     var h = seed >>> 0;
@@ -54,27 +54,28 @@
     return s;
   }
 
-  var SEED_A = 2166136261;   // offset basis FNV-1a
-  var SEED_B = 40389;        // dowolne inne ziarno: chodzi o drugi, niezależny przebieg
+  var SEED_A = 2166136261;   // the FNV-1a offset basis
+  var SEED_B = 40389;        // any other seed: what matters is a second, independent pass
 
   function hash(s) {
     return pad8(fnv32(s, SEED_A)) + pad8(fnv32(s, SEED_B));
   }
 
-  /* ---------------- Kanonizacja treści ---------------- */
+  /* ---------------- Canonicalising the content ---------------- */
 
   /**
-   * Pola neutralne językowo, wspólne dla wszystkich typów.
-   * Lista jest zamknięta celowo: pole dopisane do ćwiczenia nie wejdzie
-   * do firmy, dopóki ktoś świadomie go tu nie wpisze. Odwrotna reguła
-   * (wszystko oprócz…) wciągnęłaby przy pierwszej okazji tekst z nakładki.
+   * Language-neutral fields, common to all types.
+   * The list is closed on purpose: a field added to an exercise will not
+   * enter the signature until someone deliberately writes it here. The
+   * opposite rule (everything except…) would pull in overlay text at the
+   * first opportunity.
    */
   var PLAIN_FIELDS = [
     "t", "a", "dir", "verb", "tense", "persons",
     "tokens", "text", "gaps", "it", "alt", "say"
   ];
 
-  /* Pola tablicowe, z których bierzemy tylko podpola neutralne. */
+  /* Array fields from which we take only the neutral sub-fields. */
   var NESTED_FIELDS = {
     pairs: ["it"],
     items: ["it", "a"],
@@ -82,11 +83,12 @@
   };
 
   /**
-   * `opts` to jedyne pole, które raz jest po włosku, a raz w języku ucznia.
-   * W `gender` to zamknięty zbiór form włoskich i musi zgadzać się z
-   * `items[].a`, więc siedzi w core i liczy się do firmy. Wszędzie indziej
-   * to przetłumaczone odpowiedzi — wejście z nimi do firmy oznaczałoby
-   * inną kartę dla tego samego ćwiczenia w każdym języku.
+   * `opts` is the only field that is sometimes in Italian and sometimes in
+   * the student's language. In `gender` it is a closed set of Italian forms
+   * that has to agree with `items[].a`, so it sits in core and counts
+   * towards the signature. Everywhere else it is the translated answers —
+   * letting them into the signature would mean a different card for the
+   * same exercise in every language.
    */
   function optsCount(ex) { return ex.t === "gender"; }
 
@@ -101,7 +103,7 @@
     return String(value);
   }
 
-  /** Stabilny zapis treści ćwiczenia: te same pola, zawsze w tej samej kolejności. */
+  /** A stable rendering of an exercise's content: the same fields, always in the same order. */
   function canon(ex) {
     var out = [];
     PLAIN_FIELDS.forEach(function (f) {
@@ -118,19 +120,19 @@
     return out.join("&");
   }
 
-  /** Firma treści: ta sama we wszystkich językach wyjaśnień. */
+  /** The content signature: the same in every language of explanation. */
   function sigOf(ex) { return hash(canon(ex)); }
 
-  /* ---------------- Klucz ---------------- */
+  /* ---------------- The key ---------------- */
 
   function keyFor(lessonId, sig, twin) {
     return lessonId + "#" + sig + "#" + twin;
   }
 
   /**
-   * Klucze wszystkich ćwiczeń lekcji, w kolejności wystąpienia.
-   * Numer bliźniaka liczony jest na miejscu, więc nie ma stanu do
-   * zsynchronizowania między zapisem a odczytem.
+   * The keys of all the exercises in a lesson, in order of appearance.
+   * The twin number is counted on the spot, so there is no state to keep in
+   * sync between writing and reading.
    */
   function keysIn(lesson) {
     var seen = {};
@@ -142,26 +144,26 @@
     });
   }
 
-  /** Klucz jednego ćwiczenia; potrzebuje lekcji, żeby policzyć bliźniaki. */
+  /** The key of one exercise; it needs the lesson in order to count twins. */
   function keyOf(lesson, index) {
     return keysIn(lesson)[index];
   }
 
-  /* Zadania z generatora nie mają lekcji ani treści do zapamiętania:
-     wystarczy para (generator, ziarno), bo generator jest funkcją czystą.
-     Prefiks oddziela je od kluczy ćwiczeń autorskich w jednym zbiorze. */
+  /* Generated tasks have neither a lesson nor content to remember: the pair
+     (generator, seed) is enough, because a generator is a pure function.
+     The prefix separates them from authored exercise keys within one set. */
   var GEN_PREFIX = "drill:";
 
   function generatedKey(topicId, seed) { return GEN_PREFIX + topicId + "#" + seed; }
 
   /**
-   * Z klucza z powrotem na ćwiczenie. Zwraca null, gdy lekcji nie ma,
-   * gdy nie jest wczytana albo gdy treść ćwiczenia się zmieniła —
-   * i to ostatnie jest funkcją, nie usterką.
+   * From a key back to an exercise. Returns null when the lesson does not
+   * exist, when it is not loaded, or when the exercise's content has
+   * changed — and the last of those is a feature, not a fault.
    *
-   * Karta z generatora odtwarza się przeciwnie: nic nie mogło się
-   * zmienić, więc wystarczy zawołać generator z tym samym ziarnem.
-   * Dzięki temu widok powtórki obsługuje oba rodzaje kart tak samo.
+   * A generated card is restored the opposite way: nothing could have
+   * changed, so it is enough to call the generator with the same seed. That
+   * way the review view handles both kinds of card identically.
    */
   function locate(key) {
     var raw = String(key);

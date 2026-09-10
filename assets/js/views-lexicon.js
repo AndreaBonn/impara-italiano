@@ -1,12 +1,13 @@
 /* ============================================================
-   views-lexicon.js — mój słownik: cała talia ucznia z terminami powtórek.
+   views-lexicon.js — my dictionary: the student's whole deck with review dates.
 
-   Ekran wydzielony z views.js, w którym leżało osiem ekranów naraz.
-   Wzorzec jest ten sam, którym chodzą już views-talk.js, views-train.js
-   i views-today.js: skorupa (set, pageHead, el, empty) przychodzi z
-   `Views.shell`, a plik dokłada własną trasę do `Views`.
+   A screen split out of views.js, which held eight screens at once. The
+   pattern is the same one views-talk.js, views-train.js and views-today.js
+   already use: the shell (set, pageHead, el, empty) comes from
+   `Views.shell`, and the file adds a route of its own to `Views`.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function () {
   "use strict";
@@ -18,7 +19,7 @@
   var el = Views.shell.root;
   var empty = Views.shell.empty;
   /* ═══════════════════════════════════════════════════════════
-     MÓJ SŁOWNIK
+     MY DICTIONARY
      ═══════════════════════════════════════════════════════════ */
   Views.lessico = function () {
     var cards = Object.keys(Core.state.srs).map(function (k) {

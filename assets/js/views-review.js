@@ -1,12 +1,13 @@
 /* ============================================================
-   views-review.js — powtórki: talia fiszek i quaderno błędów.
+   views-review.js — reviews: the flashcard deck and the mistake notebook.
 
-   Ekran wydzielony z views.js, w którym leżało osiem ekranów naraz.
-   Wzorzec jest ten sam, którym chodzą już views-talk.js, views-train.js
-   i views-today.js: skorupa (set, pageHead, el, empty) przychodzi z
-   `Views.shell`, a plik dokłada własną trasę do `Views`.
+   A screen split out of views.js, which held eight screens at once. The
+   pattern is the same one views-talk.js, views-train.js and views-today.js
+   already use: the shell (set, pageHead, el, empty) comes from
+   `Views.shell`, and the file adds a route of its own to `Views`.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function () {
   "use strict";
@@ -19,13 +20,13 @@
   var empty = Views.shell.empty;
   var runCards = Views.shell.runCards;
   /* ═══════════════════════════════════════════════════════════
-     POWTÓRKI (SRS)
+     REVIEWS (SRS)
      ═══════════════════════════════════════════════════════════ */
   /**
-   * Powtórki mają dwie zakładki: fiszki ze słownictwa i quaderno błędów.
-   * Zakładka siedzi w adresie (`#/ripasso?tab=errori`), więc da się do
-   * niej wrócić i podlinkować ją; stan w zmiennej modułu ginąłby przy
-   * każdym przejściu na inną trasę.
+   * Reviews have two tabs: the vocabulary flashcards and the mistake
+   * notebook. The tab sits in the address (`#/ripasso?tab=errori`), so it
+   * can be returned to and linked; state in a module variable would be lost
+   * on every move to another route.
    */
   Views.ripasso = function (params) {
     var tab = (params && params.tab) === "errori" ? "errori" : "carte";
@@ -56,7 +57,7 @@
     else fiszki(body);
   };
 
-  /** Zakładka fiszek: to, czym Powtórki były do tej pory. */
+  /** The flashcard tab: what Reviews used to be until now. */
   function fiszki(host) {
     var due = Core.dueCards(30);
     if (!due.length) {

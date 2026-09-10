@@ -3,22 +3,24 @@
 # requires-python = ">=3.10"
 # dependencies = ["fsrs>=6"]
 # ///
-"""Generuje wektory odniesienia dla FSRS z implementacji referencyjnej.
+"""Generates the reference vectors for FSRS from the reference implementation.
 
-Po co osobny skrypt zamiast przepisania wzorów z dokumentacji: pomyłka w
-transkrypcji równań FSRS jest NIEWIDOCZNA. Zły wykładnik daje harmonogram,
-który nadal wygląda rozsądnie — karty wracają, odstępy rosną — i pomyli się
-dopiero o kilka dni po miesiącu nauki, czego nikt nie zauważy ani nie zgłosi.
-Dlatego `assets/js/fsrs.js` nie jest sprawdzany „na oko", tylko przeciwko
-wyjściu `py-fsrs` na tych samych wejściach.
+Why a separate script instead of transcribing the formulas from the
+documentation: a mistake in transcribing the FSRS equations is INVISIBLE. A
+wrong exponent yields a schedule that still looks reasonable — the cards come
+back, the intervals grow — and only goes wrong by a few days after a month of
+study, which nobody notices and nobody reports. That is why
+`assets/js/fsrs.js` is not checked by eye but against the output of
+`py-fsrs` on the same inputs.
 
-Wynik ląduje w `tests/unit/fsrs-vectors.json` i jest wersjonowany: to jest
-kontrakt, nie artefakt budowania. Przy podniesieniu wersji FSRS uruchamia się
-ten skrypt ponownie, ogląda różnicę w gicie i dopiero potem zmienia silnik.
+The result lands in `tests/unit/fsrs-vectors.json` and is version-controlled:
+it is a contract, not a build artefact. When the FSRS version is raised, this
+script is run again, the difference is inspected in git, and only then is the
+engine changed.
 
-Losowanie odstępu (`enable_fuzzing`) jest WYŁĄCZONE. Włączone dodaje szum
-+/- kilka procent, przez co ten sam wektor przy dwóch uruchomieniach dałby
-dwa wyniki i test przestałby cokolwiek znaczyć.
+Interval fuzzing (`enable_fuzzing`) is DISABLED. Enabled, it adds a few per
+cent of noise, so the same vector would give two results in two runs and the
+test would stop meaning anything.
 
     uv run --script scripts/gen_fsrs_vectors.py
 """
@@ -33,13 +35,13 @@ from fsrs import Card, Rating, Scheduler, State
 
 WYNIK = Path(__file__).resolve().parent.parent / "tests" / "unit" / "fsrs-vectors.json"
 
-# Chwila zerowa jest stała: wektory mają być identyczne przy każdym uruchomieniu.
+# The zero moment is fixed: the vectors must be identical on every run.
 POCZATEK = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
 
 OCENY = {"again": Rating.Again, "hard": Rating.Hard, "good": Rating.Good, "easy": Rating.Easy}
 
-# Każdy scenariusz to ciąg par (ocena, ile godzin po poprzedniej powtórce).
-# Dobrane tak, by przejść wszystkie trzy stany i obie ścieżki kroków.
+# Every scenario is a sequence of pairs (grade, hours after the previous review).
+# Chosen so as to walk all three states and both step paths.
 SCENARIUSZE: dict[str, list[tuple[str, float]]] = {
     "nowa-good-przez-kroki": [("good", 0), ("good", 0.2), ("good", 24), ("good", 24 * 4)],
     "nowa-easy-od-razu": [("easy", 0), ("good", 24 * 5), ("easy", 24 * 20)],
@@ -58,7 +60,7 @@ SCENARIUSZE: dict[str, list[tuple[str, float]]] = {
 
 
 def zaokragl(x: float | None) -> float | None:
-    """Sześć cyfr po przecinku: dalej to już szum arytmetyki zmiennoprzecinkowej."""
+    """Six decimal places: beyond that it is floating-point noise."""
     return None if x is None else round(x, 6)
 
 
@@ -80,13 +82,15 @@ def przebieg(kroki: list[tuple[str, float]]) -> list[dict]:
         wynik.append({
             "przed": przed,
             "ocena": ocena,
-            # Ile godzin po POPRZEDNIEJ powtórce uczeń wrócił. Wychodzi tutaj,
-            # a nie zostaje w tym pliku, bo test w JS musi odtworzyć tę samą
-            # chwilę: przepisany po drugiej stronie byłby drugim źródłem tej
-            # samej prawdy i rozjechałby się po cichu przy pierwszej zmianie.
+            # How many hours after the PREVIOUS review the student came back.
+            # It goes out here rather than staying in this file, because the JS
+            # test has to reproduce the same moment: rewritten on the other side
+            # it would be a second source of that
+            # same truth and would drift apart silently at the first change.
             "godzinOdPoprzedniej": godziny,
-            # Odstęp w sekundach od chwili powtórki: silnik w JS liczy tak samo,
-            # a data bezwzględna wiązałaby wektory z kalendarzem.
+            # The interval in seconds from the moment of the review: the JS
+            # engine computes it the same way, while an absolute date would tie
+            # the vectors to the calendar.
             "odstepSekund": round((card.due - chwila).total_seconds()),
             "po": {
                 "state": State(card.state).name.lower(),

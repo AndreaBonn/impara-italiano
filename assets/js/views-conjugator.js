@@ -1,12 +1,13 @@
 /* ============================================================
-   views-conjugator.js — odmiana czasownika przez wszystkie czasy.
+   views-conjugator.js — a verb conjugated through every tense.
 
-   Ekran wydzielony z views.js, w którym leżało osiem ekranów naraz.
-   Wzorzec jest ten sam, którym chodzą już views-talk.js, views-train.js
-   i views-today.js: skorupa (set, pageHead, el, empty) przychodzi z
-   `Views.shell`, a plik dokłada własną trasę do `Views`.
+   A screen split out of views.js, which held eight screens at once. The
+   pattern is the same one views-talk.js, views-train.js and views-today.js
+   already use: the shell (set, pageHead, el, empty) comes from
+   `Views.shell`, and the file adds a route of its own to `Views`.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function () {
   "use strict";
@@ -18,7 +19,7 @@
   var el = Views.shell.root;
   var empty = Views.shell.empty;
   /* ═══════════════════════════════════════════════════════════
-     KONIUGATOR
+     THE CONJUGATOR
      ═══════════════════════════════════════════════════════════ */
   Views.coniugatore = function () {
     set(pageHead(t("conj.kicker"), t("nav.verbs"), t("conj.intro")) +
@@ -40,7 +41,7 @@
         document.getElementById("conjOut").innerHTML = empty(t("conj.notInfinitive"), t("conj.notInfinitiveHint"));
         return;
       }
-      // nie `t`: tak nazywa się helper tłumaczeń w tym pliku
+      // not `t`: that is the name of the translation helper in this file
       var table = Verbs.fullTable(v);
       var m = table._meta;
       var out = '<div class="meta-row">' +
@@ -53,7 +54,7 @@
         '<div class="grid-2">' + Verbs.TENSES.map(function (tn) {
           var forms = table[tn.key];
           if (!forms || !forms.filter(Boolean).length) return "";
-          // tabela zawsze w kontenerze przewijalnym: bez tego przy 320 px strona przewija się w poziomie
+          // the table always in a scrollable container: without it the page scrolls horizontally at 320 px
           return '<div class="card"><h3 style="font-size:1rem;margin-bottom:2px">' + esc(tn.labelIt) + "</h3>" +
             '<p style="font-size:.8rem;color:var(--ink-soft);margin-bottom:10px">' + esc(t("tense." + tn.key)) + "</p>" +
             '<div class="table-wrap"><table class="gt"><tbody>' + forms.map(function (f, k) {

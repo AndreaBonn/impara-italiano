@@ -1,21 +1,22 @@
 /* ============================================================
-   exercises.js — dyspozytor ćwiczeń i kawałki wspólne dla wszystkich.
+   exercises.js — the exercise dispatcher and the pieces common to all.
 
-   Kontrakt: Ex.build(ex, idx, seed) -> { html, wire(root, onDone) }
-   onDone(ok:boolean) wywoływane DOKŁADNIE RAZ, po sprawdzeniu. Na tym
-   opiera się licznik postępu lekcji i przechwytywanie błędów w errors.js,
-   które owija Ex.build.
+   The contract: Ex.build(ex, idx, seed) -> { html, wire(root, onDone) }
+   onDone(ok:boolean) is called EXACTLY ONCE, after checking. The lesson
+   progress counter rests on that, and so does the mistake capture in
+   errors.js, which wraps Ex.build.
 
-   Czternaście typów mieszka w trzech plikach obok, po tym, co robi uczeń:
-   exercises-choice.js (wybiera), exercises-text.js (pisze),
-   exercises-voice.js (mówi i słucha). Każdy z nich woła `Ex.register`,
-   więc dołożenie typu to jeden plik, nie ten.
+   Fourteen types live in three files next door, grouped by what the
+   student does: exercises-choice.js (chooses), exercises-text.js
+   (writes), exercises-voice.js (speaks and listens). Each of them calls
+   `Ex.register`, so adding a type touches one file, and not this one.
 
-   Dyspozytor pyta o rejestr DOPIERO przy budowaniu ćwiczenia, więc
-   kolejność ładowania rodzin między sobą jest obojętna — byle wszystkie
-   weszły przed pierwszą lekcją. Zapomniany <script> nie wywraca kursu:
-   daje ćwiczenie „nieznany typ", i po to jest test, który buduje każdy typ
-   obecny w danych (tests/dom/exercises.spec.js).
+   The dispatcher asks the registry ONLY when an exercise is built, so the
+   loading order among the families does not matter — as long as they all
+   come in before the first lesson. A forgotten <script> does not bring
+   the course down: it produces an "unknown type" exercise, and that is
+   what the test building every type present in the data is for
+   (tests/dom/exercises.spec.js).
    ============================================================ */
 (function (global) {
   "use strict";
@@ -23,7 +24,7 @@
   var esc = Core.esc;
   var t = function (k, v) { return I18n.t(k, v); };
 
-  /** Nazwa typu ćwiczenia — klucz słownika, nie napis. */
+  /** The name of an exercise type — a dictionary key, not a string. */
   function label(type) { return t("ex.type." + type); }
 
   function head(idx, ex) {
@@ -41,7 +42,7 @@
     return '<button type="button" class="btn btn--primary js-check">' + esc(txt || t("ex.check")) + '</button>';
   }
 
-  /** Wspólne zakończenie ćwiczenia. */
+  /** The shared ending of an exercise. */
   function finish(root, ok, why, correctText, onDone) {
     var fb = root.querySelector(".fb");
     var btn = root.querySelector(".js-check");
@@ -59,10 +60,10 @@
 
   function stripTags(s) { return String(s).replace(/<[^>]+>/g, ""); }
 
-  /* ═══════════════ Dyspozytor ═══════════════ */
+  /* ═══════════════ Dispatcher ═══════════════ */
   var BUILDERS = {};
 
-  /** Dokłada typ do rejestru. Woła się z plików rodzin, przy ich wczytaniu. */
+  /** Adds a type to the registry. Called from the family files as they load. */
   function register(type, builder) { BUILDERS[type] = builder; }
 
   function build(ex, idx, seed) {
@@ -74,7 +75,7 @@
     return b(ex, idx, seed || "s");
   }
 
-  /** Podpina globalnie przyciski 🔊 wewnątrz kontenera. */
+  /** Wires up the 🔊 buttons inside a container, globally. */
   function wireSpeakers(container) {
     container.addEventListener("click", function (e) {
       var b = e.target.closest("[data-say]");
@@ -87,8 +88,9 @@
     });
   }
 
-  /* Kawałki wspólne dla rodzin typów. Nie jest to publiczne API kursu:
-     poza plikami exercises-*.js nikt tego nie woła i nie ma powodu. */
+  /* Pieces shared by the type families. This is not the public API of the
+     course: outside the exercises-*.js files nobody calls it, and there is
+     no reason to. */
   var kit = {
     head: head, sayBtn: sayBtn, feedbackBox: feedbackBox, checkBtn: checkBtn,
     finish: finish, stripTags: stripTags

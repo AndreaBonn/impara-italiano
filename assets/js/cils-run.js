@@ -1,44 +1,44 @@
 /* ============================================================
-   cils-run.js — przebieg symulacji egzaminu: kolejność, odpowiedzi, wynik.
+   cils-run.js — the exam run: order, answers, result.
 
-   Wyjęte z views-cils.js. Podział idzie po tym, co da się sprawdzić bez
-   przeglądarki: `cils.js` liczy punkty jednej sekcji, ten plik prowadzi
-   CAŁE podejście (cztery sekcje po kolei, siatka odpowiedzi, sekcje
-   z wyczerpanym czasem, wpis do historii), a views-cils.js rysuje zegar,
-   przyciski i podsumowanie.
+   Pulled out of views-cils.js. The split follows what can be checked
+   without a browser: `cils.js` scores a single section, this file drives
+   the WHOLE attempt (four sections in order, the answer grid, sections
+   whose time ran out, the history entry), and views-cils.js draws the
+   clock, the buttons and the summary.
 
-   Dlaczego to nie jest podział kosmetyczny: przejście symulacji trwa
-   godzinę i ma cztery odliczania. Test w przeglądarce, który by przez nią
-   przeszedł, musiałby albo naprawdę odczekać ten czas, albo podmienić
-   zegar — więc go nie było, i cały rachunek punktów wraz z zapisem do
-   historii chodził bez ani jednego sprawdzenia.
+   Why this is not a cosmetic split: a full simulation takes an hour and
+   has four countdowns. A browser test walking through it would have to
+   either really wait that long or substitute the clock — so there was
+   none, and the whole point tally along with the history entry ran without
+   a single check.
 
-   NA EGZAMINIE SEKCJA ZAMKNIĘTA JEST ZAMKNIĘTA. Nie ma drogi powrotnej,
-   bo symulator, w którym można wrócić i poprawić, mierzy wiedzę bez presji
-   czasu, czyli tę, której uczeń nie ma w sali.
+   AT THE EXAM A CLOSED SECTION IS CLOSED. There is no way back, because a
+   simulator you can return to and correct measures knowledge without time
+   pressure, that is the knowledge the student does not have in the room.
 
-   Skrypt klasyczny. Wymaga cils.js (punktacja) i core.js (stan) — obu
-   dopiero w chwili wywołania, nie przy wczytaniu.
+   Classic script. Requires cils.js (scoring) and core.js (state) — both
+   only at call time, not at load time.
    ============================================================ */
 (function (global) {
   "use strict";
 
-  /* Kolejność sekcji jest kolejnością egzaminu, nie kolejnością pliku. */
+  /* The order of sections is the order of the exam, not the order of the file. */
   var ORDINE = ["ascolto", "lettura", "scritta", "orale"];
 
-  /* Ile podejść trzymamy w historii. Wpis waży kilkadziesiąt bajtów, a
-     localStorage jest wspólne dla całego kursu: bez tego sufitu historia
-     rosłaby jako jedyny kontener bez końca. */
+  /* How many attempts we keep in the history. An entry weighs a few dozen
+     bytes, and localStorage is shared by the whole course: without this
+     ceiling the history would be the only container growing without end. */
   var MAX_HISTORII = 50;
 
   function create(s) {
     var run = {
       sim: s,
       i: 0,
-      risposte: {},     // id sekcji -> lista prób -> lista odpowiedzi
-      scaduta: {},      // id sekcji -> true, gdy skończył się czas
-      punti: {},        // id sekcji -> punkty
-      szczegoly: {},    // id sekcji -> pełny rachunek z Cils.punteggioSezione
+      risposte: {},     // section id -> list of tasks -> list of answers
+      scaduta: {},      // section id -> true when the time ran out
+      punti: {},        // section id -> points
+      szczegoly: {},    // section id -> the full tally from Cils.punteggioSezione
       scritta: null,
       orale: null
     };
@@ -49,9 +49,9 @@
     }
 
     /**
-     * Pusta siatka odpowiedzi: jedna lista na próbę, o długości jej items.
-     * Powstaje PRZED pierwszym kliknięciem, bo punktacja chodzi po indeksach
-     * i lista krótsza o jeden przesunęłaby odpowiedzi na cudze pytania.
+     * An empty answer grid: one list per task, as long as its items.
+     * It is created BEFORE the first click, because scoring runs by index
+     * and a list one element short would shift answers onto other questions.
      */
     function przygotuj(sez) {
       run.risposte[sez.id] = (sez.prove || []).map(function (p) {
@@ -67,7 +67,7 @@
       return true;
     }
 
-    /** Zamyka sekcję zamkniętą: liczy punkty i zapamiętuje rachunek. */
+    /** Closes a closed-answer section: scores it and remembers the tally. */
     function zamknij(sez) {
       var w = global.Cils.punteggioSezione(sez, run.risposte[sez.id]);
       run.punti[sez.id] = w.punti;
@@ -87,7 +87,7 @@
       zamknij: zamknij,
       scadla: scadla,
       dalej: dalej,
-      /** Odpowiedzi sekcji — do podglądu w teście i do punktacji. */
+      /** A section's answers — for inspection in tests and for scoring. */
       odpowiedzi: function (id) { return run.risposte[id]; },
       czyScadla: function (id) { return !!run.scaduta[id]; },
       zapiszScritta: function (traccia, testo) { run.scritta = { traccia: traccia, testo: testo }; },
@@ -100,9 +100,9 @@
   }
 
   /**
-   * Wpis do historii. Trzymamy punkty dwóch sprawności, które symulator umie
-   * policzyć, listę sekcji z wyczerpanym czasem i werdykt — nie odpowiedzi:
-   * te są ćwiczeniem, nie historią.
+   * A history entry. We keep the points of the two skills the simulator can
+   * score, the list of sections whose time ran out and the verdict — not the
+   * answers: those are an exercise, not history.
    */
   function wpis(run, e, teraz) {
     var d = run.dane;
@@ -116,15 +116,15 @@
   }
 
   /**
-   * Dopisuje podejście do historii ucznia.
+   * Appends an attempt to the student's history.
    *
-   * Kontener jest DOKŁADANY w store.js, więc starszy profil dostaje go pustym
-   * i numer schematu się nie rusza. Array.isArray, nie truthy: import z
-   * `cils.runs` innego typu przechodzi walidację (sprawdza tylko pole
-   * najwyższego poziomu), a `push` na napisie rzuciłby wyjątkiem w środku
-   * rysowania podsumowania — czyli po godzinie egzaminu.
+   * The container is ADDED in store.js, so an older profile gets it empty
+   * and the schema number does not move. Array.isArray, not truthy: an
+   * import with a `cils.runs` of another type passes validation (which only
+   * checks the top-level field), and `push` on a string would throw in the
+   * middle of drawing the summary — that is, after an hour of exam.
    *
-   * @returns {boolean} czy wpis wszedł
+   * @returns {boolean} whether the entry went in
    */
   function zapisz(run, e, teraz) {
     var st = global.Core.state.cils;

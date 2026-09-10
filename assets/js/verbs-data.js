@@ -1,16 +1,16 @@
 /* ============================================================
-   verbs-data.js — tabele włoskiego, z których korzysta silnik odmiany.
+   verbs-data.js — the Italian tables the conjugation engine works from.
 
-   Wyjęte z verbs.js, gdzie 300 linii tabel przykrywało 200 linii
-   algorytmu. Tu nie ma ani jednej reguły: same końcówki, formy
-   nieregularne i listy przynależności. Dopisanie czasownika to zmiana
-   w tym pliku i w żadnym innym.
+   Pulled out of verbs.js, where 300 lines of tables buried 200 lines of
+   algorithm. There is not a single rule here: only endings, irregular
+   forms and membership lists. Adding a verb is a change in this file and
+   in no other.
 
-   Dlaczego w assets/js, a nie w data/: katalog data/ trzyma TREŚĆ KURSU
-   (lekcje, czytanki, rozmowy), którą scala nakładka językowa i z której
-   skrypt nagrań wyciąga zdania do wypowiedzenia. Odmiana czasownika nie
-   jest treścią kursu ani niczego nie wypowiada: to słownik silnika i
-   ładuje się razem z nim.
+   Why in assets/js and not in data/: the data/ directory holds COURSE
+   CONTENT (lessons, readings, conversations), which the language overlay
+   merges and from which the recording script extracts sentences to be
+   spoken. Verb conjugation is neither course content nor spoken by
+   anything: it is the engine's dictionary and it loads together with it.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -59,11 +59,11 @@
   var FUT = ["ò", "ai", "à", "emo", "ete", "anno"];
   var COND = ["ei", "esti", "ebbe", "emmo", "este", "ebbero"];
 
-  /* ---------------- Czasowniki nieregularne ----------------
-     pres/imperf/remoto/cong/congImp/imper : pełne formy (6 pozycji)
-     futStem : temat czasu przyszłego i trybu warunkowego
-     pp : imiesłów przeszły ; aux : "avere" | "essere" | "both"
-     isc : true → wzorzec -isc- ; refl : true → czasownik zwrotny
+  /* ---------------- Irregular verbs ----------------
+     pres/imperf/remoto/cong/congImp/imper : full forms (6 slots)
+     futStem : the stem of the future and the conditional
+     pp : past participle ; aux : "avere" | "essere" | "both"
+     isc : true -> the -isc- pattern ; refl : true -> reflexive verb
      -------------------------------------------------------- */
   var IRR = {
     essere: {
@@ -275,23 +275,23 @@
     "accorgersi": { aux: "essere", ppAgree: true, pp: "accorto", refl: true, remoto: ["mi accorsi", "ti accorgesti", "si accorse", "ci accorgemmo", "vi accorgeste", "si accorsero"] },
 
     /* ------------------------------------------------------------------
-       Imiesłowy nieregularne, których brakowało.
+       The irregular participles that were missing.
 
-       Zmierzone: z 45 pospolitych czasowników o nieregularnym imiesłowie
-       koniugator produkował 25 form NIEISTNIEJĄCYCH — „riduto" zamiast
-       „riso", „rotto" jako „romputo", „mosso" jako „muovuto". Imiesłów
-       wchodzi w SZEŚĆ z czternastu czasów (passato prossimo, trapassato,
-       futuro anteriore, condizionale passato, congiuntivo passato i
-       trapassato), więc jeden brak psuł sześć wierszy tabeli odmiany i
-       każde ćwiczenie na czasie złożonym z tym czasownikiem.
+       Measured: out of 45 common verbs with an irregular participle the
+       conjugator produced 25 NON-EXISTENT forms — "riduto" instead of
+       "riso", "rotto" as "romputo", "mosso" as "muovuto". The participle
+       enters SIX of the fourteen tenses (passato prossimo, trapassato,
+       futuro anteriore, condizionale passato, congiuntivo passato and
+       trapassato), so a single gap broke six rows of the conjugation table
+       and every exercise on a compound tense with that verb.
 
-       Wpisy są minimalne: samo `pp`. Reszta form tych czasowników jest
-       regularna albo wystarczająco bliska, a `remoto` zostaje na razie
-       regularne — to jeden czas na poziomie C2 i osobna, zadeklarowana
-       luka, nie cichy błąd.
+       The entries are minimal: `pp` alone. The remaining forms of these
+       verbs are regular or close enough, and `remoto` stays regular for
+       now — that is one tense at C2 level and a separate, declared gap,
+       not a silent bug.
 
-       Czasowniki z przedrostkiem dziedziczą po rdzeniu (patrz irrOf), więc
-       „ridere" naprawia też „sorridere", a „prendere" — „riprendere".
+       Prefixed verbs inherit from the root (see irrOf), so "ridere" also
+       fixes "sorridere", and "prendere" fixes "riprendere".
        ------------------------------------------------------------------ */
     ridere: { aux: "avere", pp: "riso" },
     succedere: { aux: "essere", ppAgree: true, pp: "successo" },
@@ -321,20 +321,20 @@
     tacere: { aux: "avere", pp: "taciuto" }
   };
 
-  /* czasowniki -ire z wzorcem -isc- (lista częstotliwościowa) */
+  /* -ire verbs following the -isc- pattern (frequency list) */
   var ISC = ["capire", "finire", "preferire", "pulire", "spedire", "unire", "costruire",
     "restituire", "chiarire", "contribuire", "diminuire", "distribuire", "fornire",
     "garantire", "gestire", "guarire", "impedire", "inserire", "istituire", "obbedire",
     "percepire", "proibire", "punire", "reagire", "restituire", "riferire", "sostituire",
     "sparire", "stabilire", "starnutire", "suggerire", "tradire", "trasferire", "ubbidire"];
 
-  /* czasowniki nieprzechodnie z essere w czasach złożonych */
+  /* intransitive verbs taking essere in compound tenses */
   var ESSERE_VERBS = ["andare", "venire", "arrivare", "partire", "tornare", "ritornare",
     "entrare", "uscire", "salire", "scendere", "nascere", "morire", "restare", "rimanere",
     "stare", "essere", "diventare", "cadere", "piacere", "dispiacere", "sembrare",
     "succedere", "costare", "crescere", "vivere", "durare", "passare", "riuscire", "bastare"];
 
-  /* Nazwa w języku ucznia nie stoi tutaj: to klucz tense.<key> w słowniku. */
+  /* The name in the student's language is not here: it is the tense.<key> dictionary key. */
   var TENSES = [
     { key: "pres",        labelIt: "Indicativo presente", kind: "simple" },
     { key: "passPross",   labelIt: "Passato prossimo", kind: "comp", aux: "pres" },
@@ -352,9 +352,9 @@
     { key: "imper",       labelIt: "Imperativo", kind: "simple" }
   ];
 
-  /* ---------------- Lista czasowników do przeglądania ----------------
-     Same bezokoliczniki: znaczenie zależy od języka ucznia i siedzi
-     w słowniku interfejsu pod kluczem verb.<bezokolicznik>. */
+  /* ---------------- The browsable list of verbs ----------------
+     Infinitives only: the meaning depends on the student's language and
+     sits in the interface dictionary under the verb.<infinitive> key. */
   var COMMON = [
     "essere", "avere", "fare", "dire", "andare", "venire", "stare", "dare", "sapere", "potere",
     "volere", "dovere", "vedere", "parlare", "mangiare", "bere", "prendere", "mettere", "leggere",

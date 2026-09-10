@@ -1,18 +1,19 @@
 /* ============================================================
-   views-today.js — sesja dnia.
+   views-today.js — the daily session.
 
-   Jeden przycisk zamiast trzech decyzji. Do tej pory uczeń, który miał
-   dziesięć minut, musiał sam wybrać: fiszki, błędy, czy następna lekcja?
-   Ta decyzja podejmowana codziennie jest miejscem, w którym gubi się
-   passa — nie brak czasu, tylko brak oczywistego następnego kroku.
+   One button instead of three decisions. Until now a student with ten
+   minutes had to choose for themselves: flashcards, mistakes, or the next
+   lesson? That decision, taken every day, is where the streak gets lost —
+   not a lack of time, but the lack of an obvious next step.
 
-   Skład sesji (C2 w § 7.6 planu, do potwierdzenia przy przeglądzie):
-   6 kart błędów, 3 zadania z generatora, 8 fiszek, na koniec wskazanie
-   następnej lekcji. Kolejność nie jest przypadkowa: najpierw to, co
-   uczeń pomylił, bo tam jest najwięcej do odzyskania, a fiszki na
-   końcu, bo są najlżejsze i domykają sesję bez wysiłku.
+   The composition of the session (C2 in § 7.6 of the plan, to be confirmed
+   at review): 6 mistake cards, 3 generated tasks, 8 flashcards, and at the
+   end a pointer to the next lesson. The order is not accidental: first what
+   the student got wrong, because that is where there is most to recover,
+   and the flashcards at the end, because they are the lightest and close
+   the session without effort.
 
-   Skrypt klasyczny. Wymaga core.js, errors.js, drills.js, views.js.
+   Classic script. Requires core.js, errors.js, drills.js, views.js.
    ============================================================ */
 (function () {
   "use strict";
@@ -23,18 +24,18 @@
   var pageHead = Views.shell.head;
   var runCards = Views.shell.runCards;
 
-  /* Skład sesji. Liczby są decyzją produktową, nie wynikiem pomiaru. */
+  /* The composition of the session. The numbers are a product decision, not a measurement. */
   var PLAN = { errors: 6, drills: 3, cards: 8 };
 
-  /** Dzisiejsza data w tym samym formacie, którego używa Core. */
+  /** Today's date in the same format Core uses. */
   function dzis() { return Core.today(); }
 
-  /** Ile części sesji ma dziś realną zawartość. */
+  /** How many parts of the session have real content today. */
   function zbierz() {
     var bledy = Errors.due(PLAN.errors);
     var fiszki = Core.dueCards(PLAN.cards);
-    /* Zagadnienie drilla wybieramy tam, gdzie uczeń ma najwięcej otwartych
-       kart: trening ma dobijać słaby punkt, a nie losować w próżnię. */
+    /* The drill topic is chosen where the student has the most open cards:
+       training is meant to hammer at a weak spot, not to draw at random. */
     var wg = Errors.byTag();
     var najslabszy = Object.keys(wg).sort(function (a, b) { return wg[b].length - wg[a].length; })[0];
     var topic = Drills.TOPICS.filter(function (x) { return x.tag === najslabszy; })[0] ||
@@ -70,17 +71,18 @@
       wiersz(t("today.partDrills", { topic: Train.topicLabel(s.topic.id) }), s.drille.length) +
       wiersz(t("today.partCards"), s.fiszki.length) +
       "</div>" +
-      /* Nie ma tu stanu pustego i nie może być: zadania z generatora są
-         zawsze dostępne, więc sesja zawsze ma czym wypełnić dziesięć minut.
-         To jest cała jej racja bytu — „dziś nic nie ma" odsyłałoby ucznia
-         z powrotem do wyboru, którego ten widok ma go pozbawić. */
+      /* There is no empty state here and there cannot be one: generated
+         tasks are always available, so the session always has something to
+         fill ten minutes with. That is its whole reason to exist — "nothing
+         today" would send the student back to the choice this view is meant
+         to spare them. */
       '<button class="btn btn--primary js-start">' + esc(t("today.start", { n: razem })) + "</button>" +
       '<div id="todayBox" style="margin-top:20px"></div>');
 
     document.querySelector(".js-start").addEventListener("click", function () { przebieg(s); });
   };
 
-  /* ---------------- Przebieg ---------------- */
+  /* ---------------- The run ---------------- */
 
   function przebieg(s) {
     var box = document.getElementById("todayBox");
@@ -88,8 +90,9 @@
     var dobre = 0, zgubione = 0;
     var wszystkie = s.bledy.length + s.drille.length + s.fiszki.length;
 
-    /* Kolejka zadań: karty błędów, potem drille. Fiszki mają własny
-       przebieg (inna interakcja: pokaż i oceń), więc idą osobno na końcu. */
+    /* The task queue: mistake cards, then drills. Flashcards have a run of
+       their own (a different interaction: reveal and grade), so they go
+       separately at the end. */
     var kolejka = s.bledy.map(function (k) { return { rodzaj: "blad", karta: k }; })
       .concat(s.drille.map(function (d) { return { rodzaj: "drill", item: d }; }));
     var i = 0;
@@ -101,15 +104,15 @@
 
       if (poz.rodzaj === "blad") {
         var gdzie = Errors.locate(poz.karta.key);
-        /* Karta bez ćwiczenia znika, ale uczeń ma o tym usłyszeć: cicha
-           strata wygląda dokładnie jak zaliczenie. Zakładka Błędy mówi to
-           samo, więc mówi to samo i tutaj. */
+        /* A card with no exercise disappears, but the student must hear
+           about it: a silent loss looks exactly like a pass. The Mistakes
+           tab says the same thing, so it says the same thing here. */
         if (!gdzie) { Errors.drop(poz.karta.key); zgubione++; wszystkie--; i++; zadanie(); return; }
         ex = gdzie.ex;
         idx = gdzie.index;
-        /* Ziarno musi być id lekcji, żeby owinięte Ex.build rozpoznało
-           ćwiczenie i samo zaktualizowało kartę. Dla zadań z generatora
-           takiego dopasowania nie ma i zapis idzie wprost, niżej. */
+        /* The seed has to be the lesson id, so that the wrapped Ex.build
+           recognises the exercise and updates the card by itself. Generated
+           tasks have no such match and are recorded directly, below. */
         seed = gdzie.generated ? "drill-" + gdzie.topicId : gdzie.lesson.id;
         opis = t("today.stepError");
       } else {
@@ -127,9 +130,10 @@
 
       Ex.wireSpeakers(box);
       var next = box.querySelector(".js-next");
-      /* Kto zapisuje wynik: ćwiczenie z lekcji aktualizuje się samo przez
-         owinięte Ex.build, zadanie z generatora nie ma lekcji do rozpoznania
-         i musi zostać zapisane tutaj — także wtedy, gdy wraca jako karta. */
+      /* Who records the result: a lesson exercise updates itself through the
+         wrapped Ex.build, a generated task has no lesson to be recognised by
+         and has to be recorded here — including when it comes back as a
+         card. */
       var wygenerowane = poz.rodzaj === "drill" ? poz.item
         : (gdzie && gdzie.generated ? { topicId: gdzie.topicId, seed: gdzie.seed, tag: poz.karta.tag } : null);
 

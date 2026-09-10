@@ -1,23 +1,24 @@
 /* ============================================================
-   views-reading.js — czytanie, słuchanie ciągłe, dyktando.
+   views-reading.js — reading, continuous listening, dictation.
 
-   Wszystko w kursie było dotąd na poziomie zdania: ćwiczenie, fiszka,
-   nagranie. Na tym da się dojść do B1 i tam stanąć, bo prawdziwy
-   włoski nie przychodzi zdaniami po jednym.
+   Everything in the course has so far been at the level of a sentence: the
+   exercise, the card, the recording. You can reach B1 on that and get stuck
+   there, because real Italian does not arrive one sentence at a time.
 
-   Trzy tryby na tym samym tekście, w kolejności rosnącej trudności:
+   Three modes on the same text, in order of increasing difficulty:
 
-   1. CZYTANIE — tekst widoczny, glosy pod ręką, każde zdanie do
-      odsłuchania osobno.
-   2. SŁUCHANIE — tekst schowany, nagrania lecą po kolei, potem pytania.
-      Bez tego kroku „rozumiem czytając" myli się z „rozumiem".
-   3. DYKTANDO — jedno zdanie, powtarzalne, wpisywane z pamięci.
+   1. READING — the text visible, the glosses at hand, every sentence
+      playable on its own.
+   2. LISTENING — the text hidden, the recordings play in order, then the
+      questions. Without that step "I understand when reading" gets
+      confused with "I understand".
+   3. DICTATION — one sentence, repeatable, typed from memory.
 
-   Nagrań całości nie ma: Audio2.speakSequence skleja te same pliki,
-   których używa dyktando. Jeden plik na tekst ważyłby więcej niż
-   wszystkie zdania razem i nie dałby się pociąć.
+   There are no whole-text recordings: Audio2.speakSequence stitches
+   together the same files the dictation uses. One file per text would weigh
+   more than all the sentences together and could not be cut up.
 
-   Skrypt klasyczny. Wymaga core.js, audio.js, exercises.js, views.js.
+   Classic script. Requires core.js, audio.js, exercises.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -48,7 +49,7 @@
     });
   };
 
-  /* ---------------- Tryby ---------------- */
+  /* ---------------- The modes ---------------- */
 
   function pasekTrybow(r, tryb) {
     var tryby = [["read", "read.modeRead"], ["listen", "read.modeListen"], ["dictation", "read.modeDictation"]];
@@ -76,18 +77,18 @@
     if (tryb === "listen") return trybSluchania(r, box);
     if (tryb === "dictation") return trybDyktanda(r, box);
 
-    /* Leksykon poziomu MUSI być wczytany, zanim narysujemy tekst z
-       klikalnymi słowami. Poziomy dociągają się leniwie, więc uczeń, który
-       wchodzi prosto w czytankę, ma pusty `vocabIndex` — i karta słowa
-       pokazywała puste znaczenie dla „bere", którego kurs uczy w A1.
-       Zmierzone przy pierwszym uruchomieniu, nie przewidziane. */
+    /* The level lexicon MUST be loaded before we draw a text with clickable
+       words. Levels are pulled lazily, so a student who goes straight into a
+       reading has an empty `vocabIndex` — and the word card showed an empty
+       meaning for "bere", which the course teaches at A1. Measured on the
+       first run, not foreseen. */
     Core.loadLevelData(r.cefr, function () {
-      if (global.Lemma && Lemma.odswiez) Lemma.odswiez();   // słownik urósł
+      if (global.Lemma && Lemma.odswiez) Lemma.odswiez();   // the dictionary grew
       trybCzytania(r, box);
     });
   }
 
-  /** Glosy trudnych słów, jeśli nakładka je dała. */
+  /** The glosses of the hard words, if the overlay supplied them. */
   function glosy(r) {
     if (!r.glossIt || !r.gloss) return "";
     return '<div class="card" style="margin-top:18px"><h3 style="font-size:1rem;margin-bottom:8px">' +
@@ -99,9 +100,10 @@
   }
 
   function trybCzytania(r, box) {
-    /* Każde słowo jest klikalne. Panel trudnych słów niżej ZOSTAJE: to
-       wybór autora, czyli „na to zwróć uwagę", a dotknięcie odpowiada na
-       inne pytanie — „a tego akurat ja nie znam". Dwie różne rzeczy. */
+    /* Every word is clickable. The hard-word panel below STAYS: it is the
+       author's choice, that is "pay attention to this", while a tap answers
+       a different question — "this one I happen not to know". Two different
+       things. */
     box.innerHTML = '<div class="card"><p class="lk-text" style="font-size:1.05rem;line-height:2.1">' +
       r.sentences.map(function (s) {
         return '<span style="display:inline">' + Lookup.zdanieKlikalne(s) +
@@ -139,7 +141,7 @@
     });
   }
 
-  /** Pytania są po włosku i pochodzą z warstwy neutralnej. */
+  /** The questions are in Italian and come from the neutral layer. */
   function pytania(r, box) {
     var zbudowane = (r.questions || []).map(function (q, i) { return Ex.build(q, i, "read-" + r.id); });
     box.innerHTML = '<h2 style="font-size:1.2rem;margin-bottom:12px">' + esc(t("read.questions")) + "</h2>" +
@@ -162,11 +164,11 @@
   }
 
   /**
-   * Dyktando: każde zdanie jako ćwiczenie typu „listen".
+   * Dictation: every sentence as a "listen" exercise.
    *
-   * Nie budujemy nowego typu — to jest dokładnie to samo zadanie, tylko
-   * na zdaniu z tekstu zamiast z lekcji, więc jedzie tym samym builderem
-   * i tak samo trafia do quaderno błędów.
+   * We do not build a new type — this is exactly the same task, only on a
+   * sentence from a text rather than from a lesson, so it runs through the
+   * same builder and reaches the mistake notebook the same way.
    */
   function trybDyktanda(r, box) {
     var i = 0, dobre = 0;

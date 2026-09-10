@@ -1,56 +1,58 @@
 /* ============================================================
-   cils.js — silnik symulacji egzaminu CILS B1 Cittadinanza.
+   cils.js — the engine of the CILS B1 Cittadinanza exam simulation.
 
-   Czysta logika: punkty, progi, werdykt. Widok (views-cils.js) rysuje,
-   liczy czas i pilnuje, żeby nie dało się wrócić do zamkniętej sekcji.
+   Pure logic: points, thresholds, verdict. The view (views-cils.js) draws,
+   counts time and makes sure a closed section cannot be reopened.
 
-   TRZY RZECZY, KTÓRE TEN PLIK ROBI INACZEJ NIŻ RESZTA KURSU.
+   THREE THINGS THIS FILE DOES DIFFERENTLY FROM THE REST OF THE COURSE.
 
-   1. Punktuje tylko to, co da się punktować. Ascolto i lettura mają w
-      kryteriach wagę za item, więc wynik jest prawdziwy. Produkcja pisemna
-      i ustna mają siatki oceniane przez CZŁOWIEKA (skuteczność komunikacji,
-      morfoskładnia, leksyka, wymowa): automat dałby liczbę wyglądającą jak
-      ocena i nią nie będącą. Zamiast tego pisemna wraca jako lista
-      elementów zadania obecnych i brakujących, a ustna nie wchodzi do wyniku.
+   1. It scores only what can be scored. Listening and reading have a
+      per-item weight in the criteria, so the result is real. Written and
+      oral production are graded by HUMANS against rubrics (communicative
+      effectiveness, morphosyntax, lexis, pronunciation): an automaton would
+      produce a number that looks like a grade without being one. Instead,
+      the written part comes back as a list of task elements present and
+      missing, and the oral part does not enter the result at all.
 
-   2. Nie ogłasza „zdałeś". Progu zaliczenia Centro CILS dla tego modułu NIE
-      publikuje: 7/12 pochodzi z ich dokumentu proceduralnego i z materiału
-      państwowej siedziby egzaminacyjnej (patrz cils-formato.md). Do tego
-      dwie z czterech sprawności zostają tu bez oceny. Dlatego werdykt jest
-      asymetryczny i to jest cała jego uczciwość:
-        - poniżej progu w sprawności zmierzonej = NA PEWNO niezdane;
-        - powyżej progu = nierozstrzygnięte, bo brakuje dwóch sprawności.
-      Symulator, który mówi „zdane", obiecuje coś, czego nie sprawdził.
+   2. It does not announce "you passed". Centro CILS does NOT publish the
+      pass threshold for this module: 7/12 comes from their procedural
+      document and from the material of a state examination centre (see
+      cils-formato.md). On top of that, two of the four skills are left
+      ungraded here. That is why the verdict is asymmetric, and that
+      asymmetry is the whole of its honesty:
+        - below the threshold in a measured skill = DEFINITELY not passed;
+        - above the threshold = undetermined, because two skills are missing.
+      A simulator that says "passed" promises something it never checked.
 
-   3. Nie karze za zgadywanie, bo egzamin nie karze: odpowiedź zła i
-      pominięta warte są tyle samo, czyli zero.
+   3. It does not punish guessing, because the exam does not: a wrong answer
+      and an omitted one are worth the same, that is zero.
 
-   Skrypt klasyczny. Bez zależności.
+   Classic script. No dependencies.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var Cils = {};
 
-  /* Wartości z kryteriów oficjalnych; próg z cils-formato.md razem ze
-     źródłem. Klucz napisu, nie zdanie: widok pokazuje pochodzenie w
-     języku ucznia i linkuje do dokumentu. */
+  /* Values from the official criteria; the threshold from cils-formato.md
+     together with its source. A string key, not a sentence: the view shows
+     the provenance in the student's language and links to the document. */
   Cils.MAX_ABILITA = 12;
   Cils.SOGLIA_ABILITA = 7;
   Cils.MIN_TOTALE = 28;
   Cils.MAX_TOTALE = 48;
   Cils.FONTE_SOGLIA = "cils.thresholdSource";
 
-  /** Sprawności w kolejności egzaminu. */
+  /** The skills in exam order. */
   Cils.ABILITA = ["ascolto", "lettura", "scritta", "orale"];
 
-  /** Sprawności, które ten symulator umie policzyć. Reszta jest deklarowana. */
+  /** The skills this simulator can score. The rest are declared, not measured. */
   Cils.PUNTEGGIABILI = ["ascolto", "lettura"];
 
   function simulazioni() { return global.CILS || []; }
 
   /**
-   * Simulazione per id, oppure la prima.
+   * A simulation by id, or the first one.
    * @param {string} [id]
    * @returns {object|null}
    */
@@ -62,21 +64,21 @@
     return null;
   }
 
-  /** Sezione per id dentro una simulazione. */
+  /** A section by id inside a simulation. */
   function sezione(s, id) {
     var sez = (s && s.sezioni) || [];
     for (var i = 0; i < sez.length; i++) if (sez[i].id === id) return sez[i];
     return null;
   }
 
-  /** Numero di item di una prova, qualunque sia il tipo. */
+  /** The number of items in a task, whatever its type. */
   function quantiItem(prova) { return ((prova && prova.items) || []).length; }
 
   /**
-   * Punti di una singola prova.
+   * The points of a single task.
    *
-   * @param {object} prova   con `items[].a` e `puntiPerItem`
-   * @param {Array}  risposte indice scelto per item; `null`/`undefined` = omessa
+   * @param {object} prova   with `items[].a` and `puntiPerItem`
+   * @param {Array}  risposte the index chosen per item; `null`/`undefined` = omitted
    * @returns {{punti:number, esatte:number, date:number, totali:number}}
    */
   function punteggioProva(prova, risposte) {
@@ -86,7 +88,7 @@
     risposte = risposte || [];
     for (var i = 0; i < items.length; i++) {
       var dato = risposte[i];
-      if (dato === null || dato === undefined) continue;   /* omessa = 0, come all'esame */
+      if (dato === null || dato === undefined) continue;   /* omitted = 0, as at the exam */
       out.date++;
       if (dato === items[i].a) { out.esatte++; out.punti += peso; }
     }
@@ -94,10 +96,10 @@
   }
 
   /**
-   * Punti di una sezione a risposta chiusa (ascolto, lettura).
+   * The points of a closed-answer section (listening, reading).
    *
    * @param {object} sez
-   * @param {Array<Array>} risposte una lista per prova
+   * @param {Array<Array>} risposte one list per task
    */
   function punteggioSezione(sez, risposte) {
     var prove = (sez && sez.prove) || [];
@@ -111,16 +113,16 @@
       out.totali += p.totali;
       out.max += quantiItem(prove[i]) * (prove[i].puntiPerItem || 0);
     }
-    /* Mezzi punti esistono davvero: sette item da 0,5 fanno 3,5 e l'esame
-       li dà. Qui non si arrotonda il risultato, si toglie il rumore della
-       somma in virgola mobile (0.5 + 0.5 + 0.5 non sempre fa 1,5 esatto):
-       il valore torna al mezzo punto più vicino, che è già quello vero. */
+    /* Half points really exist: seven items worth 0.5 make 3.5 and the exam
+       awards them. Nothing is rounded here, we only remove the noise of
+       floating-point addition (0.5 + 0.5 + 0.5 is not always exactly 1.5):
+       the value returns to the nearest half point, which is the true one. */
     out.punti = Math.round(out.punti * 2) / 2;
     return out;
   }
 
   /**
-   * Esito complessivo, con la sua incertezza dichiarata.
+   * The overall outcome, with its uncertainty stated.
    *
    * @param {{ascolto:number, lettura:number}} punti
    * @returns {{abilita:object, verdetto:string, contate:Array, nonContate:Array}}
@@ -144,20 +146,20 @@
       if (!ok) sotto = true;
     });
 
-    /* Asimmetria voluta: una sprawność sotto soglia basta a dire di no,
-       nessuna sprawność sopra soglia basta a dire di sì. */
+    /* A deliberate asymmetry: one skill below the threshold is enough to say
+       no, no number of skills above it is enough to say yes. */
     out.verdetto = sotto ? "sotto-soglia" : "indeterminato";
     return out;
   }
 
   /**
-   * Elementi della traccia presenti e assenti nel testo scritto.
+   * The elements of the prompt present in and absent from the written text.
    *
-   * Non è un punteggio e non deve diventarlo: la griglia ufficiale pesa
-   * efficacia, morfosintassi, lessico e ortografia, cioè cose che un
-   * confronto di stringhe non vede. Qui verifichiamo solo che il compito
-   * sia stato fatto per intero, che è l'errore più frequente e l'unico
-   * che una macchina può segnalare senza mentire.
+   * This is not a score and must not become one: the official rubric weighs
+   * effectiveness, morphosyntax, lexis and spelling, that is things a string
+   * comparison cannot see. Here we only check that the task was done in
+   * full, which is the most frequent mistake and the only one a machine can
+   * report without lying.
    */
   function controlloScritta(traccia, testo) {
     var parole = String(testo || "").trim().split(/\s+/).filter(Boolean).length;

@@ -1,12 +1,13 @@
 /* ============================================================
-   views-settings.js — ustawienia, kopia zapasowa i talia w formacie Anki.
+   views-settings.js — settings, the backup and the deck in Anki format.
 
-   Ekran wydzielony z views.js, w którym leżało osiem ekranów naraz.
-   Wzorzec jest ten sam, którym chodzą już views-talk.js, views-train.js
-   i views-today.js: skorupa (set, pageHead, el, empty) przychodzi z
-   `Views.shell`, a plik dokłada własną trasę do `Views`.
+   A screen split out of views.js, which held eight screens at once. The
+   pattern is the same one views-talk.js, views-train.js and views-today.js
+   already use: the shell (set, pageHead, el, empty) comes from
+   `Views.shell`, and the file adds a route of its own to `Views`.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -17,21 +18,21 @@
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
   /* ═══════════════════════════════════════════════════════════
-     USTAWIENIA
+     SETTINGS
      ═══════════════════════════════════════════════════════════ */
-  /** Wiersz tabeli „wsparcie przeglądarki". */
+  /** A row of the "browser support" table. */
   function supportRow(name, note, ok, chip) {
     return '<div class="list-row"><span class="list-row__main"><b>' + esc(name) + "</b><span>" + esc(note) +
       '</span></span><span class="chip ' + (ok ? "chip--green" : "") + '">' + esc(chip) + "</span></div>";
   }
 
   /**
-   * Wiersz o pracy bez sieci.
+   * The row about working offline.
    *
-   * Trzy stany, nie dwa: działa, nie działa mimo http(s), i „nie z tego
-   * miejsca". Ostatni jest najczęstszy — kurs otwarty podwójnym
-   * kliknięciem chodzi z file://, gdzie service worker jest zabroniony,
-   * a to nie jest usterka do zgłaszania, tylko cena otwierania z dysku.
+   * Three states, not two: it works, it does not work despite http(s), and
+   * "not from here". The last one is the most frequent — a course opened by
+   * double-clicking runs from file://, where a service worker is forbidden,
+   * and that is not a fault to report but the price of opening it from disk.
    */
   function offlineRow() {
     var http = /^https?:$/.test(global.location.protocol);
@@ -68,14 +69,15 @@
       '<button class="btn btn--ghost btn--sm js-test" style="align-self:flex-start">' + t("set.testVoice") + "</button>" +
       "</div></div>" +
 
-      /* Powtórki stoją między mową a kopią zapasową, bo to nadal ustawienie
-         nauki. Kopia i „wyczyść wszystko" są końcem strony celowo: to
-         działania na całym profilu, nie pokrętła do kręcenia w trakcie.
+      /* Reviews sit between speech and the backup, because they are still a
+         learning setting. The backup and "erase everything" are at the end
+         of the page on purpose: those are operations on the whole profile,
+         not knobs to turn while studying.
 
-         Suwak z gołą liczbą („0.87") nie znaczy dla ucznia nic, więc wybór
-         jest z trzech nazwanych progów, a zdanie pod spodem mówi o SKUTKU,
-         nie o algorytmie: nikt nie zmienia retencji, ludzie zmieniają „za
-         często mi to wraca". */
+         A slider with a bare number ("0.87") means nothing to a student, so
+         the choice is between three named thresholds, and the sentence below
+         talks about the EFFECT, not the algorithm: nobody changes retention,
+         people change "this keeps coming back too often". */
       '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.reviews") + "</h3>" +
       '<div class="stack">' +
       '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' + t("set.retention") + "</span>" +
@@ -89,10 +91,11 @@
       '<p style="color:var(--ink-soft);font-size:.9rem;margin:0">' + esc(t("set.retentionHint")) + "</p>" +
       "</div></div>" +
 
-      /* Talia dla innych programów. Osobna karta od kopii postępów, bo to
-         inna obietnica: kopia wraca TUTAJ z terminami, a ta wychodzi STĄD
-         bez nich. Zlanie ich w jeden przycisk kończy się importem „na
-         czysto" i utratą roku powtórek. */
+      /* The deck for other programs. A separate card from the progress
+         backup, because it is a different promise: the backup comes back
+         HERE with its due dates, this one goes out FROM HERE without them.
+         Merging them into one button ends in a clean import and the loss of
+         a year of reviews. */
       '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("anki.title") + "</h3>" +
       '<p style="color:var(--ink-soft);font-size:.9rem">' + esc(t("anki.hint")) + "</p>" +
       '<p style="font-size:.9rem;font-weight:600">' + esc(t("anki.noSchedule")) + "</p>" +
@@ -132,9 +135,10 @@
     });
     el().querySelector(".js-autoplay").addEventListener("change", function (e) { Core.state.settings.autoplay = e.target.checked; Core.save(); });
     el().querySelector(".js-strict").addEventListener("change", function (e) { Core.state.settings.strictAccents = e.target.checked; Core.save(); });
-    /* Zmiana działa od NASTĘPNEJ odpowiedzi: terminów już wyznaczonych nie
-       ruszamy. Przeliczenie całej talii przesunęłoby karty, których uczeń
-       dziś nie widzi, a on zmienił ustawienie, nie poprosił o migrację. */
+    /* The change takes effect from the NEXT answer: the due dates already
+       set are left alone. Recomputing the whole deck would shift cards the
+       student does not see today, and they changed a setting rather than
+       asking for a migration. */
     el().querySelector(".js-retention").addEventListener("change", function (e) {
       Core.state.settings.retention = parseFloat(e.target.value);
       Core.save();
@@ -145,8 +149,8 @@
     });
 
     el().querySelector(".js-place").addEventListener("click", function () { App.go("piazzamento"); });
-    /* Ten sam eksport, którym kończy się przypomnienie o kopii: gdyby
-       stał tu drugi raz, tylko jedno z dwóch miejsc przesuwałoby próg. */
+    /* The same export the backup reminder ends with: if it stood here a
+       second time, only one of the two places would move the threshold. */
     el().querySelector(".js-export").addEventListener("click", function () {
       Core.downloadBackup();
     });
@@ -155,11 +159,11 @@
       if (!f) return;
       var fr = new FileReader();
       fr.onload = function () {
-        // applyLang, nie samo refreshRail: plik niesie własny język i motyw,
-        // a bez ich nałożenia interfejs zostaje w poprzednim języku aż do przeładowania
+        // applyLang, not refreshRail alone: the file carries its own language and theme,
+        // and without applying them the interface stays in the previous language until a reload
         try { Core.importState(fr.result); Core.toast(t("set.imported"), "ok"); App.applyLang(Core.state.settings.lang); App.go("progressi"); }
-        /* Powód, nie samo „nie udało się": kto odzyskuje kopię zapasową,
-           potrzebuje wiedzieć, czy plik jest z nowszej wersji, czy uszkodzony. */
+        /* The reason, not just "it failed": whoever is restoring a backup
+           needs to know whether the file is from a newer version or damaged. */
         catch (err) { Core.toast(err && err.key ? t(err.key, err.vars) : t("set.importFailed")); }
       };
       fr.readAsText(f);
@@ -172,16 +176,16 @@
     });
   };
 
-  /* ═══════════════ Talia w formacie Anki ═══════════════ */
+  /* ═══════════════ The deck in Anki format ═══════════════ */
 
   /**
-   * Eksport i import TSV, z ANTEPRIMA przed zapisem.
+   * TSV export and import, with a PREVIEW before saving.
    *
-   * Import bez podglądu to jedyne miejsce w kursie, w którym cudzy plik
-   * zmienia stan bezpowrotnie i po cichu. Uczeń ma najpierw zobaczyć, co
-   * się stanie — ile dojdzie, ile się zaktualizuje, ile zostanie
-   * pominiętych — i dopiero potem potwierdzić. Anulowanie nie może
-   * zostawić po sobie ani jednej zmiany.
+   * An import without a preview is the only place in the course where
+   * somebody else's file changes the state irreversibly and silently. The
+   * student must first see what will happen — how many will be added, how
+   * many updated, how many skipped — and only then confirm. Cancelling must
+   * not leave a single change behind.
    */
   function wireAnki() {
     var root = el();
@@ -208,11 +212,11 @@
       var fr = new FileReader();
       fr.onload = function () { pokazPodglad(String(fr.result), podglad); };
       fr.readAsText(f);
-      e.target.value = "";        // ten sam plik da się wybrać drugi raz
+      e.target.value = "";        // the same file can be picked a second time
     });
   }
 
-  /** Co zrobi import: dojdzie, zaktualizuje się, zostanie pominięte. */
+  /** What the import will do: added, updated, skipped. */
   function policz(karty) {
     var srs = Core.state.srs;
     var nowe = 0, aktualizacje = 0, pominiete = 0, widziane = {};
@@ -253,9 +257,10 @@
     box.querySelector(".js-sum").textContent =
       t("anki.summary", { add: licz.nowe, upd: licz.aktualizacje, skip: licz.pominiete });
 
-    /* Pierwsze pięć wierszy, WYŁĄCZNIE przez textContent. To jest treść z
-       cudzego pliku: `esc()` by wystarczyło, ale textContent nie da się
-       użyć źle, a to jedyne miejsce, gdzie cudzy napis trafia na ekran. */
+    /* The first five rows, through textContent ONLY. This is content from
+       somebody else's file: `esc()` would be enough, but textContent cannot
+       be misused, and this is the only place where a foreign string reaches
+       the screen. */
     var lista = box.querySelector(".js-rows");
     w.karty.slice(0, 5).forEach(function (k) {
       var row = document.createElement("div");
@@ -278,11 +283,11 @@
       Core.toast(t("anki.cancelled"));
     });
     box.querySelector(".js-ok").addEventListener("click", function () {
-      /* Zapis pomija DOKŁADNIE to, co podgląd policzył jako pominięte.
-         Bez tego duplikat w pliku był liczony jako pominięty, a mimo to
-         nadpisywał tłumaczenie — podgląd obiecywał jedno, import robił
-         drugie, i uczeń nie miał jak zauważyć różnicy. Wygrywa pierwsze
-         wystąpienie, tak jak przy liczeniu. */
+      /* The save skips EXACTLY what the preview counted as skipped. Without
+         this, a duplicate in the file was counted as skipped and still
+         overwrote the translation — the preview promised one thing, the
+         import did another, and the student had no way to notice the
+         difference. The first occurrence wins, just as when counting. */
       var dodane = 0, uzyte = {};
       w.karty.forEach(function (k) {
         var klucz = Core.cardKey(k.it);

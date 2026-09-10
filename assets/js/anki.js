@@ -1,31 +1,35 @@
 /* ============================================================
-   anki.js — talia wychodzi i wchodzi w formacie, który czyta Anki.
+   anki.js — the deck goes out and comes in in a format Anki reads.
 
-   Po co: żeby uczeń nie był zakładnikiem tego kursu. Eksport stanu w JSON
-   już jest, ale czyta go wyłącznie ta aplikacja; TSV czyta Anki, arkusz
-   kalkulacyjny i każdy inny program do fiszek. Dopiero to jest wyjście.
+   What for: so the student is not a hostage of this course. Exporting the
+   state as JSON already exists, but only this application reads it; TSV is
+   read by Anki, by a spreadsheet and by every other flashcard program.
+   Only that is a way out.
 
-   CZEGO EKSPORT NIE NIESIE, i trzeba to powiedzieć uczniowi przed
-   kliknięciem, nie w README: **harmonogramu powtórek**. Wychodzą słowa i
-   tłumaczenia, nie terminy. Stabilność i trudność FSRS opisują pamięć
-   zmierzoną w TYM kursie i w Anki nie znaczą nic — a milczenie o tym
-   kończy się utratą roku powtórek przy imporcie „na czysto".
+   WHAT THE EXPORT DOES NOT CARRY, and the student has to be told before
+   clicking rather than in the README: **the review schedule**. Words and
+   translations go out, not due dates. FSRS stability and difficulty
+   describe memory measured in THIS course and mean nothing in Anki — and
+   staying silent about it ends in losing a year of reviews to a clean
+   import.
 
-   Trzy rzeczy, które w tym formacie idą źle, jeśli się o nich nie myśli:
+   Three things that go wrong in this format if you do not think about them:
 
-   1. SEPARATOR W TREŚCI. Włoskie zdanie z przecinkiem albo z cudzysłowem
-      rozjeżdża kolumny. Stąd cytowanie w stylu RFC 4180 i tabulator jako
-      separator: tabulatora w treści fiszki praktycznie nie ma, przecinek
-      jest w co trzeciej.
-   2. PREFIKS FORMUŁY. Pole zaczynające się od `=`, `+`, `-` albo `@`
-      wykonuje się jako formuła, gdy ktoś otworzy plik w arkuszu. Talia
-      dostana od kogoś staje się wtedy wektorem. Neutralizujemy
-      apostrofem, świadomie płacąc jednym znakiem widocznym w Anki.
-   3. HTML. Anki domyślnie interpretuje pola jako HTML. Deklarujemy
-      `#html:false`, żeby „<" w zdaniu zostało znakiem, a nie tagiem.
+   1. THE SEPARATOR IN THE CONTENT. An Italian sentence with a comma or a
+      quotation mark breaks the columns. Hence RFC 4180-style quoting and
+      the tab as separator: a tab practically never appears in a card,
+      a comma appears in every third.
+   2. THE FORMULA PREFIX. A field starting with `=`, `+`, `-` or `@`
+      executes as a formula when somebody opens the file in a spreadsheet.
+      A deck received from somebody else then becomes a vector. We
+      neutralise it with an apostrophe, deliberately paying one character
+      visible in Anki.
+   3. HTML. Anki interprets fields as HTML by default. We declare
+      `#html:false`, so that "<" in a sentence stays a character rather
+      than a tag.
 
-   Moduł jest CZYSTY: napisy na wejściu, napisy na wyjściu. Bez DOM, bez
-   stanu, bez Core. Skrypt klasyczny.
+   The module is PURE: strings in, strings out. No DOM, no state, no Core.
+   Classic script.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -35,30 +39,30 @@
   var SEP = "\t";
   var NL = "\n";
 
-  /* Anki 2.1.55+ czyta te dyrektywy z pierwszych linii pliku i dzięki nim
-     uczeń nie musi nic ustawiać w kreatorze importu. */
+  /* Anki 2.1.55+ reads these directives from the first lines of the file,
+     and thanks to them the student has to set nothing in the import wizard. */
   var NAGLOWEK = [
     "#separator:tab",
     "#html:false",
-    /* Nazwy kolumn MUSZĄ być nazwami pól typu notatki, bo po nich Anki
-       mapuje kolumny automatycznie. Przy „Italiano/Traduzione" import
-       przechodził bez błędu i zostawiał drugie pole PUSTE — pierwsza
-       wersja tak właśnie robiła, a widać to dopiero po zajrzeniu do
-       zaimportowanej notatki, nie w komunikacie. */
+    /* The column names MUST be the field names of the note type, because
+       Anki maps the columns by them automatically. With
+       "Italiano/Traduzione" the import went through without an error and
+       left the second field EMPTY — the first version did exactly that,
+       and you only see it by opening an imported note, not in any message. */
     "#notetype:Basic",
     "#columns:Front\tBack\tTags",
     "#tags column:3"
   ];
 
-  /** Znaki, od których arkusz zaczyna liczyć formułę. */
+  /** The characters from which a spreadsheet starts computing a formula. */
   var FORMULA = /^[=+\-@\t\r]/;
 
   /**
-   * Pole gotowe do zapisu: neutralizacja formuły, potem cytowanie.
+   * A field ready to be written: formula neutralisation, then quoting.
    *
-   * Kolejność ma znaczenie. Apostrof musi wejść PRZED cytowaniem, inaczej
-   * ląduje poza cudzysłowem i arkusz i tak zobaczy `=` jako pierwszy znak
-   * zawartości.
+   * The order matters. The apostrophe has to go in BEFORE the quoting,
+   * otherwise it lands outside the quotation marks and the spreadsheet sees
+   * `=` as the first character of the content anyway.
    */
   function pole(v) {
     var s = v === null || v === undefined ? "" : String(v);
@@ -70,7 +74,7 @@
   }
 
   /**
-   * Serializuje karty do TSV czytanego przez Anki.
+   * Serialises cards into the TSV that Anki reads.
    *
    * @param {Array} karty [{it, tr, tag}]
    * @returns {string}
@@ -83,20 +87,20 @@
     return linie.join(NL) + NL;
   }
 
-  /* Powyżej tego pliku nie parsujemy w ogóle. Talia ucznia to setki fiszek,
-     nie setki tysięcy: plik tej wielkości albo nie jest talią, albo jest
-     próbą zawieszenia przeglądarki. Odmawiamy PRZED parsowaniem. */
+  /* Above this size we do not parse at all. A student's deck is hundreds of
+     cards, not hundreds of thousands: a file that big either is not a deck
+     or is an attempt to hang the browser. We refuse BEFORE parsing. */
   var MAX_WIERSZY = 50000;
   var MAX_ZNAKOW = 8 * 1024 * 1024;
 
   /**
-   * Rozbiera CAŁY tekst na wiersze pól, honorując cytowanie.
+   * Breaks the WHOLE text into rows of fields, honouring quoting.
    *
-   * Nie da się najpierw pociąć po znakach nowej linii, a potem parsować:
-   * pole w cudzysłowie WOLNO złamać na kilka linii i RFC 4180 to
-   * przewiduje. Pierwsza wersja tak właśnie robiła i rozrywała na pół
-   * każdą fiszkę ze złamaniem wiersza — wychodziła poprawnie, wracała
-   * jako dwie połówki. Złapał to test obiegu, nie oko.
+   * You cannot cut on newlines first and parse afterwards: a quoted field
+   * MAY be broken across several lines and RFC 4180 allows for that. The
+   * first version did exactly that and tore in half every card containing a
+   * line break — it went out correctly and came back as two halves. The
+   * round-trip test caught it, not the eye.
    *
    * @returns {{wiersze:Array<Array<string>>, urwany:boolean}}
    */
@@ -127,45 +131,48 @@
     return { wiersze: wiersze, urwany: w };
   }
 
-  /** Zdejmuje apostrof, którym neutralizowaliśmy formułę przy eksporcie. */
+  /** Removes the apostrophe we used to neutralise a formula on export. */
   function odNeutralizuj(s) {
     return s.length > 1 && s[0] === "'" && FORMULA.test(s.slice(1)) ? s.slice(1) : s;
   }
 
   /**
-   * Parsuje plik TSV/CSV do listy kart.
+   * Parses a TSV/CSV file into a list of cards.
    *
-   * Zwraca `{karty, blad, pominiete}`. Nie rzuca: import to jedyne miejsce,
-   * w którym uczeń podaje plik z zewnątrz, a „coś poszło nie tak" jest tu
-   * bezużyteczne. Błąd niesie KLUCZ napisu, bo kurs mówi pięcioma językami.
+   * Returns `{karty, blad, pominiete}`. It does not throw: the import is
+   * the only place where the student supplies a file from outside, and
+   * "something went wrong" is useless there. The error carries a string
+   * KEY, because the course speaks five languages.
    */
   function fromTsv(tekst) {
     var s = String(tekst || "");
     if (s.length > MAX_ZNAKOW) return { karty: [], blad: "anki.errTooBig", pominiete: 0 };
-    /* Tani licznik przed parsowaniem: nie chcemy przejść znak po znaku
-       przez plik, który i tak odrzucimy. */
+    /* A cheap counter before parsing: we do not want to walk character by
+       character through a file we are going to reject anyway. */
     if ((s.match(/\n/g) || []).length > MAX_WIERSZY) {
       return { karty: [], blad: "anki.errTooManyRows", pominiete: 0 };
     }
 
     var r = rozbierzTekst(s);
-    /* Niedomknięty cudzysłów połyka wszystko, co po nim: parser nie ma jak
-       zgadnąć, gdzie pole miało się skończyć. Pomijanie „tego jednego
-       wiersza" jest tu niewykonalne, a sklejenie reszty pliku w jedno pole
-       byłoby gorsze niż odmowa — uczeń dostałby fiszkę z połową cudzej
-       talii i nie miałby jak tego rozpoznać. Odmawiamy całego pliku. */
+    /* An unclosed quotation mark swallows everything after it: the parser
+       has no way to guess where the field was meant to end. Skipping "that
+       one row" is impossible here, and gluing the rest of the file into one
+       field would be worse than refusing — the student would get a card
+       holding half of somebody else's deck with no way to notice. We refuse
+       the whole file. */
     if (r.urwany) return { karty: [], blad: "anki.errUnterminated", pominiete: 0 };
     var karty = [], pominiete = 0, kolumn = 0;
 
     for (var i = 0; i < r.wiersze.length; i++) {
       var p = r.wiersze[i];
       if (p.length === 1 && !p[0].trim()) continue;
-      if (p[0][0] === "#") continue;                   // dyrektywy Anki
+      if (p[0][0] === "#") continue;                   // Anki directives
 
-      /* Liczba kolumn ma być stała w całym pliku. Plik, w którym część
-         wierszy ma trzy pola a część cztery, jest albo uszkodzony, albo ma
-         separator w treści — w obu wypadkach dopisanie go do talii wniosłoby
-         śmieci, których uczeń już nie odróżni od swoich. */
+      /* The number of columns must be constant across the file. A file
+         where some rows have three fields and others four is either damaged
+         or has a separator in its content — in both cases adding it to the
+         deck would bring in rubbish the student can no longer tell apart
+         from their own cards. */
       if (!kolumn) kolumn = p.length;
       else if (p.length !== kolumn) return { karty: [], blad: "anki.errRagged", pominiete: pominiete };
 

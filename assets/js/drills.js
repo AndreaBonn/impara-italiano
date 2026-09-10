@@ -1,22 +1,22 @@
 /* ============================================================
-   drills.js — ćwiczenia wyprowadzane z reguł, nie pisane ręcznie.
+   drills.js — exercises derived from rules, not written by hand.
 
-   Siedem generatorów. Każdy jest funkcją CZYSTĄ ziarna: to samo
-   ziarno daje to samo zadanie, więc karta błędu może wskazać
-   konkretne zadanie parą (generator, ziarno), bez zapisywania treści.
+   Seven generators. Each is a PURE function of a seed: the same seed
+   yields the same task, so a mistake card can point at a specific task
+   with the pair (generator, seed), without storing any content.
 
-   Dlaczego w ogóle: uczeń, który myli „del" z „dello", potrzebuje
-   dwustu powtórzeń, a nie czterech. Kurs ma ich cztery, bo każde
-   trzeba napisać i przetłumaczyć na pięć języków. Tutaj treść
-   powstaje z leksykonu i reguł, więc nie kosztuje ani napisu, ani
-   nagrania.
+   Why at all: a student who confuses "del" with "dello" needs two hundred
+   repetitions, not four. The course has four, because each has to be
+   written and translated into five languages. Here the content comes from
+   the lexicon and the rules, so it costs neither a string nor a recording.
 
-   Ćwiczenia są WYŁĄCZNIE pisane. Wygenerowanego zdania nie ma w
-   indeksie nagrań, więc przycisk głośnika zszedłby do syntezy
-   systemowej — czyli do mechanicznego głosu, którego ten projekt
-   unika z założenia. Stąd zakaz pól `say`, oraz typów listen i speak.
+   The exercises are WRITTEN ONLY. A generated sentence is not in the
+   recording index, so the speaker button would fall back to system
+   synthesis — that is, to the mechanical voice this project avoids on
+   principle. Hence the ban on `say` fields and on the listen and speak
+   types.
 
-   Skrypt klasyczny. Wymaga drills-lex.js i i18n.js.
+   Classic script. Requires drills-lex.js and i18n.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -24,15 +24,15 @@
   var Drills = {};
   var t = function (k, v) { return I18n.t(k, v); };
 
-  /* ---------------- Losowość powtarzalna ---------------- */
+  /* ---------------- Repeatable randomness ---------------- */
 
   /**
-   * xorshift zasiany napisem: ta sama treść ziarna, ta sama sekwencja.
+   * xorshift seeded with a string: the same seed content, the same sequence.
    *
-   * Sprawdzone i odrzucone: rozgrzewka (kilka obrotów na pusto przed
-   * pierwszym wynikiem), na wypadek gdyby sąsiednie ziarna „n0", „n1"
-   * dawały sąsiednie stany. Pokrycie leksykonu jest pełne z nią i bez
-   * niej — 172 testy zielone w obu wersjach — więc nie zostaje.
+   * Tried and rejected: a warm-up (a few turns discarded before the first
+   * result), in case neighbouring seeds "n0", "n1" produced neighbouring
+   * states. Lexicon coverage is complete with it and without it — 172 green
+   * tests in both versions — so it does not stay.
    */
   function rng(seed) {
     var h = 2166136261;
@@ -46,11 +46,12 @@
 
   function pick(rnd, arr) { return arr[Math.floor(rnd() * arr.length) % arr.length]; }
 
-  /* ---------------- Generatory ---------------- */
+  /* ---------------- Generators ---------------- */
 
   /**
-   * Przyimek ściągnięty. Zdanie jest szkieletem, nie treścią: liczy się
-   * wybór formy, więc reszta zdania zostaje stała i nie rozprasza.
+   * A contracted preposition. The sentence is a skeleton, not content: what
+   * counts is the choice of form, so the rest of the sentence stays fixed
+   * and does not distract.
    */
   function prepArt(rnd) {
     var noun = pick(rnd, Lex.NOUNS);
@@ -67,7 +68,7 @@
     };
   }
 
-  /** Zgodność przymiotnika z rzeczownikiem. */
+  /** Agreement of the adjective with the noun. */
   function accordo(rnd) {
     var noun = pick(rnd, Lex.NOUNS);
     var adj = pick(rnd, Lex.ADJ);
@@ -82,9 +83,9 @@
   }
 
   /**
-   * Wybór posiłkowego. Czasowniki oznaczone „both" przyjmują obie
-   * odpowiedzi: „è cambiato" i „ha cambiato" są poprawne i znaczą co
-   * innego. Ćwiczenie, które przyjmuje tylko jedną, uczy nieprawdy.
+   * Choosing the auxiliary. Verbs marked "both" accept both answers:
+   * "è cambiato" and "ha cambiato" are both correct and mean different
+   * things. An exercise that accepts only one teaches something false.
    */
   function ausiliare(rnd) {
     var verb = pick(rnd, Lex.VERBS);
@@ -109,7 +110,7 @@
     };
   }
 
-  /** Zaimek dopełnienia bliższego, zgodny z rodzajem i liczbą. */
+  /** The direct object pronoun, agreeing in gender and number. */
   function pronomi(rnd) {
     var noun = pick(rnd, Lex.NOUNS);
     var plural = rnd() < 0.5;
@@ -124,7 +125,7 @@
     };
   }
 
-  /* ---------------- Liczby, daty, godziny ---------------- */
+  /* ---------------- Numbers, dates, times ---------------- */
 
   var UNITA = ["zero", "uno", "due", "tre", "quattro", "cinque", "sei", "sette", "otto", "nove"];
   var DIECI = ["dieci", "undici", "dodici", "tredici", "quattordici", "quindici", "sedici",
@@ -132,9 +133,9 @@
   var DECINE = ["", "", "venti", "trenta", "quaranta", "cinquanta", "sessanta", "settanta", "ottanta", "novanta"];
 
   /**
-   * Liczebnik główny słownie, 0-9999.
-   * Elizja jest właściwym przedmiotem ćwiczenia: „ventuno" i „ventotto"
-   * gubią samogłoskę dziesiątki przed „uno" i „otto".
+   * A cardinal number in words, 0-9999.
+   * Elision is the real subject of the exercise: "ventuno" and "ventotto"
+   * lose the vowel of the tens before "uno" and "otto".
    */
   function numeral(n) {
     if (n < 10) return UNITA[n];
@@ -143,7 +144,7 @@
       var d = Math.floor(n / 10), u = n % 10;
       var base = DECINE[d];
       if (u === 0) return base;
-      if (u === 1 || u === 8) base = base.slice(0, -1);      // venti + uno → ventuno
+      if (u === 1 || u === 8) base = base.slice(0, -1);      // venti + uno -> ventuno
       return base + (u === 3 ? "tré" : UNITA[u]);
     }
     if (n < 1000) {
@@ -157,8 +158,9 @@
   }
 
   function numeri(rnd) {
-    /* Zakresy dobrane pod to, co sprawia kłopot: elizje w drugiej dziesiątce,
-       setki i tysiące. Losowa liczba z 0-9999 trafiałaby w nie rzadko. */
+    /* The ranges are chosen for what causes trouble: elisions in the
+       twenties, hundreds and thousands. A random number from 0-9999 would
+       hit them rarely. */
     var pule = [[11, 19], [20, 39], [40, 99], [100, 999], [1000, 9999]];
     var pula = pick(rnd, pule);
     var n = pula[0] + Math.floor(rnd() * (pula[1] - pula[0] + 1));
@@ -169,8 +171,9 @@
     "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"];
 
   /**
-   * Data. Pierwszy dzień miesiąca jest porządkowy („il primo"), reszta
-   * główna, a „otto" i „undici" biorą apostrof: „l'otto", „l'undici".
+   * A date. The first day of the month is ordinal ("il primo"), the rest
+   * cardinal, and "otto" and "undici" take an apostrophe: "l'otto",
+   * "l'undici".
    */
   function date(rnd) {
     var giorno = 1 + Math.floor(rnd() * 28);
@@ -185,8 +188,8 @@
   }
 
   /**
-   * Godzina, forma formalna i potoczna. „l'una" jest w liczbie pojedynczej,
-   * południe i północ mają własne słowa: to trzy wyjątki w jednym ćwiczeniu.
+   * The time, formal and colloquial. "l'una" is singular, and noon and
+   * midnight have words of their own: three exceptions in one exercise.
    */
   function ore(rnd) {
     var h = Math.floor(rnd() * 24);
@@ -214,14 +217,14 @@
     };
   }
 
-  /* ---------------- Rejestr ---------------- */
+  /* ---------------- The registry ---------------- */
 
   /**
-   * Tagi wskazują na istniejące hasła GRAMMAR_REF, żeby quaderno błędów
-   * nazywał zagadnienie słowami, które są już przetłumaczone na pięć
-   * języków. Liczby idą pod `g-frase`, daty i godziny pod
-   * `g-articolo-det`: w obu chodzi o wybór rodzajnika („il primo" wobec
-   * „l'otto", „le due" wobec „l'una"), więc to nie jest naciąganie.
+   * The tags point at existing GRAMMAR_REF entries, so that the mistake
+   * notebook names the topic in words already translated into five
+   * languages. Numbers go under `g-frase`, dates and times under
+   * `g-articolo-det`: both are about choosing the article ("il primo"
+   * against "l'otto", "le due" against "l'una"), so it is not a stretch.
    */
   var TOPICS = [
     { id: "prep-art", tag: "g-preposizioni", make: prepArt },
@@ -236,12 +239,12 @@
   var byId = {};
   TOPICS.forEach(function (x) { byId[x.id] = x; });
 
-  /* Pola, których wygenerowane ćwiczenie nie ma prawa nieść: każde z nich
-     zaprowadziłoby silnik do nagrania, którego nie ma. */
+  /* The fields a generated exercise has no right to carry: each of them
+     would lead the engine to a recording that does not exist. */
   var FORBIDDEN = ["say", "alt"];
   var FORBIDDEN_TYPES = ["listen", "speak"];
 
-  /** Jedno zadanie z generatora. Czyste: (id, ziarno) → zawsze to samo. */
+  /** One task from a generator. Pure: (id, seed) -> always the same. */
   function make(topicId, seed) {
     var topic = byId[topicId];
     if (!topic) return null;
@@ -251,7 +254,7 @@
     return { ex: ex, topicId: topicId, tag: topic.tag, seed: String(seed) };
   }
 
-  /** Seria n zadań jednego zagadnienia. */
+  /** A run of n tasks on one topic. */
   function session(topicId, n, seedBase) {
     var out = [];
     for (var i = 0; i < n; i++) {

@@ -1,51 +1,53 @@
 /* ============================================================
-   errors.js — quaderno degli errori: talia i przechwytywanie.
+   errors.js — quaderno degli errori: the deck and the capture.
 
-   Tożsamość karty (klucz, firma treści, odnajdywanie ćwiczenia)
-   siedzi w errors-key.js i musi być wczytana wcześniej.
+   The identity of a card (key, content signature, finding the exercise)
+   sits in errors-key.js and must be loaded earlier.
 
-   Skrypt klasyczny. Wymaga core.js i errors-key.js.
+   Classic script. Requires core.js and errors-key.js.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var Errors = global.Errors = global.Errors || {};
 
-  /* Funkcje tożsamości, wystawione przez errors-key.js. */
+  /* The identity functions, exposed by errors-key.js. */
   var keyOf = Errors.keyOf;
   var generatedKey = Errors.generatedKey;
 
 
-  /* ---------------- Talia ---------------- */
+  /* ---------------- The deck ---------------- */
 
   /**
-   * Ile poprawnych odpowiedzi z rzędu wyprowadza kartę z quaderno.
+   * How many correct answers in a row retire a card from the notebook.
    *
-   * Dwie, czyli odstępy 1 dzień i 3 dni z SM-2, a potem koniec. To jest
-   * decyzja produktowa (C1 w § 7.6 planu), nie fakt wynikający z kodu:
-   * przy niższym progu quaderno pustoszeje szybciej, niż uczeń się uczy,
-   * przy wyższym zamienia się w drugą talię fiszek.
+   * Two, that is intervals of 1 day and 3 days under SM-2, and then it is
+   * over. This is a product decision (C1 in § 7.6 of the plan), not a fact
+   * following from the code: with a lower threshold the notebook empties
+   * faster than the student learns, with a higher one it turns into a
+   * second flashcard deck.
    */
   var GRADUATE_REPS = 2;
 
-  /** Ocena z odpowiedzi boolowskiej na skalę SM-2. */
+  /** A boolean answer mapped onto the SM-2 scale. */
   function quality(ok) { return ok ? 5 : 2; }
 
   function bag() { return global.Core.state.errors; }
 
-  /** Który tag opisuje to ćwiczenie: własny, a jak nie ma — pierwszy z lekcji. */
+  /** Which tag describes this exercise: its own, or failing that the lesson's first. */
   function tagFor(lesson, ex) {
     if (ex && ex.tag) return ex.tag;
     return (lesson.tags || [])[0] || null;
   }
 
   /**
-   * Odnotowuje odpowiedź na ćwiczeniu lekcji.
+   * Records an answer on a lesson exercise.
    *
-   * Dobra odpowiedź na ćwiczeniu, którego nie ma w quaderno, nie zakłada
-   * karty: zbiór ma trzymać to, czego uczeń NIE umie. Dobra odpowiedź na
-   * karcie istniejącej posuwa ją do przodu, bo poprawne wykonanie w toku
-   * lekcji liczy się tak samo jak w powtórce.
+   * A correct answer on an exercise that is not in the notebook does not
+   * create a card: the set is meant to hold what the student does NOT
+   * know. A correct answer on an existing card moves it forward, because
+   * doing it right during a lesson counts the same as doing it right in a
+   * review.
    */
   function record(lesson, index, ok) {
     var ex = (lesson.exercises || [])[index];
@@ -71,13 +73,13 @@
   }
 
   /**
-   * Odnotowuje odpowiedź na zadaniu z generatora.
+   * Records an answer on a generated task.
    *
-   * Ta sama logika progu i harmonogramu, co przy ćwiczeniach autorskich,
-   * ale inna tożsamość: tag przychodzi od generatora, nie od lekcji, i
-   * karta niesie `kind: "generated"`. Rozróżnienie jest zadeklarowane,
-   * a nie domyślne — dwie specie kart z różną granulacją mieszkają w
-   * jednym zbiorze i widok musi wiedzieć, którą trzyma.
+   * The same threshold and schedule logic as for authored exercises, but a
+   * different identity: the tag comes from the generator rather than the
+   * lesson, and the card carries `kind: "generated"`. The distinction is
+   * declared rather than implicit — two species of card with different
+   * granularity live in one set and the view has to know which one it holds.
    */
   function recordGenerated(item, ok) {
     if (!item) return null;
@@ -102,13 +104,14 @@
   }
 
   /**
-   * Usuwa kartę, której ćwiczenia już nie ma.
+   * Removes a card whose exercise no longer exists.
    *
-   * Powtórka pokazuje PRAWDZIWE ćwiczenie z lekcji, a nie osobną fiszkę
-   * z własną oceną — dzięki temu aktualizacja idzie tą samą drogą, co
-   * odpowiedź w toku lekcji, i nie ma drugiego miejsca do utrzymania.
-   * Kiedy jednak treść ćwiczenia zmieniła się w kursie, locate() nie
-   * znajduje niczego i karta nie ma czego pokazać: wtedy odchodzi tędy.
+   * A review shows the REAL exercise from the lesson rather than a separate
+   * flashcard with its own grading — that way updating goes down the same
+   * path as answering during a lesson and there is no second place to
+   * maintain. When the exercise's content has changed in the course,
+   * however, locate() finds nothing and the card has nothing to show: then
+   * it leaves this way.
    */
   function drop(key) {
     var deck = bag();
@@ -124,7 +127,7 @@
     return out;
   }
 
-  /** Karty, których termin już minął, najpilniejsze na czele. */
+  /** The cards whose due date has passed, the most urgent first. */
   function due(limit) {
     var now = Date.now(), deck = bag(), out = [];
     Object.keys(deck).forEach(function (k) {
@@ -136,7 +139,7 @@
 
   function dueCount() { return due().length; }
 
-  /** Wszystkie karty pogrupowane po zagadnieniu — do widoku „na czym stoję". */
+  /** All the cards grouped by topic — for the "where do I stand" view. */
   function byTag() {
     var deck = bag(), out = {};
     Object.keys(deck).forEach(function (k) {
@@ -146,20 +149,20 @@
     return out;
   }
 
-  /* ---------------- Przechwytywanie odpowiedzi ---------------- */
+  /* ---------------- Capturing answers ---------------- */
 
   /**
-   * Owija Ex.build, żeby każda odpowiedź trafiła do quaderno.
+   * Wraps Ex.build so that every answer reaches the notebook.
    *
-   * Owinięte jest samo `wire`, nie budowanie i nie żaden z trzynastu
-   * builderów: każdy z nich dalej woła swoje onDone dokładnie raz, a my
-   * dokładamy się obok. Gdyby zamiast tego każdy builder miał wołać
-   * Errors.record u siebie, byłoby trzynaście miejsc do pominięcia przy
-   * czternastym typie — i pominięcie nie dałoby żadnego objawu.
+   * What is wrapped is `wire` alone, not the building and not any of the
+   * thirteen builders: each of them still calls its own onDone exactly
+   * once, and we add ourselves alongside. If instead every builder had to
+   * call Errors.record itself, there would be thirteen places to forget at
+   * the fourteenth type — and forgetting would produce no symptom at all.
    *
-   * `seed`, które views.js podaje jako trzeci argument, to id lekcji
-   * (views.js:313). Stąd wiadomo, do której lekcji należy ćwiczenie,
-   * bez przekazywania niczego nowego przez cały łańcuch.
+   * The `seed` that views.js passes as the third argument is the lesson id
+   * (views.js:313). That is how we know which lesson an exercise belongs
+   * to, without threading anything new through the whole chain.
    */
   function install(Ex) {
     if (!Ex || Ex.recordsErrors) return false;
@@ -182,10 +185,10 @@
   }
 
   /**
-   * Zapis idzie tylko wtedy, gdy ćwiczenie NAPRAWDĘ jest tym, na które
-   * wskazuje seed i numer. Inaczej karta powstałaby pod cudzym kluczem —
-   * na przykład przy budowaniu ćwiczenia poza lekcją, gdzie seed jest
-   * dowolnym napisem.
+   * The record is only written when the exercise REALLY is the one the seed
+   * and the index point at. Otherwise a card would be created under someone
+   * else's key — for instance when an exercise is built outside a lesson,
+   * where the seed is an arbitrary string.
    */
   function noteAnswer(ex, idx, seed, ok) {
     var Core = global.Core;
@@ -207,9 +210,10 @@
 
   global.Errors = Errors;
 
-  /* exercises.js jest w index.html wcześniej, więc Ex już istnieje.
-     W testach jednostkowych, gdzie wczytujemy sam silnik stanu, nie ma go
-     i install() wychodzi bez skutku — quaderno działa też bez ćwiczeń. */
+  /* exercises.js comes earlier in index.html, so Ex already exists.
+     In unit tests, where we load the state engine alone, it does not, and
+     install() returns without effect — the notebook works without exercises
+     too. */
   install(global.Ex);
 
 })(window);

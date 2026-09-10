@@ -1,20 +1,22 @@
 /* ============================================================
-   store.js — stan trwały: zapis, odczyt, migracje, import z pliku.
+   store.js — persistent state: save, load, migrations, file import.
 
-   Wyjęte z core.js, które przez to było trzema modułami w jednym pliku:
-   pamięcią przeglądarki, harmonogramem powtórek i postępami nauki. Tutaj
-   jest tylko pierwsze z nich, czyli wszystko, co dotyka localStorage.
+   Pulled out of core.js, which because of it was three modules in one
+   file: browser storage, the review schedule and learning progress.
+   Only the first of those lives here, that is everything that touches
+   localStorage.
 
-   Dwie rzeczy, które trzymają ten plik razem i których nie wolno rozdzielić:
-   - `state` jest JEDNYM obiektem pod jednym kluczem, więc nieudany zapis
-     gubi wszystko naraz — stąd potarcie w persist(), a nie „zapiszemy
-     resztę następnym razem";
-   - `cardKey` mieszka tutaj, a nie przy SRS, bo to tożsamość rekordu w
-     stanie: używa jej i migracja v1 → v2, i talia. Dwie definicje
-     rozjechałyby się po cichu, a objawem byłaby osierocona talia.
+   Two things hold this file together and must not be split apart:
+   - `state` is ONE object under one key, so a failed write loses
+     everything at once — hence the pruning inside persist(), rather than
+     "we will save the rest next time";
+   - `cardKey` lives here, not next to the SRS, because it is the identity
+     of a record in the state: both the v1 -> v2 migration and the deck use
+     it. Two definitions would drift apart silently, and the symptom would
+     be an orphaned deck.
 
-   Core wystawia to dalej pod dotychczasowymi nazwami (Core.state,
-   Core.save, Core.importState, …), więc nikt z zewnątrz nie zmienia linijki.
+   Core re-exposes all of this under the existing names (Core.state,
+   Core.save, Core.importState, …), so nobody outside changes a line.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -25,113 +27,116 @@
   var STORE_KEY = "linguai.italiano.v2";
   var SCHEMA = 2;
 
-  /* Klucz sprzed rozdzielenia języków: czytany raz, przy migracji. */
+  /* The key from before languages were split apart: read once, on migration. */
   var STORE_KEY_V1 = "linguai.italiano.pl.v1";
 
-  /* ---------------- Stan trwały ---------------- */
+  /* ---------------- Persistent state ---------------- */
   var defaultState = function () {
     return {
       schema: SCHEMA,
       createdAt: Date.now(),
       lessons: {},        // id -> {score, total, done, ts, attempts}
-      srs: {},            // cardKey (sam włoski) -> {it, tr:{lang->napis}, src, ef, reps, interval, due, lapses}
-      saved: {},          // cardKey -> true (słówka „do zapamiętania")
+      srs: {},            // cardKey (Italian alone) -> {it, tr:{lang->string}, src, ef, reps, interval, due, lapses}
+      saved: {},          // cardKey -> true (words marked "to remember")
 
-      /* Silnik adaptacyjny. Kontenery są DOKŁADANE, nie migrowane:
-         load() nakłada zapis na te wartości domyślne, więc starszy
-         profil dostaje je puste sam z siebie. Numer schematu zostaje
-         przy 2 — podniesienie jest zarezerwowane na zmianę ZNACZENIA
-         istniejącego pola, tak jak przy v1 → v2, a tutaj nic nie
-         zmienia znaczenia. Bump zamiast tego odrzuciłby każdy plik
-         wyeksportowany przez ucznia do tej pory. */
-      /* Dziennik powtórek: {k klucz fiszki, t czas, q ocena 0/3/4/5}.
-         Wejście dla PRZYSZŁEGO strojenia parametrów FSRS na własnej
-         historii — optymalizator Anki robi to lokalnie, na urządzeniu, od
-         ok. tysiąca powtórek, więc konsument jest realny, nie wymyślony.
-         Powód, dla którego stoi tu już teraz, jest asymetryczny: kosztuje
-         grosze dzisiaj, a wstecz nie da się go odtworzyć. Kto uczy się rok
-         bez dziennika, po roku ma zero historii i nikt mu jej nie odda. */
+      /* The adaptive engine. Containers are ADDED, not migrated: load()
+         applies the stored data on top of these defaults, so an older
+         profile gets them empty by itself. The schema number stays at 2 —
+         raising it is reserved for a change in the MEANING of an existing
+         field, the way v1 -> v2 was, and nothing here changes any meaning.
+         A bump instead would reject every file students have exported so
+         far. */
+      /* Review journal: {k card key, t time, q grade 0/3/4/5}. Input for
+         FUTURE tuning of the FSRS parameters against the learner's own
+         history — the Anki optimiser does that locally, on the device,
+         from about a thousand reviews on, so the consumer is real, not
+         imagined. The reason it sits here already is asymmetric: it costs
+         pennies today and cannot be reconstructed backwards. Whoever
+         studies for a year without a journal has zero history after that
+         year and nobody can give it back. */
       reviews: [],
-      errors: {},         // klucz ćwiczenia -> karta błędu
-      /* Był tu `gsrs` — harmonogram per zagadnienie gramatyczne. Zadeklarowany
-         przy silniku adaptacyjnym i nigdy przez nikogo nie zapisany ani nie
-         odczytany; jedyne dotknięcie było w teście, który wpisywał go ręcznie,
-         żeby sprawdzić trwałość. Pusty kontener w SHAPE to kontrakt, którego
-         nikt nie honoruje, a FSRS go nie potrzebuje: planuje karty, nie tematy.
-         Usunięcie jest bezpieczne w obie strony, bo merge() pomija klucze
-         spoza domyślnych, więc starszy zapis z tym polem wczytuje się dalej. */
-      drills: {},         // id generatora -> licznik podejść
-      session: {},        // skład i postęp dzisiejszej sesji
-      writing: {},        // id zadania -> wypracowanie ucznia
-      /* Przebiegi symulacji egzaminu. Kontener DOKŁADANY: starszy profil
-         dostaje go pustym przez merge(), więc numer schematu się nie rusza.
-         Trzymamy punkty dwóch sprawności, które symulator umie policzyć,
-         listę sekcji, w których skończył się czas, i werdykt — nie
-         odpowiedzi: te są ćwiczeniem, nie historią. */
+      errors: {},         // exercise key -> mistake card
+      /* There used to be a `gsrs` here — a schedule per grammar topic.
+         Declared together with the adaptive engine and never written or
+         read by anyone; the only thing touching it was a test that filled
+         it in by hand to check persistence. An empty container in SHAPE is
+         a contract nobody honours, and FSRS does not need it: it schedules
+         cards, not topics. Removing it is safe both ways, because merge()
+         skips keys outside the defaults, so an older save carrying that
+         field still loads. */
+      drills: {},         // generator id -> attempt counter
+      session: {},        // composition and progress of today's session
+      writing: {},        // task id -> the student's composition
+      /* Exam simulation runs. Container ADDED: an older profile gets it
+         empty through merge(), so the schema number does not move. We keep
+         the points of the two skills the simulator can score, the list of
+         sections where time ran out, and the verdict — not the answers:
+         those are an exercise, not history. */
       cils: { runs: [] },
-      placement: null,    // wynik testu poziomującego, dopóki go nie ma
-      /* Czy uczeń przeszedł już przez ekran powitalny. Pole DOKŁADANE,
-         więc numer schematu się nie rusza — ale samo nie wystarcza:
-         starszy profil dostaje przez merge() `false` i bez dwóch
-         pozostałych warunków (brak postępów, brak wyniku testu)
-         zobaczyłby powitanie po czterdziestu lekcjach nauki. */
+      placement: null,    // placement test result, until there is one
+      /* Whether the student has already been through the welcome screen.
+         Field ADDED, so the schema number does not move — but on its own
+         it is not enough: an older profile gets `false` through merge()
+         and without the two other conditions (no progress, no test result)
+         would see the welcome screen after forty lessons of study. */
       onboarded: false,
       streak: { count: 0, lastDay: null, best: 0 },
       xp: 0,
       minutes: 0,
       settings: {
-        lang: "pl",         // język wyjaśnień; włoski jest zawsze językiem uczonym
+        lang: "pl",         // language of explanations; Italian is always the language taught
         theme: "light",
-        voiceSource: "natural", // "natural" = nagrania Edge TTS, "system" = Web Speech API
+        voiceSource: "natural", // "natural" = Edge TTS recordings, "system" = Web Speech API
         rate: 1,
         autoplay: true,
-        showPl: true,       // tłumaczenia widoczne od razu
+        showPl: true,       // translations visible right away
         strictAccents: false,
-        /* Docelowa szansa przypomnienia w chwili powtórki (FSRS).
-           Wyżej = częstsze powtórki i mniej zapominania, niżej = rzadsze
-           i więcej. 0.9 to wartość domyślna implementacji referencyjnej. */
+        /* Target chance of recall at review time (FSRS). Higher = more
+           frequent reviews and less forgetting, lower = fewer and more.
+           0.9 is the default of the reference implementation. */
         retention: 0.9,
-        /* Zgoda na wysyłanie głosu do rozpoznawania mowy. Domyślnie NIE ma
-           jej: milcząca zgoda jest dokładnie tym, czego consent.js ma nie
-           dopuścić. Kontener dokładany, schemat się nie rusza. */
+        /* Consent to send voice for speech recognition. It is NOT given by
+           default: silent consent is exactly what consent.js is there to
+           prevent. Container added, the schema does not move. */
         sttConsent: false
       },
       stats: { correct: 0, wrong: 0, lessonsDone: 0, days: {} },
-      /* Stan przypomnienia o kopii zapasowej. `at` to liczba ukończonych
-         lekcji w chwili ostatniego zapisania kopii, więc próg liczy się
-         od niej, a nie od początku nauki. Kontener DOKŁADANY: starszy
-         profil dostaje go zerowy przez merge i pierwsze przypomnienie
-         zobaczy po dziesięciu nowych lekcjach, a nie od razu. */
+      /* State of the backup reminder. `at` is the number of finished
+         lessons at the moment the last copy was saved, so the threshold
+         counts from there, not from the beginning of the course. Container
+         ADDED: an older profile gets it at zero through merge and sees the
+         first reminder after ten new lessons, not immediately. */
       backup: { at: 0, ts: 0, snoozed: 0 }
     };
   };
 
   var state = defaultState();
 
-  /** Klucz fiszki: sam włoski. Tłumaczenie zależy od języka i nie może go współtworzyć. */
+  /** Card key: the Italian alone. The translation depends on the language and may not be part of it. */
   function cardKey(it) { return norm(it); }
 
 
   /**
-   * Wczytuje stan, przeprowadzając starszy zapis przez schodki migracji.
+   * Loads the state, walking an older save up through the migration steps.
    *
-   * Do niedawna warunkiem było `parsed.schema === SCHEMA`, równość ścisła,
-   * a `migrateUp` wisiało wyłącznie pod `importState`. Zapis o innym numerze
-   * schematu był więc po cichu pomijany: bez błędu, bez śladu, z pustym
-   * profilem na ekranie i bez możliwości odkręcenia tego przez ucznia.
-   * Nie wybuchało tylko dlatego, że nikt jeszcze nie podniósł schematu —
-   * czyli wybuchłoby przy pierwszym podniesieniu, w najgorszym momencie.
+   * Until recently the condition was `parsed.schema === SCHEMA`, strict
+   * equality, and `migrateUp` hung off `importState` alone. A save with a
+   * different schema number was therefore skipped silently: no error, no
+   * trace, an empty profile on screen and no way for the student to undo
+   * it. It did not blow up only because nobody had raised the schema yet —
+   * that is, it would have blown up at the first raise, at the worst
+   * possible moment.
    *
-   * Kierunki nie są symetryczne i nie mają prawa być:
-   * - starszy zapis (`schema < SCHEMA`) idzie przez `MIGRATIONS` — wiemy,
-   *   jak go podnieść, bo sami napisaliśmy każdy stopień;
-   * - zapis z przyszłości (`schema > SCHEMA`) jest odrzucany w całości.
-   *   Wczytanie połowiczne byłoby gorsze niż odmowa: pola o zmienionym
-   *   znaczeniu weszłyby do stanu wyglądając poprawnie. To samo robi
-   *   `validateImport` przy imporcie z pliku.
+   * The directions are not symmetric and have no right to be:
+   * - an older save (`schema < SCHEMA`) goes through `MIGRATIONS` — we know
+   *   how to lift it, because we wrote every step ourselves;
+   * - a save from the future (`schema > SCHEMA`) is rejected outright.
+   *   Loading it halfway would be worse than refusing: fields whose meaning
+   *   changed would enter the state looking correct. `validateImport` does
+   *   the same on import from a file.
    *
-   * `MIGRATIONS` jest przypisywane niżej w tym pliku, ale `load()` woła
-   * dopiero `app.js` po wykonaniu całego modułu, więc tablica jest gotowa.
+   * `MIGRATIONS` is assigned further down this file, but `load()` is only
+   * called by app.js after the whole module has run, so the table is ready.
    */
   function load() {
     try {
@@ -143,8 +148,8 @@
         if (parsed.schema === SCHEMA) { state = merge(defaultState(), parsed); return; }
 
         var podniesiony = migrateUp(parsed);
-        /* Stopień może nie istnieć: wtedy numer się nie ruszy i zapis
-           zostaje nietknięty na dysku, zamiast wejść w niespójnym kształcie. */
+        /* A step may not exist: then the number does not move and the save
+           stays untouched on disk instead of entering in an inconsistent shape. */
         if (podniesiony.schema !== SCHEMA) return;
         state = podniesiony;
         save();
@@ -152,21 +157,22 @@
       }
       var old = global.localStorage.getItem(STORE_KEY_V1);
       if (old) { state = migrateV1(JSON.parse(old)); save(); }
-    } catch (e) { /* pierwsza wizyta lub zablokowany storage */ }
+    } catch (e) { /* first visit, or storage blocked */ }
   }
 
   /**
-   * v1 → v2. W v1 fiszka była kluczowana włoskim RAZEM z polskim tłumaczeniem,
-   * więc zmiana języka wyjaśnień osierociłaby całą talię. W v2 kluczem jest sam
-   * włoski, a tłumaczenia siedzą w podobiekcie tr, po jednym na język.
+   * v1 -> v2. In v1 a card was keyed by the Italian TOGETHER WITH the Polish
+   * translation, so changing the language of explanations would orphan the
+   * whole deck. In v2 the key is the Italian alone and the translations sit
+   * in a `tr` sub-object, one per language.
    *
-   * Postępy lekcji, passa, XP i statystyki przechodzą bez zmian: id lekcji są
-   * neutralne językowo, więc nauka nie zaczyna się od zera.
+   * Lesson progress, streak, XP and statistics come across unchanged: lesson
+   * ids are language-neutral, so learning does not start from zero.
    */
   function migrateV1(old) {
     var next = merge(defaultState(), old);
     next.schema = SCHEMA;
-    next.settings.lang = "pl";        // v1 istniał tylko po polsku
+    next.settings.lang = "pl";        // v1 existed in Polish only
     next.srs = {};
 
     Object.keys(old.srs || {}).forEach(function (oldKey) {
@@ -177,8 +183,8 @@
         it: c.it, tr: { pl: c.pl || "" }, src: c.src || "",
         ef: c.ef, reps: c.reps, interval: c.interval, due: c.due, lapses: c.lapses
       };
-      // dwie fiszki v1 o tym samym włoskim schodzą się w jedną: zostaje pilniejsza,
-      // ze swoją własną glosą; glosa przegranej wchodzi tylko w puste miejsce
+      // two v1 cards with the same Italian collapse into one: the more urgent one
+      // survives with its own gloss; the loser's gloss only fills an empty slot
       var prev = next.srs[key];
       if (!prev) { next.srs[key] = card; return; }
       var win = card.due < prev.due ? card : prev;
@@ -190,18 +196,20 @@
   }
 
   /**
-   * Co ustępuje miejsca, gdy pamięć się kończy — i w jakiej kolejności.
+   * What gives way when storage runs out — and in what order.
    *
-   * Wymienione jest wyłącznie to, co wraca samo przy dalszej nauce.
-   * Postępów lekcji, passy, XP, statystyk i ustawień tu nie ma i nie ma
-   * prawa być: cały stan siedzi pod jednym kluczem, więc przed tą listą
-   * przy pełnej pamięci nie zapisywało się NIC i przepadały razem z resztą.
+   * Only things that come back on their own through further study are
+   * listed. Lesson progress, streak, XP, statistics and settings are not
+   * here and have no right to be: the whole state sits under a single key,
+   * so before this list a full storage meant NOTHING was saved and they
+   * were lost along with everything else.
    *
-   * Wypracowań też tu nie ma, choć są duże: to zdania napisane przez
-   * ucznia, jedyna treść w tym pliku, której nikt nie odtworzy.
+   * Compositions are not here either, although they are large: those are
+   * sentences the student wrote, the only content in this file nobody can
+   * reconstruct.
    *
-   * Kolejność: najpierw karty najlepiej opanowane (długa seria poprawnych,
-   * mało pomyłek, dawno dodane), bo one są najbliżej wyjścia z obiegu.
+   * Order: best-mastered cards first (long correct streak, few lapses,
+   * added long ago), because they are the closest to leaving circulation.
    */
   function pruneCandidates() {
     var out = [];
@@ -213,12 +221,13 @@
       });
     });
     Object.keys(state.drills).forEach(function (k) {
-      out.push({ bag: "drills", key: k, score: 1000 });   // same liczniki, odtwarzalne
+      out.push({ bag: "drills", key: k, score: 1000 });   // counters only, reproducible
     });
-    /* Dziennik powtórek ustępuje PO błędach i drillach, bo tamte wracają
-       same przy dalszej nauce, a on nie. Ustępuje jednak przed postępami
-       lekcji i wypracowaniami: to wejście do strojenia, które jeszcze nie
-       istnieje, a tamto jest nauką, którą uczeń już odbył. */
+    /* The review journal gives way AFTER mistakes and drills, because those
+       come back by themselves through further study and it does not. It
+       gives way before lesson progress and compositions, though: it is input
+       for tuning that does not exist yet, while those are study the learner
+       has already done. */
     if (Array.isArray(state.reviews) && state.reviews.length) {
       out.push({ bag: "reviews", key: "", score: 500 });
     }
@@ -227,14 +236,14 @@
 
   var PRUNE_BATCH = 20;
 
-  /** Wyrzuca porcję najmniej potrzebnych danych. false = nie ma już czego. */
+  /** Drops a batch of the least needed data. false = there is nothing left. */
   function pruneOnce() {
     var cands = pruneCandidates();
     if (!cands.length) return false;
     var n = Math.min(PRUNE_BATCH, cands.length);
     for (var i = 0; i < n; i++) {
-      /* Dziennik powtórek jest tablicą, nie workiem pod kluczem: ustępuje
-         połową najstarszych wpisów zamiast pojedynczą pozycją. */
+      /* The review journal is an array, not a bag under a key: it gives way
+         by half of its oldest entries rather than one item at a time. */
       if (cands[i].bag === "reviews") {
         state.reviews.splice(0, Math.ceil(state.reviews.length / 2));
         continue;
@@ -244,7 +253,7 @@
     return true;
   }
 
-  /** Czy to naprawdę brak miejsca, a nie inny powód odmowy zapisu. */
+  /** Whether this really is lack of space, and not some other refusal to write. */
   function brakMiejsca(e) {
     if (!e) return false;
     return e.name === "QuotaExceededError" ||
@@ -260,10 +269,10 @@
         if (lost) notice("core.storagePruned");
         return true;
       } catch (e) {
-        /* Potarcie kasuje dane bezpowrotnie, więc uruchamia je WYŁĄCZNIE
-           brak miejsca. Zablokowany magazyn (tryb prywatny, polityka
-           przeglądarki) rzuca czym innym: tam wyrzucanie kart niczego nie
-           naprawia, a niszczy to, co uczeń zrobił w tej sesji. */
+        /* Pruning deletes data irreversibly, so ONLY a lack of space may
+           trigger it. Blocked storage (private mode, browser policy) throws
+           something else: there, dropping cards fixes nothing and destroys
+           what the student did in this session. */
         if (!brakMiejsca(e)) { notice("core.saveBlocked"); return false; }
         if (!pruneOnce()) { notice("core.saveBlocked"); return false; }
         lost = true;
@@ -281,17 +290,17 @@
   }
 
   /**
-   * Klucze, których plik z zewnątrz nie ma prawa wnieść.
+   * Keys an outside file has no right to bring in.
    *
-   * JSON.parse robi z „__proto__" zwykłą własność obiektu, ale odczyt
-   * base["__proto__"] na zwykłym obiekcie oddaje Object.prototype —
-   * więc merge schodziłby po niej w dół i zapisywał prototyp wspólny
-   * dla całej strony. „constructor" i „prototype" domknięte tą samą
-   * regułą, żeby nie było drogi naokoło.
+   * JSON.parse turns "__proto__" into an ordinary object property, but
+   * reading base["__proto__"] on an ordinary object returns
+   * Object.prototype — so merge would walk down it and write to the
+   * prototype shared by the whole page. "constructor" and "prototype" are
+   * closed off by the same rule, so there is no way around.
    *
-   * Lista jest tablicą, nie obiektem: literał { "__proto__": true }
-   * nie tworzy własności o tej nazwie, tylko ustawia prototyp, więc
-   * strażnik zbudowany w ten sposób nie strzeże niczego.
+   * The list is an array, not an object: the literal { "__proto__": true }
+   * does not create a property of that name, it sets the prototype, so a
+   * guard built that way guards nothing.
    */
   var FORBIDDEN_KEYS = ["__proto__", "constructor", "prototype"];
 
@@ -309,17 +318,18 @@
     return base;
   }
 
-  /* ---------------- Import / eksport ---------------- */
+  /* ---------------- Import / export ---------------- */
   function exportState() { return JSON.stringify(state, null, 2); }
 
   /**
-   * Schody migracji. Każdy stopień podnosi zapis o jedną wersję, więc plik
-   * z dowolnej starszej dochodzi do bieżącej, przechodząc po kolei.
+   * The migration stairs. Each step lifts a save by one version, so a file
+   * from any older one reaches the current version by walking through them
+   * in order.
    *
-   * Dziś stopień jest jeden i to jest właśnie powód, dla którego ta tablica
-   * istnieje: polityka „nie podnosimy schematu bez zmiany znaczenia pola"
-   * trzyma się tylko wtedy, gdy import umie przyjąć starszy plik. Inaczej
-   * jest to odroczenie decyzji, a nie decyzja.
+   * Today there is a single step, and that is precisely why this table
+   * exists: the policy "we do not raise the schema without a change of
+   * meaning" only holds as long as import can accept an older file.
+   * Otherwise it is a postponed decision, not a decision.
    */
   var MIGRATIONS = [
     { from: 1, run: migrateV1 }
@@ -333,15 +343,16 @@
     return out;
   }
 
-  /* Komplet fiszek, błędów i postępów mieści się w setkach kilobajtów, a
-     localStorage i tak kończy się przy około 5 MB. Próg jest zaporą przed
-     plikiem, którego nie warto nawet parsować, nie limitem funkcjonalnym. */
+  /* A full set of cards, mistakes and progress fits in hundreds of kilobytes,
+     and localStorage runs out at around 5 MB anyway. The threshold is a barrier
+     against a file not worth parsing, not a functional limit. */
   var MAX_IMPORT_CHARS = 8 * 1024 * 1024;
 
-  /* Oczekiwany typ pól najwyższego poziomu. Pole nieobecne jest w porządku,
-     dostanie wartość domyślną z merge. Pole obecne w złym typie nie jest:
-     przejdzie import bez szmeru i wybuchnie w widoku, który po nim iteruje,
-     czyli trzy ekrany dalej i bez związku z przyczyną. */
+  /* Expected type of the top-level fields. A missing field is fine, it gets
+     the default value from merge. A present field of the wrong type is not:
+     it passes the import without a murmur and blows up in the view that
+     iterates over it, that is three screens later and with no visible link
+     to the cause. */
   var SHAPE = {
     schema: "number", createdAt: "number", xp: "number", minutes: "number",
     lessons: "object", srs: "object", saved: "object",
@@ -357,12 +368,12 @@
   }
 
   /**
-   * Błąd importu niesie KLUCZ napisu, nie gotowy tekst.
+   * An import error carries a string KEY, not ready-made text.
    *
-   * Powód: ten komunikat czyta uczeń, który próbuje odzyskać kopię
-   * zapasową, a kurs mówi pięcioma językami. Zdanie wpisane tutaj po
-   * polsku dotarłoby po polsku także do Hiszpana — i to dokładnie w
-   * chwili, w której najbardziej potrzebuje zrozumieć, co poszło źle.
+   * The reason: this message is read by a student trying to restore a
+   * backup, and the course speaks five languages. A sentence written here
+   * in Polish would reach a Spaniard in Polish too — exactly at the moment
+   * they most need to understand what went wrong.
    */
   function importError(key, vars) {
     var e = new Error(key);
@@ -386,8 +397,9 @@
   }
 
   /**
-   * Sprawdzenie idzie w całości PRZED podmianą stanu: plik odrzucony
-   * w połowie zostawiłby ucznia z połową cudzych postępów i bez swoich.
+   * The check runs in full BEFORE the state is swapped: a file rejected
+   * halfway would leave the student with half of someone else's progress
+   * and none of their own.
    */
   function importState(json) {
     if (typeof json !== "string" || json.length > MAX_IMPORT_CHARS) {
@@ -400,9 +412,9 @@
   }
 
   function resetState() {
-    // Ustawienia zostają: komunikat obiecuje skasowanie postępów, fiszek i statystyk,
-    // a nie języka wyjaśnień. Bez tego uczeń, który wybrał en/es/fr/de, po wyczyszczeniu
-    // dostaje interfejs po polsku, czyli w języku, którego może nie znać.
+    // Settings stay: the message promises to erase progress, cards and statistics,
+    // not the language of explanations. Without this, a student who chose en/es/fr/de
+    // gets a Polish interface after clearing, that is a language they may not know.
     var keep = state.settings;
     state = defaultState();
     state.settings = keep;

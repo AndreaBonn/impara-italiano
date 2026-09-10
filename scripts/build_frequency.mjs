@@ -1,33 +1,34 @@
 /* ============================================================
-   build_frequency.mjs — lista częstości włoskich form wyrazowych.
+   build_frequency.mjs — a frequency list of Italian word forms.
 
-   Po co: żeby uczeń mógł zobaczyć, ILE z prawdziwego włoskiego już zna.
-   „Wiesz 847 z 2000 najczęstszych słów, czyli mniej więcej trzy czwarte
-   tego, co pada w rozmowie" mówi więcej niż jakikolwiek licznik XP, bo
-   mierzy język, a nie aplikację.
+   What for: so the student can see HOW MUCH of real Italian they already
+   know. "You know 847 of the 2000 most frequent words, that is roughly
+   three quarters of what occurs in a conversation" says more than any XP
+   counter, because it measures the language and not the application.
 
-   ŹRÓDŁO I LICENCJA. Tatoeba, zdania włoskie, **CC BY 2.0 FR** —
-   atrybucja bez share-alike, sprawdzone u źródła (tatoeba.org/downloads),
-   nie z drugiej ręki.
+   SOURCE AND LICENCE. Tatoeba, Italian sentences, **CC BY 2.0 FR** —
+   attribution without share-alike, verified at the source
+   (tatoeba.org/downloads), not second hand.
 
-   Dlaczego NIE Leipzig, mimo że plan go wskazywał: strona pobierania stoi
-   za challenge'em antybotowym, w archiwum nie ma pliku licencji, a źródła
-   wtórne podają rozbieżnie CC BY 4.0 albo CC BY-SA 4.0. Różnica między
-   nimi to dokładnie to kryterium, dla którego Leipzig został wybrany —
-   share-alike zaraża repozytorium. Licencji się nie zgaduje.
+   Why NOT Leipzig, even though the plan pointed at it: the download page
+   sits behind an anti-bot challenge, the archive contains no licence file,
+   and secondary sources disagree between CC BY 4.0 and CC BY-SA 4.0. The
+   difference between them is exactly the criterion Leipzig was chosen for —
+   share-alike infects the repository. A licence is not something you guess.
 
-   Odrzucone też: Paisà i WaCKy (CC BY-NC-SA), listy z OpenSubtitles
-   (CC BY-SA), podzbiór CC0 Tatoeby (19 zdań po włosku — za mało).
+   Also rejected: Paisà and WaCKy (CC BY-NC-SA), the OpenSubtitles lists
+   (CC BY-SA), the CC0 subset of Tatoeba (19 Italian sentences — too few).
 
-   OGRANICZENIE, KTÓRE TRZEBA ZNAĆ. Zdania Tatoeby to materiał dla uczących
-   się, często tłumaczony z angielskiego, z rodziną „Tom i Mary" w tle.
-   Odsiewamy formy, które NIGDY nie pojawiają się z małej litery — to
-   usuwa imiona własne — ale rozkład i tak jest bliższy językowi
-   podręcznikowemu niż gazecie. Dla kursu to raczej zaleta; przy czytaniu
-   wyniku warto o tym pamiętać.
+   A LIMITATION WORTH KNOWING. Tatoeba sentences are learner material, often
+   translated from English, with the "Tom and Mary" family in the
+   background. We filter out the forms that NEVER appear in lower case —
+   that removes proper names — but the distribution is still closer to
+   textbook language than to a newspaper. For a course that is rather an
+   advantage; it is worth remembering when reading the result.
 
-   Wejście: plik z tatoeba.org/downloads, sekcja „per language", ita.
-   Nie leży w repozytorium (47 MB) i nie ma powodu, żeby leżał.
+   Input: the file from tatoeba.org/downloads, the "per language" section,
+   ita. It is not in the repository (47 MB) and there is no reason for it
+   to be.
 
        curl -sS https://downloads.tatoeba.org/exports/per_language/ita/ita_sentences.tsv.bz2 \
          | bzip2 -dc > /tmp/ita.tsv
@@ -38,7 +39,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ILE = 2000;                       // ile form trafia do kursu (C4 planu)
+const ILE = 2000;                       // how many forms go into the course (C4 of the plan)
 
 const zrodlo = process.argv[2];
 if (!zrodlo) {
@@ -46,9 +47,9 @@ if (!zrodlo) {
   process.exit(2);
 }
 
-/* Ta sama tokenizacja, co przy dotknięciu słowa w czytance: gdyby się
-   rozjechały, licznik pokrycia liczyłby inne słowa niż te, które uczeń
-   umie kliknąć. */
+/* The same tokenisation as when tapping a word in a reading: if they drifted
+   apart, the coverage counter would count words other than the ones the
+   student can click. */
 function tokeny(zdanie) {
   return zdanie
     .replace(/[’']/g, "'")
@@ -56,9 +57,9 @@ function tokeny(zdanie) {
     .filter(Boolean);
 }
 
-const male = new Map();      // forma z małej litery -> licznik
-const zDuzej = new Map();    // ile razy forma wystąpiła z wielkiej
-const zMalej = new Map();    // ile razy z małej
+const male = new Map();      // the lower-case form -> counter
+const zDuzej = new Map();    // how many times the form appeared capitalised
+const zMalej = new Map();    // how many times in lower case
 let tokenow = 0;
 let zdan = 0;
 
@@ -72,8 +73,8 @@ for (const linia of readFileSync(zrodlo, "utf8").split("\n")) {
     const low = w.toLowerCase();
     tokenow++;
     male.set(low, (male.get(low) || 0) + 1);
-    /* Pierwsze słowo zdania jest z wielkiej zawsze, więc nie liczy się
-       jako dowód na imię własne. */
+    /* The first word of a sentence is always capitalised, so it does not
+       count as evidence of a proper name. */
     if (i > 0) {
       const duza = w[0] !== low[0];
       const mapa = duza ? zDuzej : zMalej;
@@ -82,12 +83,13 @@ for (const linia of readFileSync(zrodlo, "utf8").split("\n")) {
   });
 }
 
-/* Imię własne: w środku zdania praktycznie zawsze z wielkiej litery.
-   Próg 90%, a nie 100%, bo „Marzo" i „Stato" bywają jednym i drugim. */
+/* A proper name: inside a sentence practically always capitalised. The
+   threshold is 90%, not 100%, because "Marzo" and "Stato" are sometimes one
+   and sometimes the other. */
 function imieWlasne(forma) {
   const d = zDuzej.get(forma) || 0;
   const m = zMalej.get(forma) || 0;
-  if (d + m < 5) return false;                 // za mało dowodów, zostawiamy
+  if (d + m < 5) return false;                 // too little evidence, we keep it
   return d / (d + m) >= 0.9;
 }
 
@@ -119,7 +121,7 @@ window.FREQUENCY = {
   url: "https://tatoeba.org",
   sentences: ${zdan},
   tokens: ${tokenow},
-  /* [forma, ile razy] — malejąco. Ranga to indeks + 1. */
+  /* [form, count] — descending. The rank is the index + 1. */
   words: [
 `;
 

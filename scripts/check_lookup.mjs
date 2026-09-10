@@ -1,24 +1,26 @@
 /* ============================================================
-   check_lookup.mjs — ile słów z czytanek kurs umie objaśnić.
+   check_lookup.mjs — how many words from the readings the course can explain.
 
-   Cel jest jeden: uczeń dotyka dowolnego słowa w tekście i dostaje
-   znaczenie. Bez tego funkcja jest gorsza niż jej brak — dotknięcie,
-   które nic nie robi, uczy, że dotykanie nic nie daje, i uczeń przestaje
-   próbować także tam, gdzie by zadziałało.
+   There is one goal: the student taps any word in a text and gets its
+   meaning. Without that the feature is worse than its absence — a tap that
+   does nothing teaches that tapping gives nothing, and the student stops
+   trying even where it would have worked.
 
-   PRÓG JEST WPISANY PRZED PIERWSZYM POMIAREM i to jest cała jego wartość.
-   Próg dobrany po zobaczeniu wyniku nie jest progiem, tylko opisem tego,
-   co akurat wyszło. Jeżeli pomiar wyjdzie niżej, poprawia się resolver
-   albo dopisuje glosy — nie obniża się tej liczby.
+   THE THRESHOLD IS WRITTEN DOWN BEFORE THE FIRST MEASUREMENT and that is
+   its whole value. A threshold chosen after seeing the result is not a
+   threshold but a description of whatever came out. If the measurement
+   comes out lower, the resolver gets fixed or glosses get added — this
+   number does not get lowered.
 
        SOGLIA = 0.85
 
-   Uzasadnienie: teksty są na A1-B1, więc większość to słowa kursowe i
-   wyrazy funkcyjne. Jedno na siedem nierozpoznanych to tyle, ile uczeń
-   zniesie bez utraty zaufania do funkcji; jedno na trzy — już nie.
+   The rationale: the texts are at A1-B1, so most of the words are course
+   words and function words. One in seven unrecognised is as much as a
+   student tolerates without losing trust in the feature; one in three is
+   not.
 
-       node scripts/check_lookup.mjs            # raport
-       node scripts/check_lookup.mjs --gate     # kod wyjścia 1 poniżej progu
+       node scripts/check_lookup.mjs            # a report
+       node scripts/check_lookup.mjs --gate     # exit code 1 below the threshold
    ============================================================ */
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -29,9 +31,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SOGLIA = 0.85;
 const GATE = process.argv.includes("--gate");
 
-/* Piaskownica tym samym wzorcem co validate.mjs i parity.mjs. Ładujemy
-   WARSTWĘ NEUTRALNĄ: słownik rozstrzygający to włoskie hasła kursu, a te
-   nie zależą od języka wyjaśnień. */
+/* The sandbox follows the same pattern as validate.mjs and parity.mjs. We
+   load the NEUTRAL LAYER: the deciding dictionary is the Italian entries of
+   the course, and those do not depend on the language of explanations. */
 const levels = [];
 const byCode = {};
 const box = {
@@ -60,18 +62,20 @@ for (const p of [
   vm.runInContext(readFileSync(join(ROOT, p), "utf8"), box, { filename: p });
 }
 
-/* Słownik budujemy TYM SAMYM kodem, co przeglądarka: Lemma.zbudujSlownik.
-   Druga budowa tutaj znaczyłaby, że bramka mierzy co innego niż dostaje
-   uczeń, i rozjechałaby się przy pierwszej zmianie po jednej ze stron. */
+/* We build the dictionary with the SAME code as the browser:
+   Lemma.zbudujSlownik. A second build here would mean the gate measures
+   something other than what the student gets, and it would drift apart at
+   the first change on either side. */
 box.window.Lemma.uzyjSlownika(null);
 box.Core = { registry: { levels } };
 
 /**
- * Tokenizacja tekstu włoskiego.
+ * Tokenising an Italian text.
  *
- * Apostrof zostaje wewnątrz wyrazu tylko tam, gdzie łączy dwa słowa
- * („dell'acqua"), i wtedy rozcinamy: „dell" i „acqua" to dwa hasła, a nie
- * jedno. Liczby i interpunkcja wypadają, bo nie ma czego objaśniać.
+ * The apostrophe stays inside a word only where it joins two words
+ * ("dell'acqua"), and then we split: "dell" and "acqua" are two entries and
+ * not one. Numbers and punctuation drop out, because there is nothing to
+ * explain.
  */
 function tokeny(zdanie) {
   return zdanie
@@ -83,12 +87,12 @@ function tokeny(zdanie) {
 }
 
 /**
- * Elizja: „dell'acqua" to dwa hasła, „c'è" to jedno.
+ * Elision: "dell'acqua" is two entries, "c'è" is one.
  *
- * Rozcinanie na ślepo produkowało token „c", czyli literę, której nie da
- * się objaśnić i której uczeń nigdy nie dotknie osobno. Rozcinamy tylko
- * wtedy, gdy prawa strona jest dłuższa niż litera: reszta zostaje w
- * całości i trafia na listę wyrazów funkcyjnych, gdzie „c'è" już jest.
+ * Splitting blindly produced the token "c", that is a letter that cannot be
+ * explained and that the student will never tap on its own. We split only
+ * when the right-hand side is longer than a single letter: the rest stays
+ * whole and lands on the list of function words, where "c'è" already is.
  */
 function rozetnij(w) {
   const i = w.indexOf("'");
@@ -123,8 +127,9 @@ for (const r of READINGS) {
 const pokrycie = wszystkie ? rozpoznane / wszystkie : 1;
 
 
-/* --dump: lista mancanti per testo, con la forma base proposta dal
-   resolver. Serve a scrivere le glosse, non a decidere il gate. */
+/* --dump: the list of missing words per text, with the base form proposed
+   by the resolver. It is there to help write the glosses, not to decide the
+   gate. */
 if (process.argv.includes("--dump")) {
   const out = {};
   for (const r of READINGS) {

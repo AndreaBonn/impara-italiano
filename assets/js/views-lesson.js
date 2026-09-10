@@ -1,12 +1,13 @@
 /* ============================================================
-   views-lesson.js — lekcja: teoria, gramatyka, słownictwo, dialog, ćwiczenia.
+   views-lesson.js — a lesson: theory, grammar, vocabulary, dialogue, exercises.
 
-   Ekran wydzielony z views.js, w którym leżało osiem ekranów naraz.
-   Wzorzec jest ten sam, którym chodzą już views-talk.js, views-train.js
-   i views-today.js: skorupa (set, pageHead, el, empty) przychodzi z
-   `Views.shell`, a plik dokłada własną trasę do `Views`.
+   A screen split out of views.js, which held eight screens at once. The
+   pattern is the same one views-talk.js, views-train.js and views-today.js
+   already use: the shell (set, pageHead, el, empty) comes from
+   `Views.shell`, and the file adds a route of its own to `Views`.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function () {
   "use strict";
@@ -18,15 +19,15 @@
   var empty = Views.shell.empty;
   var pct = Views.shell.pct;
   /* ═══════════════════════════════════════════════════════════
-     LEKCJA
+     THE LESSON
      ═══════════════════════════════════════════════════════════ */
   var session = null;
 
   Views.lezione = function (params) {
     var found = Core.getLesson(params.id);
     if (!found) {
-      // wejście z zakładki albo przejście do lekcji z poziomu jeszcze niewczytanego:
-      // dociągnij dane poziomu wywiedzionego z id (np. „b2-u02-l1" → B2) i spróbuj raz jeszcze
+      // arriving from a bookmark, or moving to a lesson of a level not loaded yet:
+      // pull the data of the level derived from the id (e.g. "b2-u02-l1" -> B2) and try again
       var m = /^([a-z]\d)/i.exec(params.id || "");
       var code = m ? m[1].toUpperCase() : null;
       if (code && Core.registry.byCode[code] && !Core.registry.loaded[code]) {
@@ -64,7 +65,7 @@
         L.objectives.map(function (o) { return "<li>" + esc(o) + "</li>"; }).join("") + "</ul></div>");
     }
 
-    /* --- teoria --- */
+    /* --- theory --- */
     if (L.theory && L.theory.length) {
       parts.push('<section class="step"><h2 class="step__label">' + t("lesson.theory") + '</h2><div class="prose">' +
         L.theory.map(function (b) {
@@ -78,7 +79,7 @@
         }).join("") + "</div></section>");
     }
 
-    /* --- gramatyka --- */
+    /* --- grammar --- */
     if (L.grammar) {
       var g = L.grammar;
       var gh = '<div class="gram-box"><p class="gram-box__rule">' + esc(g.title) + "</p>" +
@@ -104,7 +105,7 @@
       parts.push('<section class="step step--gram"><h2 class="step__label">' + t("lesson.grammar") + "</h2>" + gh + "</section>");
     }
 
-    /* --- słownictwo --- */
+    /* --- vocabulary --- */
     if (L.vocab && L.vocab.length) {
       parts.push('<section class="step step--vocab"><h2 class="step__label">' + t("lesson.vocab") + "</h2>" +
         '<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">' +
@@ -123,7 +124,7 @@
         }).join("") + "</div></section>");
     }
 
-    /* --- dialog --- */
+    /* --- dialogue --- */
     if (L.dialogue) {
       parts.push('<section class="step"><h2 class="step__label">' + t("lesson.dialogue", { title: esc(L.dialogue.titleIt || "") }) + "</h2>" +
         '<button class="btn btn--ghost btn--sm js-play-dlg" style="margin-bottom:12px">' + t("lesson.playDialogue") + "</button>" +
@@ -136,13 +137,13 @@
         }).join("") + "</div></section>");
     }
 
-    /* --- kultura --- */
+    /* --- culture --- */
     if (L.culture) {
       parts.push('<section class="step"><h2 class="step__label">' + esc(L.culture.title || t("lesson.culture")) + "</h2>" +
         '<div class="card" style="border-color:var(--line-mint)"><div class="prose">' + L.culture.text + "</div></div></section>");
     }
 
-    /* --- ćwiczenia --- */
+    /* --- exercises --- */
     if (L.exercises && L.exercises.length) {
       parts.push('<section class="step step--ex"><h2 class="step__label">' + t("lesson.exercises") + '</h2><div id="exWrap"></div></section>');
       parts.push('<div id="lessonEnd"></div>');
@@ -150,7 +151,7 @@
 
     set(parts.join(""));
 
-    /* --- podpięcia --- */
+    /* --- wiring --- */
     el().querySelector(".js-back").addEventListener("click", function () { Audio2.stop(); App.go("percorso"); });
 
     var playAll = el().querySelector(".js-play-all");
@@ -186,7 +187,7 @@
       Audio2.speakSequence(L.dialogue.lines);
     });
 
-    /* --- ćwiczenia: montaż --- */
+    /* --- exercises: mounting --- */
     var wrap = document.getElementById("exWrap");
     if (wrap && L.exercises) {
       var built = L.exercises.map(function (ex, i) { return Ex.build(ex, i, L.id); });
@@ -208,7 +209,7 @@
     if (sc) sc.textContent = session.score + "/" + session.total;
 
     if (!ok && L.vocab) {
-      // błąd → dorzuć słówka lekcji do powtórek, żeby wróciły
+      // a mistake -> add the lesson's words to the reviews so that they come back
       L.vocab.slice(0, 4).forEach(function (v) { Core.addCard(v.it, v.tr, L.id); });
     }
 

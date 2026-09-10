@@ -1,21 +1,20 @@
 /* ============================================================
-   search.js — szukanie w całym kursie.
+   search.js — searching the whole course.
 
-   „Gdzie ja widziałem to słowo?" nie miało dotąd odpowiedzi:
-   szukać dało się tylko we własnym słowniku. Tutaj przeszukiwane
-   są tytuły lekcji, słownictwo, hasła gramatyczne i rozmowy.
+   "Where did I see that word?" had no answer until now: you could only
+   search your own dictionary. Here we search lesson titles, vocabulary,
+   grammar entries and conversations.
 
-   Poziomy dociągane są przy pierwszym użyciu, nie przy starcie:
-   indeks zbudowany z góry musiałby żyć w piątym pliku obok czterech
-   nakładek i rozjeżdżać się z nimi bez żadnego gate, który by to
-   zauważył.
+   Levels are pulled at first use, not at startup: an index built ahead of
+   time would have to live in a fifth file next to the four overlays and
+   would drift away from them with no gate to notice.
 
-   Bezpieczeństwo: zapytanie ucznia NIGDY nie trafia do gotowego
-   HTML-a. Podświetlenie tnie tekst na kawałki, każdy kawałek
-   przechodzi przez esc() osobno, i dopiero potem sklejamy —
-   zamiana znaleziska w złożonym już napisie byłaby wstrzyknięciem.
+   Security: the student's query NEVER reaches finished HTML. Highlighting
+   cuts the text into pieces, each piece goes through esc() separately, and
+   only then do we join them — replacing a hit inside an already assembled
+   string would be an injection.
 
-   Skrypt klasyczny. Wymaga core.js, i18n.js, views.js.
+   Classic script. Requires core.js, i18n.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -28,22 +27,24 @@
   var LIMIT = 60;
 
   /**
-   * Normalizacja ZNAK W ZNAK: małe litery i zdjęte akcenty, bez ruszania
-   * odstępów.
+   * CHARACTER-FOR-CHARACTER normalization: lower case and accents removed,
+   * whitespace untouched.
    *
-   * Core.norm() zwęża też białe znaki, więc „un  caffè" skraca się o jeden
-   * znak i pozycja trafienia przestaje wskazywać to samo miejsce w tekście
-   * źródłowym: podświetlenie ucinałoby w złym punkcie. Tu długość musi się
-   * zgadzać, bo po indeksach z jednego napisu tniemy drugi.
+   * Core.norm() also collapses whitespace, so "un  caffè" gets one character
+   * shorter and the position of a hit stops pointing at the same place in
+   * the source text: the highlight would cut at the wrong point. Here the
+   * length has to match, because we slice one string by indexes taken from
+   * another.
    */
   var fold = Core.fold;
 
   /**
-   * Podświetlenie bez wstrzyknięcia.
+   * Highlighting without injection.
    *
-   * Tekst tniemy na kawałki, każdy przechodzi przez esc() osobno i dopiero
-   * potem sklejamy. Zamiana znaleziska w JUŻ złożonym HTML-u byłaby drogą,
-   * którą zapytanie ucznia wchodzi do dokumentu jako znaczniki.
+   * We cut the text into pieces, each goes through esc() separately and
+   * only then are they joined. Replacing a hit inside ALREADY assembled
+   * HTML would be the road by which the student's query enters the document
+   * as markup.
    */
   function highlight(text, query) {
     var src = String(text == null ? "" : text);
@@ -63,7 +64,7 @@
     return text && fold(text).indexOf(q) >= 0;
   }
 
-  /** Przechodzi wszystko, co jest w pamięci, i zbiera trafienia. */
+  /** Walks everything that is in memory and collects the hits. */
   function collect(query) {
     var q = fold(query).trim();
     if (q.length < 2) return [];
@@ -101,9 +102,9 @@
     return out.slice(0, LIMIT);
   }
 
-  /* Zapytanie krótsze niż dwa znaki nie jest szukane w ogóle. Bez własnego
-     komunikatu wyglądało jak „nic nie ma", czyli jak odpowiedź na pytanie,
-     którego nikt nie zadał. */
+  /* A query shorter than two characters is not searched at all. Without a
+     message of its own it looked like "there is nothing", that is like an
+     answer to a question nobody asked. */
   function zaKrotkie(q) { return fold(q || "").trim().length < 2; }
 
   var KIND_ROUTE = { lesson: "lezione", vocab: "lezione", grammar: "grammatica", talk: "conversazione" };
@@ -149,12 +150,12 @@
     function uruchom() { App.go("cerca", { q: input.value }); }
     document.querySelector(".js-go").addEventListener("click", uruchom);
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") uruchom(); });
-    /* Kto tu wchodzi, chce pisać: fokus zostaje w polu, a nie na kontenerze. */
+    /* Whoever comes here wants to type: the focus stays in the field, not on the container. */
     Views.keepFocus = true;
     input.focus();
 
-    /* Trafienia szukamy tylko w tym, co jest wczytane; brakujące poziomy
-       dociągamy raz, po czym rysujemy ponownie. */
+    /* We look for hits only in what is loaded; the missing levels are pulled
+       once and then we render again. */
     var brakujace = Core.registry.levels.filter(function (lv) { return !Core.registry.loaded[lv.code]; });
     render(query);
     if (query && brakujace.length) {
@@ -162,9 +163,10 @@
       var nieudane = [];
       brakujace.forEach(function (lv) {
         Core.loadLevelData(lv.code, function (got) {
-          /* `got` mówi, czy poziom naprawdę się wczytał. Zignorowany, dawał
-             wyniki niepełne bez słowa: uczeń widziałby „nic nie znaleziono"
-             tam, gdzie naprawdę było „nie doczytałem połowy kursu". */
+          /* `got` says whether the level really loaded. Ignored, it produced
+             incomplete results without a word: the student would see
+             "nothing found" where the truth was "I did not finish loading
+             half the course". */
           if (!got) nieudane.push(lv.code);
           if (--zostalo === 0) {
             render(query);

@@ -1,12 +1,13 @@
 /* ============================================================
-   views-grammar.js — gramatyka jako encyklopedia do przeglądania.
+   views-grammar.js — grammar as a browsable encyclopaedia.
 
-   Ekran wydzielony z views.js, w którym leżało osiem ekranów naraz.
-   Wzorzec jest ten sam, którym chodzą już views-talk.js, views-train.js
-   i views-today.js: skorupa (set, pageHead, el, empty) przychodzi z
-   `Views.shell`, a plik dokłada własną trasę do `Views`.
+   A screen split out of views.js, which held eight screens at once. The
+   pattern is the same one views-talk.js, views-train.js and views-today.js
+   already use: the shell (set, pageHead, el, empty) comes from
+   `Views.shell`, and the file adds a route of its own to `Views`.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -17,7 +18,7 @@
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
   /* ═══════════════════════════════════════════════════════════
-     GRAMATYKA (encyklopedia)
+     GRAMMAR (the encyclopaedia)
      ═══════════════════════════════════════════════════════════ */
   Views.grammatica = function (params) {
     var ref = global.GRAMMAR_REF || [];

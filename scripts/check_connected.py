@@ -3,59 +3,63 @@
 # requires-python = ">=3.10"
 # dependencies = ["edge-tts>=7.0", "numpy>=1.26"]
 # ///
-"""Czy głos kursu naprawdę mówi po włosku, a nie czyta liter?
+"""Does the course voice really speak Italian, or does it read letters?
 
-Zanim napiszemy sześćdziesiąt wypowiedzi o mowie łączonej, trzeba wiedzieć,
-czy lektor w ogóle te zjawiska realizuje. Precedens jest w tym repozytorium:
-zbioru par minimalnych dla „o" otwartego i zamkniętego NIE MA, bo żadna z
-trzech prób nie dała dwóch różnych plików, i wykrył to `check_minpairs.py`,
-a nie przegląd kodu.
+Before writing sixty utterances about connected speech, we have to know
+whether the narrator realises those phenomena at all. There is a precedent in
+this repository: there is NO minimal-pair set for the open and closed "o",
+because none of the three attempts produced two different files, and it was
+`check_minpairs.py` that caught it, not a code review.
 
-Tam pytanie brzmiało „czy głos ROZRÓŻNIA dwie pisownie". Tutaj brzmi
-odwrotnie: „czy głos SKLEJA to, co pisownia rozdziela". Dlatego bajty nie
-wystarczą — dwa pliki i tak będą różne. Porównujemy dźwięk:
+There the question was "does the voice DISTINGUISH two spellings". Here it is
+the opposite: "does the voice JOIN what the spelling separates". That is why
+bytes are not enough — the two files will differ anyway. We compare the sound:
 
-  1. syntetyzujemy formę PISANĄ („a casa") i formę wymawianą, zapisaną tak,
-     jak brzmi, gdy zjawisko zachodzi („accasa");
-  2. dekodujemy oba do PCM 16 kHz mono przez ffmpeg;
-  3. liczymy różnicę czasu trwania i odległość obwiedni energii.
+  1. we synthesise the WRITTEN form ("a casa") and the spoken form, written
+     the way it sounds when the phenomenon occurs ("accasa");
+  2. we decode both to 16 kHz mono PCM through ffmpeg;
+  3. we compute the difference in duration and the distance between the
+     energy envelopes.
 
-Jeśli obie wersje wychodzą BLISKO — głos realizuje zjawisko i ćwiczenie ma
-czego uczyć. Jeśli DALEKO — lektor czyta litery, a wtedy zadanie „posłuchaj
-i powiedz, czy usłyszałeś podwojenie" nie ma poprawnej odpowiedzi.
+If the two versions come out CLOSE — the voice realises the phenomenon and
+the exercise has something to teach. If FAR — the narrator reads letters, and
+then the task "listen and say whether you heard a doubling" has no correct
+answer.
 
-Głos jest ten sam, którym mówi kurs: `it-IT-IsabellaNeural`. Testowanie
-syntezy systemowej nie odpowiedziałoby na żadne pytanie, bo kurs jej nie
-używa poza awaryjnym zejściem.
+The voice is the same one the course speaks with: `it-IT-IsabellaNeural`.
+Testing system synthesis would answer no question at all, because the course
+does not use it outside the emergency fallback.
 
     uv run --script scripts/check_connected.py
     uv run --script scripts/check_connected.py --gate
 
-STAN NA DZIŚ: NIEROZSTRZYGNIĘTY, i to jest wynik, nie brak wyniku.
+THE STATE TODAY: UNDETERMINED, and that is a result, not the absence of one.
 
-Miara przeszła cztery wersje i żadna nie oddziela wiarygodnie „zjawisko
-zrealizowane" od „inna treść":
+The measure went through four versions and none of them reliably separates
+"the phenomenon was realised" from "different content":
 
-  1. obwiednia energii — kontrola negatywna 0,105 przy progu 0,35: nie
-     odróżniała nawet dwóch niepodobnych zdań;
-  2. widmo w pasmach — kontrola negatywna zaczęła działać (0,51), ale
-     kontrola POZYTYWNA, ten sam napis dwa razy, dała 0,450: podłoga równa
-     sufitowi;
-  3. normalizacja czasu przed ramkowaniem — bez zmiany, więc to nie było
-     wyrównanie;
-  4. wykluczenie ciszy — `dist(x, x)` spadło do zera (przyczyna: 27 ramek
-     z 60 wypadało na ciszę, a pusty wektor dawał odległość 1), ale wtedy
-     kontrola negatywna spadła do 0,060, poniżej progu 0,08.
+  1. the energy envelope — the negative control at 0.105 against a threshold
+     of 0.35: it did not even tell two dissimilar sentences apart;
+  2. a banded spectrum — the negative control started working (0.51), but the
+     POSITIVE control, the same string twice, gave 0.450: the floor equal to
+     the ceiling;
+  3. time normalisation before framing — no change, so it was not the
+     alignment;
+  4. excluding silence — `dist(x, x)` dropped to zero (the cause: 27 frames
+     out of 60 fell on silence, and an empty vector gave a distance of 1), but
+     then the negative control dropped to 0.060, below the 0.08 threshold.
 
-Wniosek metodologiczny: porównywanie CAŁEGO widma dwóch RÓŻNYCH napisów
-prawdopodobnie w ogóle nie jest tym eksperymentem. Pytanie „czy głos
-podwaja spółgłoskę" dotyczy DŁUGOŚCI JEDNEJ GŁOSKI, a nie globalnego
-podobieństwa wypowiedzi; mierzy się je segmentacją, nie odległością widm.
+The methodological conclusion: comparing the WHOLE spectrum of two DIFFERENT
+strings is probably not this experiment at all. The question "does the voice
+double the consonant" is about the LENGTH OF ONE SOUND, not about the global
+similarity of an utterance; that is measured by segmentation, not by spectral
+distance.
 
-Progu nie ruszamy po zobaczeniu wyniku — to jest dokładnie ta rzecz, przed
-którą ten gate ma chronić. Dopóki miara nie rozstrzyga, treść F7 o mowie
-łączonej NIE POWSTAJE: napisanie jej byłoby powtórzeniem błędu z „o"
-otwartym i zamkniętym, tylko bez skryptu, który go wtedy złapał.
+We do not move the threshold after seeing the result — that is exactly what
+this gate is there to prevent. As long as the measure does not decide, the F7
+content about connected speech DOES NOT GET WRITTEN: writing it would repeat
+the mistake with the open and closed "o", only without the script that caught
+it back then.
 """
 
 from __future__ import annotations
@@ -72,7 +76,7 @@ import numpy as np
 
 VOICE = "it-IT-IsabellaNeural"
 
-# (zjawisko, forma pisana, forma „jak brzmi", co miałoby uczyć ćwiczenie)
+# (phenomenon, written form, "as it sounds" form, what the exercise would teach)
 PROBY: list[tuple[str, str, str, str]] = [
     ("raddoppiamento", "a casa", "accasa", "a + spółgłoska podwaja ją w mowie"),
     ("raddoppiamento", "e come", "eccome", "e + spółgłoska: to samo"),
@@ -87,29 +91,32 @@ PROBY: list[tuple[str, str, str, str]] = [
     ("assimilazione", "con me", "comme", "n przed m"),
 ]
 
-# KONTROLA NEGATYWNA. Pary, które MUSZĄ wyjść daleko: dwa różne zdania i
-# to samo zdanie powiedziane w innym tempie. Bez nich „wszystko jest blisko"
-# nie odróżnia się od „moja miara niczego nie rozróżnia" — a pierwszy
-# przebieg dał 11/11, co jest dokładnie takim wynikiem, któremu trzeba
-# najpierw nie uwierzyć.
+# THE NEGATIVE CONTROL. Pairs that MUST come out far apart: two different sentences and
+# the same sentence said at a different speed. Without them "everything is
+# close" cannot be told apart from "my measure distinguishes nothing" — and the
+# first run gave 11/11, which is exactly the kind of result you have to
+# disbelieve first.
 KONTROLE: list[tuple[str, str]] = [
     ("a casa", "in bocca"),
     ("non lo so", "tre giorni"),
     ("un bel giorno", "che cos'è"),
 ]
 
-# KONTROLA POZYTYWNA: ten sam napis zsyntetyzowany dwa razy. Wyznacza
-# PODŁOGĘ — odległość, która bierze się z samej syntezy, a nie z treści.
-# Bez niej „0,47" nie odróżnia się od „każde dwa nagrania tyle mają".
+# THE POSITIVE CONTROL: the same string synthesised twice. It establishes the
+# FLOOR — the distance that comes from the synthesis itself rather than from
+# the content. Without it "0.47" cannot be told apart from "every two
+# recordings are that far apart".
 KONTROLE_POZ: list[str] = ["a casa", "non lo so", "un bel giorno"]
 
-# Progi. Dobrane PRZED pierwszym pomiarem, jak przy check_lookup: próg
-# dobrany po zobaczeniu wyniku opisuje wynik, a nie stawia wymagania.
-MAX_ROZNICA_CZASU = 0.18      # sekundy
-# Próg dla NOWEJ miary (widmo). Stary próg 0,35 dotyczył obwiedni energii i
-# przepuszczał wszystko; kalibrujemy go na kontroli negatywnej, czyli na
-# parach, o których z góry WIADOMO, że mają wyjść daleko — a nie na
-# wynikach badanych par, bo wtedy opisywałby wynik zamiast go sprawdzać.
+# The thresholds. Chosen BEFORE the first measurement, as with check_lookup: a
+# threshold chosen after seeing the result describes the result instead of
+# demanding anything.
+MAX_ROZNICA_CZASU = 0.18      # seconds
+# The threshold for the NEW measure (the spectrum). The old threshold of 0.35
+# applied to the energy envelope and let everything through; we calibrate it on
+# the negative control, that is on pairs KNOWN in advance to come out far
+# apart — and not on the results of the pairs under study, because then it
+# would describe the result instead of checking it.
 MAX_ODLEGLOSC = 0.08
 
 
@@ -121,7 +128,7 @@ async def syntetyzuj(tekst: str, cel: Path) -> None:
 
 
 def pcm(mp3: Path) -> np.ndarray:
-    """Dekoduje do mono 16 kHz. ffmpeg jest już wymagany przez build_audio.py."""
+    """Decodes to 16 kHz mono. ffmpeg is already required by build_audio.py."""
     out = subprocess.run(
         ["ffmpeg", "-v", "quiet", "-i", str(mp3), "-ac", "1", "-ar", "16000",
          "-f", "s16le", "-"],
@@ -131,28 +138,29 @@ def pcm(mp3: Path) -> np.ndarray:
 
 
 def spektrogram(x: np.ndarray, ramek: int = 60, pasm: int = 24) -> np.ndarray:
-    """Log-spektrogram w pasmach, znormalizowany w czasie do stałej liczby ramek.
+    """A banded log spectrogram, normalised in time to a fixed number of frames.
 
-    DLACZEGO NIE OBWIEDNIA ENERGII, którą ta funkcja zastąpiła: obwiednia
-    mówi tylko KIEDY jest głośno. Kontrola negatywna pokazała, że „a casa"
-    i „in bocca" — dwa zupełnie różne zdania — wychodzą wtedy na 0,105,
-    czyli głęboko poniżej progu. Miara, która nie odróżnia zdań o innej
-    treści, nie odróżni też podwojenia spółgłoski, a pierwszy przebieg dał
-    przez to 11/11 i wyglądał na sukces.
+    WHY NOT THE ENERGY ENVELOPE this function replaced: the envelope only says
+    WHEN it is loud. The negative control showed that "a casa" and "in bocca" —
+    two completely different sentences — then come out at 0.105, that is deep
+    below the threshold. A measure that does not tell apart sentences with
+    different content will not tell apart a doubled consonant either, and
+    because of that the first run gave 11/11 and looked like a success.
 
-    Widmo mówi CO brzmi, nie tylko kiedy. Normalizacja czasu jest po to, by
-    porównywać kształt wypowiedzi, a nie jej długość — długość mierzymy
-    osobno.
+    A spectrum says WHAT sounds, not only when. The time normalisation is there
+    so as to compare the shape of an utterance rather than its length — the
+    length is measured separately.
     """
     if x.size < 512:
         return np.zeros((ramek, pasm))
     okno = 512
-    # Najpierw ROZCIĄGAMY oba nagrania do tej samej długości, dopiero potem
-    # tniemy na ramki. Bez tego kroku ramki dwóch nagrań o różnej długości
-    # trafiają w różne miejsca wypowiedzi i identyczna treść wychodzi
-    # daleko: ten sam napis dwa razy dawał 0,450, a dwa różne zdania 0,514.
-    # To był artefakt wyrównania, nie różnica akustyczna.
-    dl = 32000                              # dwie sekundy przy 16 kHz
+    # First we STRETCH both recordings to the same length, and only then cut
+    # them into frames. Without that step the frames of two recordings of
+    # different lengths fall on different places in the utterance and identical
+    # content comes out far apart: the same string twice gave 0.450, and two
+    # different sentences 0.514. That was an alignment artefact, not an
+    # acoustic difference.
+    dl = 32000                              # two seconds at 16 kHz
     x = np.interp(np.linspace(0, x.size - 1, dl), np.arange(x.size), x)
     skok = max(1, (x.size - okno) // ramek)
     krawedzie = np.geomspace(1, okno // 2, pasm + 1).astype(int)
@@ -172,17 +180,18 @@ def spektrogram(x: np.ndarray, ramek: int = 60, pasm: int = 24) -> np.ndarray:
 
 
 def odleglosc(a: np.ndarray, b: np.ndarray) -> float:
-    """Średnia odległość kosinusowa ramka po ramce, 0..1.
+    """The mean cosine distance frame by frame, 0..1.
 
-    CISZA NIE JEST RÓŻNICĄ. Nagrania z edge-tts mają ciszę na początku i na
-    końcu; po rozciągnięciu do stałej długości wypadało na nią 27 ramek z 60,
-    a ramka o zerowej energii ma zerowy wektor i dawała odległość 1. Stąd
-    „ten sam napis vs ten sam napis = 0,450": miara meldowała, że cisza nie
-    pasuje do ciszy. Sprawdzone wprost — `dist(x, x)` też wychodziło 0,45,
-    czego żadna interpretacja akustyczna nie tłumaczy.
+    SILENCE IS NOT A DIFFERENCE. Recordings from edge-tts have silence at the
+    beginning and at the end; after stretching to a fixed length 27 frames out
+    of 60 fell on it, and a frame with zero energy has a zero vector and gave a
+    distance of 1. Hence "the same string vs the same string = 0.450": the
+    measure was reporting that silence does not match silence. Checked
+    directly — `dist(x, x)` also came out at 0.45, which no acoustic
+    interpretation explains.
 
-    Teraz: obie ramki ciche = zgodne; jedna cicha, druga nie = pełna
-    różnica; obie z energią = kosinus.
+    Now: both frames silent = a match; one silent, the other not = a full
+    difference; both carrying energy = the cosine.
     """
     A, B = spektrogram(a), spektrogram(b)
     ea = np.linalg.norm(A, axis=1) > 1e-9
@@ -205,8 +214,9 @@ async def main() -> int:
     with tempfile.TemporaryDirectory() as d:
         tmp = Path(d)
 
-        # Najpierw kontrola: gdyby i ona wyszła „blisko", cały pomiar niżej
-        # nic nie znaczy i trzeba by zmienić miarę, a nie wyciągać wnioski.
+        # The control first: if it too came out "close", the whole measurement
+        # below means nothing and the measure would have to change rather than
+        # conclusions be drawn.
         print("  kontrola negatywna (te MAJĄ wyjść daleko):")
         kontrola_ok = True
         for j, (x, y) in enumerate(KONTROLE):

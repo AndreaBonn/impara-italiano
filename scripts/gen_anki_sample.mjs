@@ -1,6 +1,7 @@
-/* Próbka do bramki check_anki.py: 40 fiszek z tym, co ten format psuje —
-   akcenty, apostrofy, przecinki, cudzysłowy, złamanie wiersza w polu i
-   prefiksy formuł. Serializuje PRODUKCYJNY assets/js/anki.js, nie kopię. */
+/* A sample for the check_anki.py gate: 40 cards holding whatever this format
+   breaks on — accents, apostrophes, commas, quotation marks, a line break
+   inside a field and formula prefixes. It serialises the PRODUCTION
+   assets/js/anki.js, not a copy. */
 import { readFileSync, writeFileSync } from "node:fs";
 import vm from "node:vm";
 const ROOT="/home/bonn/Documenti/00_Lavoro/ProgettiPersonali/LinguAI/versione-statica";

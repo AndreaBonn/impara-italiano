@@ -1,20 +1,20 @@
 /* ============================================================
-   verbs.js — silnik odmiany czasowników włoskich.
+   verbs.js — the Italian verb conjugation engine.
 
-   Obsługuje regularne -are / -ere / -ire (także wzorzec -isc-), zmiany
-   ortograficzne (-care/-gare/-ciare/-giare/-iare), dziedziczenie
-   nieregularności po przedrostku i czasy złożone z uzgodnieniem
-   imiesłowu. Używane przez: widok „Odmiana czasowników", ćwiczenia typu
-   „conj" i rozpoznawanie form w lemma.js.
+   It handles regular -are / -ere / -ire (including the -isc- pattern),
+   spelling changes (-care/-gare/-ciare/-giare/-iare), inheritance of
+   irregularity through a prefix, and compound tenses with participle
+   agreement. Used by: the "Verb conjugation" view, exercises of type
+   "conj" and form recognition in lemma.js.
 
-   Same TABELE włoskiego siedzą w verbs-data.js — to ta sama zasada, po
-   której dane kursu są oddzielone od silnika renderowania: dopisanie
-   czasownika nieregularnego nie ma dotykać pliku z algorytmem.
+   The Italian TABLES themselves sit in verbs-data.js — the same principle
+   by which the course data is separated from the rendering engine: adding
+   an irregular verb must not touch the file with the algorithm.
 
-   Co zostało tutaj, choć wygląda na dane: lista przedrostków i dwa
-   słowniki wyjątków przy niej. To nie jest włoszczyzna do przeglądania,
-   tylko strojenie jednej heurystyki (irrOf) — a powody, dla których ta
-   lista jest zamknięta, czyta się razem z kodem, który po niej chodzi.
+   What stayed here although it looks like data: the list of prefixes and
+   the two exception dictionaries next to it. That is not Italian to be
+   browsed but the tuning of one heuristic (irrOf) — and the reasons that
+   list is closed are read together with the code that walks it.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -30,7 +30,7 @@
   var TENSES = D.TENSES;
   var COMMON = D.COMMON;
 
-  /* ---------------- Pomocnicze ---------------- */
+  /* ---------------- Helpers ---------------- */
   function isRefl(inf) { return /(?:arsi|ersi|irsi|rsi)$/.test(inf); }
 
   function baseOf(inf) {
@@ -47,14 +47,14 @@
 
   function stemOf(inf) { return baseOf(inf).replace(/(are|ere|ire)$/, ""); }
 
-  /** Zmiany ortograficzne przy doklejaniu końcówki. */
+  /** Spelling changes when an ending is attached. */
   function join(stem, ending, group) {
     if (group === "are") {
-      // -care / -gare : h przed e/i  (cerco → cerchi, pago → pagherò)
+      // -care / -gare : h before e/i  (cerco -> cerchi, pago -> pagherò)
       if (/(c|g)$/.test(stem) && /^[ei]/.test(ending)) return stem + "h" + ending;
-      // -ciare / -giare / -sciare : jedno i  (comincio → cominci, non "cominci-i")
+      // -ciare / -giare / -sciare : a single i  (comincio -> cominci, not "cominci-i")
       if (/(ci|gi|sci)$/.test(stem) && /^[ei]/.test(ending)) return stem.slice(0, -1) + ending;
-      // -iare bez akcentu na i : studi + iamo → studiamo
+      // -iare with no stress on the i : studi + iamo -> studiamo
       if (/i$/.test(stem) && /^i/.test(ending)) return stem.slice(0, -1) + ending;
     }
     if (group === "ere" || group === "ire" || group === "isc") {
@@ -65,10 +65,10 @@
 
   function futureStem(inf) {
     var b = baseOf(inf), g = groupOf(inf), s = stemOf(inf);
-    if (/rre$/.test(b)) return b.replace(/e$/, "");           // porre → porr
+    if (/rre$/.test(b)) return b.replace(/e$/, "");           // porre -> porr
     if (g === "are") {
-      if (/(c|g)$/.test(s)) return s + "her";                  // cercare → cercher
-      if (/(ci|gi|sci)$/.test(s)) return s.slice(0, -1) + "er";// mangiare → manger
+      if (/(c|g)$/.test(s)) return s + "her";                  // cercare -> cercher
+      if (/(ci|gi|sci)$/.test(s)) return s.slice(0, -1) + "er";// mangiare -> manger
       return s + "er";
     }
     if (g === "ere") return s + "er";
@@ -76,17 +76,18 @@
   }
 
   /* --------------------------------------------------------
-     Czasowniki z przedrostkiem dziedziczą nieregularność.
+     Prefixed verbs inherit irregularity.
 
-     „promettere" to „mettere" z przedrostkiem i odmienia się tak samo:
-     imiesłów „promesso", nie „promettuto". Bez tego widok odmiany
-     pokazywał uczniowi formy nieistniejące — dla „promettere",
-     „permettere", „riscrivere", „comporre" i całej reszty rodziny.
-     Znalezione, gdy bramka lookupu nie umiała rozpoznać „promesso".
+     "promettere" is "mettere" with a prefix and conjugates the same way:
+     the participle is "promesso", not "promettuto". Without this the
+     conjugation view showed the student non-existent forms — for
+     "promettere", "permettere", "riscrivere", "comporre" and the whole
+     rest of the family. Found when the lookup gate could not recognise
+     "promesso".
 
-     Przedrostek musi być z listy zamkniętej i to jest istotne: samo
-     „kończy się na znany czasownik" zrobiłoby z „mandare" krewnego
-     „andare" i wyprodukowało „mando/vado". Lista jest tania, pomyłka nie.
+     The prefix must come from a closed list, and that matters: "ends with
+     a known verb" alone would make "mandare" a relative of "andare" and
+     produce "mando/vado". The list is cheap, the mistake is not.
      -------------------------------------------------------- */
   var PRZEDROSTKI = [
     "ri", "pro", "per", "pre", "com", "con", "contro", "co",
@@ -95,32 +96,35 @@
     "tras", "trans", "tra", "dis", "de", "es", "ex", "re", "sor", "so", "su", "s"
   ];
 
-  /* Rozbiór na przedrostek i rdzeń jest heurystyką PISOWNI, nie etymologią,
-     więc zamknięta lista przedrostków wyżej wyklucza „mandare = m + andare",
-     ale nie wyklucza wszystkiego. Te trzy wpadły:
+  /* Splitting into prefix and root is a heuristic of SPELLING, not of
+     etymology, so the closed list of prefixes above rules out
+     "mandare = m + andare" but does not rule out everything. These three
+     slipped through:
 
-       restare  wygląda jak re + stare i dostawało formy „stare",
-                czyli „restanno" zamiast „restano";
-       prestare to samo, ten sam rdzeń;
-       affare   nie jest nawet czasownikiem — trafia tu, bo kończy się
-                na -are, a słownik kursu odmienia wszystko z tą końcówką.
+       restare  looks like re + stare and was getting "stare" forms,
+                that is "restanno" instead of "restano";
+       prestare the same thing, the same root;
+       affare   is not even a verb — it lands here because it ends in
+                -are, and the course dictionary conjugates everything with
+                that ending.
 
-     Znalezione przez bramkę pokrycia: „restano" z czytanki nie miało czego
-     rozpoznać. Lista rośnie tylko wtedy, gdy bramka znowu coś złapie. */
+     Found by the coverage gate: "restano" from a reading had nothing to
+     be recognised by. The list only grows when the gate catches something
+     again. */
   var BEZ_DZIEDZICZENIA = { restare: 1, prestare: 1, affare: 1 };
 
-  /* Przedrostek zasymilowany, którego pisownia nie pokazuje: „ottenere" to
-     ob+tenere, „mantenere" to manu+tenere. Dopisanie „ot" albo „man" do
-     listy przedrostków ściągnęłoby „mandare" na „dare", więc te rodziny
-     wskazujemy wprost. Bez tego „ottiene" wychodziło jako „ottene". */
+  /* An assimilated prefix that the spelling does not show: "ottenere" is
+     ob+tenere, "mantenere" is manu+tenere. Adding "ot" or "man" to the list
+     of prefixes would pull "mandare" onto "dare", so these families are
+     pointed at directly. Without this "ottiene" came out as "ottene". */
   var DZIEDZICZY_WPROST = { ottenere: "tenere", mantenere: "tenere", sostenere: "tenere" };
 
   var cachePrzedrostkow = {};
 
   /**
-   * Opis nieregularności dla bezokolicznika, z dziedziczeniem po przedrostku.
+   * The irregularity description for an infinitive, with prefix inheritance.
    *
-   * @param {string} b bezokolicznik w formie podstawowej (bez `-si`)
+   * @param {string} b the infinitive in base form (without `-si`)
    * @returns {object|null}
    */
   function irrOf(b) {
@@ -147,42 +151,42 @@
     return wynik;
   }
 
-  /** Kopia opisu z przedrostkiem doklejonym do każdej formy. */
+  /** A copy of the description with the prefix attached to every form. */
   function zPrzedrostkiem(d, p) {
     var out = {};
     Object.keys(d).forEach(function (k) {
       var v = d[k];
       if (typeof v === "string") out[k] = p + v;
       else if (Array.isArray(v)) out[k] = v.map(function (x) { return x === null ? null : p + x; });
-      else out[k] = v;                       // aux, ppAgree i inne flagi
+      else out[k] = v;                       // aux, ppAgree and other flags
     });
-    /* Posiłkownik się NIE dziedziczy: „andare" chce „essere", ale
-       „riandare" jest rzadkie, a „mettere/promettere" oba biorą „avere".
-       Zostawiamy to, co było w opisie rdzenia, bo dla par prefiksowych
-       pokrywa się w praktyce; wyjątki idą do IRR wprost. */
+    /* The auxiliary is NOT inherited: "andare" wants "essere", but
+       "riandare" is rare, and "mettere/promettere" both take "avere". We
+       keep whatever the root's description had, because for prefixed pairs
+       it agrees in practice; exceptions go straight into IRR. */
     return out;
   }
 
   function reflPronoun(i) { return ["mi", "ti", "si", "ci", "vi", "si"][i]; }
 
-  /* Osoby, w których zaimek dokleja się do formy trybu rozkazującego:
-     tu, noi, voi. Formy grzecznościowe (Lei, Loro) trzymają zaimek przed
-     czasownikiem — to nie jest wariant stylistyczny, tylko reguła, którą
-     kurs sam wykłada w haśle „ref:g-imperativo”.
+  /* The persons where the pronoun attaches to the imperative form: tu, noi,
+     voi. The polite forms (Lei, Loro) keep the pronoun before the verb —
+     that is not a stylistic variant but a rule the course itself teaches in
+     the "ref:g-imperativo" entry.
 
-     Czego ta tabela NIE obejmuje: przeczenia. Włoskie „non alzarti"
-     bierze bezokolicznik, nie formę tu, więc „non " + to, co tu wychodzi,
-     jest błędem. Silnik zna jeden klucz `imper` i jest to forma
-     twierdząca; kto będzie chciał przeczeń, dokłada osobny czas, a nie
-     doklejaną cząstkę. */
+     What this table does NOT cover: negation. The Italian "non alzarti"
+     takes the infinitive, not the tu form, so "non " + whatever comes out
+     here is wrong. The engine knows one `imper` key and it is the
+     affirmative form; whoever wants negatives adds a separate tense rather
+     than a particle glued on. */
   var ENKLITYKA = [false, true, false, true, true, false];
 
   /**
-   * Dokleja zaimek zwrotny do formy trybu rozkazującego.
+   * Attaches the reflexive pronoun to an imperative form.
    *
-   * „alza" + „ti" → „alzati". Krótka forma tu gubi apostrof i podwaja
-   * spółgłoskę zaimka: „fa'" + „ti" → „fatti", tak samo jak „dammi"
-   * i „dimmi" z tego samego hasła.
+   * "alza" + "ti" -> "alzati". The short tu form loses its apostrophe and
+   * doubles the pronoun's consonant: "fa'" + "ti" -> "fatti", just like
+   * "dammi" and "dimmi" from the same entry.
    */
   function doklej(form, pron) {
     if (/'$/.test(form)) return form.slice(0, -1) + pron.charAt(0) + pron;
@@ -219,7 +223,7 @@
     return stemOf(inf) + REG[groupOf(inf)].ger;
   }
 
-  /* ---------------- Czasy proste ---------------- */
+  /* ---------------- Simple tenses ---------------- */
   function simple(inf, tense) {
     var b = baseOf(inf), g = groupOf(inf), s = stemOf(inf), d = irrOf(b) || {};
     var out = [];
@@ -231,7 +235,7 @@
     } else if (d[tense]) {
       out = d[tense].slice();
     } else if (tense === "imperf" && /rre$/.test(b)) {
-      out = [];   // pokryte w IRR; awaryjnie regularne
+      out = [];   // covered in IRR; regular as a fallback
       for (var k = 0; k < 6; k++) out.push(join(s, REG.ere.imperf[k], "ere"));
     } else {
       var table = REG[g][tense];
@@ -249,7 +253,7 @@
     return out;
   }
 
-  /* ---------------- Czasy złożone ---------------- */
+  /* ---------------- Compound tenses ---------------- */
   function compound(inf, auxTense, gender) {
     var aux = auxOf(inf);
     var auxForms = simple(aux, auxTense);

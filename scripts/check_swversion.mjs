@@ -1,25 +1,26 @@
 /* ============================================================
-   check_swversion.mjs — czy nowe wydanie ma jak się ogłosić
-   Uruchomienie:  node scripts/check_swversion.mjs [--napraw]
+   check_swversion.mjs — whether a new release has any way to announce itself
+   Usage:  node scripts/check_swversion.mjs [--napraw]
 
-   Przeglądarka rozpoznaje nową wersję aplikacji po BAJTACH sw.js i po
-   niczym innym: pobiera ten plik, porównuje z zapamiętanym i dopiero
-   różnica uruchamia instalację nowego workera. Projekt nie ma kroku
-   budowania, więc pliki nie mają skrótu w nazwie i sw.js nie zmienia się
-   od tego, że zmienił się core.js. Poprawka wychodziła więc do uczniów
-   jako wydanie, którego przeglądarka nie widziała, a komunikat
-   „jest nowa wersja" nie miał prawa się pojawić.
+   The browser recognises a new version of the application by the BYTES of
+   sw.js and by nothing else: it fetches that file, compares it with the
+   remembered one, and only a difference triggers the installation of a new
+   worker. The project has no build step, so the files have no hash in their
+   names and sw.js does not change just because core.js did. A fix therefore
+   went out to students as a release the browser never saw, and the message
+   "there is a new version" had no way to appear.
 
-   Stąd odcisk doklejony do SW_VERSION: skrót treści WSZYSTKICH plików
-   z PRECACHE. Zmiana którejkolwiek linijki powłoki zmienia odcisk, więc
-   zmienia sw.js, więc uruchamia zapowiedź.
+   Hence the fingerprint appended to SW_VERSION: a hash of the contents of
+   ALL the PRECACHE files. A change to any line of the shell changes the
+   fingerprint, so it changes sw.js, so it triggers the announcement.
 
-   Granica, świadoma: liczą się pliki z PRECACHE, czyli powłoka kursu.
-   Pliki poziomów (data/core/a1-*.js) dociągane są w czasie działania i
-   idą strategią „najpierw sieć", więc odświeżają się same, bez workera.
+   A deliberate boundary: what counts is the PRECACHE files, that is the
+   shell of the course. The level files (data/core/a1-*.js) are pulled at
+   runtime and follow the "network first" strategy, so they refresh by
+   themselves, without the worker.
 
-   `PRECACHE` czytamy wykonując sw.js w piaskownicy, tak samo jak
-   check_precache.mjs — nie wyrażeniem regularnym po nawiasach.
+   We read `PRECACHE` by running sw.js in a sandbox, the same way
+   check_precache.mjs does — not with a regular expression over brackets.
    ============================================================ */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -31,12 +32,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SW = join(ROOT, "sw.js");
 const NAPRAW = process.argv.slice(2).includes("--napraw");
 
-/* Wersja w postaci „v35.7bb6e01ec9d6": ręczna nazwa wydania, kropka, odcisk.
-   Odcisk jest opcjonalny w wyrażeniu, żeby dało się go dopisać do pliku,
-   który go jeszcze nie ma. */
+/* A version of the form "v35.7bb6e01ec9d6": the hand-written release name,
+   a dot, the fingerprint. The fingerprint is optional in the expression, so
+   that it can be added to a file that does not have one yet. */
 const WZOR = /(var SW_VERSION = "v\d+)(?:\.[0-9a-f]+)?(";)/;
 
-/** index.html jest w PRECACHE dwa razy: jako „./" i pod własną nazwą. */
+/** index.html is in PRECACHE twice: as "./" and under its own name. */
 function norm(sciezka) {
   const czysta = sciezka.replace(/^\.\//, "").replace(/^\//, "");
   return czysta === "" ? "index.html" : czysta;
@@ -59,12 +60,13 @@ function precache() {
 }
 
 /**
- * Odcisk powłoki.
+ * The fingerprint of the shell.
  *
- * Nazwa pliku wchodzi do skrótu razem z treścią: samo przestawienie
- * zawartości między dwoma plikami też jest zmianą wydania. Lista jest
- * posortowana, bo kolejność wpisów w PRECACHE jest deklaracją zależności
- * i wolno ją przestawić bez zmiany tego, co dostaje uczeń.
+ * The file name enters the hash together with the content: swapping the
+ * contents between two files is a change of release too. The list is
+ * sorted, because the order of the PRECACHE entries is a declaration of
+ * dependencies and may be rearranged without changing what the student
+ * gets.
  */
 function odcisk(pliki) {
   const suma = createHash("sha256");
@@ -83,7 +85,7 @@ function odcisk(pliki) {
   return suma.digest("hex").slice(0, 12);
 }
 
-/* ---------------- Porównanie ---------------- */
+/* ---------------- The comparison ---------------- */
 
 const pliki = Array.from(new Set(precache().map(norm))).sort();
 const swiezy = odcisk(pliki);

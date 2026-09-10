@@ -1,15 +1,16 @@
 /* ============================================================
-   pwa.js — rejestracja service workera i zapowiedź nowej wersji.
+   pwa.js — service worker registration and the new-version announcement.
 
-   Osobny plik, nie kilka linijek w app.js: to jest jedyne miejsce w
-   całym kursie, które zakłada obecność serwera, a app.js odpowiada za
-   trasy i powłokę.
+   A separate file rather than a few lines in app.js: this is the only
+   place in the whole course that assumes a server is present, while
+   app.js is responsible for routes and the shell.
 
-   Tu są WYŁĄCZNIE skutki: rejestracja, nasłuchy, komunikat, przeładowanie.
-   Decyzje („czy zapowiadać", „czy już wolno zapytać", „czy przeładować")
-   siedzą w pwa-rules.js i nie wiedzą nic o przeglądarce.
+   Only EFFECTS live here: registration, listeners, the message, the
+   reload. The decisions ("should we announce", "are we allowed to ask
+   yet", "should we reload") sit in pwa-rules.js and know nothing about
+   the browser.
 
-   Skrypt klasyczny. Ładuje się PO pwa-rules.js.
+   Classic script. Loads AFTER pwa-rules.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -17,12 +18,12 @@
   var rejestracja = null;
 
   /**
-   * Czy strona miała kontrolera W CHWILI WCZYTANIA.
+   * Whether the page had a controller AT LOAD TIME.
    *
-   * Zapisane raz, na starcie, i potem tylko czytane. Pytanie zadane
-   * później odpowiada „tak" już od chwili przejęcia, więc pierwsza
-   * wizyta udawałaby aktualizację i kończyła się przeładowaniem strony,
-   * którą uczeń dopiero co otworzył.
+   * Written once, at startup, and only read afterwards. Asking later
+   * answers "yes" from the moment control is taken, so the first visit
+   * would pretend to be an update and end in reloading a page the student
+   * had only just opened.
    */
   var kontrolowana = false;
   var juzPrzeladowana = false;
@@ -31,28 +32,28 @@
   function sw() { return global.navigator.serviceWorker; }
 
   /**
-   * Komunikat o gotowej aktualizacji: dwa wyjścia i żadne nie jest ukryte.
+   * The message about a ready update: two ways out and neither is hidden.
    *
-   * „Zaktualizuj" prosi czekającego workera o przejęcie i na tym kończy
-   * swoją rolę — strona przeładuje się dopiero wtedy, gdy przejęcie
-   * NAPRAWDĘ nastąpi (controllerchange niżej). Przeładowanie w tym
-   * miejscu otworzyłoby jeszcze raz starą wersję.
+   * "Update" asks the waiting worker to take over and its role ends there —
+   * the page reloads only once the takeover ACTUALLY happens
+   * (controllerchange below). Reloading at this point would open the old
+   * version once again.
    *
-   * Krzyżyk zamyka bez stosowania: wersja zostaje w kolejce, a komunikat
-   * wraca przy następnym otwarciu kursu. Komunikat trwały, nie toast —
-   * to nie jest wiadomość do przeoczenia między jednym ćwiczeniem
-   * a drugim.
+   * The cross dismisses without applying: the version stays in the queue
+   * and the message comes back the next time the course is opened. A
+   * persistent message, not a toast — this is not something to be missed
+   * between one exercise and the next.
    */
   function zapowiedz(worker) {
     if (!global.PwaRules.ogloszenie({ czeka: !!worker, kontrolowana: kontrolowana })) return false;
     global.Notice.notice("pwa.updateReady", {
       actionKey: "pwa.updateNow",
-      /* Pytamy o czekającego workera W CHWILI KLIKNIĘCIA, a nie o tego,
-         który był nim przy zapowiedzi. Drugie wydanie wypchnięte, gdy
-         komunikat wisi już na ekranie, spycha pierwszego workera do
-         „redundant" — a Notice nie pokaże komunikatu drugi raz pod tym
-         samym kluczem. Zapamiętana referencja zostawiłaby wtedy ucznia
-         z przyciskiem, który nic nie robi i nic o tym nie mówi. */
+      /* We ask for the waiting worker AT CLICK TIME, not for the one that
+         was waiting when the message went up. A second release pushed out
+         while the message is still on screen demotes the first worker to
+         "redundant" — and Notice will not show the message twice under the
+         same key. A remembered reference would leave the student with a
+         button that does nothing and says nothing about it. */
       onAction: function () {
         var czeka = (rejestracja && rejestracja.waiting) || worker;
         czeka.postMessage({ typ: "przejmij" });
@@ -62,13 +63,13 @@
   }
 
   /**
-   * Pilnuje workera, który właśnie się instaluje.
+   * Watches the worker that is currently installing.
    *
-   * `updatefound` przychodzi ZA WCZEŚNIE: worker jest wtedy w stanie
-   * „installing", a `registration.waiting` jest jeszcze puste — zapowiedź
-   * postawiona w tym miejscu nie miałaby czego zapowiadać. Przejście do
-   * „installed" nie wysyła już żadnego zdarzenia na rejestrację i widać
-   * je wyłącznie na samym workerze, przez `statechange`.
+   * `updatefound` arrives TOO EARLY: the worker is in the "installing"
+   * state then and `registration.waiting` is still empty — an announcement
+   * placed here would have nothing to announce. The transition to
+   * "installed" fires no further event on the registration and is visible
+   * only on the worker itself, through `statechange`.
    */
   function sledz(worker) {
     if (!worker) return;
@@ -78,11 +79,11 @@
   }
 
   /**
-   * Pyta serwer o nową wersję, nie częściej niż co PRZERWA.
+   * Asks the server about a new version, no more often than every PRZERWA.
    *
-   * Brak sieci nie jest tu usterką do zgłaszania: kurs ma działać bez
-   * niej, a pytanie o aktualizację jest jedyną rzeczą, która wtedy nie
-   * ma jak się udać.
+   * A missing network is not a fault to report here: the course is meant to
+   * work without one, and asking about an update is the only thing that
+   * then has no way to succeed.
    */
   function sprawdz() {
     if (!rejestracja) return false;
@@ -94,12 +95,13 @@
   }
 
   /**
-   * Powrót na pierwszy plan — na zainstalowanej aplikacji to jest
-   * prawdziwe „otwarcie kursu", częstsze niż wczytanie strony.
+   * A return to the foreground — on an installed app that is the real
+   * "opening of the course", more frequent than a page load.
    *
-   * Najpierw zapowiedź tego, co już czeka (odłożone „na później" wraca
-   * właśnie tutaj), potem dopiero pytanie do serwera: pierwsze jest
-   * darmowe i natychmiastowe, drugie kosztuje żądanie i ma próg.
+   * First the announcement of whatever is already waiting (a "later"
+   * deferral comes back exactly here), and only then the question to the
+   * server: the first is free and immediate, the second costs a request and
+   * has a threshold.
    */
   function naPierwszyPlan() {
     if (global.document.visibilityState !== "visible") return;
@@ -108,24 +110,24 @@
   }
 
   /**
-   * Rejestracja idzie WYŁĄCZNIE po http(s).
+   * Registration happens over http(s) ONLY.
    *
-   * Z file:// rejestracja rzuca wyjątkiem, a otwarcie kursu podwójnym
-   * kliknięciem jest wymogiem projektu, nie przypadkiem brzegowym.
-   * Dlatego strażnik stoi na protokole, a nie w try/catch, i żadna
-   * ścieżka w kodzie nie zakłada, że worker istnieje: bez niego kurs
-   * traci tryb offline i nic poza tym.
+   * From file:// registration throws, and opening the course by
+   * double-clicking is a project requirement, not an edge case. That is why
+   * the guard sits on the protocol rather than in a try/catch, and why no
+   * code path assumes the worker exists: without it the course loses
+   * offline mode and nothing else.
    */
   function register() {
     if (!("serviceWorker" in global.navigator)) return false;
     if (!/^https?:$/.test(global.location.protocol)) return false;
 
     kontrolowana = !!sw().controller;
-    ostatnieSprawdzenie = Date.now();   // sama rejestracja JEST sprawdzeniem
+    ostatnieSprawdzenie = Date.now();   // registration itself IS a check
 
-    /* Przejęcie kontroli przez nowego workera. Przychodzi także w kartach,
-       w których nikt niczego nie klikał: skoro nowa wersja obsługuje już
-       ich żądania, muszą wykonywać jej kod, a nie stary. */
+    /* A new worker taking over control. It arrives in tabs where nobody
+       clicked anything too: since the new version already serves their
+       requests, they must be running its code, not the old one. */
     sw().addEventListener("controllerchange", function () {
       if (!global.PwaRules.przeladowanie({
         kontrolowana: kontrolowana,
@@ -137,16 +139,16 @@
 
     sw().register("sw.js").then(function (reg) {
       rejestracja = reg;
-      /* Trzy wejścia do tej samej zapowiedzi, bo aktualizacja może być
-         w trzech różnych miejscach, gdy rejestracja się kończy:
-         gotowa od poprzedniej wizyty (waiting), w trakcie instalacji
-         (installing — updatefound zdążył pójść, zanim doszliśmy do
-         listenera), albo dopiero przed nami (updatefound niżej). */
+      /* Three ways into the same announcement, because when registration
+         finishes an update can be in three different places: ready since a
+         previous visit (waiting), mid-installation (installing — updatefound
+         fired before we reached the listener), or still ahead of us
+         (updatefound below). */
       if (reg.waiting) zapowiedz(reg.waiting);
       sledz(reg.installing);
       reg.addEventListener("updatefound", function () { sledz(reg.installing); });
     }).catch(function (err) {
-      // brak trybu offline nie psuje kursu, ale nie ma znikać po cichu
+      // losing offline mode does not break the course, but it must not vanish silently
       console.warn("[LinguAI] Service worker niezarejestrowany:", err && err.message);
     });
 
@@ -156,11 +158,11 @@
 
   global.PWA = { register: register, check: sprawdz };
 
-  /* Nie samo addEventListener("load"): w gotowej stronie ten plik bywa
-     wykonywany PO tym zdarzeniu i uchwyt nie odpaliłby się nigdy, a kurs
-     wyglądałby wtedy jak działający — bez trybu offline i bez zapowiedzi
-     aktualizacji, których i tak nikt nie ogląda na co dzień. Ten sam
-     wzorzec co start aplikacji w app.js. */
+  /* Not addEventListener("load") alone: in a finished page this file is
+     sometimes executed AFTER that event and the handler would never fire,
+     and the course would then look like it works — without offline mode and
+     without the update announcement, neither of which anyone watches from
+     day to day. The same pattern as the application start in app.js. */
   if (global.document.readyState === "complete") register();
   else global.addEventListener("load", register);
 

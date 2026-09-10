@@ -1,35 +1,34 @@
 /* ============================================================
-   lemma.js — od słowa w tekście do hasła, które kurs umie objaśnić.
+   lemma.js — from a word in a text to an entry the course can explain.
 
-   Uczeń dotyka „bevono" i ma zobaczyć „bere". Bez tego czytanki są
-   ścianą tekstu z glosami do kilkunastu wyrazów wybranych przez nas, a
-   nie przez niego.
+   The student taps "bevono" and must see "bere". Without this, readings
+   are a wall of text with glosses for a dozen words chosen by us rather
+   than by them.
 
-   DLACZEGO NIE SŁOWNIK MORFOLOGICZNY. Kurs nie ma kroku budowania i musi
-   działać z file://, więc każdy słownik trzeba by wysłać jako plik .js
-   ładowany na starcie. Wolna morfologia włoska waży megabajty, a ta
-   przycięta do haseł kursu pokrywa dwadzieścia kilka procent słów w
-   naszych własnych tekstach, bo 920 z 1410 pozycji leksykonu to
-   wyrażenia wielowyrazowe („a che ora", „di solito"), z których nie da
-   się odmienić niczego.
+   WHY NOT A MORPHOLOGICAL DICTIONARY. The course has no build step and
+   must work from file://, so any dictionary would have to be shipped as a
+   .js file loaded at startup. A free Italian morphology weighs megabytes,
+   and one trimmed to the course entries covers some twenty per cent of
+   the words in our own texts, because 920 of the 1410 lexicon items are
+   multi-word expressions ("a che ora", "di solito") from which nothing
+   can be inflected.
 
-   Zamiast tego: formy WYPROWADZAMY. Koniugator (verbs.js) i tak umie
-   wyprodukować każdą formę każdego czasownika, więc indeks odwrotny
-   powstaje z niego przy pierwszym użyciu i kosztuje zero bajtów
-   wysyłki. Rzeczowniki i przymiotniki schodzą regułami (lemma-morf.js),
-   bo włoska liczba mnoga jest regularna w stopniu, w jakim polska nigdy
-   nie jest.
+   Instead: we DERIVE the forms. The conjugator (verbs.js) can produce
+   every form of every verb anyway, so the reverse index is built from it
+   on first use and costs zero bytes of transfer. Nouns and adjectives
+   come down by rule (lemma-morf.js), because the Italian plural is
+   regular to a degree the Polish one never is.
 
-   Granica jest zadeklarowana, nie ukryta: to jest heurystyka, która
-   generuje KANDYDATÓW, a rozstrzyga słownik. „Bevi" da kandydatów
-   „bere" i „bevo"; wygrywa ten, którego kurs zna. Kandydat, którego nikt
-   nie zna, nie jest odpowiedzią — jest ciszą, i widok ma o niej
-   powiedzieć wprost (patrz views-lookup.js), a nie udawać sukcesu.
+   The boundary is declared, not hidden: this is a heuristic that
+   generates CANDIDATES, and the dictionary decides. "Bevi" yields the
+   candidates "bere" and "bevo"; the one the course knows wins. A
+   candidate nobody knows is not an answer — it is silence, and the view
+   must say so plainly (see views-lookup.js) rather than fake a success.
 
-   Ten sam podział przechodzi przez pliki: reguły formy w lemma-morf.js,
-   werdykt tutaj.
+   The same split runs across files: form rules in lemma-morf.js, the
+   verdict here.
 
-   Skrypt klasyczny. Wymaga lemma-morf.js.
+   Classic script. Requires lemma-morf.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -37,15 +36,15 @@
   var M = global.LemmaMorf;
 
   /**
-   * Czasowniki, dla których warto zbudować indeks.
+   * The verbs worth building an index for.
    *
-   * COMMON i IRR z verbs.js to lista, którą kurs faktycznie uczy;
-   * dokładamy bezokoliczniki wypatrzone w słowniku kursu, jeśli Core
-   * jest pod ręką. Poza kursem nie wychodzimy: indeks ma być mały i
-   * odpowiadać temu, co uczeń widział.
+   * COMMON and IRR from verbs.js are the list the course actually teaches;
+   * we add the infinitives spotted in the course dictionary, if Core is at
+   * hand. We do not go outside the course: the index must stay small and
+   * match what the student has seen.
    */
-  /* Bezokoliczniki dołożone z zewnątrz (bramka, test). W przeglądarce
-     wystarczy Core, ale skrypt sprawdzający nie ładuje całego stanu. */
+  /* Infinitives added from outside (a gate, a test). In the browser Core is
+     enough, but the checking script does not load the whole state. */
   var dodatkowe = [];
 
   function zrodloCzasownikow() {
@@ -56,11 +55,12 @@
     Object.keys(V.IRR || {}).forEach(function (w) { zbior[w] = true; });
     dodatkowe.forEach(function (w) { zbior[w] = true; });
 
-    /* Hasła kursu na -are/-ere/-ire to bezokoliczniki i trzeba je odmienić:
-       bez tego „aspetta" i „sceglie" są ciszą, mimo że kurs uczy obu
-       czasowników. COMMON i IRR z verbs.js pokrywają tylko część kursu.
-       Źródłem jest CAŁY słownik, nie sam leksykon lekcji: czasownik
-       dopisany do czytanki ma się odmieniać tak samo jak ten z lekcji. */
+    /* Course entries in -are/-ere/-ire are infinitives and have to be
+       conjugated: without that "aspetta" and "sceglie" are silence, even
+       though the course teaches both verbs. COMMON and IRR from verbs.js
+       cover only part of the course. The source is the WHOLE dictionary,
+       not the lesson lexicon alone: a verb added to a reading must inflect
+       just like one from a lesson. */
     Object.keys(slownikKursu()).forEach(function (haslo) {
       if (M.czasownikowe(haslo)) zbior[haslo] = true;
     });
@@ -70,10 +70,10 @@
   var indeks = null;
 
   /**
-   * Buduje indeks odwrotny: forma -> [bezokoliczniki].
+   * Builds the reverse index: form -> [infinitives].
    *
-   * Leniwie, przy pierwszym pytaniu, nie przy starcie: uczeń, który nie
-   * otworzy czytanki, nie ma za co płacić. Jedno wywołanie na sesję.
+   * Lazily, at the first question, not at startup: a student who never
+   * opens a reading has nothing to pay for. One call per session.
    */
   function zbuduj() {
     if (indeks) return indeks;
@@ -87,20 +87,20 @@
       function dodaj(forma) {
         if (!forma) return;
         M.slowa(forma).forEach(function (w) {
-          /* Formy jednoliterowe zostają. Pierwsza wersja je odrzucała jako
-             szum i wypadło z indeksu „è" — najczęstsze słowo we włoskim
-             tekście, 18 wystąpień w samych czytankach kursu. Wielkość
-             indeksu to nie jest problem, który mieliśmy. */
+          /* Single-letter forms stay. The first version rejected them as
+             noise and "è" fell out of the index — the most frequent word in
+             an Italian text, 18 occurrences in the course readings alone.
+             The size of the index is not a problem we had. */
           if (!w) return;
           if (!indeks[w]) indeks[w] = [];
           if (indeks[w].indexOf(inf) < 0) indeks[w].push(inf);
         });
       }
       dodaj(inf);
-      /* Imiesłów uzgadnia się z dopełnieniem i podmiotem, więc obok
-         „usato" w tekście stoi „usata", „usati", „usate". Bez tych trzech
-         forma żeńska była ciszą przy odmienionym czasowniku, którego kurs
-         uczy — najgorszy możliwy rodzaj luki, bo wygląda na przypadek. */
+      /* The participle agrees with the object and the subject, so next to
+         "usato" a text has "usata", "usati", "usate". Without those three
+         the feminine form was silence next to an inflected verb the course
+         teaches — the worst kind of gap, because it looks like chance. */
       var im = V.participle && V.participle(inf);
       dodaj(im);
       if (im && /o$/.test(im)) ["a", "i", "e"].forEach(function (k) {
@@ -116,22 +116,24 @@
   }
 
   /* --------------------------------------------------------
-     Słownik rozstrzygający.
+     The deciding dictionary.
 
-     Budowany TUTAJ, a nie u wołającego, i to jest cały powód istnienia
-     tej sekcji. Pierwsza wersja miała dwie budowy: jedną w przeglądarce
-     z Core.registry, drugą ręcznie w skrypcie sprawdzającym. Dwie budowy
-     rozjeżdżają się przy pierwszej zmianie i wtedy bramka mierzy coś
-     innego niż to, co dostaje uczeń — czyli zieleń bez pokrycia.
+     Built HERE and not at the caller, and that is the whole reason this
+     section exists. The first version had two builds: one in the browser
+     from Core.registry, the other by hand in the checking script. Two
+     builds drift apart at the first change, and then the gate measures
+     something other than what the student gets — that is, green with no
+     coverage.
      -------------------------------------------------------- */
   var slownik = null;
   var znane = null;
 
-  /* Forma bez akcentu NIE staje się osobnym hasłem, tylko wskazuje na
-     kanoniczne. Pierwsza wersja dopisywała ją do słownika obok — i wtedy
-     dotknięcie „pesca" rozstrzygało się na „pesca", bo forma z tekstu jest
-     pierwszym kandydatem. Karta pokazywała wyraz bez akcentu, bez glosy i
-     bez nagrania, czyli dokładnie to, co ten alias miał naprawić. */
+  /* An unaccented form does NOT become an entry of its own, it points at
+     the canonical one. The first version added it to the dictionary
+     alongside — and then tapping "pesca" resolved to "pesca", because the
+     form from the text is the first candidate. The card showed a word with
+     no accent, no gloss and no recording, that is exactly what this alias
+     was meant to fix. */
   var aliasy = {};
 
   function dodajDoSlownika(zbior, s) {
@@ -140,15 +142,15 @@
     if (!w) return;
     zbior[w] = true;
     if (M.bezAkcentow(w) !== w) aliasy[M.bezAkcentow(w)] = w;
-    /* Hasło wielowyrazowe wnosi też swoje słowa: „di solito" sprawia,
-       że „solito" przestaje być ciszą.
+    /* A multi-word entry also contributes its words: "di solito" makes
+       "solito" stop being silence.
 
-       Ale NIE wnosi posiłkowników ani wyrazów funkcyjnych. Leksykon ma
-       hasło „era tutto buonissimo", więc „era" stawało się przez nie
-       osobnym hasłem, a karta na dotknięcie „era" pokazywała tłumaczenie
-       CAŁEGO zdania: „wszystko było wyśmienite". Formy „essere" i „avere"
-       mają swoje znaczenie z odmiany tych czasowników, nie ze zdania, w
-       którym akurat stoją. */
+       But it does NOT contribute auxiliaries or function words. The lexicon
+       has the entry "era tutto buonissimo", so "era" was becoming an entry
+       of its own through it, and the card for a tap on "era" showed the
+       translation of the WHOLE sentence: "everything was delicious". The
+       forms of "essere" and "avere" get their meaning from the conjugation
+       of those verbs, not from the sentence they happen to stand in. */
     if (w.indexOf(" ") >= 0) {
       w.split(/\s+/).forEach(function (x) {
         if (x.length <= 1) return;
@@ -160,9 +162,10 @@
   }
 
   /**
-   * Zbiera włoskie hasła kursu: leksykon lekcji plus słowa czytanek.
+   * Collects the Italian entries of the course: the lesson lexicon plus the
+   * words of the readings.
    *
-   * @param {Array} poziomy  Core.registry.levels albo równoważne
+   * @param {Array} poziomy  Core.registry.levels or an equivalent
    * @param {Array} czytanki window.READINGS
    */
   function zbudujSlownik(poziomy, czytanki) {
@@ -177,9 +180,9 @@
     });
     (czytanki || []).forEach(function (r) {
       (r.glossIt || []).forEach(function (w) { dodajDoSlownika(zbior, w); });
-      /* lexIt: słowa, które lookup ma umieć objaśnić, ale których NIE
-         pokazujemy w panelu trudnych słów. Panel jest listą wybraną przez
-         autora; trzydzieści pozycji pod tekstem A1 przestaje być wyborem. */
+      /* lexIt: words the lookup must be able to explain but which we do NOT
+         show in the hard-word panel. The panel is a list chosen by the
+         author; thirty items under an A1 text stops being a choice. */
       (r.lexIt || []).forEach(function (w) { dodajDoSlownika(zbior, w); });
     });
     return zbior;
@@ -199,26 +202,26 @@
       Object.prototype.hasOwnProperty.call(aliasy, haslo);
   }
 
-  /** Hasło kanoniczne: „pesca" z tekstu wskazuje na słownikowe „pèsca". */
+  /** The canonical entry: "pesca" from a text points at the dictionary "pèsca". */
   function kanoniczne(haslo) {
     if (!znane) slownikKursu();
     return aliasy[haslo] || haslo;
   }
 
-  /** Unieważnia słownik i indeks: kurs dociąga poziomy leniwie. */
+  /** Invalidates the dictionary and the index: the course loads levels lazily. */
   function odswiez() { slownik = null; indeks = null; }
 
   /**
-   * Podstawia słownik rozstrzygający.
+   * Substitutes the deciding dictionary.
    * @param {function(string):boolean} fn
    */
   function uzyjSlownika(fn) { znane = fn; }
 
   /**
-   * Dokłada bezokoliczniki do odmiany i unieważnia indeks.
+   * Adds infinitives to be conjugated and invalidates the index.
    *
-   * Wołane przez bramkę i testy, które nie mają Core. W przeglądarce
-   * niepotrzebne: tam źródłem jest słownik kursu.
+   * Called by the gate and by tests that have no Core. Unnecessary in the
+   * browser: there the source is the course dictionary.
    */
   function dodajCzasowniki(lista) {
     (lista || []).forEach(function (w) {
@@ -228,9 +231,9 @@
   }
 
   /**
-   * Wszystko, czym to słowo MOŻE być — bez pytania słownika.
-   * Wystawione osobno, bo widok „nie znam tego słowa" pokazuje uczniowi
-   * formę podstawową, nawet gdy kursu jej nie uczy.
+   * Everything this word MIGHT be — without asking the dictionary.
+   * Exposed separately, because the "I do not know this word" view shows
+   * the student a base form even when the course does not teach it.
    */
   function kandydaci(slowo) {
     var w = String(slowo).toLowerCase().replace(/[’']/g, "'");
@@ -248,10 +251,10 @@
   }
 
   /**
-   * Hasła, które kurs umie objaśnić dla tego słowa. Puste = cisza.
+   * The entries the course can explain for this word. Empty = silence.
    *
-   * Wyraz funkcyjny zwraca sam siebie: nie ma go w słowniku kursu jako
-   * hasła, ale dotknięcie „dello" ma coś dać, a nie nic.
+   * A function word returns itself: it is not in the course dictionary as
+   * an entry, but tapping "dello" must give something rather than nothing.
    */
   function resolve(slowo) {
     var w = String(slowo).toLowerCase().replace(/[’']/g, "'");
@@ -265,11 +268,12 @@
   }
 
   /**
-   * Bezokolicznik, jeśli ta forma jest formą czasownika. Inaczej "".
+   * The infinitive, if this form is a verb form. Otherwise "".
    *
-   * Wystawiony osobno, bo to jedyny kandydat, któremu można ufać bez
-   * słownika: pochodzi z koniugatora, a nie z reguł zgadujących liczbę
-   * mnogą. Widok „Pokrycie" wybiera po nim hasło do pokazania.
+   * Exposed separately, because it is the only candidate that can be
+   * trusted without the dictionary: it comes from the conjugator and not
+   * from rules guessing plurals. The "Coverage" view picks the entry to
+   * show by it.
    */
   function lemat(slowo) {
     var w = String(slowo).toLowerCase().replace(/[’']/g, "'");
@@ -286,7 +290,7 @@
     zbudujSlownik: zbudujSlownik,
     odswiez: odswiez,
     funkcyjne: M.funkcyjny,
-    /** Tylko do pomiaru: ile form zna indeks i ile trwało jego zbudowanie. */
+    /** For measurement only: how many forms the index knows and how long it took to build. */
     rozmiarIndeksu: function () { return Object.keys(zbuduj()).length; }
   };
 

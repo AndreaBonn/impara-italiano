@@ -1,16 +1,17 @@
 /* ============================================================
-   exercises-voice.js — typy z głosem: dyktando, wymowa, rozmowa z wyborem kwestii.
+   exercises-voice.js — the types with voice: dictation, pronunciation, a
+   dialogue where you pick your line.
 
-   Wydzielone z exercises.js, w którym czternaście typów leżało w jednym
-   pliku na 610 linii. Podział idzie po tym, CO ROBI UCZEŃ, bo to jest oś,
-   na której te typy naprawdę się różnią: wybór z listy sprawdza się
-   porównaniem indeksu, wpisana odpowiedź przechodzi przez checkOpen z
-   tolerancją literówki, a głos wymaga nagrania i progu podobieństwa.
+   Split out of exercises.js, where fourteen types sat in a single 610-line
+   file. The split follows WHAT THE STUDENT DOES, because that is the axis
+   on which these types really differ: a choice from a list is checked by
+   comparing an index, a typed answer goes through checkOpen with typo
+   tolerance, and the voice needs a recording and a similarity threshold.
 
-   Kontrakt bez zmian: builder oddaje {html, wire(root, onDone)}, a
-   `onDone(ok)` woła się DOKŁADNIE RAZ. Wspólne kawałki (nagłówek, przycisk
-   sprawdzania, zakończenie) przychodzą z `Ex.kit`, dyspozytor zostaje w
-   exercises.js. Ładuje się PO nim, bo `Ex.register` powstaje tam.
+   The contract is unchanged: a builder returns {html, wire(root, onDone)},
+   and `onDone(ok)` is called EXACTLY ONCE. The shared pieces (header,
+   check button, ending) come from `Ex.kit`, the dispatcher stays in
+   exercises.js. This loads AFTER it, because `Ex.register` is created there.
    ============================================================ */
 (function () {
   "use strict";
@@ -24,7 +25,7 @@
   var checkBtn = kit.checkBtn;
   var finish = kit.finish;
 
-  /* ═══════════════ LISTEN (dyktando) ═══════════════ */
+  /* ═══════════════ LISTEN (dictation) ═══════════════ */
   function buildListen(ex, idx) {
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + t("ex.listen.prompt") + "</p>" +
@@ -50,7 +51,7 @@
     return { html: html, wire: wire };
   }
 
-  /* ═══════════════ SPEAK (wymowa) ═══════════════ */
+  /* ═══════════════ SPEAK (pronunciation) ═══════════════ */
   function buildSpeak(ex, idx) {
     var supported = Audio2.sttSupported;
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
@@ -109,9 +110,9 @@
     return { html: html, wire: wire };
   }
 
-  /* ═══════════════ DIALOGUE (słuchasz i odpowiadasz) ═══════════════ */
+  /* ═══════════════ DIALOGUE (you listen and answer) ═══════════════ */
   function buildDialogue(ex, idx) {
-    // ex.lines: [{sp:"A"|"TY", it, pl, choices?:[...], a?:int}]
+    // ex.lines: [{sp:"A"|"TY", it, pl, choices?:[...], a?:int}]  ("TY" = the student's turn)
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + esc(ex.q || t("ex.dialogue.prompt")) + "</p>" +
       (ex.setting ? '<p class="exq__sub">' + esc(ex.setting) + "</p>" : "") +
@@ -148,7 +149,7 @@
           setTimeout(step, line.sp === "TY" ? 200 : 900);
           return;
         }
-        // tura ucznia
+        // the student's turn
         turn.innerHTML = '<p style="font-weight:600;margin-bottom:8px">' +
           esc(t("ex.dialogue.yourTurn", { task: line.tr || t("ex.dialogue.pickAnswer") })) + "</p>" +
           '<div class="opts">' + line.choices.map(function (c, k) {

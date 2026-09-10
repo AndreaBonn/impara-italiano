@@ -1,62 +1,66 @@
 /* ============================================================
-   eslint.config.js — bramka poprawności, nie stylu.
+   eslint.config.js — a gate on correctness, not on style.
 
-   Repozytorium ma cztery rodzaje plików i każdy ma inne zasady gry,
-   więc jedna wspólna konfiguracja zgłaszałaby jako błędy właśnie te
-   rzeczy, na których projekt stoi:
+   The repository has four kinds of file and each plays by different rules,
+   so one shared configuration would report as errors exactly the things the
+   project stands on:
 
-   - assets/js/**  skrypty klasyczne dla przeglądarki. Moduły łączą się
-                   przez globale (`global.Views = Views`), więc bez ich
-                   wypisania `no-undef` zapaliłby się na każdym z nich.
-   - sw.js         guska: ma `self` i `caches`, nie ma `window`.
-   - scripts/**    narzędzia Node, prawdziwe moduły ES.
-   - tests/dom/**  CommonJS Playwrighta, ale wnętrze `page.evaluate`
-                   wykonuje się w przeglądarce, więc globale kursu
-                   muszą tu być widoczne tak samo jak w assets/js.
+   - assets/js/**  classic browser scripts. The modules connect through
+                   globals (`global.Views = Views`), so without listing them
+                   `no-undef` would light up on every one of them.
+   - sw.js         the service worker: it has `self` and `caches`, it has no
+                   `window`.
+   - scripts/**    Node tools, real ES modules.
+   - tests/dom/**  Playwright's CommonJS, but the body of `page.evaluate`
+                   runs in the browser, so the course globals have to be
+                   visible here exactly as in assets/js.
 
-   Reguł stylu NIE ma. Formatowanie tego repozytorium jest spójne bez
-   automatu, a lista zakazów kosmetycznych zamieniłaby bramkę na szum,
-   przez który przestaje się czytać to, co naprawdę psuje kod.
+   There are NO style rules. The formatting of this repository is consistent
+   without an automaton, and a list of cosmetic prohibitions would turn the
+   gate into noise you stop reading, and with it whatever really breaks the
+   code.
 
-   Miara przed decyzją, nie po: `js.configs.recommended` puszczone raz
-   na całości dało 46 zgłoszeń na 86 plików, z czego 43 wynikały z
-   niedopisanych globali. Zestaw jest więc pełny, a nie okrojony —
-   przy tym rachunku nie było powodu go przycinać.
+   Measurement before the decision, not after: `js.configs.recommended` run
+   once over the whole thing gave 46 reports across 86 files, 43 of which came
+   from undeclared globals. The set is therefore complete rather than trimmed
+   — with that tally there was no reason to trim it.
    ============================================================ */
 const { defineConfig } = require("eslint/config");
 const js = require("@eslint/js");
 const globals = require("globals");
 
-/* Globale kursu: każdy moduł wystawia się przez `global.X = X`, więc dla
-   pozostałych plików X jest do czytania, nigdy do przypisania — stąd
-   „readonly". Lista pochodzi z przypisań `global.` w assets/js/**, nie
-   z pamięci. */
+/* The course globals: every module exposes itself through `global.X = X`, so
+   for the remaining files X is there to be read, never assigned — hence
+   "readonly". The list comes from the `global.` assignments in assets/js/**,
+   not from memory. */
 const KURS = [
   "Anki", "App", "Audio2", "Cils", "CilsHtml", "CilsRun", "Consent", "Core", "Drills", "Errors", "Ex",
   "Frequency", "Fsrs", "I18n", "Keys", "Lemma", "Lex", "LINGUAI", "Lookup",
   "Placement", "PWA", "Recorder", "Router", "Search", "Talk", "Train", "Verbs", "Views", "Writing",
-  /* dane kursu: pliki z data/ przypisują je do globalnego zakresu */
+  /* course data: the files in data/ assign these to the global scope */
   "AUDIO_INDEX", "CONVERSATIONS", "GRAMMAR_REF", "PHONETICS", "CILS", "READINGS",
   "INTERFERENCE", "FREQUENCY", "WRITING"
 ].reduce(function (zbior, nazwa) { zbior[nazwa] = "readonly"; return zbior; }, {});
 
-/* Dwa odstępstwa od `no-unused-vars`, oba wynikają z kodu, nie z wygody:
+/* Two departures from `no-unused-vars`, both following from the code rather
+   than from convenience:
 
-   - `catch (e)` bez użycia `e` jest tu poprawny, nie zaniedbany: pominięcie
-     wiązania (`catch {}`) to ES2019, a kurs ma chodzić na przeglądarkach od
-     2020 i jest pisany w ES5.
-   - argument z podkreśleniem (`_ms`) znaczy „musi być w sygnaturze, ale
-     celowo go nie czytam" — tak jest napisana atrapa zegara w
-     tests/unit/_harness.mjs, która udaje `setTimeout(fn, ms)`.
+   - `catch (e)` without using `e` is correct here, not sloppy: omitting the
+     binding (`catch {}`) is ES2019, while the course has to run on browsers
+     from 2020 and is written in ES5.
+   - an argument with an underscore (`_ms`) means "it has to be in the
+     signature, but I deliberately do not read it" — that is how the clock
+     double in tests/unit/_harness.mjs is written, imitating
+     `setTimeout(fn, ms)`.
 
-   Reszta reguły zostaje włączona: nieużywana zmienna to martwy kod. */
+   The rest of the rule stays on: an unused variable is dead code. */
 const NIEUZYWANE = ["error", { caughtErrors: "none", argsIgnorePattern: "^_" }];
 
 module.exports = defineConfig([
   {
     ignores: [
       "node_modules/**",
-      /* treść kursu, nie kod: 104 pliki danych i nagrania */
+      /* course content, not code: 104 data files and the recordings */
       "data/**",
       "audio/**",
       "test-results/**",
@@ -102,8 +106,8 @@ module.exports = defineConfig([
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "commonjs",
-      /* browser OBOK node: ciało `page.evaluate` jedzie do przeglądarki,
-         a odwołuje się do globali kursu dokładnie jak assets/js. */
+      /* browser ALONGSIDE node: the body of `page.evaluate` travels to the
+         browser and refers to the course globals exactly like assets/js. */
       globals: { ...globals.node, ...globals.browser, ...KURS }
     },
     rules: { "no-unused-vars": NIEUZYWANE }

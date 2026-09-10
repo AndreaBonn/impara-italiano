@@ -1,20 +1,22 @@
 /* ============================================================
-   views-guide.js — jak używać kursu.
+   views-guide.js — how to use the course.
 
-   Trasa, nie okno modalne. Powód jest praktyczny, nie estetyczny:
-   okno nie ma adresu, więc nie da się do niego odesłać z ekranu,
-   którego dotyczy („jak działa egzamin →"), a uczeń, który je zamknie,
-   nie ma jak do niego wrócić inaczej niż przez ten sam przycisk.
-   Trasa ma adres, siedzi w PRECACHE jak reszta i otwiera się na
-   wskazanej sekcji: #/guida?s=esame.
+   A route, not a modal dialog. The reason is practical, not aesthetic: a
+   dialog has no address, so you cannot link into it from the screen it is
+   about ("how the exam works ->"), and a student who closes it has no way
+   back other than the same button. A route has an address, sits in
+   PRECACHE like everything else and opens at a given section:
+   #/guida?s=esame.
 
-   Nazwy ekranów NIE są tu pisane od nowa: idą z kluczy `nav.*`,
-   `sound.title`, `read.title`, `write.title` i `search.title`, czyli
-   z tych samych napisów, które uczeń widzi w pasku. Napisana osobno
-   nazwa rozjechałaby się z paskiem przy pierwszej zmianie i nikt by
-   tego nie zauważył — a to jest strona, która ma mówić, gdzie co jest.
+   The screen names are NOT rewritten here: they come from the `nav.*`,
+   `sound.title`, `read.title`, `write.title` and `search.title` keys, that
+   is from the same strings the student sees in the rail. A separately
+   written name would drift away from the rail at the first change and
+   nobody would notice — and this is the page whose job is to say where
+   things are.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function () {
   "use strict";
@@ -25,8 +27,8 @@
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
 
-  /* Sekcje w kolejności czytania: od „nie wiem, co kliknąć" do rzeczy,
-     o które uczeń zapyta dopiero po miesiącu (kopia zapasowa). */
+  /* The sections in reading order: from "I do not know what to click" to
+     the things a student only asks about after a month (the backup). */
   var SEKCJE = [
     { id: "inizio", akapity: 2, doTestu: true },
     { id: "ordine", akapity: 2 },
@@ -39,9 +41,10 @@
     { id: "bloccato", akapity: 2 }
   ];
 
-  /* Mapa kursu: trasa, klucz nazwy (ten sam, co w pasku) i opis.
-     Kolejność jak w pasku, na końcu cztery ekrany, które w pasku nie
-     stoją — bo właśnie ich uczeń sam nie znajdzie. */
+  /* The course map: the route, the name key (the same as in the rail) and a
+     description. The order follows the rail, with four screens at the end
+     that are not in the rail — because those are exactly the ones the
+     student will not find on their own. */
   var EKRANY = [
     ["oggi", "nav.today"], ["percorso", "nav.path"], ["ripasso", "nav.review"],
     ["allenamento", "nav.train"], ["conversazione", "nav.talk"], ["grammatica", "nav.grammar"],
@@ -96,27 +99,29 @@
     });
     el().querySelector(".js-place").addEventListener("click", function () { App.go("piazzamento"); });
 
-    /* Wejście z adresem sekcji (#/guida?s=esame) ustawia fokus samo, więc
-       podnosi `keepFocus` — inaczej router zaraz po renderowaniu przeniósłby
-       go na kontener treści i czytnik ekranu zaczynałby od góry strony,
-       czyli od tego, przed czym link miał go uchronić.
+    /* Arriving with a section address (#/guida?s=esame) sets the focus
+       itself, so it raises `keepFocus` — otherwise the router would move it
+       to the content container right after rendering and a screen reader
+       would start from the top of the page, that is from the very thing the
+       link was meant to spare it.
 
-       Flagę podnosi DOPIERO trafienie w sekcję. Adres z nieistniejącą nazwą
-       (stara zakładka, sekcja przemianowana) nie ustawia fokusu nigdzie, więc
-       podniesiona wcześniej flaga odbierałaby go także routerowi i czytnik
-       zostawałby tam, gdzie był przed przejściem — dokładnie ta awaria,
-       przed którą ten kod miał chronić, tylko po cichu. */
+       The flag is raised ONLY once a section is actually hit. An address
+       with a name that does not exist (an old bookmark, a renamed section)
+       sets the focus nowhere, so a flag raised earlier would take it away
+       from the router too and the reader would stay where it was before the
+       move — exactly the failure this code was meant to prevent, only
+       silently. */
     if (params && params.s && doSekcji(params.s)) Views.keepFocus = true;
   };
 
   /**
-   * Przewinięcie do sekcji, bez ruszania adresu.
+   * Scrolling to a section, without touching the address.
    *
-   * Fokus idzie razem z przewinięciem: sam scroll przesuwa obraz, ale
-   * czytnik ekranu zostaje tam, gdzie był, więc kliknięcie w spisie
-   * treści nie robiłoby dla niego zupełnie nic.
+   * The focus travels with the scroll: scrolling alone moves the picture,
+   * but a screen reader stays where it was, so a click in the table of
+   * contents would do absolutely nothing for it.
    *
-   * Oddaje, czy sekcja się znalazła — na tym opiera się `keepFocus` wyżej.
+   * Returns whether the section was found — `keepFocus` above rests on that.
    */
   function doSekcji(id) {
     var cel = el().querySelector("#g-" + CSS.escape(id));

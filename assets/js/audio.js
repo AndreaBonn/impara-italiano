@@ -1,30 +1,31 @@
 /* ============================================================
-   audio.js — odtwarzanie mowy i rozpoznawanie mowy
+   audio.js — speech playback and speech recognition
 
-   Dwa źródła głosu, w tej kolejności:
+   Two sources of voice, in this order:
 
-   1. NAGRANIA NEURALNE (domyślne). Wszystkie włoskie zdania kursu są
-      wcześniej zsyntezowane głosami Edge TTS (Isabella — głos główny,
-      Giuseppe — rozmówca w dialogach) i leżą w audio/<xx>/<hash>.mp3.
-      Który plik dla którego zdania — o tym mówi recordings.js.
-   2. SYNTEZA SYSTEMOWA (awaryjnie). Web Speech API — dla tekstów spoza
-      kursu (odmiana czasowników, wyszukiwanie w słowniku) oraz gdy
-      nagrania nie zostały wygenerowane.
+   1. NEURAL RECORDINGS (the default). Every Italian sentence in the course
+      is synthesised in advance with Edge TTS voices (Isabella — the main
+      voice, Giuseppe — the other speaker in dialogues) and lives in
+      audio/<xx>/<hash>.mp3. Which file belongs to which sentence is
+      recordings.js's job.
+   2. SYSTEM SYNTHESIS (as a fallback). The Web Speech API — for texts from
+      outside the course (verb conjugation, dictionary lookup) and whenever
+      the recordings have not been generated.
 
-   Powód takiej kolejności: na Linuksie Web Speech API sięga zwykle tylko
-   po espeak-ng, czyli syntezę formantową brzmiącą mechanicznie. Nagrania
-   rozwiązują to bez backendu — plik statyczny działa tak samo z file://,
-   z serwera lokalnego i z GitHub Pages.
+   The reason for that order: on Linux the Web Speech API usually reaches
+   for espeak-ng alone, that is formant synthesis that sounds mechanical.
+   Recordings solve this without a backend — a static file works the same
+   from file://, from a local server and from GitHub Pages.
 
-   Rozpoznawanie mowy: SpeechRecognition (Chrome / Edge / Safari 16+).
-   Gdy go brak, ćwiczenia mówione przechodzą w tryb pisany.
+   Speech recognition: SpeechRecognition (Chrome / Edge / Safari 16+).
+   When it is missing, spoken exercises fall back to typing.
 
-   Wymaga recordings.js (indeks nagrań) wczytanego wcześniej.
+   Requires recordings.js (the recording index) loaded earlier.
    ============================================================ */
 (function (global) {
   "use strict";
 
-  /* ─────────────── Synteza systemowa (awaryjna) ─────────────── */
+  /* ─────────────── System synthesis (fallback) ─────────────── */
 
   var synth = global.speechSynthesis || null;
   var voices = [];
@@ -43,7 +44,7 @@
     return voices.filter(function (v) { return /^it(-|_)/i.test(v.lang); });
   }
 
-  /** Ranking głosów systemowych: neuronowe przed formantowymi. */
+  /** Ranking of system voices: neural ahead of formant. */
   var GOOD = /(natural|neural|google|siri|premium|enhanced|wavenet)/i;
   var POOR = /(espeak|festival|pico|flite|robot)/i;
 
@@ -55,11 +56,11 @@
     return its[0] || null;
   }
 
-  /* ─────────────── Nagrania neuralne ─────────────── */
+  /* ─────────────── Neural recordings ─────────────── */
 
-  /* Indeks nagrań (skrót treści, wyszukiwanie, adres pliku) siedzi w
-     recordings.js: jest czystą funkcją napisu i ma bliźniaka w Pythonie,
-     więc daje się przetestować bez ani jednej atrapy przeglądarki. */
+  /* The recording index (content hash, lookup, file address) sits in
+     recordings.js: it is a pure function of a string and has a twin in
+     Python, so it can be tested without a single browser double. */
   var Rec = global.Recordings;
   var norm = Rec.norm;
 
@@ -74,17 +75,17 @@
 
   var naturalAvailable = Rec.available;
 
-  /* ─────────────── Wspólne API ─────────────── */
+  /* ─────────────── Shared API ─────────────── */
 
   var currentToken = 0;
 
   function stop() {
     currentToken++;
-    if (synth) { try { synth.cancel(); } catch (e) { /* brak wsparcia */ } }
-    if (player) { try { player.pause(); player.currentTime = 0; } catch (e) { /* pusty player */ } }
+    if (synth) { try { synth.cancel(); } catch (e) { /* not supported */ } }
+    if (player) { try { player.pause(); player.currentTime = 0; } catch (e) { /* empty player */ } }
   }
 
-  /* Ostrzeżenia pokazujemy raz na sesję: przy liście słówek poleciałyby przy każdym haśle. */
+  /* Warnings are shown once per session: on a word list they would fire on every entry. */
   var warnedNoVoice = false;
   var warnedRecording = false;
 
@@ -94,14 +95,15 @@
     var v = pickVoice();
     if (!v) {
       /*
-       * Bez głosu it-* przeglądarka NIE honoruje u.lang: bierze głos domyślny
-       * i czyta włoskie zdanie po angielsku. Dla kursu wymowy to gorsze niż cisza,
-       * bo uczeń powtarza akcent, którego się właśnie uczy nie mieć.
-       * Ta sama decyzja co przy blokadzie autoodtwarzania niżej.
+       * With no it-* voice the browser does NOT honour u.lang: it takes the
+       * default voice and reads the Italian sentence in English. For a
+       * pronunciation course that is worse than silence, because the student
+       * repeats the very accent they are learning not to have.
+       * The same decision as with the autoplay block below.
        */
       if (!warnedNoVoice) {
         warnedNoVoice = true;
-        try { Core.toast(I18n.t("audio.noItalianVoice")); } catch (e) { /* toast opcjonalny */ }
+        try { Core.toast(I18n.t("audio.noItalianVoice")); } catch (e) { /* toast optional */ }
       }
       opts.onend && opts.onend();
       return false;
@@ -126,7 +128,7 @@
   }
 
   /**
-   * Wypowiada tekst po włosku.
+   * Speaks a text in Italian.
    * @param {string} text
    * @param {{rate?:number, onend?:Function, onstart?:Function, forceSystem?:boolean}} opts
    */
@@ -147,21 +149,23 @@
         el.src = Rec.url(digest);
         el.playbackRate = Math.min(2, Math.max(0.5, opts.rate || Core.state.settings.rate || 1));
         /*
-         * Brakujący plik zgłasza się DWA razy: przez el.onerror i przez odrzucenie
-         * obietnicy z play(). Bez tej flagi zdanie poleciałoby dwa razy.
+         * A missing file reports itself TWICE: through el.onerror and through
+         * the rejection of the promise from play(). Without this flag the
+         * sentence would play twice.
          */
         var failed = false;
         function onLoadFailure() {
           if (token !== currentToken || failed) return;
           failed = true;
           /*
-           * Nagranie jest w indeksie, ale plik się nie wczytał: brakuje katalogu
-           * audio/, zła ścieżka albo blokada sieci. To inna awaria niż brak głosu
-           * systemowego, więc mówimy o niej osobno — inaczej diagnoza idzie w złą stronę.
+           * The recording is in the index but the file did not load: the
+           * audio/ directory is missing, the path is wrong, or the network is
+           * blocked. That is a different failure from a missing system voice,
+           * so we say so separately — otherwise the diagnosis goes the wrong way.
            */
           if (!warnedRecording) {
             warnedRecording = true;
-            try { Core.toast(I18n.t("audio.recordingFailed")); } catch (e) { /* toast opcjonalny */ }
+            try { Core.toast(I18n.t("audio.recordingFailed")); } catch (e) { /* toast optional */ }
           }
           speakSystem(clean, opts, token);
         }
@@ -172,9 +176,9 @@
           p.then(function () { if (token === currentToken) opts.onstart && opts.onstart(); })
            .catch(function (err) {
              if (token !== currentToken) return;
-             // Blokada autoodtwarzania (brak wcześniejszego kliknięcia) to nie awaria pliku:
-             // schodzenie tu na syntezę systemową podmieniłoby lektora na głos robotyczny.
-             // Zostajemy w ciszy — użytkownik ma przycisk odtwarzania, a jego klik jest gestem.
+             // An autoplay block (no prior click) is not a file failure:
+             // falling back to system synthesis here would swap the narrator for a robotic voice.
+             // We stay silent — the user has a play button, and their click is the gesture.
              if (err && err.name === "NotAllowedError") { opts.onend && opts.onend(); return; }
              onLoadFailure();
            });
@@ -187,7 +191,7 @@
     return speakSystem(clean, opts, token);
   }
 
-  /** Odtwarza listę linii po kolei (dialog, lista słówek). */
+  /** Plays a list of lines one after another (a dialogue, a word list). */
   function speakSequence(lines, opts) {
     opts = opts || {};
     var i = 0, cancelled = false;
@@ -205,29 +209,29 @@
     return { cancel: function () { cancelled = true; stop(); } };
   }
 
-  /** Czy dany tekst ma nagranie neuralne (do oznaczeń w interfejsie). */
+  /** Whether a given text has a neural recording (for markers in the interface). */
   function hasNatural(text) {
     return Rec.has(text);
   }
 
-  /* ─────────────── Rozpoznawanie mowy ─────────────── */
+  /* ─────────────── Speech recognition ─────────────── */
 
   var SR = global.SpeechRecognition || global.webkitSpeechRecognition || null;
   var sttSupported = !!SR;
   var activeRec = null;
 
   /**
-   * Rozpoznawanie mowy — z bramką zgody PRZED pierwszym wysłaniem głosu.
+   * Speech recognition — with a consent gate BEFORE the voice is first sent.
    *
-   * To jedyne miejsce w kursie, z którego coś opuszcza przeglądarkę ucznia:
-   * przeglądarki, które udostępniają SpeechRecognition, wysyłają nagranie
-   * na serwer dostawcy. Bramka stoi tutaj, a nie w trzech widokach, które
-   * to wołają, bo obrona rozłożona po miejscach wywołania działa do
-   * pierwszego nowego miejsca wywołania.
+   * This is the only place in the course from which anything leaves the
+   * student's browser: browsers that expose SpeechRecognition send the
+   * recording to the vendor's server. The gate sits here, and not in the
+   * three views that call it, because a defence spread over call sites works
+   * until the first new call site.
    *
-   * Bez zgody zachowujemy się dokładnie jak przy braku obsługi: widoki już
-   * umieją zamienić wtedy ćwiczenie na pisane, więc nie trzeba dokładać
-   * żadnej nowej ścieżki, a odmowa nie kończy się pustym ekranem.
+   * Without consent we behave exactly as we do without support: the views
+   * already know how to turn the exercise into a written one then, so no new
+   * path has to be added and a refusal does not end in an empty screen.
    */
   function listen(handlers) {
     handlers = handlers || {};
@@ -242,7 +246,7 @@
       );
       return pusty;
     }
-    try { if (activeRec) activeRec.abort(); } catch (e) { /* nic aktywnego */ }
+    try { if (activeRec) activeRec.abort(); } catch (e) { /* nothing active */ }
 
     var rec = new SR();
     rec.lang = "it-IT";
@@ -277,10 +281,10 @@
 
     activeRec = rec;
     try { rec.start(); } catch (e) { handlers.onerror && handlers.onerror("start-failed"); }
-    return { abort: function () { try { rec.abort(); } catch (e) { /* już zamknięty */ } activeRec = null; } };
+    return { abort: function () { try { rec.abort(); } catch (e) { /* already closed */ } activeRec = null; } };
   }
 
-  /** Ocena wypowiedzi wobec wzorca: 0..100, po najlepszej z alternatyw. */
+  /** Scores an utterance against a target: 0..100, by the best alternative. */
   function scoreSpeech(heard, alternatives, target) {
     var pool = [heard].concat(alternatives || []).filter(Boolean);
     var best = 0;
@@ -291,10 +295,11 @@
     return Math.round(best * 100);
   }
 
-  /* Trzy pola niżej to przepustka do Recordings pod nazwami, którymi mówi
-     interfejs („czy to zdanie ma nagranie", „ile ich jest"). Skrótu i adresu
-     pliku Audio2 już nie wystawia: kto ich potrzebuje, pyta wprost Recordings,
-     bo dwie nazwy tej samej rzeczy rozjeżdżają się przy pierwszej zmianie. */
+  /* The three fields below are a pass-through to Recordings under the names
+     the interface speaks in ("does this sentence have a recording", "how many
+     are there"). Audio2 no longer exposes the hash and the file address:
+     whoever needs them asks Recordings directly, because two names for the
+     same thing drift apart at the first change. */
   global.Audio2 = {
     ttsSupported: !!synth,
     sttSupported: sttSupported,

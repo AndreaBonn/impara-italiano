@@ -1,36 +1,35 @@
 /* ============================================================
-   placement.js — od czego zacząć.
+   placement.js — where to start.
 
-   Dorosły, który już liznął włoskiego, nie chce zaczynać od „ciao".
-   Bez tego widoku ma dwie drogi i obie złe: przeklikać sto lekcji
-   albo skoczyć w środek i trafić w lukę, o której nie wie.
+   An adult who has already had a taste of Italian does not want to start
+   from "ciao". Without this screen they have two roads and both are bad:
+   click through a hundred lessons, or jump into the middle and land in a
+   gap they do not know about.
 
-   Metoda: wyszukiwanie binarne po poziomach, nie test od A1 w górę.
-   Sześć poziomów mieści się w trzech rundach, więc ~18 zadań zamiast
-   stu — a dłuższy test i tak nie byłby dokładniejszy, tylko rzadziej
-   dokończony.
+   The method: a binary search over the levels, not a test from A1 upwards.
+   Six levels fit into three rounds, so ~18 tasks instead of a hundred — and
+   a longer test would not be more accurate anyway, only finished less often.
 
-   Zadania pochodzą ze sprawdzianów jednostek, które już istnieją:
-   ani jednego nowego zdania i ani jednego nowego nagrania. Pytania
-   pisane osobno pod test poziomujący rozjechałyby się z kursem przy
-   pierwszej poprawce lekcji.
+   The tasks come from the unit tests that already exist: not one new
+   sentence and not one new recording. Questions written separately for the
+   placement test would drift away from the course at the first lesson fix.
 
-   Skrypt klasyczny. Wymaga core.js.
+   Classic script. Requires core.js.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var Placement = {};
 
-  /** Ile zadań na rundę i ile trzeba trafić, żeby poziom uznać za zdany. */
+  /** How many tasks per round and how many must be right for a level to count as passed. */
   var NA_RUNDE = 6;
   var PROG = 0.7;
 
-  /* Typy, które nadają się na szybki test: bez mikrofonu, bez długich
-     dialogów, rozstrzygalne w kilkanaście sekund. */
+  /* The types suitable for a quick test: no microphone, no long dialogues,
+     decidable in a dozen seconds. */
   var TYPY = ["mcq", "truefalse", "fill", "trans", "cloze", "gender", "conj"];
 
-  /** Zadania ze sprawdzianów danego poziomu, wymieszane deterministycznie. */
+  /** The tasks from a given level's unit tests, shuffled deterministically. */
   function pulaDla(kod, seed) {
     var lv = Core.registry.byCode[kod];
     if (!lv) return [];
@@ -46,32 +45,32 @@
   }
 
   /**
-   * Stan wyszukiwania binarnego po poziomach.
+   * The state of the binary search over the levels.
    *
-   * lo to najwyższy poziom ZDANY, hi to najwyższy jeszcze możliwy.
-   * Test kończy się, gdy przedział się domyka: wtedy dwa sąsiednie
-   * poziomy są rozstrzygnięte i dalsze pytania niczego nie dodadzą.
+   * lo is the highest level PASSED, hi is the highest still possible. The
+   * test ends when the interval closes: two adjacent levels are then
+   * settled and further questions would add nothing.
    */
   function nowyPrzebieg(seed) {
     var kody = Core.registry.levels.map(function (l) { return l.code; });
     return {
       seed: seed,
       kody: kody,
-      lo: -1,                 // nic jeszcze nie zdane
+      lo: -1,                 // nothing passed yet
       hi: kody.length - 1,
       zadane: 0,
       trafione: 0,
-      historia: []            // [{kod, dobre, z}]
+      historia: []            // [{code, right, outOf}]
     };
   }
 
-  /** Który poziom badamy w tej rundzie, albo null gdy koniec. */
+  /** Which level this round probes, or null when it is over. */
   function nastepnyPoziom(p) {
     if (p.lo >= p.hi) return null;
     return p.kody[Math.ceil((p.lo + p.hi) / 2)];
   }
 
-  /** Zapisuje wynik rundy i zawęża przedział. */
+  /** Records a round's result and narrows the interval. */
   function zapiszRunde(p, kod, dobre, z) {
     var i = p.kody.indexOf(kod);
     p.historia.push({ kod: kod, dobre: dobre, z: z });
@@ -82,19 +81,20 @@
     return p;
   }
 
-  /** Poziom, od którego uczeń ma zacząć. */
+  /** The level the student should start from. */
   function wynik(p) {
     var idx = Math.max(p.lo, 0);
     return { code: p.kody[idx], index: idx, asked: p.zadane, hit: p.trafione };
   }
 
   /**
-   * Zapisuje wynik i oznacza jako zaliczone lekcje poziomów NIŻSZYCH.
+   * Stores the result and marks the lessons of the LOWER levels as passed.
    *
-   * Poziom, na który uczeń trafił, zostaje otwarty: test mówi „umiesz
-   * mniej więcej tyle", a nie „przerobiłeś każdą lekcję". Punktów za te
-   * lekcje nie ma i nie wliczają się do statystyki ukończonych — uczeń
-   * ich nie zrobił, a licznik, który twierdzi inaczej, kłamie o nauce.
+   * The level the student landed on stays open: the test says "you know
+   * roughly this much", not "you have done every lesson". There are no
+   * points for those lessons and they do not count towards the finished
+   * statistics — the student did not do them, and a counter claiming
+   * otherwise lies about their learning.
    */
   function zastosuj(p) {
     var w = wynik(p);

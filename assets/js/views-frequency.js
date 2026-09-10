@@ -1,12 +1,12 @@
 /* ============================================================
-   views-frequency.js — widok „Pokrycie".
+   views-frequency.js — the "Coverage" screen.
 
-   Pokazuje dwie liczby i pilnuje, żeby zostały dwiema. Zlanie ich w jeden
-   procent „gotowości" byłoby ładniejsze i kłamliwe: sufit kursu i stan
-   ucznia to różne rzeczy, a odległość między nimi jest informacją dla
-   NAS, nie dla niego.
+   It shows two numbers and makes sure they stay two. Merging them into one
+   "readiness" percentage would be prettier and untruthful: the ceiling of
+   the course and the state of the student are different things, and the
+   distance between them is information for US, not for them.
 
-   Skrypt klasyczny. Wymaga core.js, lemma.js, frequency.js, views.js.
+   Classic script. Requires core.js, lemma.js, frequency.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -51,18 +51,19 @@
         ? '<h2 class="cov__h">' + esc(t("cov.nextUp")) + "</h2>" +
           '<p style="color:var(--ink-soft);font-size:.92rem">' + esc(t("cov.nextUpWhy")) + "</p>" +
           '<div class="stack" id="covList">' + braki.map(function (b) {
-            /* W wierszu stoi HASŁO: to ono trafi na fiszkę i to ono ma
-               nagranie. Napotkane formy idą pod spodem jako kontekst.
-               Pokazywanie formy przy dodawaniu hasła to były dwie różne
-               rzeczy podane jako jedna. */
+            /* The row holds the ENTRY: that is what goes onto the card and
+               that is what has a recording. The forms encountered go
+               underneath as context. Showing the form while adding the entry
+               was two different things presented as one. */
             return '<div class="list-row" data-haslo="' + esc(b.haslo) + '">' +
               '<span class="chip">#' + b.ranga + "</span>" +
               '<span class="list-row__main"><b class="js-w"></b>' +
               (b.formy.length > 1 ? '<span class="js-f"></span>' : "") + "</span>" +
-              /* Głośnik tylko przy nagraniu. Kurs obiecuje lektora; przycisk,
-                 który po cichu schodzi na syntezę systemową, tej obietnicy
-                 nie dotrzymuje, a uczeń nie ma jak zauważyć różnicy między
-                 „nie nagraliśmy tego" a „tak to się wymawia". */
+              /* The speaker only when there is a recording. The course
+                 promises a narrator; a button that quietly falls back to
+                 system synthesis does not keep that promise, and the student
+                 has no way to tell the difference between "we did not record
+                 this" and "this is how it is pronounced". */
               (Audio2.hasNatural(b.haslo)
                 ? '<button type="button" class="say-btn" data-say="' + esc(b.haslo) + '" aria-label="' +
                   esc(t("a11y.listenTo", { what: b.haslo })) + '">🔊</button>'
@@ -76,8 +77,9 @@
         source: F.source, license: F.license, sentences: F.sentences.toLocaleString(I18n.locale())
       })) + "</p>");
 
-    /* Napisy przez textContent: forma pochodzi z danych, ale trzyma się tej
-       samej zasady, co reszta widoku — do DOM wchodzi tekst, nie znaczniki. */
+    /* Strings through textContent: the form comes from the data, but it
+       follows the same rule as the rest of the view — text enters the DOM,
+       not markup. */
     el().querySelectorAll("#covList .list-row").forEach(function (row, i) {
       row.querySelector(".js-w").textContent = row.getAttribute("data-haslo");
       var f = row.querySelector(".js-f");

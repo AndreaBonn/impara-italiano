@@ -1,32 +1,32 @@
 /* ============================================================
-   i18n-merge.js — doklejanie tekstów ucznia do treści kursu.
+   i18n-merge.js — attaching the student's texts to the course content.
 
-   Wyjęte z i18n.js, który sam o sobie mówił „dwie rzeczy": napisy
-   interfejsu (`I18n.t`) i scalanie danych kursu. To drugie jest tutaj.
-   Wspólnego stanu między nimi nie było — każda połowa trzymała własny
-   słownik i własne klucze — więc podział nic nie kosztował poza jednym
-   wpisem w kolejności ładowania.
+   Pulled out of i18n.js, which said of itself that it was "two things":
+   interface strings (`I18n.t`) and merging course data. The second one is
+   here. There was no shared state between them — each half kept its own
+   dictionary and its own keys — so the split cost nothing beyond one more
+   entry in the loading order.
 
-   Dane w `data/core/` są neutralne językowo (struktura, włoski, klucze
-   odpowiedzi), a teksty ucznia leżą w `data/i18n/<lang>/` i doklejają
-   się TU, po id węzła i po indeksie w tablicach.
+   The data in `data/core/` is language-neutral (structure, Italian, answer
+   keys), while the student's texts live in `data/i18n/<lang>/` and are
+   attached HERE, by node id and by index within arrays.
 
-   Scalanie jest idempotentne: pola neutralne nigdy nie są nadpisywane,
-   więc drugi język można nałożyć na te same obiekty bez przeładowania
-   strony. To nie jest wygoda, tylko warunek działania przełącznika
-   języka, który nie przeładowuje kursu.
+   Merging is idempotent: neutral fields are never overwritten, so a second
+   language can be applied on top of the same objects without reloading the
+   page. That is not a convenience but the condition for a language switch
+   that does not reload the course.
 
-   Brak zależności. Skrypt klasyczny (działa z file://).
+   No dependencies. Classic script (works from file://).
    ============================================================ */
 (function (global) {
   "use strict";
 
   var LINGUAI = global.LINGUAI = global.LINGUAI || {};
 
-  /* lang -> klucz („lesson:a1-u01-l1") -> łatka */
+  /* lang -> key ("lesson:a1-u01-l1") -> patch */
   var store = {};
 
-  /** Rejestruje łatki jednego pliku. Wywoływane przez data/i18n/<lang>/*.js */
+  /** Registers the patches of one file. Called by data/i18n/<lang>/*.js */
   function addStrings(lang, map) {
     var bag = store[lang] || (store[lang] = {});
     Object.keys(map).forEach(function (k) { bag[k] = map[k]; });
@@ -39,16 +39,16 @@
 
   function hasLang(lang) { return !!store[lang]; }
 
-  /* ---------------- Prymitywy scalania ---------------- */
+  /* ---------------- Merge primitives ---------------- */
 
-  /** Kopiuje wyłącznie klucze obecne w łatce: nie tworzy pól, których nie było. */
+  /** Copies only the keys present in the patch: it creates no fields that were absent. */
   function copy(target, patch, keys) {
     for (var i = 0; i < keys.length; i++) {
       if (patch[keys[i]] !== undefined) target[keys[i]] = patch[keys[i]];
     }
   }
 
-  /** Dokleja wartość tekstową do elementu tablicy, po indeksie. */
+  /** Attaches a text value to an array element, by index. */
   function byIndex(list, values, field) {
     if (!list || !values) return;
     for (var i = 0; i < list.length; i++) {
@@ -56,7 +56,7 @@
     }
   }
 
-  /** Kopiuje wskazane pola do każdego elementu tablicy, po indeksie. */
+  /** Copies the given fields into every array element, by index. */
   function objByIndex(list, patches, keys) {
     if (!list || !patches) return;
     for (var i = 0; i < list.length; i++) {
@@ -64,7 +64,7 @@
     }
   }
 
-  /* ---------------- Węzły kursu ---------------- */
+  /* ---------------- Course nodes ---------------- */
 
   var EX_KEYS = ["q", "why", "hint", "tr", "setting", "opts"];
 
@@ -112,10 +112,10 @@
     if (!p) return;
     copy(c, p, ["title", "setting", "closing"]);
     objByIndex(c.turns, p.turns, ["tr", "task"]);
-    /* Tura z rozwidleniem ma tłumaczenie NA KAŻDEJ gałęzi, bo każda jest
-       osobną repliką ucznia. Kierunek (`go`) i klucz odpowiedzi zostają
-       w warstwie neutralnej: gdyby wjechały do nakładki, zmiana języka
-       mogłaby przestawić przebieg dialogu. */
+    /* A branching turn has a translation on EVERY branch, because each one
+       is a separate line for the student. The direction (`go`) and the
+       answer key stay in the neutral layer: if they entered the overlay, a
+       change of language could reroute the dialogue. */
     (c.turns || []).forEach(function (tura, n) {
       var pt = p.turns && p.turns[n];
       if (tura.opts && pt && pt.opts) objByIndex(tura.opts, pt.opts, ["tr"]);
@@ -135,10 +135,11 @@
   }
 
   /**
-   * Pary minimalne. W warstwie neutralnej są same wyrazy włoskie; stąd
-   * przychodzą glosy i uwaga kontrastywna, pisana pod konkretny język.
-   * Polak nie słyszy długości spółgłoski, Francuz nie słyszy ruchomego
-   * akcentu — to nie jest ta sama uwaga w dwóch tłumaczeniach.
+   * Minimal pairs. The neutral layer holds the Italian words alone; the
+   * glosses and the contrastive note come from here, written for a specific
+   * language. A Pole does not hear consonant length, a French speaker does
+   * not hear the movable stress — this is not the same note in two
+   * translations.
    */
   function applyPhonetics(lang) {
     (global.PHONETICS || []).forEach(function (zbior) {
@@ -150,8 +151,8 @@
   }
 
   /**
-   * Teksty do czytania. Zdania i pytania są po włosku i zostają w
-   * warstwie neutralnej; stąd przychodzi tytuł i glosy trudnych słów.
+   * Reading texts. The sentences and questions are in Italian and stay in
+   * the neutral layer; the title and the glosses of hard words come from here.
    */
   function applyReadings(lang) {
     (global.READINGS || []).forEach(function (r) {
@@ -159,17 +160,18 @@
       if (!p) return;
       copy(r, p, ["title"]);
       if (p.gloss) r.gloss = p.gloss;
-      /* lex: znaczenia słów, których panel trudnych słów NIE pokazuje.
-         Karmią wyłącznie wyszukiwanie po dotknięciu (lemma.js), więc
-         panel zostaje listą wybraną przez autora, a nie spisem wszystkiego,
-         czego kurs nie uczy. */
+      /* lex: meanings of words the hard-word panel does NOT show. They feed
+         the tap-to-look-up search only (lemma.js), so the panel stays a list
+         chosen by the author rather than an inventory of everything the
+         course does not teach. */
       if (p.lex) r.lex = p.lex;
     });
   }
 
   /**
-   * Zadania pisemne. Polecenie i lista kontrolna są w nakładce, bo je
-   * czyta uczeń; przyjmowane wersje włoskie zostają w warstwie neutralnej.
+   * Writing tasks. The brief and the checklist are in the overlay, because
+   * the student reads them; the accepted Italian versions stay in the
+   * neutral layer.
    */
   function applyWriting(lang) {
     (global.WRITING || []).forEach(function (w) {
@@ -181,14 +183,15 @@
   }
 
   /**
-   * Fałszywi przyjaciele: JEDYNA kategoria, w której nakładka bywa krótsza
-   * od listy i ma prawo taka być.
+   * False friends: the ONLY category where the overlay is sometimes shorter
+   * than the list and has every right to be.
    *
-   * Wpis dostaje wyjaśnienie tylko wtedy, gdy jego `for` zawiera ten język.
-   * Pozostałym CZYŚCIMY pola, zamiast zostawiać je z poprzedniego języka:
-   * po przełączeniu z polskiego na hiszpański „la targa" nie ma pułapki i
-   * nie może dalej nosić polskiego wyjaśnienia. Nakładka jest idempotentna,
-   * więc bez tego czyszczenia stary tekst zostawał na ekranie.
+   * An entry gets an explanation only when its `for` contains that language.
+   * For the others we CLEAR the fields instead of leaving them from the
+   * previous language: after switching from Polish to Spanish "la targa" is
+   * no longer a trap and must not keep carrying the Polish explanation. The
+   * overlay is idempotent, so without this clearing the old text stayed on
+   * screen.
    */
   function applyInterference(lang) {
     (global.INTERFERENCE || []).forEach(function (v) {
@@ -199,8 +202,8 @@
   }
 
   /**
-   * Nakłada teksty wybranego języka na wszystko, co jest już wczytane.
-   * Bezpieczne do wielokrotnego wywołania i do zmiany języka w locie.
+   * Applies the texts of the chosen language onto everything already loaded.
+   * Safe to call repeatedly and to switch languages on the fly.
    */
   function applyStrings(lang) {
     var reg = global.Core && global.Core.registry;

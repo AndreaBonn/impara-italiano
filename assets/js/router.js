@@ -1,39 +1,41 @@
 /* ============================================================
-   router.js — adres w hashu, wybór widoku, sprzątanie po poprzednim.
+   router.js — the address in the hash, choosing the view, cleaning up
+   after the previous one.
 
-   Wyjęte z app.js, który był czterema rzeczami naraz: routerem, powłoką
-   (pasek boczny, motyw), przełącznikiem języka i startem aplikacji.
-   Router jest jedyną z nich, która nie dotyka konkretnych elementów
-   strony — czyta hash, woła widok i pilnuje dwóch kontraktów — więc
-   jako jedyna daje się sprawdzić bez przeglądarki.
+   Pulled out of app.js, which was four things at once: the router, the
+   shell (side rail, theme), the language switcher and the application
+   start. The router is the only one of them that does not touch specific
+   page elements — it reads the hash, calls a view and enforces two
+   contracts — so it is the only one that can be checked without a browser.
 
-   Hash, nie History API: kurs ma działać także z file://, gdzie
-   pushState nie ma dokąd pisać.
+   The hash, not the History API: the course must also work from file://,
+   where pushState has nowhere to write.
 
-   Dwa kontrakty, oba jednorazowe i oba wołane WYŁĄCZNIE stąd:
+   Two contracts, both one-shot and both called EXCLUSIVELY from here:
 
-   - `Views.onLeave` — widok, który zostawił coś chodzącego (odliczanie
-     egzaminu, sekwencja dialogu), zapisuje tu sprzątanie. Router woła je
-     przy następnej zmianie trasy i od razu kasuje, więc nikt nie musi
-     pamiętać o wyrejestrowaniu. Bez tego zegar symulacji egzaminu żył
-     dalej i po pół godzinie domykał sekcję na cudzym ekranie.
-   - `Views.keepFocus` — domyślnie po zmianie trasy fokus ląduje na
-     kontenerze treści, żeby czytnik ekranu przeczytał stronę od początku.
-     Widok, który sam ustawia fokus (wyszukiwarka), podnosi tę flagę.
+   - `Views.onLeave` — a view that left something running (an exam
+     countdown, a dialogue sequence) registers its cleanup here. The router
+     calls it at the next route change and clears it immediately, so nobody
+     has to remember to unregister. Without this the exam simulation clock
+     kept running and half an hour later closed a section on somebody
+     else's screen.
+   - `Views.keepFocus` — by default, after a route change the focus lands
+     on the content container, so a screen reader reads the page from the
+     top. A view that sets the focus itself (the search) raises this flag.
 
-   `Router.onRender` to haczyk dla powłoki: app.js podpina tu zaznaczenie
-   pozycji w pasku i zamknięcie szuflady. Router nie zna tych elementów
-   i nie ma powodu ich znać.
+   `Router.onRender` is a hook for the shell: app.js attaches the rail
+   highlighting and the drawer closing there. The router does not know
+   those elements and has no reason to.
 
-   Skrypt klasyczny. Wymaga Views i Audio2 w chwili renderowania, nie
-   w chwili wczytania.
+   Classic script. Requires Views and Audio2 at render time, not at load
+   time.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var current = { route: "percorso", params: {} };
 
-  /** Trasa, na którą wraca kurs, gdy adres jest pusty albo nieczytelny. */
+  /** The route the course falls back to when the address is empty or unreadable. */
   var DOMYSLNA = "percorso";
 
   function encode(route, params) {
@@ -44,9 +46,10 @@
   }
 
   /**
-   * Adres → trasa i parametry. Nazwa trasy to same małe litery: wszystko,
-   * co się w to nie mieści (pusty hash, adres z innej strony, ręczna
-   * literówka), wraca ścieżką nauki zamiast pustym ekranem.
+   * Address -> route and parameters. A route name is lower-case letters
+   * only: anything that does not fit (an empty hash, an address from
+   * another site, a hand-made typo) comes back as the learning path rather
+   * than an empty screen.
    */
   function decode(hash) {
     var m = /^#\/([a-z]+)(?:\?(.*))?$/.exec(hash || "");
@@ -60,10 +63,11 @@
   }
 
   /**
-   * Rysuje trasę. Nieznana trasa to nie jest awaria: kurs pokazuje ścieżkę
-   * nauki. Zapomniany `<script>` widoku wygląda przez to jak działający
-   * kurs z jedną pozycją menu prowadzącą gdzie indziej — dlatego pilnuje
-   * tego osobny test (tests/dom/routes.spec.js), a nie sam router.
+   * Renders a route. An unknown route is not a failure: the course shows
+   * the learning path. A forgotten view `<script>` therefore looks like a
+   * working course with one menu entry leading somewhere else — which is
+   * why a separate test guards it (tests/dom/routes.spec.js), and not the
+   * router itself.
    */
   function render(route, params) {
     if (global.Audio2) global.Audio2.stop();
@@ -90,8 +94,9 @@
   }
 
   /**
-   * Przejście na trasę. Gdy adres się nie zmienia, przeglądarka nie zgłosi
-   * `hashchange` i widok nie odświeżyłby się wcale — stąd rysowanie wprost.
+   * Going to a route. When the address does not change the browser fires no
+   * `hashchange` and the view would not refresh at all — hence the direct
+   * render.
    */
   function go(route, params) {
     var h = encode(route, params);
@@ -110,9 +115,9 @@
     go: go,
     render: render,
     onHashChange: onHashChange,
-    /** Trasa aktualnie na ekranie — do przerysowania po zmianie języka. */
+    /** The route currently on screen — for redrawing after a language change. */
     get current() { return current; },
-    /** Podpinane przez powłokę (app.js), wołane po każdym renderowaniu. */
+    /** Attached by the shell (app.js), called after every render. */
     onRender: null,
     listen: function () { global.addEventListener("hashchange", onHashChange); }
   };

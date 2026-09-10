@@ -1,16 +1,17 @@
 /* ============================================================
-   app.js — powłoka i start aplikacji.
+   app.js — the shell and the application start.
 
-   Router mieszka w router.js; tutaj jest to, co zna konkretne elementy
-   strony: pasek boczny, motyw, przełącznik języka i kolejność startu.
+   The router lives in router.js; what is here is whatever knows specific
+   page elements: the side rail, the theme, the language switcher and the
+   startup order.
    ============================================================ */
 (function (global) {
   "use strict";
 
   var App = {};
 
-  /* Powłoka po każdym renderowaniu: zaznaczenie pozycji w pasku i
-     zamknięcie szuflady na wąskim ekranie. Router nie zna tych elementów. */
+  /* The shell after every render: highlighting the rail entry and closing
+     the drawer on a narrow screen. The router does not know these elements. */
   Router.onRender = function (route) {
     markRail(route);
     closeRail();
@@ -26,8 +27,8 @@
     });
   }
 
-  /* ---------------- Powłoka ---------------- */
-  /** Kafelek licznika. Forma słowa idzie za liczbą, nie odwrotnie. */
+  /* ---------------- The shell ---------------- */
+  /** A counter tile. The word form follows the number, not the other way round. */
   function stat(n, key) {
     return '<div class="rail__stat"><b>' + n + "</b><span>" + Core.esc(I18n.t(key, { n: n })) + "</span></div>";
   }
@@ -41,7 +42,7 @@
         stat(s.stats.lessonsDone, "stats.lessons") +
         stat(s.xp, "stats.points");
     }
-    // odznaka liczy obie talie: fiszki i quaderno błędów mieszkają w tej samej zakładce
+    // the badge counts both decks: flashcards and the mistake notebook live in the same tab
     var due = Core.dueCount() + Errors.dueCount();
     var badge = document.getElementById("dueBadge");
     if (badge) {
@@ -64,8 +65,8 @@
   function applyTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
     var b = document.getElementById("themeToggle");
-    // klucz siedzi w atrybucie, nie tylko w tej linijce: dzięki temu
-    // I18n.apply() przetłumaczy przycisk przy zmianie języka, bez pomocy
+    // the key sits in the attribute, not only in this line: that way
+    // I18n.apply() translates the button on a language change, unaided
     if (b) {
       b.setAttribute("data-i18n", t === "dark" ? "theme.light" : "theme.dark");
       b.textContent = I18n.t(b.getAttribute("data-i18n"));
@@ -73,15 +74,17 @@
   }
 
 
-  /* ---------------- Język wyjaśnień ---------------- */
+  /* ---------------- The language of explanations ---------------- */
 
   /**
-   * Przełącznik jako lista rozwijana: widoczny jest bieżący język (flaga plus
-   * endonim), reszta czeka w liście. Przy dwóch językach wystarczyłyby przyciski
-   * obok siebie, przy pięciu zajęłyby pół szerokości panelu.
+   * The switcher as a dropdown: the current language is visible (flag plus
+   * endonym), the rest wait in the list. With two languages buttons side by
+   * side would do; with five they would take up half the panel width.
    *
-   * Wzorzec: przycisk aria-haspopup="listbox" + ul role="listbox". Nazwa języka
-   * zostaje w endonimie, bo listy szuka ktoś, kto bieżącego języka nie czyta.
+   * The pattern: a button with aria-haspopup="listbox" + a ul with
+   * role="listbox". The language name stays in its endonym, because the
+   * person looking for the list is the one who cannot read the current
+   * language.
    */
   function renderLangPicker() {
     var box = document.getElementById("langPicker");
@@ -142,9 +145,9 @@
   }
 
   /**
-   * Klik poza listą zamyka. Rejestrowane raz, nie w renderLangPicker():
-   * ten biegnie przy każdej zmianie języka i dokładałby listener trzymający
-   * referencję do usuniętego już elementu.
+   * A click outside the list closes it. Registered once, not inside
+   * renderLangPicker(): that runs on every language change and would add a
+   * listener holding a reference to an element that is already gone.
    */
   document.addEventListener("click", function (e) {
     var box = document.getElementById("langPicker");
@@ -158,8 +161,8 @@
   });
 
   /**
-   * Zmiana języka bez przeładowania: dociągamy brakujące nakładki, nakładamy je
-   * na te same obiekty i przerysowujemy bieżący widok.
+   * Changing the language without a reload: we pull the missing overlays,
+   * apply them onto the same objects and redraw the current view.
    */
   function switchLang(lang) {
     if (lang === Core.state.settings.lang) return;
@@ -167,10 +170,11 @@
   }
 
   /**
-   * Nakłada język i motyw ze stanu na interfejs. Osobno od switchLang, bo import
-   * pliku zmienia state.settings PRZED odświeżeniem widoku: strażnik „ten sam
-   * język" w switchLang wychodziłby wtedy od razu, zostawiając interfejs
-   * w poprzednim języku mimo poprawnie wczytanego stanu.
+   * Applies the language and theme from the state onto the interface.
+   * Separate from switchLang, because importing a file changes
+   * state.settings BEFORE the view is refreshed: the "same language" guard
+   * in switchLang would then return immediately, leaving the interface in
+   * the previous language despite a correctly loaded state.
    */
   App.applyLang = function (lang) {
     Core.setLanguage(lang, function (missing) {
@@ -179,12 +183,12 @@
       renderLangPicker();
       App.refreshRail();
       Router.render(Router.current.route, Router.current.params);
-      // milczące niepowodzenie zostawiłoby część kursu w poprzednim języku
+      // a silent failure would leave part of the course in the previous language
       if (missing.length) Core.toast(I18n.t("lang.partial", { n: missing.length }));
     });
   };
 
-  /* ---------------- Start ---------------- */
+  /* ---------------- Startup ---------------- */
   function boot() {
     Core.load();
     var lang = Core.state.settings.lang;
@@ -210,7 +214,7 @@
       if (e.key === "Escape") { Audio2.stop(); closeRail(); }
     });
 
-    // Teksty w języku ucznia dociągamy zawsze: index.html nie zna wybranego języka.
+    // The texts in the student's language are always pulled: index.html does not know the chosen language.
     Core.setLanguage(lang, function (missing) {
       if (missing.length) Core.toast(I18n.t("lang.partial", { n: missing.length }));
       startRouting();
@@ -219,13 +223,13 @@
   }
 
   /**
-   * Czy to pierwsze spotkanie ucznia z kursem.
+   * Whether this is the student's first encounter with the course.
    *
-   * Trzy warunki, nie jeden: `onboarded` jest polem DOKŁADANYM, więc
-   * profil sprzed tego ekranu wczytuje się z `false` i sam znacznik
-   * przekierowałby na powitanie kogoś, kto ma za sobą czterdzieści
-   * lekcji. Adres z hasha wygrywa zawsze: kto przyszedł z linkiem do
-   * konkretnej lekcji, dostaje tę lekcję, a nie ekran powitalny.
+   * Three conditions, not one: `onboarded` is an ADDED field, so a profile
+   * from before that screen loads with `false` and the marker alone would
+   * redirect somebody with forty lessons behind them to the welcome page.
+   * The address from the hash always wins: whoever arrives with a link to a
+   * specific lesson gets that lesson, not the welcome screen.
    */
   function pierwszeUruchomienie() {
     var s = Core.state;
@@ -233,22 +237,24 @@
     return !s.onboarded && !s.placement && s.stats.lessonsDone === 0;
   }
 
-  /** Pierwsze renderowanie: poziom, do którego uczeń wraca. */
+  /** The first render: the level the student is coming back to. */
   function startRouting() {
     var powitanie = pierwszeUruchomienie();
     var d = Router.decode(global.location.hash);
     var wanted = d.params.level || guessLevel(d);
-    /* Poziom wczytujemy także pod ekranem powitalnym: zanim uczeń skończy
-       czytać trzy zdania, ścieżka ma już z czego się narysować.
-       Rysowanie po wczytaniu pyta o BIEŻĄCĄ trasę, a nie o to, jak było
-       na starcie: pod powitaniem nie ma co odświeżać, ale gdy uczeń zdążył
-       już wybrać, ścieżka czeka na te dane i bez tego zostałaby na
-       „wczytuję materiał" do końca sesji. */
+    /* The level is loaded under the welcome screen too: by the time the
+       student finishes reading three sentences, the path already has
+       something to draw itself from.
+       Drawing after the load asks about the CURRENT route, not about how
+       things were at startup: under the welcome screen there is nothing to
+       refresh, but once the student has made a choice, the path is waiting
+       for that data and without this would stay on "loading material" for
+       the rest of the session. */
     if (wanted) {
       Core.loadLevelData(wanted, function () {
         if (Router.current.route !== "benvenuto") Router.onHashChange();
       });
-      // pokaż szkielet od razu, nie czekając na plik
+      // show the skeleton right away, without waiting for the file
       if (!powitanie) Router.render(d.route, d.params);
     }
     if (powitanie) App.go("benvenuto");
@@ -256,7 +262,7 @@
     App.refreshRail();
   }
 
-  /** Który poziom wczytać na starcie: ten z niedokończonym postępem. */
+  /** Which level to load at startup: the one with unfinished progress. */
   function guessLevel(d) {
     if (d.route === "lezione" && d.params.id) {
       var m = /^([a-z]\d)/i.exec(d.params.id);

@@ -1,16 +1,17 @@
 /* ============================================================
-   exercises-text.js — typy, w których uczeń PISZE: pole, luki, żetony, odmiana.
+   exercises-text.js — the types where the student WRITES: a field, gaps,
+   tokens, a conjugation table.
 
-   Wydzielone z exercises.js, w którym czternaście typów leżało w jednym
-   pliku na 610 linii. Podział idzie po tym, CO ROBI UCZEŃ, bo to jest oś,
-   na której te typy naprawdę się różnią: wybór z listy sprawdza się
-   porównaniem indeksu, wpisana odpowiedź przechodzi przez checkOpen z
-   tolerancją literówki, a głos wymaga nagrania i progu podobieństwa.
+   Split out of exercises.js, where fourteen types sat in a single 610-line
+   file. The split follows WHAT THE STUDENT DOES, because that is the axis
+   on which these types really differ: a choice from a list is checked by
+   comparing an index, a typed answer goes through checkOpen with typo
+   tolerance, and the voice needs a recording and a similarity threshold.
 
-   Kontrakt bez zmian: builder oddaje {html, wire(root, onDone)}, a
-   `onDone(ok)` woła się DOKŁADNIE RAZ. Wspólne kawałki (nagłówek, przycisk
-   sprawdzania, zakończenie) przychodzą z `Ex.kit`, dyspozytor zostaje w
-   exercises.js. Ładuje się PO nim, bo `Ex.register` powstaje tam.
+   The contract is unchanged: a builder returns {html, wire(root, onDone)},
+   and `onDone(ok)` is called EXACTLY ONCE. The shared pieces (header,
+   check button, ending) come from `Ex.kit`, the dispatcher stays in
+   exercises.js. This loads AFTER it, because `Ex.register` is created there.
    ============================================================ */
 (function () {
   "use strict";
@@ -60,7 +61,7 @@
     return { html: html, wire: wire };
   }
 
-  /* ═══════════════ CLOZE (kilka luk w tekście) ═══════════════ */
+  /* ═══════════════ CLOZE (several gaps in a text) ═══════════════ */
   function buildCloze(ex, idx) {
     // ex.text: "Ieri {{1}} al mercato e {{2}} la frutta."  ex.gaps: [["sono andato"],["ho comprato"]]
     var parts = String(ex.text).split(/\{\{(\d+)\}\}/);
@@ -93,13 +94,13 @@
     return { html: html, wire: wire };
   }
 
-  /* ═══════════════ ORDER (ułóż zdanie) ═══════════════ */
+  /* ═══════════════ ORDER (build the sentence) ═══════════════ */
   function buildOrder(ex, idx, seed) {
     var tokens = Core.seededShuffle(ex.tokens.slice(), seed + "o" + idx);
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
       '<p class="exq__prompt">' + t("ex.order.prompt") + "</p>" +
       '<p class="exq__sub">' + esc(ex.tr || "") + "</p>" +
-      // rola „group" jest konieczna: div bez roli nie może nieść aria-label (WCAG 4.1.2)
+      // the "group" role is required: a div with no role cannot carry aria-label (WCAG 4.1.2)
       '<div class="tok-target js-target" role="group" aria-label="' + esc(t("ex.order.yourSentence")) + '"></div>' +
       '<div class="tok-bank js-bank">' + tokens.map(function (tok) {
         return '<button type="button" class="tok">' + esc(tok) + "</button>";
@@ -138,11 +139,11 @@
     return { html: html, wire: wire };
   }
 
-  /* ═══════════════ CONJ (tabela odmiany) ═══════════════ */
+  /* ═══════════════ CONJ (conjugation table) ═══════════════ */
   function buildConj(ex, idx) {
-    // ex.verb, ex.tense (klucz z Verbs.TENSES), ex.persons: indeksy do uzupełnienia
+    // ex.verb, ex.tense (a key from Verbs.TENSES), ex.persons: the indexes to fill in
     var forms = Verbs.conjugate(ex.verb, ex.tense || "pres");
-    // tryb rozkazujący nie ma formy „io" — pomijamy osoby bez formy
+    // the imperative has no "io" form — we skip the persons without one
     var which = (ex.persons || [0, 1, 2, 3, 4, 5]).filter(function (p) { return !!forms[p]; });
     var tenseLabel = (Verbs.TENSES.filter(function (x) { return x.key === (ex.tense || "pres"); })[0] || {}).labelIt;
 

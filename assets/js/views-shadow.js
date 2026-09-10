@@ -1,25 +1,28 @@
 /* ============================================================
-   views-shadow.js — powtarzanie za lektorem, z własnym głosem obok.
+   views-shadow.js — repeating after the narrator, with your own voice next to it.
 
-   Największa dziura wszystkich aplikacji do nauki języka jest ta sama i
-   opisana w każdej recenzji: po roku nie umiesz mówić. Ćwiczenie `speak`
-   tego nie łata, bo porównuje TRANSKRYPCJĘ z oczekiwanym napisem — mierzy
-   słowa, nie dźwięk, więc „gli" wymówione jak „li" dostaje pełne punkty.
+   The biggest hole in every language-learning application is the same one
+   and every review describes it: after a year you cannot speak. The `speak`
+   exercise does not patch it, because it compares a TRANSCRIPT with an
+   expected string — it measures words, not sound, so "gli" pronounced like
+   "li" gets full marks.
 
-   Shadowing nie ocenia NICZEGO i to jest jego zaleta. Uczeń słyszy zdanie
-   lektora, powtarza, i słucha obu nagrań jedno po drugim. Różnicę słyszy
-   sam, a nie czyta jej z liczby, której i tak by nie umiał zinterpretować.
-   Automat, który udaje ocenę wymowy, jest gorszy niż jej brak, bo daje
-   fałszywą pewność w jedynym miejscu, gdzie liczy się ucho.
+   Shadowing grades NOTHING and that is its virtue. The student hears the
+   narrator's sentence, repeats it, and listens to both recordings one after
+   the other. They hear the difference themselves rather than reading it off
+   a number they would not know how to interpret anyway. An automaton
+   pretending to grade pronunciation is worse than none, because it gives
+   false certainty in the one place where the ear is what counts.
 
-   ŚWIADOMA DEGRADACJA. Bez mikrofonu, bez zgody albo bez obsługi w
-   przeglądarce widok NIE znika: zostaje tryb słuchania, a komunikat mówi,
-   CO dokładnie nie działa i czy da się to odkręcić. Wzorzec jest ten sam,
-   którego kurs używa przy rozpoznawaniu mowy.
+   DELIBERATE DEGRADATION. Without a microphone, without consent or without
+   browser support the view does NOT disappear: the listening mode stays,
+   and the message says WHAT exactly does not work and whether it can be
+   undone. The pattern is the same one the course uses for speech
+   recognition.
 
-   Nagrania ucznia nie są zapisywane nigdzie — patrz recorder.js.
+   The student's recordings are not saved anywhere — see recorder.js.
 
-   Skrypt klasyczny. Wymaga core.js, audio.js, recorder.js, views.js.
+   Classic script. Requires core.js, audio.js, recorder.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -30,9 +33,10 @@
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
 
-  /* Zdania do powtarzania: bierzemy je z czytanek, bo każde ma nagranie
-     lektora i jest całym zdaniem, a nie hasłem. Shadowing na pojedynczym
-     słowie nie ćwiczy tego, co jest trudne — rytmu i wiązania. */
+  /* The sentences to repeat: we take them from the readings, because each
+     has a narrator recording and is a whole sentence rather than an entry.
+     Shadowing a single word does not practise what is hard — the rhythm and
+     the liaison. */
   function zdania() {
     var out = [];
     (global.READINGS || []).forEach(function (r) {
@@ -146,8 +150,9 @@
       if (nagranie) odtworz(nagranie.url);
     });
 
-    /* Jedno po drugim, lektor najpierw. To jest cały mechanizm ćwiczenia:
-       różnica słychać w zestawieniu, nie w oddzielnych odsłuchach. */
+    /* One after the other, the narrator first. That is the whole mechanism
+       of the exercise: the difference is audible in the juxtaposition, not
+       in separate playbacks. */
     root.querySelector(".js-play-both").addEventListener("click", function () {
       if (!nagranie) return;
       stan(t("sh.stateNative"));
@@ -160,12 +165,13 @@
     });
   }
 
-  /* ═══════════════ Zgoda na rozpoznawanie mowy ═══════════════
+  /* ═══════════════ Consent for speech recognition ═══════════════
 
-     Podstawiona w consent.js, wołana z Audio2.listen — czyli obsługuje
-     WSZYSTKIE miejsca, które dziś wysyłają głos na zewnątrz: 150 ćwiczeń
-     `speak` i dziesięć rozmów. Ten plik tylko dostarcza okienko, bo tu
-     mieszka warstwa widoku, a consent.js nie ma prawa znać DOM-u.
+     Substituted in consent.js, called from Audio2.listen — that is, it
+     covers ALL the places that send the voice outside today: 150 `speak`
+     exercises and ten conversations. This file only supplies the dialog,
+     because the view layer lives here and consent.js has no right to know
+     the DOM.
      ══════════════════════════════════════════════════════════ */
   function okienkoZgody(decyzja) {
     var stary = document.getElementById("sttConsent");
@@ -203,7 +209,7 @@
     nie.addEventListener("click", function () { zamknij(false); });
     box.addEventListener("keydown", function (e) {
       if (e.key === "Escape") { e.stopPropagation(); zamknij(false); }
-      /* Pułapka fokusu: dwa przyciski, więc wystarczy zawrócić na krańcach. */
+      /* A focus trap: two buttons, so wrapping around at the ends is enough. */
       if (e.key !== "Tab") return;
       var f = [tak, nie];
       var i = f.indexOf(document.activeElement);
@@ -224,8 +230,9 @@
     odtwarzacz.play().catch(function () { gotowe && gotowe(); });
   }
 
-  /* Wyjście z widoku zwalnia blob: bez tego każde wejście zostawia w pamięci
-     poprzednie nagranie, a uczeń może tu wracać dziesiątki razy dziennie. */
+  /* Leaving the view releases the blob: without it every entry leaves the
+     previous recording in memory, and the student may come back here dozens
+     of times a day. */
   global.addEventListener("hashchange", function () {
     if (global.location.hash.indexOf("shadowing") < 0) {
       nagranie = null;

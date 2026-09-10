@@ -1,28 +1,29 @@
 /* ============================================================
-   views-lookup.js — dotknij słowa, zobacz znaczenie.
+   views-lookup.js — tap a word, see its meaning.
 
-   Do tej pory czytanka miała panel z kilkunastoma trudnymi słowami
-   wybranymi przez autora. Wybór jest dobry, ale nie jest TWOJEGO
-   słownictwa: zawsze jest w tekście słowo, którego akurat ty nie znasz,
-   i przy nim uczeń albo zgaduje, albo wychodzi do tłumacza i nie wraca.
+   Until now a reading had a panel with a dozen or so hard words chosen by
+   the author. The choice is a good one, but it is not YOUR vocabulary:
+   there is always a word in the text that you in particular do not know,
+   and at that word the student either guesses or leaves for a translator
+   and does not come back.
 
-   Trzy rzeczy, na których to stoi, i każda ma powód:
+   Three things this rests on, each with a reason:
 
-   1. NIC NIE JEST CICHE. Słowo, którego kurs nie zna, dostaje własny
-      komunikat i przycisk „dodaj mimo to". Dotknięcie, które nie robi
-      nic, uczy, że dotykanie nic nie daje — po dwóch takich uczeń
-      przestaje próbować także tam, gdzie by zadziałało.
+   1. NOTHING IS SILENT. A word the course does not know gets a message of
+      its own and an "add it anyway" button. A tap that does nothing teaches
+      that tapping gives nothing — after two of those the student stops
+      trying even where it would have worked.
 
-   2. TŁUMACZENIE JEST DO POPRAWIENIA. Glosa kursowa jest ogólna, a
-      słowo stoi w konkretnym zdaniu. Uczeń może ją nadpisać, zanim
-      trafi na fiszkę. Wpisuje ją CZŁOWIEK, więc czytamy i piszemy
-      wyłącznie przez `.value` i `textContent` — nigdy `innerHTML`.
+   2. THE TRANSLATION CAN BE CORRECTED. The course gloss is general, while
+      the word stands in a specific sentence. The student may override it
+      before it reaches a card. A HUMAN types it, so we read and write it
+      only through `.value` and `textContent` — never `innerHTML`.
 
-   3. FISZKA JEST JEDNYM KLIKNIĘCIEM. Cała wartość czytania ze
-      słownikiem bierze się z tego, że napotkane słowo wraca w
-      powtórkach. Krok więcej i nikt tego nie robi.
+   3. A CARD IS ONE CLICK AWAY. The whole value of reading with a
+      dictionary comes from the encountered word returning in the reviews.
+      One step more and nobody does it.
 
-   Skrypt klasyczny. Wymaga core.js, lemma.js, audio.js, views.js.
+   Classic script. Requires core.js, lemma.js, audio.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -32,33 +33,33 @@
 
   var Lookup = {};
 
-  /* Otwarta karta i element, do którego wraca fokus po zamknięciu. */
+  /* The open card and the element the focus returns to after closing. */
   var otwarta = null;
   var zrodloFokusu = null;
 
   /**
-   * Tokenizacja zdania na kawałki: słowa osobno, reszta osobno.
+   * Tokenising a sentence into pieces: words separately, the rest separately.
    *
-   * Interpunkcja i spacje MUSZĄ zostać w tekście, bo to jest zdanie do
-   * czytania, a nie lista słów. Dlatego dzielimy z zachowaniem separatorów
-   * zamiast wyciągać same wyrazy.
+   * Punctuation and spaces MUST stay in the text, because this is a sentence
+   * to read and not a list of words. That is why we split while keeping the
+   * separators instead of extracting the words alone.
    */
   function kawalki(zdanie) {
     return String(zdanie).split(/([^a-zA-ZàáèéìíòóùúçÀÈÉÌÒÙ'’]+)/);
   }
 
-  /** Czy ten kawałek jest słowem, w które można kliknąć. */
+  /** Whether this piece is a word that can be clicked. */
   function jestSlowem(k) {
     return /[a-zA-ZàáèéìíòóùúçÀÈÉÌÒÙ]/.test(k);
   }
 
   /**
-   * Zdanie zamienione na klikalne słowa.
+   * A sentence turned into clickable words.
    *
-   * Każde słowo to `<button>`, nie `<span>` z obsługą kliknięcia: przycisk
-   * jest w kolejności tabulacji, reaguje na Enter i spację i mówi czytnikowi
-   * ekranu, że da się go nacisnąć. Ręczne dorabianie tego na spanie kończy
-   * się zwykle na połowie.
+   * Every word is a `<button>`, not a `<span>` with a click handler: a
+   * button is in the tab order, responds to Enter and Space and tells a
+   * screen reader it can be pressed. Recreating that by hand on a span
+   * usually stops halfway.
    */
   function zdanieKlikalne(zdanie) {
     return kawalki(zdanie).map(function (k) {
@@ -69,28 +70,31 @@
   }
 
   /**
-   * Znaczenie hasła: najpierw słownik kursu, potem glosy tej czytanki.
+   * The meaning of an entry: the course dictionary first, then this
+   * reading's glosses.
    *
-   * Glosy czytanki idą PO leksykonie, bo są dopisane pod konkretny tekst
-   * i bywają węższe („canto" tylko w „d'altro canto"), a leksykon kursu
-   * niesie znaczenie, którego uczeń uczył się w lekcji.
+   * The reading's glosses come AFTER the lexicon, because they are written
+   * for one specific text and are sometimes narrower ("canto" only in
+   * "d'altro canto"), while the course lexicon carries the meaning the
+   * student learned in a lesson.
    */
   /**
-   * Znaczenie hasła. Zwraca `{tr, zFrazy}` — nigdy samego napisu, bo
-   * uczeń ma widzieć, SKĄD wzięło się tłumaczenie.
+   * The meaning of an entry. Returns `{tr, zFrazy}` — never a bare string,
+   * because the student must see WHERE the translation came from.
    *
-   * Trzy źródła, w kolejności:
-   * 1. leksykon kursu — to, czego uczył się w lekcji;
-   * 2. glosy tej czytanki, węższe, bo pisane pod ten tekst;
-   * 3. zwrot wielowyrazowy, w którym to słowo stoi.
+   * Three sources, in order:
+   * 1. the course lexicon — what they learned in a lesson;
+   * 2. this reading's glosses, narrower because written for this text;
+   * 3. the multi-word expression this word stands in.
    *
-   * Trzecie źródło nie jest ozdobą. Kurs uczy „un caffè", nie „caffè", i
-   * takich haseł jest w leksykonie 920 na 1410. Bez tego kroku dotknięcie
-   * najzwyklejszego słowa z pierwszej lekcji dawało pustą kratkę.
+   * The third source is not decoration. The course teaches "un caffè", not
+   * "caffè", and 920 of the 1410 lexicon entries are like that. Without
+   * this step, tapping the most ordinary word from the first lesson gave an
+   * empty box.
    *
-   * Klucze `vocabIndex` przechodzą przez `Core.norm`, czyli BEZ akcentów:
-   * „caffè" leży pod „caffe". Szukanie po formie z akcentem chybiało
-   * zawsze i cicho — dokładnie na słowach, które akcent mają.
+   * The `vocabIndex` keys go through `Core.norm`, that is WITHOUT accents:
+   * "caffè" sits under "caffe". Searching by the accented form missed every
+   * time, and silently — on exactly the words that have an accent.
    */
   function znaczenie(haslo, r) {
     var reg = Core.registry || {};
@@ -105,8 +109,9 @@
       if (j >= 0 && tr[j]) return { tr: tr[j], zFrazy: "" };
     }
 
-    /* Najkrótszy zwrot, który zawiera to słowo: im krótszy, tym bliżej
-       znaczenia samego wyrazu („un caffè" bije „prendere un caffè al banco"). */
+    /* The shortest expression containing this word: the shorter it is, the
+       closer to the meaning of the word itself ("un caffè" beats "prendere
+       un caffè al banco"). */
     var najlepszy = null;
     Object.keys(idx).forEach(function (k) {
       if (k.indexOf(" ") < 0) return;
@@ -127,11 +132,11 @@
   }
 
   /**
-   * Pokazuje kartę słowa pod klikniętym wyrazem.
+   * Shows the word card under the word that was clicked.
    *
-   * @param {string} slowo forma z tekstu, tak jak stoi
-   * @param {object} r     czytanka, dla glos przypisanych do tego tekstu
-   * @param {Element} przy element, przy którym karta ma się pojawić
+   * @param {string} slowo the form from the text, exactly as it stands
+   * @param {object} r     the reading, for the glosses attached to this text
+   * @param {Element} przy the element the card should appear next to
    */
   function pokaz(slowo, r, przy) {
     zamknij();
@@ -141,11 +146,12 @@
     var haslo = hasla[0] || "";
     var znane = !!haslo;
 
-    /* Wyraz funkcyjny rozstrzyga się PRZED szukaniem znaczenia, nie po.
-       Kiedy było odwrotnie, „in" dostawało „rowerem" — bo najkrótszym
-       zwrotem z tym słowem okazało się „in bici". Przyimek z glosą zwrotu
-       to nie brak tłumaczenia, to tłumaczenie fałszywe, a takie jest
-       gorsze od jego braku: uczeń nie ma jak się zorientować. */
+    /* A function word is decided BEFORE the meaning is looked up, not
+       after. When it was the other way round, "in" got "by bike" — because
+       the shortest expression containing that word turned out to be "in
+       bici". A preposition glossed with an expression is not a missing
+       translation, it is a false one, and that is worse than none: the
+       student has no way to notice. */
     var funkcyjny = znane && Lemma.funkcyjne(haslo);
     var wynik = (znane && !funkcyjny) ? znaczenie(haslo, r) : { tr: "", zFrazy: "" };
     var gloss = wynik.tr;
@@ -158,7 +164,7 @@
     if (znane && !funkcyjny) {
       karta.innerHTML =
         '<div class="lk-card__head"><b class="lk-card__lemma"></b>' +
-        /* Jak w widoku Pokrycie: bez nagrania nie ma przycisku. */
+        /* As in the Coverage view: no recording, no button. */
         (Audio2.hasNatural(haslo)
           ? '<button type="button" class="say-btn" data-say="' + esc(haslo) + '" aria-label="' +
             esc(t("a11y.listenTo", { what: haslo })) + '">🔊</button>'
@@ -185,9 +191,10 @@
           esc(t("lookup.addAnyway")) + "</button></div>");
     }
 
-    /* Tekst od człowieka i tekst z danych wchodzą przez textContent i
-       .value, nigdy przez innerHTML: pola `theory` w tym projekcie są
-       renderowane jako HTML z rozmysłem, więc granica musi być jawna. */
+    /* Text from a human and text from the data enter through textContent
+       and .value, never through innerHTML: the `theory` fields in this
+       project are rendered as HTML deliberately, so the boundary has to be
+       explicit. */
     var lemat = karta.querySelector(".lk-card__lemma");
     if (lemat) lemat.textContent = znane ? haslo : slowo;
     var skad = karta.querySelector(".lk-card__from");
@@ -218,20 +225,20 @@
         zamknij();
       });
     }
-    /* Fokus idzie na KARTĘ, nie na pole tekstowe.
-       Autofokus w polu wywoływał dwie rzeczy naraz: pasek akcentów wskakiwał
-       nad pole i zasłaniał nagłówek karty razem z przyciskiem zamknięcia, a na
-       telefonie natychmiast wyjeżdżała klawiatura systemowa — przy słowie,
-       którego uczeń w większości wypadków wcale nie chce poprawiać.
-       Pole jest o jedno naciśnięcie Tab dalej i pasek pojawia się dopiero
-       wtedy, kiedy uczeń faktycznie pisze. */
+    /* The focus goes to the CARD, not to the text field.
+       Autofocusing the field caused two things at once: the accent bar
+       jumped above the field and covered the card header together with the
+       close button, and on a phone the system keyboard slid out
+       immediately — for a word the student in most cases does not want to
+       correct at all. The field is one Tab away and the bar appears only
+       once the student actually types. */
     karta.setAttribute("tabindex", "-1");
     karta.focus();
   }
 
   /**
-   * Podpina obsługę dotknięcia słowa w kontenerze z tekstem.
-   * Jeden listener na kontener, nie po jednym na każde z ~500 słów.
+   * Wires up word-tap handling inside a container with text.
+   * One listener per container, not one for each of ~500 words.
    */
   function podepnij(kontener, r) {
     kontener.addEventListener("click", function (e) {

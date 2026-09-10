@@ -1,16 +1,16 @@
 /* ============================================================
-   notice.js — komunikaty na ekranie: znikające i te, które zostają.
+   notice.js — on-screen messages: the vanishing ones and the ones that stay.
 
-   Wyjęte z core.js, bo były w nim jedynym miejscem dotykającym DOM.
-   Przez nie test zapisu stanu musiał mieć podstawiony `document`:
-   sprawdzało się przepełnienie pamięci, a stawiało się atrapę drzewa.
+   Pulled out of core.js, where they were the only place touching the DOM.
+   Because of them the state-saving test needed a substituted `document`:
+   it checked storage overflow while setting up a fake tree.
 
-   Dwa rodzaje, każdy do czego innego:
-   - `toast` znika po 3,2 sekundy i nadaje się do „zapisano" albo
-     „wybierz odpowiedź";
-   - `notice` zostaje do zamknięcia przez ucznia i jest dla rzeczy, które
-     nie mają prawa przelecieć między jednym ćwiczeniem a drugim: utrata
-     danych, prośba o kopię zapasową.
+   Two kinds, each for something different:
+   - `toast` disappears after 3.2 seconds and suits "saved" or
+     "pick an answer";
+   - `notice` stays until the student dismisses it and is for things that
+     must not slip past between one exercise and the next: data loss, a
+     request for a backup.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -27,15 +27,15 @@
     global.setTimeout(function () { el.remove(); }, 3200);
   }
 
-  /* Klucze już pokazane: ten sam komunikat nie ma się mnożyć przy każdym zapisie. */
+  /* Keys already shown: the same message must not multiply on every save. */
   var noticed = {};
 
   /**
-   * Komunikat, który zostaje na ekranie aż do zamknięcia przez ucznia.
+   * A message that stays on screen until the student dismisses it.
    *
-   * Toast znika po 3,2 sekundy i to jest właściwe dla „zapisano" albo
-   * „wybierz odpowiedź". Utrata danych nie jest wiadomością do
-   * przeoczenia między jednym ćwiczeniem a drugim, więc idzie tędy.
+   * A toast disappears after 3.2 seconds and that is right for "saved" or
+   * "pick an answer". Data loss is not a message to be missed between one
+   * exercise and the next, so it goes this way.
    */
   function notice(key, opts) {
     if (noticed[key]) return;
@@ -49,10 +49,10 @@
     el.setAttribute("role", "alert");
     el.textContent = global.I18n.t(key, o.vars);
 
-    /* Przycisk akcji, gdy komunikat prosi ucznia o zrobienie czegoś.
-       Bez niego przypomnienie o kopii kończy się instrukcją „wejdź w
-       Ustawienia", czyli przerzuca na ucznia nawigację w chwili, w
-       której i tak zaraz zamknie komunikat. */
+    /* An action button, when the message asks the student to do something.
+       Without it the backup reminder ends in an instruction to "go to
+       Settings", which pushes the navigation onto the student at the very
+       moment they are about to dismiss the message anyway. */
     if (o.actionKey && o.onAction) {
       var act = global.document.createElement("button");
       act.type = "button";

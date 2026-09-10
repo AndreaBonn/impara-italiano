@@ -1,32 +1,34 @@
 /* ============================================================
-   fsrs.js — harmonogram powtórek FSRS-6.
+   fsrs.js — the FSRS-6 review schedule.
 
-   Zastępuje SM-2 na talii słownictwa. SM-2 jest z 1987 roku i mnoży
-   odstęp przez jeden współczynnik, ten sam dla każdej karty i każdego
-   ucznia. FSRS modeluje pamięć dwiema wielkościami — stabilnością (po ilu
-   dniach szansa przypomnienia spada do progu) i trudnością — i dobiera
-   odstęp tak, by trafić w zadaną retencję.
+   Replaces SM-2 on the vocabulary deck. SM-2 is from 1987 and multiplies
+   the interval by a single factor, the same one for every card and every
+   learner. FSRS models memory with two quantities — stability (after how
+   many days the chance of recall drops to the threshold) and difficulty —
+   and picks the interval so as to hit a given retention.
 
-   CZEGO TEN MODUŁ NIE OBIECUJE. Parametry FSRS optymalizuje się na
-   historii powtórek konkretnego ucznia. Ten kurs nie ma serwera ani
-   telemetrii, więc zostają wartości domyślne i tak zostanie. Zysku nie
-   da się tu ZMIERZYĆ: przyjmujemy go na podstawie benchmarku autorów,
-   a kryterium poprawności tego pliku jest zgodność z implementacją
-   referencyjną, nie „mniej powtórek" (patrz R5 w
+   WHAT THIS MODULE DOES NOT PROMISE. FSRS parameters are optimised on the
+   review history of a specific learner. This course has no server and no
+   telemetry, so the defaults stay and will keep staying. The gain cannot
+   be MEASURED here: we take it on the authors' benchmark, and the
+   correctness criterion for this file is agreement with the reference
+   implementation, not "fewer reviews" (see R5 in
    specs/002-corso-irrinunciabile/riconciliazione.md).
 
-   Dlatego wzory nie są przepisane z dokumentacji, tylko z kodu py-fsrs,
-   a `tests/unit/fsrs-vectors.json` trzyma wyjście referencyjne dla 34
-   powtórek w 7 scenariuszach. Pomyłka w wykładniku daje harmonogram,
-   który nadal wygląda rozsądnie i myli się dopiero po miesiącu — czego
-   nikt nie zauważy. Wektory to jedyna rzecz, która taką pomyłkę łapie.
-   Regeneracja: `uv run --script scripts/gen_fsrs_vectors.py`.
+   That is why the formulas are not transcribed from the documentation but
+   from the py-fsrs code, and `tests/unit/fsrs-vectors.json` holds the
+   reference output for 34 reviews across 7 scenarios. A mistake in an
+   exponent yields a schedule that still looks reasonable and only goes
+   wrong a month later — which nobody notices. The vectors are the only
+   thing that catches such a mistake.
+   Regeneration: `uv run --script scripts/gen_fsrs_vectors.py`.
 
-   Moduł jest CZYSTY: żadnego stanu, żadnego localStorage, żadnego
-   Date.now() w środku. Chwilę powtórki podaje wołający, więc test nie
-   musi podstawiać zegara.
+   The module is PURE: no state, no localStorage, no Date.now() inside.
+   The moment of the review is supplied by the caller, so a test does not
+   have to substitute a clock.
 
-   Skrypt klasyczny — jak reszta silnika, bo kurs działa z file://.
+   Classic script — like the rest of the engine, because the course runs
+   from file://.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -34,26 +36,26 @@
   var MINUTA = 60000;
   var DZIEN = 86400000;
 
-  /* Granice z implementacji referencyjnej. Trudność żyje w 1..10 i te
-     liczby wchodzą do wzorów (tłumienie liniowe dzieli przez 9, odbicie
-     do średniej celuje w „łatwe"), więc nie są parametrem do zmiany. */
+  /* Bounds from the reference implementation. Difficulty lives in 1..10 and
+     these numbers enter the formulas (linear damping divides by 9, mean
+     reversion aims at "easy"), so they are not a parameter to tweak. */
   var MIN_TRUDNOSC = 1.0;
   var MAX_TRUDNOSC = 10.0;
   var MIN_STABILNOSC = 0.001;
 
-  /* Oceny: te same cztery, co w interfejsie ucznia. */
+  /* Grades: the same four as in the student's interface. */
   var ZNOWU = 1, TRUDNE = 2, DOBRZE = 3, LATWE = 4;
 
   var DOMYSLNE = {
-    /* FSRS-6, 21 parametrów. Kolejność jest częścią kontraktu z py-fsrs. */
+    /* FSRS-6, 21 parameters. The order is part of the contract with py-fsrs. */
     parametry: [
       0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001,
       1.8722, 0.1666, 0.796, 1.4835, 0.0614, 0.2629, 1.6483, 0.6014,
       1.8729, 0.5425, 0.0912, 0.0658, 0.1542
     ],
-    /* Docelowa szansa przypomnienia w chwili powtórki. Wyżej = częściej. */
+    /* Target chance of recall at review time. Higher = more often. */
     retencja: 0.9,
-    /* Kroki pierwszej nauki i powtórnej nauki po wpadce, w milisekundach. */
+    /* Steps of first learning and of relearning after a lapse, in milliseconds. */
     krokiNauki: [MINUTA, 10 * MINUTA],
     krokiPowtornejNauki: [10 * MINUTA],
     maksOdstepDni: 36500
@@ -64,10 +66,10 @@
   function ograniczStabilnosc(s) { return Math.max(s, MIN_STABILNOSC); }
 
   /**
-   * Buduje zestaw funkcji dla jednej konfiguracji.
+   * Builds a set of functions for one configuration.
    *
-   * Osobno, bo `decay` i `factor` zależą od parametru 20 i liczenie ich
-   * przy każdym wywołaniu byłoby powtarzaniem tej samej potęgi.
+   * Separately, because `decay` and `factor` depend on parameter 20 and
+   * computing them on every call would repeat the same power.
    */
   function silnik(konfig) {
     var k = konfig || {};
@@ -80,7 +82,7 @@
     var decay = -p[20];
     var factor = Math.pow(0.9, 1 / decay) - 1;
 
-    /** Szansa przypomnienia po `dni` dniach od ostatniej powtórki. */
+    /** Chance of recall `dni` days after the last review. */
     function odtwarzalnosc(stabilnosc, dni) {
       return Math.pow(1 + factor * dni / stabilnosc, decay);
     }
@@ -90,8 +92,8 @@
     }
 
     /**
-     * @param {boolean} ogranicz2 — przy liczeniu odbicia do średniej wartość
-     *   dla „łatwe" wchodzi NIEobcięta; obcięcie tutaj przesunęłoby wynik.
+     * @param {boolean} ogranicz2 — when computing mean reversion, the value
+     *   for "easy" enters UNCLAMPED; clamping here would shift the result.
      */
     function trudnoscPoczatkowa(ocena, ogranicz2) {
       var d = p[4] - Math.exp(p[5] * (ocena - 1)) + 1;
@@ -100,14 +102,14 @@
 
     function nastepnaTrudnosc(trudnosc, ocena) {
       var delta = -(p[6] * (ocena - 3));
-      /* Tłumienie liniowe: im trudniejsza karta, tym mniej się rusza. */
+      /* Linear damping: the harder the card, the less it moves. */
       var tlumione = trudnosc + (10.0 - trudnosc) * delta / 9.0;
-      /* Odbicie do średniej w stronę wartości dla „łatwe". */
+      /* Mean reversion towards the value for "easy". */
       var cel = trudnoscPoczatkowa(LATWE, false);
       return ograniczTrudnosc(p[7] * cel + (1 - p[7]) * tlumione);
     }
 
-    /** Powtórka tego samego dnia: stabilność rośnie inaczej niż po przerwie. */
+    /** A same-day review: stability grows differently than after a break. */
     function stabilnoscKrotkoterminowa(stabilnosc, ocena) {
       var przyrost = Math.exp(p[17] * (ocena - 3 + p[18])) * Math.pow(stabilnosc, -p[19]);
       if (ocena !== ZNOWU) przyrost = Math.max(przyrost, 1.0);
@@ -141,16 +143,17 @@
       return ograniczStabilnosc(s);
     }
 
-    /** Odstęp w pełnych dniach, który trafia w zadaną retencję. */
+    /** The interval in whole days that hits the requested retention. */
     function odstepDni(stabilnosc) {
       var dni = (stabilnosc / factor) * (Math.pow(retencja, 1 / decay) - 1);
       return Math.min(Math.max(Math.round(dni), 1), maksDni);
     }
 
     /**
-     * Pierwszy krok po ocenie „trudne", gdy karta stoi na kroku zerowym.
-     * Przy jednym kroku półtora kroku, przy dwóch i więcej średnia z dwóch
-     * pierwszych — tak robi referencja i to widać w wektorach.
+     * The first step after a "hard" grade, when the card sits on step zero.
+     * With one step, one and a half steps; with two or more, the average of
+     * the first two — that is what the reference does and it shows in the
+     * vectors.
      */
     function krokTrudne(kroki, krok) {
       if (krok === 0 && kroki.length === 1) return kroki[0] * 1.5;
@@ -159,23 +162,24 @@
     }
 
     /**
-     * Pełna liczba dni od ostatniej powtórki, jak w referencji.
+     * Whole days since the last review, as in the reference.
      *
-     * Referencja liczy `(teraz - ostatnia).days`, czyli obcina w dół, i na
-     * tym obcięciu stoi rozróżnienie „ta sama sesja" od „po przerwie":
-     * 23 godziny to nadal zero dni i nadal krótki termin.
+     * The reference computes `(now - last).days`, that is it truncates
+     * downwards, and the distinction between "same session" and "after a
+     * break" rests on that truncation: 23 hours is still zero days and still
+     * short term.
      */
     function dniOd(odMs, doMs) {
       return Math.floor((doMs - odMs) / DZIEN);
     }
 
     /**
-     * Przelicza kartę po jednej odpowiedzi.
+     * Recomputes a card after one answer.
      *
-     * @param {object|null} karta {st, step, s, d, due, last} albo null/nowa
-     * @param {number} ocena 1 znowu | 2 trudne | 3 dobrze | 4 łatwe
-     * @param {number} terazMs chwila powtórki
-     * @returns {object} nowa karta — wejściowa NIE jest mutowana
+     * @param {object|null} karta {st, step, s, d, due, last} or null/new
+     * @param {number} ocena 1 again | 2 hard | 3 good | 4 easy
+     * @param {number} terazMs the moment of the review
+     * @returns {object} a new card — the input is NOT mutated
      */
     function powtorz(karta, ocena, terazMs) {
       var c = karta || {};
@@ -193,7 +197,7 @@
         return odtwarzalnosc(s, Math.max(0, dniOd(c.last, terazMs)));
       }
 
-      /* --- pamięć: stabilność i trudność --- */
+      /* --- memory: stability and difficulty --- */
       if (stan === "learning" && (s === null || d === null)) {
         s = stabilnoscPoczatkowa(ocena);
         d = trudnoscPoczatkowa(ocena, true);
@@ -205,7 +209,7 @@
         d = nastepnaTrudnosc(d, ocena);
       }
 
-      /* --- harmonogram: stan i odstęp --- */
+      /* --- schedule: state and interval --- */
       if (stan === "review") {
         if (ocena === ZNOWU && krokiPowt.length) {
           nowyStan = "relearning";
@@ -217,8 +221,8 @@
           odstepMs = odstepDni(s) * DZIEN;
         }
       } else {
-        /* learning i relearning chodzą po tej samej mechanice kroków,
-           różnią się tylko listą — dlatego jedna gałąź, nie dwie. */
+        /* learning and relearning run on the same step mechanics and differ
+           only in the list — hence one branch, not two. */
         var kroki = stan === "learning" ? krokiNauki : krokiPowt;
         if (!kroki.length || (krok >= kroki.length && ocena !== ZNOWU)) {
           nowyStan = "review";
@@ -269,7 +273,7 @@
     DOMYSLNE: DOMYSLNE,
     ZNOWU: ZNOWU, TRUDNE: TRUDNE, DOBRZE: DOBRZE, LATWE: LATWE,
     silnik: silnik,
-    /** Skrót na domyślnej konfiguracji — tego używa core.js. */
+    /** A shortcut on the default configuration — this is what core.js uses. */
     powtorz: function (karta, ocena, terazMs) { return domyslny.powtorz(karta, ocena, terazMs); }
   };
 

@@ -1,47 +1,51 @@
 /* ============================================================
-   sw.js — praca bez sieci.
+   sw.js — working without a network.
 
-   README obiecywał to od dawna („nie wymaga internetu po pierwszym
-   wczytaniu"), ale bez service workera obietnica kończyła się na
-   pierwszym odświeżeniu.
+   The README promised this for a long time ("no internet needed after the
+   first load"), but without a service worker the promise ended at the
+   first refresh.
 
-   Dwie strategie, każda z powodu:
+   Two strategies, each with a reason:
 
-   - NAGRANIA (audio/**) — cache-first, na zawsze. Nazwa pliku jest
-     skrótem treści zdania (FNV-1a), więc plik pod danym adresem nigdy
-     nie zmienia zawartości. Unieważnianie takiej pamięci nie ma sensu:
-     zmienione zdanie dostaje po prostu inny adres.
+   - RECORDINGS (audio/**) — cache-first, forever. The file name is the
+     hash of the sentence's content (FNV-1a), so the file at a given
+     address never changes its contents. Invalidating such a cache makes no
+     sense: a corrected sentence simply gets a different address.
 
-   - KOD I DANE — network-first, z pamięci dopiero przy braku sieci.
-     Projekt nie ma kroku budowania, więc pliki nie mają skrótu w
-     nazwie i jedyną wersją jest stała niżej. Rozjazd wersji MUSI
-     kosztować jeden obieg po sieci, a nie zamrożenie ucznia na starym
-     kodzie — czego on nie umie ani zauważyć, ani odkręcić.
+   - CODE AND DATA — network-first, from the cache only when the network is
+     gone. The project has no build step, so the files have no hash in
+     their names and the only version is the constant below. A version
+     mismatch MUST cost one round trip over the network rather than
+     freezing the student on old code — which they can neither notice nor
+     undo.
 
-   Nowa wersja nie przejmuje kursu sama: czeka w kolejce, aż strona
-   (assets/js/pwa.js) zapyta o to ucznia. Szczegóły przy `install`
-   i przy obsłudze `message`.
+   A new version does not take the course over by itself: it waits in the
+   queue until the page (assets/js/pwa.js) asks the student about it.
+   Details at `install` and at the `message` handler.
 
-   Cudzych domen nie dotykamy w ogóle: nieprzejrzysta odpowiedź w pamięci
-   to rozmiar bez treści i błędy nie do zdiagnozowania. Od kiedy kroje
-   pisma leżą w assets/fonts/, żadne żądanie kursu i tak tam nie idzie.
+   We do not touch other origins at all: an opaque response in the cache is
+   a size with no content and errors that cannot be diagnosed. Since the
+   fonts have lived in assets/fonts/, no request from the course goes there
+   anyway.
    ============================================================ */
 
-/* Wydanie, po kropce odcisk treści plików z PRECACHE.
-   Odcisk DOPISUJE skrypt: `node scripts/check_swversion.mjs --napraw`.
+/* The release, followed after the dot by a fingerprint of the PRECACHE
+   file contents. The fingerprint is written by a script:
+   `node scripts/check_swversion.mjs --napraw`.
 
-   Przeglądarka rozpoznaje nowe wydanie po BAJTACH tego pliku i po niczym
-   innym. Dopóki wersja była tylko liczbą przepisywaną ręcznie, poprawka
-   w core.js nie zmieniała sw.js ani o bajt: aktualizacja nie miała jak
-   się ogłosić, dopóki ktoś o niej nie pamiętał. Odcisk zmienia się sam
-   przy każdej zmianie treści, a bramka w CI nie pozwala mu zwietrzeć.
+   The browser recognises a new release by the BYTES of this file and by
+   nothing else. As long as the version was just a number rewritten by
+   hand, a fix in core.js did not change sw.js by a single byte: an update
+   had no way to announce itself until somebody remembered it. The
+   fingerprint changes by itself at every change of content, and the CI
+   gate does not let it go stale.
 
-   Człowiek podnosi „v35" wtedy, gdy chce nazwać wydanie; odcisk to nie
-   jest jego robota. */
-var SW_VERSION = "v35.9937b68d324d";
+   A human raises "v35" when they want to name a release; the fingerprint
+   is not their job. */
+var SW_VERSION = "v35.b63172249281";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
-/* Nagrania są adresowane treścią, więc ich pamięć przeżywa zmianę wersji. */
+/* Recordings are content-addressed, so their cache survives a version change. */
 var AUDIO_CACHE = "linguai-audio";
 
 var PRECACHE = [
@@ -134,10 +138,11 @@ var PRECACHE = [
   "./data/core/writing.js",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
-  /* Kroje pisma. Wcześniej szły z fonts.googleapis.com i z tego powodu
-     NIGDY nie trafiały do pamięci: obsługa `fetch` niżej wychodzi przy
-     pierwszej cudzej domenie. Bez sieci strona wyglądała więc inaczej niż
-     z siecią, co czytało się jak usterka, a było wypisane w regule. */
+  /* The fonts. They used to come from fonts.googleapis.com and for that
+     reason NEVER reached the cache: the `fetch` handler below bails out at
+     the first foreign origin. Without a network the page therefore looked
+     different than with one, which read like a fault and was written down
+     in the rule. */
   "./assets/fonts/fraunces-latin.woff2",
   "./assets/fonts/fraunces-latin-ext.woff2",
   "./assets/fonts/inter-latin.woff2",
@@ -149,14 +154,15 @@ function isAudio(url) { return /\/audio\/[0-9a-f]{2}\/[0-9a-f]{16}\.mp3$/.test(u
 self.addEventListener("install", function (e) {
   e.waitUntil(
     caches.open(SHELL_CACHE)
-      /* addAll przewraca się w całości, gdy padnie JEDEN plik; wolimy
-         wczytać tyle, ile się da, i nie zostawić ucznia bez niczego.
+      /* addAll fails as a whole when ONE file fails; we would rather load
+         as much as we can and not leave the student with nothing.
 
-         Odporność to jednak nie to samo co milczenie. Wcześniej błąd szedł
-         do kosza bez nazwy pliku, więc pierwszy start bez sieci padał na
-         brakującym skrypcie, a nie było jak sprawdzić na którym. Nazwa idzie
-         teraz do konsoli guska (DevTools → Application → Service Workers),
-         a instalacja kończy się tak samo jak przedtem: świadomie. */
+         Resilience, however, is not the same as silence. The error used to
+         go into the bin without the file name, so the first offline start
+         failed on a missing script with no way to check which one. The name
+         now goes to the worker console (DevTools -> Application -> Service
+         Workers), and the installation ends the same way it did before:
+         deliberately. */
       .then(function (c) {
         return Promise.all(PRECACHE.map(function (u) {
           return c.add(u).catch(function (blad) {
@@ -166,20 +172,20 @@ self.addEventListener("install", function (e) {
         }));
       })
   );
-  /* Bez skipWaiting: nowa wersja NIE przejmuje kursu sama z siebie.
-     Przejęcie w tle zostawia otwartą stronę z kodem starego wydania nad
-     plikami nowego — a przy braku kroku budowania nazwy plików się nie
-     zmieniają, więc stary kod sięga po adresy, których nowe wydanie już
-     nie zna. Zamiast tego czekamy w kolejce, a strona ogłasza to uczniowi
-     (assets/js/pwa.js) i pyta go, czy teraz. */
+  /* No skipWaiting: a new version does NOT take the course over by itself.
+     Taking over in the background leaves an open page running the old
+     release's code over the new release's files — and with no build step
+     the file names do not change, so the old code reaches for addresses the
+     new release no longer knows. Instead we wait in the queue, and the page
+     announces it to the student (assets/js/pwa.js) and asks whether now. */
 });
 
 /**
- * Przejęcie NA ŻĄDANIE STRONY, nigdy z własnej woli.
+ * Taking over ON THE PAGE'S REQUEST, never of its own accord.
  *
- * Jedyna droga z „waiting" do „active" przed zamknięciem wszystkich kart.
- * Po drugiej stronie stoi przycisk „Zaktualizuj", a nie zegar ani
- * heurystyka: to uczeń decyduje, kiedy przerwać sobie lekcję.
+ * The only road from "waiting" to "active" before every tab is closed. On
+ * the other side there is an "Update" button, not a timer and not a
+ * heuristic: the student decides when to interrupt their own lesson.
  */
 self.addEventListener("message", function (e) {
   if (e.data && e.data.typ === "przejmij") self.skipWaiting();
@@ -189,7 +195,7 @@ self.addEventListener("activate", function (e) {
   e.waitUntil(
     caches.keys().then(function (klucze) {
       return Promise.all(klucze.map(function (k) {
-        /* Stare wersje guska idą precz; pamięć nagrań zostaje. */
+        /* Old worker versions go away; the recording cache stays. */
         if (k === SHELL_CACHE || k === AUDIO_CACHE) return null;
         if (k.indexOf("linguai-") !== 0) return null;
         return caches.delete(k);
@@ -199,11 +205,11 @@ self.addEventListener("activate", function (e) {
 });
 
 /**
- * Wyrzuca z pamięci nagrania, których nie ma już w indeksie.
+ * Drops the recordings that are no longer in the index from the cache.
  *
- * Nazwy są skrótami treści, więc poprawione zdanie nie nadpisuje pliku,
- * tylko zostawia stary jako sierotę. Bez tego pamięć nagrań mogłaby
- * tylko rosnąć, przez wszystkie kolejne wydania kursu.
+ * The names are content hashes, so a corrected sentence does not overwrite
+ * a file but leaves the old one as an orphan. Without this the recording
+ * cache could only grow, across every successive release of the course.
  */
 function sweepAudio() {
   return fetch("./data/audio-index.js", { cache: "no-store" })
@@ -223,7 +229,7 @@ function sweepAudio() {
         });
       });
     })
-    .catch(function () { return null; });   // sprzątanie nie ma prawa zablokować aktywacji
+    .catch(function () { return null; });   // cleanup has no right to block activation
 }
 
 self.addEventListener("fetch", function (e) {
@@ -231,9 +237,10 @@ self.addEventListener("fetch", function (e) {
   if (req.method !== "GET") return;
 
   var url = new URL(req.url);
-  /* Cudza domena: nie dotykamy. Nieprzejrzysta odpowiedź w pamięci to rozmiar
-     bez możliwości sprawdzenia treści. Kurs sam już nigdzie na zewnątrz nie
-     sięga; ta gałąź broni przed tym, co doklei rozszerzenie przeglądarki. */
+  /* A foreign origin: we do not touch it. An opaque response in the cache is
+     a size with no way to check the contents. The course itself no longer
+     reaches outside anywhere; this branch defends against whatever a browser
+     extension attaches. */
   if (url.origin !== self.location.origin) return;
 
   if (isAudio(url)) {
@@ -251,7 +258,7 @@ self.addEventListener("fetch", function (e) {
     return;
   }
 
-  /* Kod i dane: najpierw sieć, pamięć jako siatka pod spodem. */
+  /* Code and data: the network first, the cache as a net underneath. */
   e.respondWith(
     fetch(req).then(function (res) {
       if (res && res.ok) {
@@ -262,8 +269,9 @@ self.addEventListener("fetch", function (e) {
     }).catch(function () {
       return caches.match(req).then(function (hit) {
         if (hit) return hit;
-        /* Nawigacja bez sieci i bez trafienia: oddajemy powłokę, bo trasy
-           są na hashu i strona sama dojdzie, gdzie ma być. */
+        /* A navigation with no network and no hit: we return the shell,
+           because the routes are on the hash and the page will find its own
+           way to where it should be. */
         if (req.mode === "navigate") return caches.match("./index.html");
         return Response.error();
       });

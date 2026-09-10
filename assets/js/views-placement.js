@@ -1,12 +1,12 @@
 /* ============================================================
-   views-placement.js — widok testu poziomującego.
+   views-placement.js — the placement test screen.
 
-   Wynik NIE zapisuje się sam. Zaliczenie lekcji niższych poziomów
-   jest zmianą, której uczeń nie cofnie jednym kliknięciem, więc test
-   proponuje, a decyzję zostawia jemu — razem z liczbą lekcji, które
-   zniknęłyby ze ścieżki.
+   The result does NOT save itself. Marking the lessons of lower levels as
+   passed is a change the student cannot undo with one click, so the test
+   proposes and leaves the decision to them — together with the number of
+   lessons that would disappear from the path.
 
-   Skrypt klasyczny. Wymaga core.js, placement.js, exercises.js, views.js.
+   Classic script. Requires core.js, placement.js, exercises.js, views.js.
    ============================================================ */
 (function () {
   "use strict";
@@ -35,7 +35,7 @@
     });
   };
 
-  /* ---------------- Przebieg ---------------- */
+  /* ---------------- The run ---------------- */
 
   function start() {
     set(pageHead(t("place.kicker"), t("place.title"), t("place.running")) +
@@ -43,17 +43,18 @@
     var box = document.getElementById("placeBox");
     box.innerHTML = '<p class="exq__sub">' + esc(t("place.loading")) + "</p>";
 
-    /* Test sięga do sprawdzianów wszystkich poziomów, więc muszą być
-       wczytane; inaczej pula wyższych poziomów byłaby pusta i uczeń
-       wylądowałby nisko z powodu braku danych, nie braku wiedzy. */
+    /* The test reaches into the unit tests of every level, so they have to
+       be loaded; otherwise the pool of the higher levels would be empty and
+       the student would land low because of missing data, not missing
+       knowledge. */
     var kody = Core.registry.levels.map(function (l) { return l.code; });
     var zostalo = kody.length;
     var nieudane = [];
     kody.forEach(function (k) {
       Core.loadLevelData(k, function (got) {
-        /* Poziom, który się nie wczytał, wyglądałby jak poziom bez zadań,
-           czyli jak wynik testu. Uczeń dostałby niższy poziom z powodu sieci
-           i usłyszałby, że to jego wiedza. */
+        /* A level that failed to load would look like a level with no tasks,
+           that is like a test result. The student would get a lower level
+           because of the network and be told it was their knowledge. */
         if (!got) nieudane.push(k);
         if (--zostalo === 0) {
           if (nieudane.length) Core.toast(t("place.loadFailed", { levels: nieudane.join(", ") }));
@@ -73,8 +74,9 @@
 
       var pula = Placement.pulaDla(kod, seed).slice(0, Placement.NA_RUNDE);
       if (!pula.length) {
-        /* Poziom bez nadających się zadań: traktujemy jak niezdany, ale
-           mówimy o tym wprost — cichy przeskok wyglądałby jak porażka ucznia. */
+        /* A level with no suitable tasks: we treat it as not passed, but we
+           say so plainly — a silent skip would look like the student's
+           failure. */
         Placement.zapiszRunde(p, kod, 0, 0);
         Core.toast(t("place.noItems", { level: kod }));
         runda();
@@ -131,7 +133,7 @@
     runda();
   }
 
-  /** Ile lekcji zniknęłoby ze ścieżki — liczba pokazywana PRZED decyzją. */
+  /** How many lessons would disappear from the path — the number shown BEFORE the decision. */
   function policzNizsze(indeks) {
     var n = 0;
     Core.registry.levels.forEach(function (lv, i) {

@@ -1,12 +1,13 @@
 /* ============================================================
-   views-path.js — ścieżka nauki: poziomy, jednostki, „gdzie jestem”.
+   views-path.js — the learning path: levels, units, "where am I".
 
-   Ekran wydzielony z views.js, w którym leżało osiem ekranów naraz.
-   Wzorzec jest ten sam, którym chodzą już views-talk.js, views-train.js
-   i views-today.js: skorupa (set, pageHead, el, empty) przychodzi z
-   `Views.shell`, a plik dokłada własną trasę do `Views`.
+   A screen split out of views.js, which held eight screens at once. The
+   pattern is the same one views-talk.js, views-train.js and views-today.js
+   already use: the shell (set, pageHead, el, empty) comes from
+   `Views.shell`, and the file adds a route of its own to `Views`.
 
-   Ładuje się PO views.js, bo `Views.shell` powstaje na końcu tamtego pliku.
+   It loads AFTER views.js, because `Views.shell` is created at the end of
+   that file.
    ============================================================ */
 (function () {
   "use strict";
@@ -19,14 +20,14 @@
   var empty = Views.shell.empty;
   var pct = Views.shell.pct;
   /* ═══════════════════════════════════════════════════════════
-     ŚCIEŻKA NAUKI
+     THE LEARNING PATH
      ═══════════════════════════════════════════════════════════ */
   var activeLevel = null;
 
-  /* Do ilu ukończonych lekcji kurs sam przypomina o teście poziomującym.
-     Po pięciu lekcjach poziom jest już wybrany, a kto się nudzi, znajdzie
-     test w Ustawieniach; podpowiedź na stałe byłaby szumem na ekranie,
-     na który uczeń patrzy najczęściej. */
+  /* Up to how many finished lessons the course reminds about the placement
+     test by itself. After five lessons the level is already chosen, and
+     anyone who is bored will find the test in Settings; a permanent hint
+     would be noise on the screen the student looks at most often. */
   var LEKCJE_Z_PODPOWIEDZIA = 5;
 
   Views.percorso = function (params) {
@@ -37,7 +38,7 @@
     activeLevel = code;
     var level = Core.registry.byCode[code] || levels[0];
 
-    // grupa przycisków przełączających, nie zakładki: aria-pressed nie jest dozwolone przy role="tab"
+    // a group of toggle buttons, not tabs: aria-pressed is not allowed with role="tab"
     var strip = '<div class="level-strip" role="group" aria-label="' + esc(t("path.levelsGroup")) + '">' +
       levels.map(function (lv) {
         var p = Core.levelProgress(lv);
@@ -81,13 +82,14 @@
   };
 
   /**
-   * Pasek „nie wiesz, od którego poziomu zacząć?" nad listą poziomów.
+   * The "not sure which level to start from?" bar above the level list.
    *
-   * Test poziomujący istnieje od dawna, ale prowadziła do niego wyłącznie
-   * zakładka Ustawienia — czyli miejsce, którego nikt nowy nie otwiera.
-   * Uczeń, który zna już włoski, zaczynał więc od A1 i przeklikiwał sto
-   * lekcji, o których sam test mówi, że nie są mu potrzebne. Pasek stoi
-   * nad paskiem poziomów, bo to tam pada pytanie „który wybrać".
+   * The placement test has existed for a long time, but the only route to
+   * it was the Settings tab — that is, a place no newcomer opens. A student
+   * who already knows Italian therefore started at A1 and clicked through a
+   * hundred lessons the test itself says they do not need. The bar sits
+   * above the level bar, because that is where the question "which one do I
+   * pick" arises.
    */
   function podpowiedzPoziomu() {
     var s = Core.state;

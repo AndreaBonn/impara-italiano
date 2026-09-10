@@ -1,24 +1,25 @@
 /* ============================================================
-   cils-html.js — markup symulacji egzaminu, bez ani jednego zdarzenia.
+   cils-html.js — the exam simulation markup, without a single event.
 
-   Tu mieszkają WYŁĄCZNIE funkcje dane -> napis. Zegar, podpinanie
-   uchwytów, nagrywanie i brak drogi powrotnej zostały w views-cils.js,
-   a punktacja w cils.js i cils-run.js.
+   ONLY data -> string functions live here. The clock, wiring up handlers,
+   recording and the absence of a way back stayed in views-cils.js, and the
+   scoring in cils.js and cils-run.js.
 
-   DLACZEGO OSOBNO. Siatka odpowiedzi egzaminu ma cztery kształty (vero/falso,
-   wybór wielokrotny, cloze z numerowanymi lukami, odsłuch z licznikiem
-   odtworzeń) i każdy z nich jest decyzją, którą widać tylko w wygenerowanym
-   HTML: numer luki przy właściwym zadaniu, `name` radia wspólny dla jednego
-   pytania i różny dla dwóch, `data-p`/`data-i` zgodne z siatką w cils-run.js.
-   Dopóki te funkcje siedziały w widoku, sprawdzało się je wyłącznie
-   Playwrightem, czyli przez godzinne podejście z czterema odliczaniami —
-   więc w praktyce nie sprawdzało się ich wcale.
+   WHY SEPARATELY. The exam answer grid has four shapes (true/false,
+   multiple choice, cloze with numbered gaps, listening with a play
+   counter) and each of them is a decision visible only in the generated
+   HTML: the gap number next to the right task, the radio `name` shared
+   within one question and different across two, `data-p`/`data-i` matching
+   the grid in cils-run.js. As long as these functions sat in the view,
+   they could only be checked with Playwright, that is through an hour-long
+   attempt with four countdowns — so in practice they were not checked at
+   all.
 
-   Napisy interfejsu i `esc` czytamy WEWNĄTRZ funkcji, nie przy wykonaniu
-   modułu: ten plik nie narzuca wtedy swojego miejsca w kolejności
-   <script>, a test może podstawić atrapę po jego wczytaniu.
+   Interface strings and `esc` are read INSIDE the functions, not while the
+   module body runs: that way this file does not impose its position in the
+   <script> order, and a test can substitute a double after it has loaded.
 
-   Skrypt klasyczny. Wymaga core.js (esc), i18n.js, cils.js, writing.js.
+   Classic script. Requires core.js (esc), i18n.js, cils.js, writing.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -26,17 +27,17 @@
   function esc(s) { return global.Core.esc(s); }
   function t(k, v) { return global.I18n.t(k, v); }
 
-  /* ═══════════════════ Lista i preambuł ═══════════════════ */
+  /* ═══════════════════ The list and the preamble ═══════════════════ */
 
   /**
-   * Corpo della lista delle simulazioni.
+   * The body of the simulation list.
    *
-   * Il limite del simulatore (due abilità su quattro) sta PRIMA dell'elenco,
-   * non nel riepilogo: chi lo scopre alla fine ha attraversato tutta la
-   * sessione con un'aspettativa sbagliata.
+   * The simulator's limit (two skills out of four) sits BEFORE the list, not
+   * in the summary: whoever discovers it at the end has gone through the
+   * whole session with the wrong expectation.
    *
-   * Il titolo della pagina lo mette il widok: `pageHead` siedzi w Views,
-   * a ten plik nie dotyka ani Views, ani DOM-u.
+   * The page title is set by the view: `pageHead` lives in Views, and this
+   * file touches neither Views nor the DOM.
    */
   function lista(symulacje) {
     return '<div class="callout callout--trap"><b>' + esc(t("cils.limitLabel")) + "</b> " +
@@ -51,14 +52,15 @@
       }).join("") + "</div>";
   }
 
-  /* ═══════════════════ Cornice sezione ═══════════════════ */
+  /* ═══════════════════ The section frame ═══════════════════ */
 
   /**
-   * Barra con passo e orologio.
+   * The bar with the step counter and the clock.
    *
-   * L'orologio scritto è `aria-hidden` e la regione live è vuota: il testo
-   * lo mette il timer in views-cils.js, con tre soli annunci. Un timer che
-   * parla ogni secondo rende la pagina inutilizzabile con uno screen reader.
+   * The written clock is `aria-hidden` and the live region is empty: the
+   * text is put there by the timer in views-cils.js, with three
+   * announcements only. A timer that speaks every second makes the page
+   * unusable with a screen reader.
    */
   function barra(krok, ile) {
     return '<div class="cils-bar">' +
@@ -68,10 +70,10 @@
   }
 
   /**
-   * Avviso di tempo scaduto (nascosto) e bottone che chiude la sezione.
+   * The (hidden) time-up notice and the button that closes the section.
    *
-   * Uguale per tutte e quattro le sezioni: cambia solo l'etichetta, perché
-   * l'ultima chiude l'esame invece della sezione.
+   * The same for all four sections: only the label changes, because the last
+   * one ends the exam instead of the section.
    */
   function coda(kluczPrzycisku) {
     return '<p class="callout callout--trap js-expired" hidden>' + esc(t("cils.expired")) + "</p>" +
@@ -79,7 +81,7 @@
       esc(t(kluczPrzycisku)) + "</button></div>";
   }
 
-  /* ═══════════════════ Ascolto e lettura: risposte chiuse ═══════════════════ */
+  /* ═══════════════════ Listening and reading: closed answers ═══════════════════ */
 
   function corpoChiuso(sez) {
     return '<div class="js-body">' + (sez.prove || []).map(function (p, n) {
@@ -112,8 +114,9 @@
   }
 
   function cloze(p) {
-    /* Il testo arriva a pezzi e i buchi stanno FRA i pezzi: numerandoli qui
-       il testo resta leggibile e ogni buco rimanda al proprio item. */
+    /* The text arrives in pieces and the gaps sit BETWEEN the pieces:
+       numbering them here keeps the text readable and makes every gap point
+       at its own item. */
     return '<p class="cils-testo">' + (p.testo || []).map(function (pezzo, i) {
       var buco = i < (p.items || []).length ? ' <b class="cils-gap">(' + (i + 1) + ")</b> " : "";
       return esc(pezzo) + buco;
@@ -136,7 +139,7 @@
     }).join("") + "</span>";
   }
 
-  /* ═══════════════════ Produzione scritta ═══════════════════ */
+  /* ═══════════════════ Written production ═══════════════════ */
 
   function corpoScritto(sez) {
     return '<div class="js-body"><div class="card">' +
@@ -149,11 +152,11 @@
       '<p class="cils-count js-count" role="status" aria-live="polite"></p></div></div>';
   }
 
-  /* ═══════════════════ Produzione orale (non valutata) ═══════════════════ */
+  /* ═══════════════════ Oral production (not graded) ═══════════════════ */
 
   /**
-   * @param {object} sez   sekcja orale z danych kursu
-   * @param {string} powod klucz napisu „nie ma czym nagrać"; "" gdy da się
+   * @param {object} sez   the oral section from the course data
+   * @param {string} powod string key for "nothing to record with"; "" when there is
    */
   function corpoOrale(sez, powod) {
     return '<div class="js-body"><div class="card">' +
@@ -176,13 +179,13 @@
       }).join("") + "</ul></div></div>";
   }
 
-  /* ═══════════════════ Riepilogo ═══════════════════ */
+  /* ═══════════════════ Summary ═══════════════════ */
 
   /**
-   * Tabella delle quattro abilità.
+   * The table of the four skills.
    *
-   * @param {object} esito      wynik z CilsRun.esito()
-   * @param {function(string):boolean} czyScadla czy sekcja padła na czasie
+   * @param {object} esito      the result from CilsRun.esito()
+   * @param {function(string):boolean} czyScadla whether a section ran out of time
    */
   function abilita(esito, czyScadla) {
     var Cils = global.Cils;
@@ -197,7 +200,7 @@
       '<p class="cils-hint">' + esc(t("cils.threshold", { n: Cils.SOGLIA_ABILITA, max: Cils.MAX_ABILITA })) + "</p>";
   }
 
-  /** Karta produkcji pisemnej; "" gdy uczeń nie doszedł do tej sekcji. */
+  /** The written production card; "" when the student never reached that section. */
   function scritta(pisemna) {
     if (!pisemna) return "";
     var c = global.Cils.controlloScritta(pisemna.traccia, pisemna.testo);
@@ -206,16 +209,17 @@
       '<p class="cils-hint">' + esc(t("cils.writingNotScored")) + "</p>" +
       '<p class="cils-count">' + esc(t("cils.wordsOf", { n: c.parole, min: c.minimo, max: c.massimo })) +
       (c.dentroLimite ? "" : " " + esc(t("cils.outOfRange"))) + "</p>" +
-      /* Etykieta wymagania jest PO WŁOSKU i siedzi w danych obok listy form:
-         to część zadania egzaminacyjnego, nie napis interfejsu, więc
-         tłumaczenie zmieniłoby polecenie i kosztowałoby 18 kluczy razy pięć. */
+      /* The requirement label is IN ITALIAN and sits in the data next to the
+         list of forms: it is part of the exam task, not an interface string,
+         so translating it would change the prompt and cost 18 keys times
+         five. */
       '<ul class="cils-check">' + wynik.map(function (r, i) {
         var wym = ((pisemna.traccia || {}).richiede || [])[i] || {};
         return "<li>" + (r.found ? "✓" : "✗") + " " + esc(wym.etichetta || r.key) + "</li>";
       }).join("") + "</ul></div>";
   }
 
-  /** Karta produkcji ustnej; "" gdy uczeń nie doszedł do tej sekcji. */
+  /** The oral production card; "" when the student never reached that section. */
   function orale(ustna) {
     if (!ustna) return "";
     return '<div class="card"><h2 class="cils-h">' + esc(t("cils.sec.orale")) + "</h2>" +
@@ -225,12 +229,12 @@
   }
 
   /**
-   * Corpo del riepilogo: tabella, verdetto, fonte della soglia, le due carte
-   * di produzione e i due bottoni d'uscita.
+   * The body of the summary: the table, the verdict, the source of the
+   * threshold, the two production cards and the two exit buttons.
    *
-   * Il verdetto è asimmetrico per costruzione (cils.js): una abilità sotto
-   * soglia basta a dire no, nessuna abilità sopra soglia basta a dire sì.
-   * Qui si legge solo il campo, per non avere due posti che lo decidono.
+   * The verdict is asymmetric by construction (cils.js): one skill below the
+   * threshold is enough to say no, no number of skills above it is enough to
+   * say yes. Here we only read the field, so that two places do not decide it.
    */
   function podsumowanie(esito, czyScadla, pisemna, ustna) {
     return '<div class="card">' + abilita(esito, czyScadla) +

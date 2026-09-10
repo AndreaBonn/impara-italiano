@@ -1,32 +1,34 @@
 /* ============================================================
-   coverage.mjs — ile silnika naprawdę wykonują testy jednostkowe
-   Uruchomienie:  node scripts/coverage.mjs [--min 88]
+   coverage.mjs — how much of the engine the unit tests really execute
+   Usage:  node scripts/coverage.mjs [--min 88]
 
-   Wbudowane `node --test --experimental-test-coverage` pokazuje tu
-   100% i jest to liczba bez treści: pliki z assets/js/ są skryptami
-   klasycznymi i wchodzą do testu przez `node:vm` (tests/unit/_harness.mjs),
-   więc licznik widzi harness i pliki testów, a silnika nie widzi wcale.
+   The built-in `node --test --experimental-test-coverage` shows 100% here
+   and that is a number with no content: the files in assets/js/ are classic
+   scripts and enter the test through `node:vm` (tests/unit/_harness.mjs),
+   so the counter sees the harness and the test files and does not see the
+   engine at all.
 
-   Dlatego bierzemy surowe pokrycie z V8 (NODE_V8_COVERAGE) i składamy je
-   sami. `vm.runInContext` dostaje w harnessie `filename`, więc każdy plik
-   silnika ma w tym zrzucie własny wpis i da się go policzyć.
+   That is why we take the raw coverage from V8 (NODE_V8_COVERAGE) and
+   assemble it ourselves. In the harness `vm.runInContext` is given a
+   `filename`, so every engine file has an entry of its own in that dump and
+   can be counted.
 
-   Dwie pułapki, obie kończą się fałszywym stuprocentowym wynikiem:
+   Two traps, both ending in a false hundred per cent:
 
-   - zakresy V8 są ZAGNIEŻDŻONE: funkcja wykonana ma jeden zakres z
-     licznikiem > 0 na całym ciele, a jej niewykonane gałęzie siedzą
-     w środku jako zakresy z licznikiem 0. Malowanie ich po kolei bez
-     sortowania (początek rosnąco, koniec malejąco) gubi te dziury;
-   - każdy proces testowy zapisuje własny plik json. Mapy z różnych
-     procesów trzeba sumować przez OR, nigdy malować jedną po drugiej:
-     inaczej plik, którego drugi proces w ogóle nie dotknął, kasuje to,
-     co pokrył pierwszy.
+   - the V8 ranges are NESTED: an executed function has one range with a
+     count > 0 over its whole body, while its unexecuted branches sit inside
+     as ranges with a count of 0. Painting them in order without sorting
+     (start ascending, end descending) loses those holes;
+   - every test process writes its own json file. Maps from different
+     processes have to be summed with OR, never painted one after another:
+     otherwise a file the second process never touched erases what the first
+     one covered.
 
-   Ziarnistość: LINIA, nie gałąź. Linia liczy się jako pokryta, gdy ma
-   choć jeden wykonany znak niebędący spacją. Komentarze są odsiewane
-   heurystycznie (blok wieloliniowy i linia zaczynająca się od //), co wystarcza
-   do pilnowania trendu i nie wystarcza do rozstrzygania sporów o jedną
-   linię — od tego są testy, nie ten licznik.
+   Granularity: the LINE, not the branch. A line counts as covered when it
+   has at least one executed non-space character. Comments are filtered out
+   heuristically (a multi-line block and a line starting with //), which is
+   enough to watch the trend and not enough to settle an argument about a
+   single line — the tests are for that, not this counter.
    ============================================================ */
 import { readFileSync, readdirSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -40,12 +42,12 @@ const argv = process.argv.slice(2);
 const progIdx = argv.indexOf("--min");
 const PROG = progIdx >= 0 ? Number(argv[progIdx + 1]) : null;
 
-/* Domyślnie lista niewykonanych linii jest ucinana, żeby raport mieścił się
-   na ekranie. `--pelne` pokazuje ją w całości — po to, żeby dopisanie testu
-   nie wymagało liczenia linii ręcznie. */
+/* By default the list of unexecuted lines is truncated so the report fits on
+   screen. `--pelne` shows it in full — so that adding a test does not
+   require counting lines by hand. */
 const PELNE = argv.indexOf("--pelne") >= 0;
 
-/* ---------------- Uruchomienie testów ze zrzutem V8 ---------------- */
+/* ---------------- Running the tests with a V8 dump ---------------- */
 
 function zrzut() {
   const dir = mkdtempSync(join(tmpdir(), "linguai-cov-"));
@@ -62,9 +64,9 @@ function zrzut() {
   return dir;
 }
 
-/* ---------------- Składanie map pokrycia ---------------- */
+/* ---------------- Assembling the coverage maps ---------------- */
 
-const zrodla = new Map();   // ścieżka względna -> treść pliku
+const zrodla = new Map();   // relative path -> file contents
 
 function zrodlo(rel) {
   if (!zrodla.has(rel)) {
@@ -75,7 +77,7 @@ function zrodlo(rel) {
 }
 
 function mapy(dir) {
-  const out = new Map();     // ścieżka -> Uint8Array, 1 = znak wykonany
+  const out = new Map();     // path -> Uint8Array, 1 = character executed
 
   for (const f of readdirSync(dir)) {
     if (!f.endsWith(".json")) continue;
@@ -103,13 +105,14 @@ function mapy(dir) {
   return out;
 }
 
-/* ---------------- Linie kodu vs komentarze ---------------- */
+/* ---------------- Code lines vs comments ---------------- */
 
 /**
- * Które linie pliku niosą kod. Blok wieloliniowy zdejmowany stanem, linia
- * zaczynająca się od `//` odrzucana wprost. Nie ma tu parsera napisów:
- * pomyłka na napisie zawierającym otwarcie komentarza kosztuje jedną
- * linię w liczniku, a parser kosztowałby całą klasę własnych błędów.
+ * Which lines of a file carry code. A multi-line block is stripped with a
+ * state flag, a line starting with `//` is rejected outright. There is no
+ * string parser here: a mistake on a string containing a comment opener
+ * costs one line in the counter, while a parser would cost a whole class of
+ * bugs of its own.
  */
 function linieKodu(src) {
   const linie = src.split("\n");
@@ -136,7 +139,7 @@ function linieKodu(src) {
   return kod;
 }
 
-/* ---------------- Raport ---------------- */
+/* ---------------- The report ---------------- */
 
 const dir = zrzut();
 let wiersze;

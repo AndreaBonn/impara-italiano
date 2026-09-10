@@ -334,3 +334,63 @@ for (const theme of ["light", "dark"]) {
     }
   });
 }
+
+/* ============================================================
+   The second judge in Settings, and its section in the notice.
+
+   A card of five kinds of thing that all say something the student needs
+   to read: labels above the key fields, the fingerprint of a stored key in
+   the softer ink, the "try it" buttons, the hint under the consent switch,
+   and the status line that reports whether the key worked. The last one
+   matters most and is the easiest to get wrong: it is the only place where
+   a provider's own error text lands, it is drawn in a state colour rather
+   than in body ink, and it is read exactly once, by somebody trying to
+   work out why nothing is happening.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`the second judge: contrast in the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html#/impostazioni");
+    await page.waitForSelector(".js-llm-key");
+    await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* the palette transition */
+
+    /* A stored key, so the fingerprint has something to draw, and a message
+       in the status box, so it is not measured while empty — an invisible
+       element passes any threshold. */
+    await page.evaluate(() => {
+      window.LlmKeys.set("openai", "sk-kontrast-test-4321");
+      window.App.go("impostazioni");
+    });
+    await page.waitForSelector(".js-llm-key");
+    await page.evaluate(() => {
+      const fb = document.querySelector(".js-llm-fb");
+      fb.className = "fb js-llm-fb is-on fb--ko";
+      fb.textContent = "Klucz nie zadziałał: Incorrect API key.";
+    });
+
+    for (const [sel, opis, prog] of [
+      [".js-llm-key", "the key field", TEKST],
+      [".js-llm-fb", "the status line", TEKST],
+      [".js-llm-test", "the try button", UI],
+      [".js-llm-clear", "the forget button", UI]
+    ]) {
+      const m = await page.evaluate((s) => window.__kontrast(s), sel);
+      expect(m, `${opis}: element nie istnieje`).not.toBeNull();
+      expect(m.tekst, `${opis}: ${m.tekst.toFixed(2)}:1, próg ${prog}`).toBeGreaterThanOrEqual(prog);
+    }
+
+    /* The notice section, where the same feature is explained. */
+    await page.evaluate(() => window.App.go("privacy"));
+    await page.waitForSelector("#p-modello");
+    for (const [sel, opis] of [
+      ["#p-modello h3", "the heading"],
+      ["#p-modello p", "the body text"],
+      ["#p-modello li", "a bullet"]
+    ]) {
+      const m = await page.evaluate((s) => window.__kontrast(s), sel);
+      expect(m, `${opis}: element nie istnieje`).not.toBeNull();
+      expect(m.tekst, `${opis}: ${m.tekst.toFixed(2)}:1, próg ${TEKST}`).toBeGreaterThanOrEqual(TEKST);
+    }
+  });
+}

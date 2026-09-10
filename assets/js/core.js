@@ -237,6 +237,25 @@
     return a;
   }
 
+  /**
+   * Clearing the profile, including what does not live in the profile.
+   *
+   * The API keys sit in their own container outside the state, so that they
+   * never ride inside an exported backup (llm-keys.js). That decision has a
+   * consequence here: `Store.resetState` cannot reach them, and a student
+   * who clears everything would keep a working credential on the device —
+   * in the one place they would expect it to be gone.
+   *
+   * The gate sits here rather than in the settings view, for the reason
+   * consent.js gives: a clearing scattered across call sites works until
+   * somebody adds the second call site. `LlmKeys` is read at CALL time, not
+   * while this module runs, so it may load after core.js.
+   */
+  function resetState() {
+    Store.resetState();
+    if (global.LlmKeys) global.LlmKeys.clear();
+  }
+
   /* ---------------- Module export ---------------- */
   var Core = {
     STORE_KEY: Store.KEY,
@@ -254,7 +273,7 @@
     unitProgress: unitProgress, levelProgress: levelProgress, nextLesson: nextLesson,
     registerLevel: Registry.registerLevel, addUnits: Registry.addUnits, getLesson: Registry.getLesson,
     loadLevelData: Registry.loadLevelData, setLanguage: Registry.setLanguage,
-    exportState: Store.exportState, importState: Store.importState, resetState: Store.resetState,
+    exportState: Store.exportState, importState: Store.importState, resetState: resetState,
     backupDue: backupDue, markBackup: markBackup, snoozeBackup: snoozeBackup,
     downloadBackup: downloadBackup,
     toast: toast, notice: notice, esc: esc, seededShuffle: seededShuffle

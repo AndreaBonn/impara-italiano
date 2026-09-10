@@ -111,5 +111,23 @@ module.exports = defineConfig([
       globals: { ...globals.node, ...globals.browser, ...KURS }
     },
     rules: { "no-unused-vars": NIEUZYWANE }
+  },
+
+  {
+    /* The same nature as the block above and a different syntax, which is
+       why it cannot join it: build_og.mjs drives Chromium, so the bodies of
+       its `page.evaluate` calls run in the browser, but the file is a module
+       with a top-level await and would not parse as commonjs.
+
+       Narrow on purpose, one file rather than `scripts/**`: the other
+       nineteen scripts never touch a browser, and handing them `document`
+       would turn a typo there into working-looking code. */
+    files: ["scripts/build_og.mjs"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: { ...globals.node, ...globals.browser }
+    },
+    rules: { "no-unused-vars": NIEUZYWANE }
   }
 ]);

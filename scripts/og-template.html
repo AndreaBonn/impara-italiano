@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Impara l'Italiano — social preview</title>
+
+<!-- The card is built out of the course's own stylesheet, not out of a copy
+     of its colours. app.css brings three things at once: the two self-hosted
+     families, the OKLCH palette, and the paper background with its two soft
+     radial washes — which is the surface a student actually sees. A card
+     painted from remembered hex values would drift away from the product at
+     the first change of theme, and nothing would report it.
+
+     The address is NOT written here. build_og.mjs injects it from the
+     `homepage` field of package.json, so the image cannot outlive a change
+     of domain while still looking correct. -->
+<link rel="stylesheet" href="../assets/css/app.css">
+
+<style>
+  /* The frame is the deliverable: 1200x630 is what every platform crops to,
+     so the page is exactly that size and never scrolls. */
+  body{
+    width:1200px; height:630px;
+    overflow:hidden;
+    display:flex; align-items:center;
+  }
+
+  /* The tricolore as an edge, not as a decoration in the middle. Three
+     stacked segments on the left rule: sage, paper, rose — the same softened
+     flag the whole course is built on. It occupies 14px of 1200, which keeps
+     the accent well under the share of the surface an accent is allowed. */
+  .og__rule{
+    position:fixed; left:0; top:0; bottom:0; width:14px;
+    display:flex; flex-direction:column;
+  }
+  .og__rule > span{flex:1;}
+  .og__rule > span:nth-child(1){background:var(--salvia-mid);}
+  .og__rule > span:nth-child(2){background:var(--paper-2);}
+  .og__rule > span:nth-child(3){background:var(--rosa-mid);}
+
+  .og__card{padding:0 96px 0 110px;}
+
+  .og__kicker{
+    margin:0 0 26px;
+    font-family:var(--sans);
+    font-size:22px; font-weight:600;
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--rosa-deep);
+  }
+
+  /* The course name stays Italian in every language, exactly as in the rail. */
+  .og__title{
+    margin:0;
+    font-family:var(--display);
+    font-size:112px; font-weight:700;
+    line-height:1; letter-spacing:-.022em;
+    color:var(--ink);
+  }
+
+  .og__lead{
+    margin:30px 0 0;
+    max-width:860px;
+    font-family:var(--sans);
+    font-size:34px; font-weight:400; line-height:1.42;
+    color:var(--ink-soft);
+  }
+
+  .og__foot{
+    margin:46px 0 0;
+    display:flex; align-items:center; gap:18px;
+    font-family:var(--sans);
+    font-size:25px; font-weight:500;
+    color:var(--ink-faint);
+  }
+
+  /* A2 -> C2 as a badge rather than as prose: it is the one claim on the
+     card that is a fact about the syllabus and not a sentence about it. */
+  .og__badge{
+    padding:8px 18px;
+    border-radius:var(--r-s);
+    background:var(--salvia);
+    color:var(--salvia-deep);
+    font-weight:700; letter-spacing:.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="og__rule" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<div class="og__card">
+  <p class="og__kicker">Free · open source · no account</p>
+  <h1 class="og__title">Impara l'Italiano</h1>
+  <p class="og__lead">An Italian course that runs in your browser, works offline,
+    and explains the grammar in the language you already speak.</p>
+  <p class="og__foot">
+    <span class="og__badge">A1 &rarr; C2</span>
+    <span id="adres"></span>
+  </p>
+</div>
+
+</body>
+</html>

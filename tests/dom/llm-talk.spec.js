@@ -160,3 +160,56 @@ test.describe("the second judge in the browser", () => {
     expect(html).toContain("1234");
   });
 });
+
+test.describe("the order of the providers", () => {
+  const leggi = (page) => page.$$eval(".js-llm-key", (n) => n.map((x) => x.getAttribute("data-id")));
+
+  test("moving one up changes who is asked first, and it survives a reload", async ({ page }) => {
+    await page.goto("/index.html#/impostazioni");
+    await page.waitForSelector(".js-llm-key");
+    expect(await leggi(page)).toEqual(["gemini", "groq", "openai", "anthropic"]);
+
+    await page.click('.js-llm-up[data-id="openai"]');
+    await page.waitForSelector(".js-llm-key");
+    expect(await leggi(page)).toEqual(["gemini", "openai", "groq", "anthropic"]);
+
+    /* The setting is saved through the same debounce as every other one, so
+       the wait is about the course's own timing and not about this feature. */
+    await page.waitForTimeout(400);
+    await page.reload();
+    await page.waitForSelector(".js-llm-key");
+    expect(await leggi(page), "the order was a reshuffle on screen, not a setting")
+      .toEqual(["gemini", "openai", "groq", "anthropic"]);
+  });
+
+  test("the top provider has no way up, and the arrow says which one it moves", async ({ page }) => {
+    await page.goto("/index.html#/impostazioni");
+    await page.waitForSelector(".js-llm-key");
+    /* Three arrows on four rows. A disabled button would read as broken;
+       no button reads as "this one is already first". */
+    await expect(page.locator(".js-llm-up")).toHaveCount(3);
+    /* And each one is named, or a screen reader announces four identical
+       arrows. */
+    const nazwa = await page.locator('.js-llm-up[data-id="openai"]').getAttribute("aria-label");
+    expect(nazwa).toContain("OpenAI");
+  });
+
+  test("an order arriving from somebody else's backup cannot break the list", async ({ page }) => {
+    /* The order lives in settings, and settings travel inside the exported
+       profile. A file naming providers we do not serve, or naming one of
+       them twice, must still leave four usable rows. */
+    await page.addInitScript(() => {
+      window.localStorage.setItem("linguai.italiano.v2", JSON.stringify({
+        schema: 2,
+        settings: { lang: "pl", llmOrder: ["mistral", "openai", "openai", "__proto__"] }
+      }));
+    });
+    await page.goto("/index.html#/impostazioni");
+    await page.waitForSelector(".js-llm-key");
+
+    const rzad = await leggi(page);
+    expect(rzad).toHaveLength(4);
+    expect(new Set(rzad).size, "a provider appeared twice").toBe(4);
+    expect(rzad[0], "the one name in the file we do serve should lead").toBe("openai");
+  });
+});

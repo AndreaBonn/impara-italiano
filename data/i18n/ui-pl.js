@@ -631,6 +631,8 @@ LINGUAI.addUI("pl", {
   "talk.checking": "Sprawdzam…",
   "llm.title": "Sprawdzanie odpowiedzi przez model",
   "llm.hint": "Kurs porównuje odpowiedzi litera po literze, więc odrzuca zdania poprawne, ale ułożone inaczej. Możesz dać mu drugą opinię: wklej klucz do dostawcy, którego masz, a kurs zapyta go dopiero wtedy, gdy sam odrzuci twoją odpowiedź. Klucz zostaje na tym urządzeniu, a za zapytania płacisz ty.",
+  "llm.moveUp": "Przesuń {name} wyżej w kolejności",
+  "llm.orderHint": "Kurs pyta pierwszego dostawcę, który ma klucz, i przechodzi do następnego dopiero wtedy, gdy tamten zawiedzie. Strzałką zmieniasz kolejność.",
   "llm.keySaved": "klucz zapisany — wpisz nowy, aby go zmienić",
   "llm.keyEmpty": "wklej klucz",
   "llm.test": "Sprawdź",

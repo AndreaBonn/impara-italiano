@@ -29,7 +29,7 @@ Włoski jest zawsze językiem **uczonym**. Językiem **wyjaśnień** jest polski
   jeden obiekt do `window` i czyta cudze przez `global.<Nazwa>`. Kolejność w `index.html` JEST
   deklaracją zależności: plik czytający cudzy globalny przy wykonaniu modułu (a nie dopiero
   w środku funkcji) musi stać po nim. Ta sama kolejność jest powtórzona w `sw.js` (PRECACHE)
-  i w stałych `CORE` / `VERBS` / `LEMMA` w `tests/unit/_harness.mjs` — trzy miejsca, jedna prawda.
+  i w stałych `CORE` / `VERBS` / `LEMMA` / `LLM` w `tests/unit/_harness.mjs` — trzy miejsca, jedna prawda.
 
 ### Mapa silnika
 
@@ -58,6 +58,20 @@ przed `exercises-choice/text/voice.js` (czternaście typów, wołają `Ex.regist
 `views.js` (skorupa i `Views.shell`) przed kilkunastoma `views-*.js`, po jednym na ekran;
 `pwa-rules.js` (trzy decyzje o zapowiedzi nowej wersji, czyste funkcje) przed `pwa.js`
 (rejestracja, nasłuchy, komunikat, przeładowanie).
+
+Tą samą granicą idzie drugi sędzia odpowiedzi otwartych: `llm-providers.js` (tabela
+czterech dostawców, cztery czyste funkcje na każdego) i `llm-rules.js` (prompt, kolejka,
+odczyt werdyktu, **clamp**) przed `llm.js` (jedyny plik tej funkcji, który dotyka sieci) —
+plus `llm-keys.js`, który trzyma klucze API w **osobnym** pojemniku `linguai.llm.v1`, poza
+stanem: `Store.exportState()` serializuje cały stan do pliku kopii zapasowej, a poświadczenie
+płatne przez ucznia nie ma prawa tam trafić. Nazwa `Keys` jest zajęta przez `keys.js`.
+
+`clamp` w `llm-rules.js` jest tu rzeczą, której nie wolno rozluźnić: model pytany jest
+**wyłącznie** o odpowiedź już odrzuconą lokalnie, a jego zdanie wchodzi przez `ok || promote`.
+Nie istnieje ścieżka, w której model zamienia zaakceptowaną odpowiedź na odrzuconą — i jest to
+własność kodu, nie promptu, więc przeżywa model, który kłamie, i podmianę dostawcy. Bez klucza,
+bez zgody albo z `file://` kurs zachowuje się dokładnie tak jak wcześniej: `Llm.available()`
+milczy, a `judge()` oddaje `null`.
 
 Ta sama zasada dotyczy dwóch ekranów, na których przebieg jest czymś więcej niż rysowaniem:
 `talk-run.js` (rozmowa: rozwidlenia, wynik, powrót na ostatni wybór) przed `views-talk.js`,
@@ -479,11 +493,11 @@ z poprzedniej wersji tego pliku.
 | Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
-| Klucze interfejsu na język | 782 × 5 języków |
-| Pliki silnika | 64 w `assets/js/`, 12 087 linii |
-| Testy jednostkowe | 826 przebiegów w 34 plikach, zielone |
-| Testy DOM | 241 przebiegów w 32 plikach, zielone |
-| Pokrycie silnika testami jednostkowymi | 99,8% (`node scripts/coverage.mjs`), próg w CI: 99 |
+| Klucze interfejsu na język | 812 × 5 języków |
+| Pliki silnika | 68 w `assets/js/`, 13 408 linii |
+| Testy jednostkowe | 915 przebiegów w 38 plikach, zielone |
+| Testy DOM | 251 przebiegów w 33 plikach, zielone |
+| Pokrycie silnika testami jednostkowymi | 99,3% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
 „29 testów jednostkowych, 17 DOM". Były prawdziwe w dniu wprowadzenia suity i przestały być
@@ -504,14 +518,15 @@ tabeli. Trzy deklaracje, nie trzy przeoczenia.
 sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
 `assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
-decyzji w silniku (34 mutacje w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js` i `pwa.js`) i wymaga, żeby wskazany
+decyzji w silniku (45 mutacji w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
+`llm-rules.js` i `llm-providers.js`) i wymaga, żeby wskazany
 plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
 puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
 `cils-hint`, `cils.limit` łapiące `cils.limitLabel`.
 
 Trzy rzeczy, które trzeba o niej wiedzieć:
 
-- **Zasięg jest wąski i zadeklarowany.** Dwa pliki z sześćdziesięciu. „27/27" nie znaczy
+- **Zasięg jest wąski i zadeklarowany.** Sześć plików z sześćdziesięciu ośmiu. „27/27" nie znaczy
   „silnik sprawdzony", znaczy „te 27 decyzji sprawdzone". Nowy plik z czystymi funkcjami
   to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
 - **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po

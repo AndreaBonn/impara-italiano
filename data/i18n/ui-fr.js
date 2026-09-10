@@ -630,6 +630,8 @@ LINGUAI.addUI("fr", {
   "talk.checking": "Vérification…",
   "llm.title": "Vérification des réponses par un modèle",
   "llm.hint": "Le cours compare les réponses lettre par lettre : il refuse donc des phrases correctes mais tournées autrement. Tu peux lui donner un second avis : colle la clé d'un fournisseur que tu as déjà, et le cours ne l'interrogera qu'après avoir refusé ta réponse lui-même. La clé reste sur cet appareil et les requêtes te sont facturées.",
+  "llm.moveUp": "Remonter {name} dans l'ordre",
+  "llm.orderHint": "Le cours interroge le premier fournisseur qui a une clé et ne passe au suivant que lorsque celui-là échoue. La flèche change l'ordre.",
   "llm.keySaved": "clé enregistrée — saisis-en une autre pour la remplacer",
   "llm.keyEmpty": "colle une clé",
   "llm.test": "Essayer",

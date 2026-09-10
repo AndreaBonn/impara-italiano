@@ -21,6 +21,38 @@
      SETTINGS
      ═══════════════════════════════════════════════════════════ */
   /** A row of the "browser support" table. */
+  /**
+   * The four providers in the student's own order.
+   *
+   * Rebuilt from the provider table rather than returned as stored. The
+   * order lives in the settings, and the settings ride inside the backup
+   * file the course tells students to keep and carry — so it can arrive
+   * naming something we do not serve, or missing one of the four. Filtering
+   * through the table and appending whatever is left keeps the result a
+   * permutation of what actually exists, whatever the file said.
+   */
+  function kolejnoscDostawcow() {
+    var zapisana = Core.state.settings.llmOrder;
+    var wybrana = Array.isArray(zapisana) ? zapisana : [];
+    var znane = LlmProviders.list();
+    var out = [];
+    function juzJest(id) {
+      return out.some(function (x) { return x.id === id; });
+    }
+    /* By id, not by reference: `out` holds copies, so looking for the table's
+       own object in it never finds anything and a name repeated in the file
+       is added twice — four rows become five, and one provider owns two key
+       fields that overwrite each other. */
+    wybrana.forEach(function (id) {
+      var p = LlmProviders.get(id);
+      if (p && !juzJest(p.id)) out.push({ id: p.id, label: p.label, model: p.model });
+    });
+    znane.forEach(function (p) {
+      if (!juzJest(p.id)) out.push(p);
+    });
+    return out;
+  }
+
   function supportRow(name, note, ok, chip) {
     return '<div class="list-row"><span class="list-row__main"><b>' + esc(name) + "</b><span>" + esc(note) +
       '</span></span><span class="chip ' + (ok ? "chip--green" : "") + '">' + esc(chip) + "</span></div>";
@@ -127,15 +159,26 @@
          withdrawn, and a promise no view can keep is a false sentence. */
       '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("llm.title") + "</h3>" +
       '<p style="color:var(--ink-soft);font-size:.9rem">' + esc(t("llm.hint")) + "</p>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem">' + esc(t("llm.orderHint")) + "</p>" +
       '<div class="stack" style="margin-top:12px">' +
-      LlmProviders.list().map(function (p) {
+      /* In the student's own order, and numbered, because the order IS the
+         setting: the course asks the first provider that has a key and only
+         moves on when it fails. Without the number on screen, the list looks
+         like four equal fields and the choice looks like it does not exist. */
+      kolejnoscDostawcow().map(function (p, n) {
         var zapisany = LlmKeys.get(p.id);
         return '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' +
-          esc(p.label) + (zapisany ? ' <span style="font-weight:400;color:var(--ink-soft)">' +
+          '<span style="color:var(--ink-soft)">' + (n + 1) + ".</span> " + esc(p.label) +
+          (zapisany ? ' <span style="font-weight:400;color:var(--ink-soft)">' +
             esc(LlmKeys.fingerprint(zapisany)) + "</span>" : "") + "</span>" +
-          '<span style="display:flex;gap:8px;flex-wrap:wrap">' +
-          '<input type="password" class="field js-llm-key" data-id="' + esc(p.id) + '" style="max-width:340px"' +
+          '<span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+          '<input type="password" class="field js-llm-key" data-id="' + esc(p.id) + '" style="max-width:300px"' +
           ' autocomplete="off" spellcheck="false" placeholder="' + esc(t(zapisany ? "llm.keySaved" : "llm.keyEmpty")) + '">' +
+          /* The first one has nowhere to go up to. A disabled button would
+             read as broken; no button reads as "this is already the top". */
+          (n === 0 ? "" :
+            '<button type="button" class="btn btn--quiet btn--sm js-llm-up" data-id="' + esc(p.id) +
+            '" aria-label="' + esc(t("llm.moveUp", { name: p.label })) + '">↑</button>') +
           '<button class="btn btn--quiet btn--sm js-llm-test" data-id="' + esc(p.id) + '">' + t("llm.test") + "</button>" +
           "</span></label>";
       }).join("") +
@@ -220,6 +263,26 @@
     /* ---------------- The second judge ---------------- */
 
     var llmFb = el().querySelector(".js-llm-fb");
+
+    /* Moving a provider one place up.
+       The stored order is rebuilt from the provider table every time rather
+       than trusted as it stands: it lives in the settings, and the settings
+       travel inside the exported backup, so it can arrive from a file
+       somebody else wrote with names we do not serve or with one of the four
+       missing. Filtering through the table and appending the rest keeps it a
+       permutation of what the course actually offers. */
+    el().querySelectorAll(".js-llm-up").forEach(function (przycisk) {
+      przycisk.addEventListener("click", function () {
+        var id = przycisk.getAttribute("data-id");
+        var lista = kolejnoscDostawcow().map(function (p) { return p.id; });
+        var n = lista.indexOf(id);
+        if (n <= 0) return;
+        lista.splice(n - 1, 0, lista.splice(n, 1)[0]);
+        Core.state.settings.llmOrder = lista;
+        Core.save();
+        App.go("impostazioni");
+      });
+    });
 
     /** A message under the fields. `textContent`: providers quote the key
         back inside their errors, and `LlmKeys.redact` has already taken it

@@ -630,6 +630,8 @@ LINGUAI.addUI("es", {
   "talk.checking": "Comprobando…",
   "llm.title": "Revisión de respuestas por un modelo",
   "llm.hint": "El curso compara las respuestas letra por letra, así que rechaza frases correctas pero formuladas de otra manera. Puedes darle una segunda opinión: pega la clave de un proveedor que ya tengas y el curso preguntará solo cuando él mismo haya rechazado tu respuesta. La clave se queda en este dispositivo y las peticiones las pagas tú.",
+  "llm.moveUp": "Subir {name} en el orden",
+  "llm.orderHint": "El curso pregunta al primer proveedor que tenga clave y pasa al siguiente solo cuando ese falla. La flecha cambia el orden.",
   "llm.keySaved": "clave guardada: escribe otra para cambiarla",
   "llm.keyEmpty": "pega una clave",
   "llm.test": "Probar",

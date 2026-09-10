@@ -620,6 +620,8 @@ LINGUAI.addUI("en", {
   "talk.checking": "Checking…",
   "llm.title": "Answer checking by a model",
   "llm.hint": "The course compares answers letter by letter, so it rejects sentences that are correct but worded differently. You can give it a second opinion: paste a key for a provider you already have, and the course will ask only once it has rejected your answer itself. The key stays on this device, and the requests are billed to you.",
+  "llm.moveUp": "Move {name} up the order",
+  "llm.orderHint": "The course asks the first provider that has a key, and moves to the next one only when that one fails. The arrow changes the order.",
   "llm.keySaved": "key saved — type a new one to replace it",
   "llm.keyEmpty": "paste a key",
   "llm.test": "Try it",

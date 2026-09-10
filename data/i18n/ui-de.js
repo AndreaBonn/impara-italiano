@@ -625,6 +625,8 @@ LINGUAI.addUI("de", {
   "talk.checking": "Prüfe…",
   "llm.title": "Antwortprüfung durch ein Modell",
   "llm.hint": "Der Kurs vergleicht Antworten Buchstabe für Buchstabe und lehnt deshalb Sätze ab, die richtig, aber anders formuliert sind. Du kannst ihm eine zweite Meinung geben: Füge den Schlüssel eines Anbieters ein, den du schon hast, und der Kurs fragt ihn erst, wenn er deine Antwort selbst abgelehnt hat. Der Schlüssel bleibt auf diesem Gerät, und die Anfragen zahlst du selbst.",
+  "llm.moveUp": "{name} in der Reihenfolge nach oben",
+  "llm.orderHint": "Der Kurs fragt den ersten Anbieter, der einen Schlüssel hat, und geht erst zum nächsten über, wenn dieser ausfällt. Der Pfeil ändert die Reihenfolge.",
   "llm.keySaved": "Schlüssel gespeichert — tippe einen neuen, um ihn zu ersetzen",
   "llm.keyEmpty": "Schlüssel einfügen",
   "llm.test": "Testen",

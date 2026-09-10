@@ -12,11 +12,11 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine, CORE, VERBS } from "./_harness.mjs";
+import { loadEngine, CORE, VERBS, LEMMA } from "./_harness.mjs";
 
 function silnik(czytanki) {
   const box = loadEngine({
-    files: [...VERBS, "assets/js/lemma.js", "assets/js/frequency.js"]
+    files: [...VERBS, ...LEMMA, "assets/js/frequency.js"]
   });
   box.sandbox.READINGS = czytanki || [];
   box.sandbox.Lemma.uzyjSlownika(null);
@@ -123,7 +123,7 @@ describe("frequency: skąd biorą się dwa zbiory", () => {
      ekran mówi „0% pokrycia" i wygląda to na wynik nauki, nie na usterkę. */
   function zSilnikiem() {
     const box = loadEngine({
-      files: [...CORE, ...VERBS, "assets/js/lemma.js", "assets/js/frequency.js"]
+      files: [...CORE, ...VERBS, ...LEMMA, "assets/js/frequency.js"]
     });
     box.Core.load();
     box.sandbox.READINGS = [];

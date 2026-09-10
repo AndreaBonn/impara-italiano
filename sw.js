@@ -25,7 +25,7 @@
    ============================================================ */
 
 /* Podnieś przy każdej zmianie plików z PRECACHE. */
-var SW_VERSION = "v31";
+var SW_VERSION = "v32";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Nagrania są adresowane treścią, więc ich pamięć przeżywa zmianę wersji. */
@@ -53,6 +53,7 @@ var PRECACHE = [
   "./assets/js/views-speed.js",
   "./assets/js/cils.js",
   "./assets/js/cils-run.js",
+  "./assets/js/cils-html.js",
   "./assets/js/views-cils.js",
   "./assets/js/verbs-data.js",
   "./assets/js/verbs.js",
@@ -81,6 +82,7 @@ var PRECACHE = [
   "./assets/js/views-phonetics.js",
   "./assets/js/views-placement.js",
   "./assets/js/writing.js",
+  "./assets/js/lemma-morf.js",
   "./assets/js/lemma.js",
   "./assets/js/views-lookup.js",
   "./assets/js/anki.js",

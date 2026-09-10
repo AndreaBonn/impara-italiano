@@ -29,7 +29,7 @@ Włoski jest zawsze językiem **uczonym**. Językiem **wyjaśnień** jest polski
   jeden obiekt do `window` i czyta cudze przez `global.<Nazwa>`. Kolejność w `index.html` JEST
   deklaracją zależności: plik czytający cudzy globalny przy wykonaniu modułu (a nie dopiero
   w środku funkcji) musi stać po nim. Ta sama kolejność jest powtórzona w `sw.js` (PRECACHE)
-  i w stałych `CORE` / `VERBS` w `tests/unit/_harness.mjs` — trzy miejsca, jedna prawda.
+  i w stałych `CORE` / `VERBS` / `LEMMA` w `tests/unit/_harness.mjs` — trzy miejsca, jedna prawda.
 
 ### Mapa silnika
 
@@ -63,12 +63,28 @@ a `cils-run.js` (podejście do egzaminu: kolejność sekcji, siatka odpowiedzi, 
 historii) przed `views-cils.js`. Widok w obu wypadkach rysuje i podpina zdarzenia; nie
 trzyma stanu.
 
+Egzamin ma jeszcze trzecią warstwę, bo jego markup jest decyzją, a nie ozdobą:
+`cils-html.js` (globalna `CilsHtml`, same funkcje dane -> napis) przed `views-cils.js`.
+Tam siedzi siatka odpowiedzi: `name` radia wspólny dla jednego pytania i różny dla dwóch,
+`data-p`/`data-i` zgodne z siatką `cils-run.js`, numerowanie luk w cloze, brak przycisku
+nagrywania bez mikrofonu. Każda z tych rzeczy psuje się cicho (uczeń widzi skutek na
+wyniku, nie na ekranie) i każda sprawdza się jednym assertem w `node:test`.
+
+Tą samą granicą przechodzi lematyzacja: `lemma-morf.js` (globalna `LemmaMorf`: rozcięcie
+formy złożonej, liczba mnoga, rodzaj, stopień najwyższy, akcent toniczny, enklityki,
+zamknięta lista wyrazów funkcyjnych) przed `lemma.js` (indeks odwrotny z koniugatora,
+słownik kursu, werdykt). To jest podział na KANDYDATÓW i WERDYKT: reguła formy jest czystą
+funkcją napisu, werdykt wymaga zbudowanego słownika całego kursu.
+
 Kryterium podziału jest wszędzie to samo i nie jest nim długość pliku: **czysta funkcja
 osobno od tego, co dotyka przeglądarki**. Pierwsza połowa daje się sprawdzić w `node:test`
 za grosze, druga wymaga Playwrighta — i dopóki mieszkają w jednym pliku, cały plik kosztuje
 tyle, co ta droższa połowa. Odwrotnie też: nie dzielimy dlatego, że plik jest długi.
 `store.js` i `verbs-data.js` zostają w całości, bo rozbicie ich rozdzieliłoby rzeczy, które
-muszą się zgadzać (tożsamość rekordu w stanie, tabele jednego języka).
+muszą się zgadzać (tożsamość rekordu w stanie, tabele jednego języka). `views-cils.js`
+(306 linii) też zostaje: po wyprowadzeniu przebiegu i markupu każda jego linia dotyka
+zegara, DOM-u albo mikrofonu, więc dalszy podział szedłby już za liczbą linii, a nie za
+granicą czystości.
 
 ## Kontrakty
 
@@ -339,8 +355,8 @@ z poprzedniej wersji tego pliku.
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
 | Klucze interfejsu na język | 671 × 5 języków |
-| Pliki silnika | 58 w `assets/js/`, 11 012 linii |
-| Testy jednostkowe | 717 przebiegów w 30 plikach, zielone |
+| Pliki silnika | 60 w `assets/js/`, 11 183 linii |
+| Testy jednostkowe | 786 przebiegów w 32 plikach, zielone |
 | Testy DOM | 198 przebiegów w 26 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,8% (`node scripts/coverage.mjs`), próg w CI: 99 |
 

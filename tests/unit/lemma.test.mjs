@@ -8,7 +8,7 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine, VERBS } from "./_harness.mjs";
+import { loadEngine, VERBS, LEMMA } from "./_harness.mjs";
 
 /* Tablice z piaskownicy mają prototyp z innego realm, więc deepEqual w
    trybie strict odrzuca ["bere"] wobec ["bere"]. Kopiujemy zawartość, tak
@@ -17,7 +17,7 @@ const zZewnatrz = xs => Array.from(xs);
 
 /** Silnik z podstawionym słownikiem: test nie ładuje całego kursu. */
 function zeSlownikiem(hasla, czasowniki) {
-  const box = loadEngine({ files: [...VERBS, "assets/js/lemma.js"] });
+  const box = loadEngine({ files: [...VERBS, ...LEMMA] });
   const L = box.sandbox.Lemma;
   const zbior = new Set(hasla);
   L.uzyjSlownika(w => zbior.has(w));
@@ -125,7 +125,7 @@ describe("lemma: hasło z akcentem, forma z tekstu bez", () => {
      drugim — i ma zwracać formę KANONICZNĄ, nie tę z tekstu, inaczej karta
      pokazuje wyraz bez glosy i bez nagrania. */
   test("dotknięcie formy bez akcentu daje hasło z akcentem", () => {
-    const box = loadEngine({ files: [...VERBS, "assets/js/lemma.js"] });
+    const box = loadEngine({ files: [...VERBS, ...LEMMA] });
     const L = box.sandbox.Lemma;
     /* Ścieżką produkcyjną: słownik buduje się z READINGS, tak jak w
        przeglądarce. Podstawienie własnego predykatu ominęłoby aliasy. */
@@ -137,7 +137,7 @@ describe("lemma: hasło z akcentem, forma z tekstu bez", () => {
   });
 
   test("forma z akcentem nadal działa sama z siebie", () => {
-    const box = loadEngine({ files: [...VERBS, "assets/js/lemma.js"] });
+    const box = loadEngine({ files: [...VERBS, ...LEMMA] });
     const L = box.sandbox.Lemma;
     box.sandbox.READINGS = [{ glossIt: [], lexIt: ["pèsca"] }];
     L.uzyjSlownika(null);

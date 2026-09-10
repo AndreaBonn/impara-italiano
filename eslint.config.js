@@ -32,7 +32,7 @@ const globals = require("globals");
    „readonly". Lista pochodzi z przypisań `global.` w assets/js/**, nie
    z pamięci. */
 const KURS = [
-  "Anki", "App", "Audio2", "Cils", "CilsRun", "Consent", "Core", "Drills", "Errors", "Ex",
+  "Anki", "App", "Audio2", "Cils", "CilsHtml", "CilsRun", "Consent", "Core", "Drills", "Errors", "Ex",
   "Frequency", "Fsrs", "I18n", "Keys", "Lemma", "Lex", "LINGUAI", "Lookup",
   "Placement", "PWA", "Recorder", "Router", "Search", "Talk", "Train", "Verbs", "Views", "Writing",
   /* dane kursu: pliki z data/ przypisują je do globalnego zakresu */

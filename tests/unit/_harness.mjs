@@ -42,6 +42,12 @@ export const CORE = [
 export const VERBS = ["assets/js/verbs-data.js", "assets/js/verbs.js"];
 
 /**
+ * Lematyzacja: reguły formy przed rozstrzyganiem, ta sama kolejność co
+ * w index.html. lemma.js czyta LemmaMorf przy wykonaniu modułu.
+ */
+export const LEMMA = ["assets/js/lemma-morf.js", "assets/js/lemma.js"];
+
+/**
  * Dźwięk: indeks nagrań przed recordings.js, recordings.js przed audio.js.
  * Oba czytają swojego poprzednika przy wykonaniu modułu, nie w funkcji.
  */

@@ -50,6 +50,7 @@ vm.createContext(box);
 for (const p of [
   "assets/js/verbs-data.js",
   "assets/js/verbs.js",
+  "assets/js/lemma-morf.js",
   "assets/js/lemma.js",
   "data/core/curriculum-index.js",
   ...readdirSync(join(ROOT, "data", "core")).filter(f => /^[abc]\d-\d+\.js$/.test(f)).sort()

@@ -1,119 +1,241 @@
 /* ============================================================
-   Nazwy nagrań i ocena wymowy (assets/js/audio.js).
+   Wybór źródła głosu i ocena wymowy (assets/js/audio.js).
 
-   Nazwa pliku nagrania to skrót FNV-1a 64-bit treści zdania, liczony
-   DWA RAZY, w dwóch językach: `hashText()` tutaj i `audio_hash()` w
-   scripts/build_audio.py. Rozjazd między nimi nie wywraca niczego —
-   po prostu każde nagranie staje się nieosiągalne, kurs cicho schodzi
-   na syntezę systemową i brzmi jak espeak, a w konsoli nie ma ani
-   jednego błędu. To jest dokładnie ten rodzaj awarii, którego nie widać
-   w code review.
+   Nazwy plików nagrań sprawdza recordings.test.mjs. Tutaj jest to, co
+   audio.js robi PONAD indeksem: kaskada nagranie → synteza → cisza.
 
-   Dlatego główny test nie sprawdza skrótu wobec drugiej implementacji
-   napisanej tutaj (to potwierdzałoby samo siebie), tylko wobec PLIKÓW
-   NA DYSKU, które wyprodukował Python: dla każdego z 3493 zdań z
-   scripts/audio-strings.json musi istnieć audio/<xx>/<skrót>.mp3.
+   Każda gałąź tej kaskady jest decyzją podjętą świadomie i opisaną w
+   komentarzu przy kodzie, a żadna z nich nie wywraca kursu, kiedy się
+   zepsuje: zdanie po prostu leci nie tym głosem albo nie leci wcale.
+   Ucho to wychwytuje, testy dotąd nie — bo cała kaskada wisiała na
+   trzech obiektach przeglądarki, których w node nie ma. Od atrap w
+   _harness.mjs (`speechSynthesis`, `SpeechSynthesisUtterance`, `Audio`)
+   da się ją przejść całą.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { loadEngine, CORE, ROOT } from "./_harness.mjs";
+import { loadEngine, glos, CORE, AUDIO, ROOT } from "./_harness.mjs";
 
-const PLIKI = [...CORE, "data/audio-index.js", "assets/js/audio.js"];
+const NAPISY = JSON.parse(readFileSync(join(ROOT, "scripts", "audio-strings.json"), "utf8"));
+const Z_KURSU = NAPISY.primary[0];
+const SPOZA_KURSU = "questa frase non esiste in nessuna lezione del corso";
 
-function silnik() {
-  const box = loadEngine({ files: PLIKI });
+/** Silnik z dźwiękiem. `opts` idzie prosto do atrap przeglądarki. */
+function silnik(opts) {
+  const box = loadEngine(Object.assign({
+    files: [...CORE, ...AUDIO],
+    voices: [glos("Isabella", "it-IT")]
+  }, opts || {}));
   box.Core.load();
   return box;
 }
 
-const A = silnik().sandbox.Audio2;
-
-/** Lista zdań do nagrania, tak jak ją widzi scripts/extract_strings.mjs. */
-const NAPISY = JSON.parse(readFileSync(join(ROOT, "scripts", "audio-strings.json"), "utf8"));
-const WSZYSTKIE = NAPISY.primary.concat(NAPISY.other);
-
-/** Ścieżka pliku nagrania, ta sama, którą buduje audio.js. */
-function plik(skrot) {
-  return join(ROOT, "audio", skrot.slice(0, 2), skrot + ".mp3");
+/** Odczekanie na mikrozadania: `play()` oddaje obietnicę, nie wynik. */
+function mikrozadania() {
+  return new Promise((r) => setImmediate(r));
 }
 
-describe("skrót treści zdania", () => {
-  test("ma szesnaście znaków szesnastkowych, zawsze", () => {
-    ["Ciao", "a", "Buongiorno a tutti, come state oggi?"].forEach(s => {
-      assert.match(A.hashText(s), /^[0-9a-f]{16}$/, `zły kształt skrótu dla „${s}”`);
+describe("wybór źródła głosu", () => {
+  test("zdanie z kursu leci z nagrania, nie z syntezatora", () => {
+    const box = silnik();
+    box.sandbox.Audio2.speak(Z_KURSU);
+
+    assert.equal(box.audio.odtwarzacze.length, 1, "nie sięgnięto po odtwarzacz nagrań");
+    assert.match(box.audio.odtwarzacze[0].src, /^audio\/[0-9a-f]{2}\/[0-9a-f]{16}\.mp3$/);
+    assert.equal(box.audio.wypowiedzi.length, 0, "syntezator systemowy nie ma tu nic do roboty");
+  });
+
+  test("zdanie spoza kursu schodzi na syntezę systemową", () => {
+    const box = silnik();
+    box.sandbox.Audio2.speak(SPOZA_KURSU);
+
+    assert.equal(box.audio.odtwarzacze.length, 0, "nie ma dla czego otwierać odtwarzacza");
+    assert.equal(box.audio.wypowiedzi.length, 1);
+    assert.equal(box.audio.wypowiedzi[0].text, SPOZA_KURSU);
+  });
+
+  test("ustawienie „system” pomija nagrania także dla zdania z kursu", () => {
+    const box = silnik();
+    box.Core.state.settings.voiceSource = "system";
+    box.sandbox.Audio2.speak(Z_KURSU);
+
+    assert.equal(box.audio.odtwarzacze.length, 0);
+    assert.equal(box.audio.wypowiedzi.length, 1, "uczeń wybrał syntezator i ma go dostać");
+  });
+
+  test("forceSystem obchodzi nagrania bez ruszania ustawień ucznia", () => {
+    const box = silnik();
+    box.sandbox.Audio2.speak(Z_KURSU, { forceSystem: true });
+
+    assert.equal(box.audio.wypowiedzi.length, 1);
+    assert.equal(box.Core.state.settings.voiceSource, "natural", "ustawienie ucznia zostaje nietknięte");
+  });
+
+  test("pusty tekst nie budzi ani nagrania, ani syntezatora, ale domyka zwrotkę", () => {
+    const box = silnik();
+    let domkniete = 0;
+    const wynik = box.sandbox.Audio2.speak("   ", { onend: () => domkniete++ });
+
+    assert.equal(wynik, false);
+    assert.equal(domkniete, 1, "widok czeka na onend, żeby przejść dalej");
+    assert.equal(box.audio.odtwarzacze.length, 0);
+    assert.equal(box.audio.wypowiedzi.length, 0);
+  });
+});
+
+describe("tempo odtwarzania", () => {
+  /* W trybie nagrań tempo to playbackRate, nie rate wypowiedzi: Chrome
+     zachowuje przy nim wysokość dźwięku, więc wolniej nadal brzmi po ludzku. */
+  test("tempo z ustawień trafia w odtwarzacz", () => {
+    const box = silnik();
+    box.Core.state.settings.rate = 0.75;
+    box.sandbox.Audio2.speak(Z_KURSU);
+
+    assert.equal(box.audio.odtwarzacze[0].playbackRate, 0.75);
+  });
+
+  test("tempo spoza rozsądnego zakresu jest przycinane, nie przyjmowane", () => {
+    const box = silnik();
+    box.sandbox.Audio2.speak(Z_KURSU, { rate: 9 });
+    assert.equal(box.audio.odtwarzacze[0].playbackRate, 2, "górna granica");
+
+    box.sandbox.Audio2.speak(Z_KURSU, { rate: 0.05 });
+    assert.equal(box.audio.odtwarzacze[0].playbackRate, 0.5, "dolna granica");
+  });
+});
+
+describe("kiedy nagranie nie zagra", () => {
+  test("blokada autoodtwarzania zostawia ciszę, nie podmienia lektora na syntezator", async () => {
+    /* Przeglądarka odmawia odtworzenia bez wcześniejszego gestu użytkownika.
+       Zejście stąd na syntezę systemową podmieniłoby głos kursu na espeak
+       w sytuacji, w której z nagraniem nie jest nic nie tak. */
+    const box = silnik({ zachowaniePlay: "not-allowed" });
+    let domkniete = 0;
+    box.sandbox.Audio2.speak(Z_KURSU, { onend: () => domkniete++ });
+    await mikrozadania();
+
+    assert.equal(box.audio.wypowiedzi.length, 0, "cisza, nie syntezator");
+    assert.equal(domkniete, 1, "widok i tak musi ruszyć dalej");
+    assert.deepEqual(box.toasts, [], "to nie jest awaria, więc nie ma o czym mówić uczniowi");
+  });
+
+  test("pliku nie da się wczytać: schodzimy na syntezę i mówimy o tym raz", async () => {
+    const box = silnik({ zachowaniePlay: "blad" });
+    box.sandbox.Audio2.speak(Z_KURSU);
+    await mikrozadania();
+
+    assert.equal(box.audio.wypowiedzi.length, 1, "zdanie ma zostać wypowiedziane mimo braku pliku");
+    assert.deepEqual(box.toasts, ["audio.recordingFailed"]);
+
+    box.sandbox.Audio2.speak(NAPISY.primary[1]);
+    await mikrozadania();
+    assert.deepEqual(box.toasts, ["audio.recordingFailed"],
+      "ostrzeżenie raz na sesję: przy liście słówek poleciałoby przy każdym haśle");
+  });
+
+  test("awaria zgłoszona dwa razy odtwarza zdanie tylko raz", async () => {
+    /* Brakujący plik zgłasza się i przez onerror, i przez odrzuconą
+       obietnicę z play(). Bez flagi zdanie poleciałoby podwójnie. */
+    const box = silnik({ zachowaniePlay: "blad" });
+    box.sandbox.Audio2.speak(Z_KURSU);
+    box.audio.odtwarzacze[0].onerror();
+    await mikrozadania();
+
+    assert.equal(box.audio.wypowiedzi.length, 1);
+  });
+});
+
+describe("przerwanie", () => {
+  test("stop() ucisza syntezator i zatrzymuje odtwarzacz", () => {
+    const box = silnik();
+    box.sandbox.Audio2.speak(Z_KURSU);
+    const przed = box.audio.anulowania;
+    box.sandbox.Audio2.stop();
+
+    assert.ok(box.audio.anulowania > przed, "synteza ma zostać anulowana");
+    assert.ok(box.audio.odtwarzacze[0].pauzy > 0, "odtwarzacz ma stanąć");
+  });
+
+  test("spóźniony koniec przerwanego zdania nie woła zwrotki widoku", () => {
+    /* Router woła stop() przy każdym wyjściu z trasy. Zdanie, które
+       skończy się po tym, należy do ekranu, którego już nie ma. */
+    const box = silnik();
+    let domkniete = 0;
+    box.sandbox.Audio2.speak(Z_KURSU, { onend: () => domkniete++ });
+    const gracz = box.audio.odtwarzacze[0];
+
+    box.sandbox.Audio2.stop();
+    gracz.onended();
+
+    assert.equal(domkniete, 0, "onend cudzego ekranu przewinąłby lekcję o jeden krok");
+  });
+});
+
+describe("głos systemowy", () => {
+  test("bez włoskiego głosu jest cisza i jedno ostrzeżenie, nie czytanie po angielsku", () => {
+    /* Bez głosu it-* przeglądarka nie honoruje u.lang i czyta włoskie
+       zdanie akcentem angielskim: dla kursu wymowy gorsze niż cisza. */
+    const box = silnik({ voices: [glos("Daniel", "en-GB")] });
+    let domkniete = 0;
+    const wynik = box.sandbox.Audio2.speak(SPOZA_KURSU, { onend: () => domkniete++ });
+
+    assert.equal(wynik, false);
+    assert.equal(box.audio.wypowiedzi.length, 0);
+    assert.equal(domkniete, 1);
+    assert.deepEqual(box.toasts, ["audio.noItalianVoice"]);
+
+    box.sandbox.Audio2.speak(SPOZA_KURSU);
+    assert.deepEqual(box.toasts, ["audio.noItalianVoice"], "raz na sesję");
+  });
+
+  test("z kilku głosów włoskich wygrywa neuronowy, nie pierwszy z listy", () => {
+    const box = silnik({
+      voices: [glos("espeak-ng italiano", "it-IT"), glos("Google italiano", "it-IT")]
     });
+    box.sandbox.Audio2.speak(SPOZA_KURSU);
+
+    assert.equal(box.audio.wypowiedzi[0].voice.name, "Google italiano",
+      "espeak brzmi mechanicznie i ma ustąpić, choć stoi wyżej na liście");
   });
 
-  test("jest deterministyczny", () => {
-    assert.equal(A.hashText("Buongiorno"), A.hashText("Buongiorno"));
-  });
+  test("italianVoices() odsiewa głosy innych języków", () => {
+    const box = silnik({
+      voices: [glos("Isabella", "it-IT"), glos("Daniel", "en-GB"), glos("Luca", "it_IT")]
+    });
+    const nazwy = box.sandbox.Audio2.italianVoices().map((v) => v.name);
 
-  test("różne zdania dostają różne skróty, także przy różnicy jednej litery", () => {
-    assert.notEqual(A.hashText("nonno"), A.hashText("nono"));
-    assert.notEqual(A.hashText("pesca"), A.hashText("pèsca"));
-  });
-
-  test("wielkość liter i akcent zmieniają plik: to są różne wypowiedzi", () => {
-    assert.notEqual(A.hashText("Ciao"), A.hashText("ciao"));
-    assert.notEqual(A.hashText("e"), A.hashText("è"));
-  });
-});
-
-describe("zgodność z Pythonem, który nagrał pliki", () => {
-  /* Jeden test na cały zbiór, nie 3493 testy: interesuje nas, czy dwie
-     implementacje skrótu się zgadzają, a to jest jedno pytanie. */
-  test("każde zdanie do nagrania wskazuje istniejący plik mp3", () => {
-    const brakuje = [];
-    for (const s of WSZYSTKIE) {
-      const skrot = A.hashText(s);
-      if (!existsSync(plik(skrot))) brakuje.push(`${skrot}  ${s.slice(0, 60)}`);
-      if (brakuje.length >= 5) break;
-    }
-    assert.deepEqual(brakuje, [],
-      "skrót z JS nie trafia w plik zrobiony przez Pythona — patrz hashText() i audio_hash()");
-  });
-
-  test("indeks w przeglądarce zna te same zdania co pliki na dysku", () => {
-    const nieznane = [];
-    for (const s of WSZYSTKIE) {
-      if (!A.hasNatural(s)) nieznane.push(s.slice(0, 60));
-      if (nieznane.length >= 5) break;
-    }
-    assert.deepEqual(nieznane, [],
-      "data/audio-index.js rozjechał się z katalogiem audio/ — przebuduj indeks");
-  });
-
-  test("liczba nagrań zgłoszona w ustawieniach zgadza się z listą do nagrania", () => {
-    assert.equal(A.naturalCount, WSZYSTKIE.length);
-    assert.equal(A.naturalAvailable, true);
+    assert.deepEqual(nazwy, ["Isabella", "Luca"], "it_IT z podkreśleniem też jest włoski");
   });
 });
 
-describe("normalizacja przed policzeniem skrótu", () => {
-  /* Ta sama, co w extract_strings.mjs: zwężenie białych znaków i trim.
-     Rozjazd znaczy, że zdanie z lekcji dostaje inny skrót niż plik,
-     który dla niego nagrano. */
-  test("nadmiarowe spacje i złamania wiersza nie zmieniają nagrania", () => {
-    const zdanie = WSZYSTKIE[0];
-    assert.equal(A.hasNatural("  " + zdanie + "  "), true, "obcięcie brzegów");
-    assert.equal(A.hasNatural(zdanie.replace(/ /, "   ")), true, "zwężenie wielokrotnej spacji");
-    assert.equal(A.hasNatural("\n" + zdanie), true, "złamanie wiersza to biały znak");
+describe("odtwarzanie listy zdań", () => {
+  test("kolejne zdanie rusza dopiero po skończeniu poprzedniego", () => {
+    const box = silnik();
+    box.sandbox.Audio2.speakSequence([SPOZA_KURSU, "un'altra frase fuori dal corso"], {});
+
+    assert.equal(box.audio.wypowiedzi.length, 1, "dialog nie ma zabrzmieć naraz");
+    box.audio.wypowiedzi[0].onend();
+    box.flush();
+    assert.equal(box.audio.wypowiedzi.length, 2);
   });
 
-  test("zdanie spoza kursu nagrania nie ma: indeks nie zgaduje", () => {
-    assert.equal(A.hasNatural("questa frase non esiste in nessuna lezione del corso"), false);
-  });
+  test("cancel() przerywa listę w miejscu, w którym stoi", () => {
+    const box = silnik();
+    const bieg = box.sandbox.Audio2.speakSequence([SPOZA_KURSU, "un'altra frase fuori dal corso"], {});
 
-  test("puste wejście nie udaje, że ma nagranie", () => {
-    assert.equal(A.hasNatural(""), false);
-    assert.equal(A.hasNatural("   "), false);
-    assert.equal(A.hasNatural(null), false);
+    bieg.cancel();
+    box.audio.wypowiedzi[0].onend();
+    box.flush();
+
+    assert.equal(box.audio.wypowiedzi.length, 1, "po przerwaniu nic więcej nie wchodzi");
   });
 });
 
 describe("ocena wymowy", () => {
+  const A = silnik().sandbox.Audio2;
+
   test("trafiona wypowiedź daje sto", () => {
     assert.equal(A.scoreSpeech("buongiorno a tutti", [], "Buongiorno a tutti"), 100);
   });

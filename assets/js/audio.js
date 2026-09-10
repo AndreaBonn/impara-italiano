@@ -6,8 +6,7 @@
    1. NAGRANIA NEURALNE (domyślne). Wszystkie włoskie zdania kursu są
       wcześniej zsyntezowane głosami Edge TTS (Isabella — głos główny,
       Giuseppe — rozmówca w dialogach) i leżą w audio/<xx>/<hash>.mp3.
-      Nazwa pliku to skrót FNV-1a treści; ten sam skrót liczy tu
-      hashText(), a po stronie budowania scripts/build_audio.py.
+      Który plik dla którego zdania — o tym mówi recordings.js.
    2. SYNTEZA SYSTEMOWA (awaryjnie). Web Speech API — dla tekstów spoza
       kursu (odmiana czasowników, wyszukiwanie w słowniku) oraz gdy
       nagrania nie zostały wygenerowane.
@@ -19,6 +18,8 @@
 
    Rozpoznawanie mowy: SpeechRecognition (Chrome / Edge / Safari 16+).
    Gdy go brak, ćwiczenia mówione przechodzą w tryb pisany.
+
+   Wymaga recordings.js (indeks nagrań) wczytanego wcześniej.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -56,50 +57,11 @@
 
   /* ─────────────── Nagrania neuralne ─────────────── */
 
-  var REC_LEN = 16;                       // długość skrótu w indeksie
-  var index = global.AUDIO_INDEX || "";   // sklejone, posortowane skróty
-  var indexCount = Math.floor(index.length / REC_LEN);
-  var encoder = global.TextEncoder ? new global.TextEncoder() : null;
-  var canHash = !!(encoder && typeof global.BigInt === "function");
-
-  /** Normalizacja identyczna z tą w scripts/extract_strings.mjs. */
-  function norm(text) {
-    return String(text == null ? "" : text).replace(/\s+/g, " ").trim();
-  }
-
-  var FNV_OFFSET = canHash ? global.BigInt("0xcbf29ce484222325") : null;
-  var FNV_PRIME = canHash ? global.BigInt("0x100000001b3") : null;
-  var MASK64 = canHash ? global.BigInt("0xffffffffffffffff") : null;
-
-  /** FNV-1a 64-bit po bajtach UTF-8, zapisany szesnastkowo na 16 znakach. */
-  function hashText(text) {
-    if (!canHash) return null;
-    var bytes = encoder.encode(text);
-    var h = FNV_OFFSET;
-    for (var i = 0; i < bytes.length; i++) {
-      h = ((h ^ global.BigInt(bytes[i])) * FNV_PRIME) & MASK64;
-    }
-    var hex = h.toString(16);
-    while (hex.length < REC_LEN) hex = "0" + hex;
-    return hex;
-  }
-
-  /** Wyszukiwanie binarne po rekordach stałej długości — bez fałszywych trafień. */
-  function inIndex(digest) {
-    if (!digest || !indexCount) return false;
-    var lo = 0, hi = indexCount - 1;
-    while (lo <= hi) {
-      var mid = (lo + hi) >> 1;
-      var rec = index.substr(mid * REC_LEN, REC_LEN);
-      if (rec === digest) return true;
-      if (rec < digest) lo = mid + 1; else hi = mid - 1;
-    }
-    return false;
-  }
-
-  function audioUrl(digest) {
-    return "audio/" + digest.slice(0, 2) + "/" + digest + ".mp3";
-  }
+  /* Indeks nagrań (skrót treści, wyszukiwanie, adres pliku) siedzi w
+     recordings.js: jest czystą funkcją napisu i ma bliźniaka w Pythonie,
+     więc daje się przetestować bez ani jednej atrapy przeglądarki. */
+  var Rec = global.Recordings;
+  var norm = Rec.norm;
 
   var player = null;
   function getPlayer() {
@@ -110,7 +72,7 @@
     return player;
   }
 
-  var naturalAvailable = canHash && indexCount > 0;
+  var naturalAvailable = Rec.available;
 
   /* ─────────────── Wspólne API ─────────────── */
 
@@ -178,11 +140,11 @@
     var wantSystem = opts.forceSystem || Core.state.settings.voiceSource === "system";
 
     if (!wantSystem && naturalAvailable) {
-      var digest = hashText(clean);
-      if (inIndex(digest)) {
+      var digest = Rec.hash(clean);
+      if (Rec.inIndex(digest)) {
         var el = getPlayer();
         el.onended = null; el.onerror = null;
-        el.src = audioUrl(digest);
+        el.src = Rec.url(digest);
         el.playbackRate = Math.min(2, Math.max(0.5, opts.rate || Core.state.settings.rate || 1));
         /*
          * Brakujący plik zgłasza się DWA razy: przez el.onerror i przez odrzucenie
@@ -245,8 +207,7 @@
 
   /** Czy dany tekst ma nagranie neuralne (do oznaczeń w interfejsie). */
   function hasNatural(text) {
-    if (!naturalAvailable) return false;
-    return inIndex(hashText(norm(text)));
+    return Rec.has(text);
   }
 
   /* ─────────────── Rozpoznawanie mowy ─────────────── */
@@ -330,16 +291,19 @@
     return Math.round(best * 100);
   }
 
+  /* Trzy pola niżej to przepustka do Recordings pod nazwami, którymi mówi
+     interfejs („czy to zdanie ma nagranie", „ile ich jest"). Skrótu i adresu
+     pliku Audio2 już nie wystawia: kto ich potrzebuje, pyta wprost Recordings,
+     bo dwie nazwy tej samej rzeczy rozjeżdżają się przy pierwszej zmianie. */
   global.Audio2 = {
     ttsSupported: !!synth,
     sttSupported: sttSupported,
     naturalAvailable: naturalAvailable,
-    naturalCount: indexCount,
+    naturalCount: Rec.count,
     speak: speak,
     stop: stop,
     speakSequence: speakSequence,
     hasNatural: hasNatural,
-    hashText: hashText,
     listen: listen,
     scoreSpeech: scoreSpeech,
     italianVoices: italianVoices,

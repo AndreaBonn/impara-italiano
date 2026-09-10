@@ -42,6 +42,12 @@ export const CORE = [
 export const VERBS = ["assets/js/verbs-data.js", "assets/js/verbs.js"];
 
 /**
+ * Dźwięk: indeks nagrań przed recordings.js, recordings.js przed audio.js.
+ * Oba czytają swojego poprzednika przy wykonaniu modułu, nie w funkcji.
+ */
+export const AUDIO = ["data/audio-index.js", "assets/js/recordings.js", "assets/js/audio.js"];
+
+/**
  * localStorage z kontrolowanym limitem.
  * Prawdziwa przeglądarka rzuca QuotaExceededError przy przepełnieniu;
  * bez tego nie da się przetestować zachowania save() na pełnym dysku.
@@ -98,6 +104,67 @@ function makeClock() {
     },
     get size() { return pending.size; }
   };
+}
+
+/**
+ * Otoczenie dźwiękowe przeglądarki: syntezator, wypowiedź i odtwarzacz.
+ *
+ * audio.js wybiera źródło głosu w kaskadzie (nagranie → synteza → cisza),
+ * a każda jej gałąź jest decyzją podjętą świadomie i opisaną w komentarzu:
+ * blokada autoodtwarzania NIE schodzi na syntezę, brakujący plik owszem,
+ * a ostrzeżenie leci raz na sesję, nie przy każdym słówku. Bez tych trzech
+ * atrap żadnej z nich nie da się sprawdzić inaczej niż ręcznie w przeglądarce.
+ *
+ * `zachowaniePlay` steruje tym, czym kończy się `play()`:
+ *   "ok"          — obietnica spełniona (nagranie gra),
+ *   "not-allowed" — odrzucona NotAllowedError (brak gestu użytkownika),
+ *   "blad"        — odrzucona zwykłym błędem (plik nie do wczytania).
+ */
+function makeAudioEnv(opts) {
+  const log = {
+    voices: opts.voices || [],
+    wypowiedzi: [],        // SpeechSynthesisUtterance oddane do speak()
+    anulowania: 0,
+    odtwarzacze: [],       // instancje Audio, w kolejności powstania
+    zachowaniePlay: opts.zachowaniePlay || "ok"
+  };
+
+  function Utterance(text) { this.text = text; }
+
+  const speechSynthesis = opts.brakSyntezy ? null : {
+    getVoices() { return log.voices; },
+    speak(u) { log.wypowiedzi.push(u); },
+    cancel() { log.anulowania++; },
+    addEventListener() {}
+  };
+
+  function Player() {
+    const el = {
+      preload: "", src: "", playbackRate: 1, currentTime: 0,
+      onended: null, onerror: null,
+      pause() { el.pauzy++; },
+      pauzy: 0,
+      play() {
+        el.zagrania++;
+        if (log.zachowaniePlay === "not-allowed") {
+          const e = new Error("play() failed"); e.name = "NotAllowedError";
+          return Promise.reject(e);
+        }
+        if (log.zachowaniePlay === "blad") return Promise.reject(new Error("nie wczytano"));
+        return Promise.resolve();
+      },
+      zagrania: 0
+    };
+    log.odtwarzacze.push(el);
+    return el;
+  }
+
+  return { log, speechSynthesis, Utterance, Player };
+}
+
+/** Głos systemowy do listy `voices`: tyle pól, ile czyta pickVoice(). */
+export function glos(name, lang) {
+  return { name: name, lang: lang || "it-IT" };
 }
 
 /**
@@ -192,6 +259,7 @@ export function loadEngine(options) {
   const toasts = [];
   const notices = [];
   const warnings = [];
+  const audio = makeAudioEnv(opts);
 
   if (opts.seed) {
     for (const k of Object.keys(opts.seed)) {
@@ -224,7 +292,10 @@ export function loadEngine(options) {
       },
       lang: "pl", locale() { return "pl-PL"; }, LANGS: []
     },
-    Audio: function () { return { play() { return Promise.resolve(); }, pause() {} }; }
+    Promise,
+    speechSynthesis: audio.speechSynthesis,
+    SpeechSynthesisUtterance: audio.Utterance,
+    Audio: audio.Player
   };
   sandbox.window = sandbox;
   sandbox.self = sandbox;
@@ -236,6 +307,8 @@ export function loadEngine(options) {
 
   const box = {
     sandbox, storage, clock, toasts, notices, warnings,
+    /** Co przeglądarka „usłyszała": wypowiedzi, anulowania, odtwarzacze. */
+    audio: audio.log,
     /** Co nadal wisi na ekranie po upływie czasu — bez znikających toastów. */
     visible() { return dom.stack.children.map(c => c.textContent); },
     /** Wykonuje kolejny plik silnika w tej samej piaskownicy. */

@@ -154,14 +154,19 @@ systemach jest nieprzewidywalna. Backend odpadał, bo zabiłby statyczność.
 - **Głosy**: `it-IT-IsabellaNeural` (główny), `it-IT-GiuseppeMultilingualNeural` (rozmówca
   w dialogach i konwersacjach). Zmiana głosu = zmiana stałej w `scripts/build_audio.py`
   i pełny przebieg z `--force`.
+- **Kto co robi**: `assets/js/recordings.js` (globalna `Recordings`) odpowiada wyłącznie na
+  pytanie „czy to zdanie ma nagranie i pod jakim adresem" — jest czystą funkcją napisu i to
+  jedyna część dźwięku, która ma bliźniaka po stronie budowania. `assets/js/audio.js` to
+  kaskada nad nim: nagranie → synteza systemowa → cisza, plus rozpoznawanie mowy.
 - **Nazwa pliku** = FNV-1a 64-bit treści napisu, `audio/<xx>/<hash>.mp3`. Ta sama funkcja
-  po obu stronach: `audio_hash()` w Pythonie i `hashText()` w `assets/js/audio.js`.
+  po obu stronach: `audio_hash()` w Pythonie i `Recordings.hash()` w `assets/js/recordings.js`.
   **Zmiana jednej wymaga zmiany drugiej** — inaczej wszystkie nagrania stają się nieosiągalne.
-- **Indeks**: `data/audio-index.js` to sklejone, posortowane skróty. `audio.js` szuka w nim
+- **Indeks**: `data/audio-index.js` to sklejone, posortowane skróty. `recordings.js` szuka w nim
   binarnie, więc rozstrzygnięcie „jest nagranie czy nie" jest synchroniczne i nie generuje 404.
-  Plik musi być wczytany **przed** `audio.js` — kolejność w `index.html` jest istotna.
+  Plik musi być wczytany **przed** `recordings.js`, a ten przed `audio.js` — kolejność
+  w `index.html` jest istotna i powtórzona w `PRECACHE` oraz w stałej `AUDIO` w harnessie.
 - **Normalizacja**: `norm()` (zwężenie białych znaków + trim) musi być identyczna
-  w `extract_strings.mjs` i w `audio.js`. Rozjazd = cicha ucieczka do syntezy systemowej.
+  w `extract_strings.mjs` i w `recordings.js`. Rozjazd = cicha ucieczka do syntezy systemowej.
 - **Tempo**: w trybie nagrań to `playbackRate`, nie `SpeechSynthesisUtterance.rate`.
   Chrome zachowuje wysokość dźwięku, więc spowolnienie nadal brzmi naturalnie.
 

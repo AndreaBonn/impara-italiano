@@ -24,7 +24,7 @@ const TRASY = [
   "oggi", "percorso", "ripasso", "allenamento", "conversazione", "grammatica",
   "coniugatore", "lessico", "shadowing", "velocita", "esame", "falsi",
   "copertura", "progressi", "impostazioni",
-  "lezione", "piazzamento", "cerca", "lettura", "scrittura", "suoni"
+  "lezione", "piazzamento", "cerca", "lettura", "scrittura", "suoni", "privacy"
 ];
 
 /** Waits until the engine comes up and loads the course index. */

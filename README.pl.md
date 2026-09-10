@@ -1,3 +1,5 @@
+[English](./README.md) | [Italiano](./README.it.md) | **Polski**
+
 # Impara l'Italiano 🇮🇹
 
 Kurs języka włoskiego dla osób mówiących po polsku. Od zera (A1) do poziomu biegłości (C2).

@@ -203,6 +203,72 @@ LINGUAI.addUI("es", {
   "keys.barLabel": "Caracteres italianos",
 
   /* ---------------- Prueba de nivel ---------------- */
+  /* ---------------- Guía ---------------- */
+  "nav.guide": "Guía",
+  "guide.kicker": "GUÍA",
+  "guide.title": "Cómo usar el curso",
+  "guide.intro": "Quince pestañas y ninguna obligatoria. Esta página dice en qué orden tiene sentido todo esto y para qué sirve cada pantalla.",
+  "guide.tocLabel": "Índice",
+  "guide.more": "Cómo funciona →",
+  "guide.open": "Abrir",
+
+  "guide.inizio.h": "Por dónde empezar",
+  "guide.inizio.p1": "Si nunca has estudiado italiano, ve directo a la primera lección de A1. El curso está hecho para empezar de cero y no hay que configurar nada antes.",
+  "guide.inizio.p2": "Si ya sabes algo, haz la prueba de nivel. Salta entre niveles en vez de recorrerlos, así que termina rápido, y al final da por hechas las lecciones de los niveles de abajo. El resultado es una propuesta: puedes rechazarla y empezar desde el principio.",
+
+  "guide.ordine.h": "El orden que tiene sentido",
+  "guide.ordine.p1": "Los niveles van de A1 a C2 y la gramática es acumulativa: A2 da por sabido A1, B1 da por sabido A2. Nada impide saltar, pero a partir de ahí las lecciones dejan de explicarse solas.",
+  "guide.ordine.p2": "Dentro de un nivel las unidades van en orden, y las lecciones dentro de la unidad también. La prueba del final de unidad cubre la unidad entera, no la última lección.",
+
+  "guide.lezione.h": "Cómo es una lección",
+  "guide.lezione.p1": "Todas las lecciones tienen la misma forma: teoría, gramática con tabla y ejemplos, vocabulario, diálogo, nota cultural y ejercicios. La teoría se lee una vez y se queda en la página, así que puedes volver a ella mientras haces los ejercicios.",
+  "guide.lezione.p2": "Una lección se aprueba a partir del 70 por ciento de aciertos. Por debajo se queda abierta y puedes repetirla: no se pierde nada y la puntuación empieza de nuevo.",
+  "guide.lezione.p3": "Cada fallo abre una ficha en el cuaderno de errores y vuelve a ti en Repasos. No hay nada que apuntar ni que marcar.",
+
+  "guide.oggi.h": "Hoy: diez minutos sin elegir",
+  "guide.oggi.p1": "La pestaña Hoy monta la sesión sola: primero tus fallos, luego un entrenamiento del tema que peor llevas, y al final las tarjetas que tocan. Es el camino para el día en que no quieres decidir qué hacer.",
+  "guide.oggi.p2": "La sesión siempre tiene con qué llenarse, también el día en que no arrastras nada: los ejercicios generados no se acaban nunca.",
+
+  "guide.ripasso.h": "Repasos: dos barajas, dos ritmos",
+  "guide.ripasso.p1": "Las tarjetas de vocabulario van con FSRS: la palabra que sabes vuelve cada vez más tarde, la palabra con la que tropiezas vuelve mañana. El intervalo sale de tus respuestas, no del calendario.",
+  "guide.ripasso.p2": "El cuaderno de errores es la segunda baraja. Recibe exactamente el ejercicio que fallaste, con el nombre del tema, así que se ve no solo qué salió mal sino de qué iba.",
+  "guide.ripasso.p3": "El contador de la pestaña Repasos suma las dos barajas. Cero significa «hoy no hay nada pendiente», no «se acabó el curso».",
+
+  "guide.esame.h": "El examen",
+  "guide.esame.p1": "La pestaña Examen es una simulación del CILS: las secciones van en un orden fijo, cada una con su límite de tiempo, y las respuestas se escriben en una rejilla en vez de corregirse una a una. Los enunciados están en italiano, porque en el examen real también lo estarán.",
+  "guide.esame.p2": "No tiene sentido probarlo pronto: mide un nivel que ya tienes, no es la manera de alcanzarlo. El momento razonable es el final del nivel al que te presentas.",
+
+  "guide.mappa.h": "Todas las pantallas, una por una",
+  "guide.mappa.p1": "Las quince entradas de la barra más cuatro pantallas que no están ahí, porque se entra a ellas desde Entrenamiento y desde el buscador. En corto, qué hace cada una.",
+
+  "guide.backup.h": "Copia de seguridad: no hay cuenta, hay un archivo",
+  "guide.backup.p1": "El curso no tiene cuenta ni sincronización. Todo lo que has aprendido está en este navegador, en este dispositivo, y borrar los datos del sitio lo elimina para siempre.",
+  "guide.backup.p2": "Cada diez lecciones terminadas el curso te recuerda que descargues una copia. El archivo lo guardas donde quieras y lo cargas desde Ajustes, que es además la única forma de llevar tu progreso a otro dispositivo.",
+
+  "guide.bloccato.h": "Cuando algo no entra",
+  "guide.bloccato.p1": "No repitas la misma lección por tercera vez seguida. Haz una ronda de Entrenamiento de ese tema: allí los ejercicios se generan con reglas, así que cada vez son distintos. A la lección vuelve al día siguiente.",
+  "guide.bloccato.p2": "Si lo que no sale es la pronunciación, abre Pares mínimos o Repetición: eso entrena el oído y la boca, no la regla. Y si no recuerdas dónde estaba algo, el buscador de arriba cubre el curso entero.",
+
+  "guide.s.oggi": "Una sesión ya montada: fallos, entrenamiento, tarjetas.",
+  "guide.s.percorso": "Niveles, unidades y lecciones. De aquí sale todo el estudio.",
+  "guide.s.ripasso": "Tarjetas y cuaderno de errores, todo lo que vuelve.",
+  "guide.s.allenamento": "Ejercicios hechos con reglas, no con una lista, así que no se acaban.",
+  "guide.s.conversazione": "El curso habla italiano, tú contestas al micrófono.",
+  "guide.s.grammatica": "El temario de gramática completo de A1 a C2, para leer.",
+  "guide.s.coniugatore": "Conjugación de cualquier verbo, también reflexivos.",
+  "guide.s.lessico": "Las palabras que marcaste, ordenadas por próximo repaso.",
+  "guide.s.shadowing": "Escucha, repite y luego oye las dos grabaciones seguidas.",
+  "guide.s.velocita": "La misma frase a velocidad normal. Ir lento es el salvavidas, no el punto de partida.",
+  "guide.s.esame": "Simulación del CILS con límite de tiempo e historial de intentos.",
+  "guide.s.falsi": "Palabras que significan otra cosa de la que sugiere tu idioma.",
+  "guide.s.copertura": "Cuánto del italiano más frecuente ya entiendes.",
+  "guide.s.progressi": "Racha, puntos y gráfico de días. Todo contado en local.",
+  "guide.s.impostazioni": "Voz, velocidad, acentos, copia de seguridad, prueba de nivel.",
+  "guide.s.suoni": "Dos palabras a un sonido de distancia. Primero el oído, luego la boca.",
+  "guide.s.lettura": "Textos largos: sostener el sentido durante varias frases seguidas.",
+  "guide.s.scrittura": "Escritura corregida en lo que se puede corregir: las construcciones usadas.",
+  "guide.s.cerca": "Busca en lecciones, vocabulario, gramática y conversaciones.",
+
   /* ---------------- Pantalla de bienvenida ---------------- */
   "welcome.kicker": "INICIO",
   "welcome.title": "Bienvenido al curso de italiano",
@@ -215,6 +281,7 @@ LINGUAI.addUI("es", {
   "welcome.lookTitle": "Primero echo un vistazo",
   "welcome.lookHint": "Abre la ruta de aprendizaje. Elegir nivel puede esperar.",
   "welcome.lookGo": "Enséñame el curso",
+  "welcome.guide": "¿Cómo funciona esto? Lee la guía",
 
   "place.kicker": "NIVEL",
   "place.title": "Por dónde empezar",

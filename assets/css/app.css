@@ -757,6 +757,15 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
   .list-row--stack .btn{width:100%;justify-content:center;}
 }
 
+/* Przewodnik. Spis treści leży w poprzek, nie w słupku: dziewięć
+   pozycji jedna pod drugą zajmowało cały ekran, więc pierwsza sekcja
+   zaczynała się poniżej krawędzi i strona wyglądała na sam spis.
+   Nagłówek sekcji dostaje odstęp od tekstu, bo `.card` go nie daje. */
+.guide-toc{display:flex;flex-wrap:wrap;gap:6px 10px;margin-bottom:26px;}
+.guide-toc .btn{min-height:32px;padding:4px 10px;font-size:.86rem;}
+.guide-sec h3{margin-bottom:10px;}
+.guide-sec p + p{margin-top:10px;}
+
 .empty{
   border:2px dashed var(--line-strong);border-radius:var(--r-l);
   padding:40px 28px;text-align:center;color:var(--ink-soft);background:var(--paper-3);

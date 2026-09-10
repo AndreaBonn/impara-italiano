@@ -39,6 +39,7 @@
     }
 
     set(pageHead(t("nav.review"), t("review.title"), t("review.intro")) +
+      Views.shell.guideLink("ripasso") +
       '<div class="tabs" role="group" aria-label="' + esc(t("review.tabsLabel")) + '">' +
       zakladka("carte", t("review.tabCards"), nCards) +
       zakladka("errori", t("review.tabErrors"), nErr) +

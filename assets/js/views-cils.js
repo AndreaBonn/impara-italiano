@@ -45,7 +45,8 @@
     var lista = Cils.simulazioni();
     if (!lista.length) { set(Views.shell.empty(t("cils.none"))); return; }
 
-    set(pageHead(t("cils.kicker"), t("cils.title"), t("cils.intro")) + H.lista(lista));
+    set(pageHead(t("cils.kicker"), t("cils.title"), t("cils.intro")) +
+      Views.shell.guideLink("esame") + H.lista(lista));
 
     el().querySelectorAll(".js-start").forEach(function (b) {
       b.addEventListener("click", function () { App.go("esame", { id: b.getAttribute("data-id") }); });

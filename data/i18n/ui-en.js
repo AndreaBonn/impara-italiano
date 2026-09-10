@@ -196,6 +196,72 @@ LINGUAI.addUI("en", {
   "keys.barLabel": "Italian characters",
 
   /* ---------------- Placement test ---------------- */
+  /* ---------------- Guide ---------------- */
+  "nav.guide": "How to use it",
+  "guide.kicker": "GUIDE",
+  "guide.title": "How to use the course",
+  "guide.intro": "Fifteen tabs and none of them is mandatory. This page tells you what order makes sense and what each screen is for.",
+  "guide.tocLabel": "Contents",
+  "guide.more": "How this works →",
+  "guide.open": "Open",
+
+  "guide.inizio.h": "Where to start",
+  "guide.inizio.p1": "If you have never studied Italian, go straight to lesson one of A1. The course is built to be started from nothing, and there is nothing to configure first.",
+  "guide.inizio.p2": "If you already know some, take the placement test. It jumps between levels instead of walking through them, so it ends quickly, and it ticks off lessons from the levels below. The result is a proposal: you can turn it down and start from the beginning anyway.",
+
+  "guide.ordine.h": "The order that makes sense",
+  "guide.ordine.p1": "Levels run from A1 to C2 and the grammar is cumulative: A2 assumes A1 is behind you, B1 assumes A2. Nothing stops you from skipping ahead, but from that point on the lessons stop explaining themselves.",
+  "guide.ordine.p2": "Inside a level the units are in order, and so are the lessons inside a unit. The test at the end of a unit covers the whole unit, not the last lesson.",
+
+  "guide.lezione.h": "What a lesson looks like",
+  "guide.lezione.p1": "Every lesson has the same shape: theory, grammar with a table and examples, vocabulary, a dialogue, a culture note, exercises. You read the theory once and it stays on the lesson page, so you can go back to it while you work through the exercises.",
+  "guide.lezione.p2": "A lesson counts as passed from 70 percent of correct answers. Below that it stays open and you can take it again: nothing is lost, and the score starts over.",
+  "guide.lezione.p3": "Every wrong answer opens a card in the mistake notebook and comes back to you under Review. There is nothing to write down and nothing to mark.",
+
+  "guide.oggi.h": "Today: ten minutes, no choosing",
+  "guide.oggi.p1": "The Today tab builds the session for you: your mistakes first, then a drill on whatever topic is going worst, then the cards that are due. This is the route for a day when you do not want to decide what to do.",
+  "guide.oggi.p2": "The session always has something to fill itself with, including on a day when you are not behind on anything: the generated exercises never run out.",
+
+  "guide.ripasso.h": "Review: two decks, two rhythms",
+  "guide.ripasso.p1": "Vocabulary cards run on FSRS: a word you know comes back less and less often, a word you keep tripping over comes back tomorrow. The interval is computed from your answers, not from the calendar.",
+  "guide.ripasso.p2": "The mistake notebook is the second deck. It gets exactly the exercise you got wrong, labelled with the grammar topic, so you can see not only what went wrong but what it was about.",
+  "guide.ripasso.p3": "The badge on the Review tab counts both decks together. Zero means “nothing due today”, not “you are finished”.",
+
+  "guide.esame.h": "The exam",
+  "guide.esame.p1": "The Exam tab is a CILS simulation: the sections run in a fixed order, each one has its own time limit, and the answers go into a grid instead of being checked one at a time. The instructions are in Italian, because on the real exam they will be too.",
+  "guide.esame.p2": "There is no point in trying it early: it measures a level you already have, it is not a way to reach one. The sensible moment is the end of the level you are sitting for.",
+
+  "guide.mappa.h": "Every screen, one by one",
+  "guide.mappa.p1": "The fifteen items from the sidebar plus four screens that are not in it, because you reach them from Training and from the search box. Briefly, what each one does.",
+
+  "guide.backup.h": "Backup: no account, just a file",
+  "guide.backup.p1": "The course has no account and no sync. Everything you have learned sits in this browser, on this device, and clearing the site data wipes it for good.",
+  "guide.backup.p2": "Every ten finished lessons the course reminds you to download a copy. You keep the file wherever you like and load it back under Settings, which is also the only way to move your progress to another device.",
+
+  "guide.bloccato.h": "When something will not sink in",
+  "guide.bloccato.p1": "Do not take the same lesson a third time in a row. Do a Training round on that topic instead: the exercises there are generated from rules, so they are different every time. Come back to the lesson the next day.",
+  "guide.bloccato.p2": "If it is the pronunciation that will not come, open Minimal pairs or Shadowing: those train your ear and your mouth, not a rule. And if you cannot remember where something was, the search box above the sidebar covers the whole course.",
+
+  "guide.s.oggi": "A session already put together: mistakes, drills, cards.",
+  "guide.s.percorso": "Levels, units and lessons. All the studying starts here.",
+  "guide.s.ripasso": "Cards and the mistake notebook, everything that comes back.",
+  "guide.s.allenamento": "Exercises built from rules, not from a list, so they do not run out.",
+  "guide.s.conversazione": "The course speaks Italian, you answer into the microphone.",
+  "guide.s.grammatica": "The full grammar syllabus from A1 to C2, for reading.",
+  "guide.s.coniugatore": "Conjugation of any verb, reflexives included.",
+  "guide.s.lessico": "The words you starred, sorted by when they are next due.",
+  "guide.s.shadowing": "Listen, repeat, then play both recordings back to back.",
+  "guide.s.velocita": "The same sentence at native speed. Slowing down is the lifeline, not the start.",
+  "guide.s.esame": "CILS simulation with a time limit and a history of attempts.",
+  "guide.s.falsi": "Words that mean something other than your language suggests.",
+  "guide.s.copertura": "How much of the most frequent Italian you already understand.",
+  "guide.s.progressi": "Streak, points and a chart of your days. All counted locally.",
+  "guide.s.impostazioni": "Voice, speed, accents, backup, placement test.",
+  "guide.s.suoni": "Two words, one sound apart. The ear first, the mouth after.",
+  "guide.s.lettura": "Longer texts: holding the sense across several sentences in a row.",
+  "guide.s.scrittura": "Writing checked on what can be checked: the constructions you used.",
+  "guide.s.cerca": "Searches lessons, vocabulary, grammar and conversations.",
+
   /* ---------------- Welcome screen ---------------- */
   "welcome.kicker": "START",
   "welcome.title": "Welcome to the Italian course",
@@ -208,6 +274,7 @@ LINGUAI.addUI("en", {
   "welcome.lookTitle": "Let me look around first",
   "welcome.lookHint": "Opens the learning path. Picking a level can wait.",
   "welcome.lookGo": "Show me the course",
+  "welcome.guide": "How does this work? Read the guide",
 
   "place.kicker": "LEVEL",
   "place.title": "Where to start",

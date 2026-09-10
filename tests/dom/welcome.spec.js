@@ -58,8 +58,10 @@ test("wybór kończy powitanie, samo obejrzenie nie", async ({ page }) => {
   await gotowe(page);
   await expect(page.locator(".js-zero")).toBeVisible();
 
+  /* „Od zera" idzie wprost do pierwszej lekcji: podpis przycisku obiecuje
+     lekcję, a nie spis poziomów. */
   await page.locator(".js-zero").click();
-  await expect(page).toHaveURL(/#\/percorso/);
+  await expect(page).toHaveURL(/#\/lezione\?id=/);
   expect(await page.evaluate(() => window.Core.state.onboarded)).toBe(true);
 
   /* Czekamy na ZAPIS, nie na upływ czasu: save() jest zdebouncowane na
@@ -91,6 +93,20 @@ test("ścieżka nauki po wyborze ma z czego się narysować", async ({ page }) =
   /* Poziom wczytuje się pod powitaniem, więc lekcje mają tu już być:
      inaczej ekran zostaje na „wczytuję materiał" i nikt go nie odświeży. */
   await expect(page.locator("[data-lesson]").first()).toBeVisible({ timeout: 15000 });
+});
+
+/* Ta sama zależność od wczytania, ale ostrzej: „od zera" musi ZNAĆ id
+   pierwszej lekcji w chwili kliknięcia, inaczej po cichu spadnie na spis
+   poziomów — czyli zrobi to, czego ten przycisk ma nie robić. */
+test("od zera trafia w pierwszą lekcję kursu, nie w spis", async ({ page }) => {
+  await page.goto("/index.html");
+  await gotowe(page);
+  await page.locator(".js-zero").click();
+  await expect(page).toHaveURL(/#\/lezione\?id=/);
+  const pierwsza = await page.evaluate(() =>
+    window.Core.nextLesson(window.Core.registry.levels[0]).lesson.id);
+  expect(page.url()).toContain("id=" + pierwsza);
+  await expect(page.locator("#main h1")).toBeVisible();
 });
 
 test("napisy powitania istnieją w pięciu językach", async ({ page }) => {

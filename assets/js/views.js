@@ -24,9 +24,32 @@
     var m = el();
     m.innerHTML = html;
     Ex.wireSpeakers(m);
+    wireGuide(m);
     m.scrollTop = 0;
     global.scrollTo(0, 0);
     return m;
+  }
+
+  /**
+   * Odnośnik „jak to działa" do konkretnej sekcji przewodnika.
+   *
+   * Wstawia go ekran, podpina go `set` — tak samo jak głośniki. Ekran,
+   * który musiałby pamiętać o podpięciu zdarzenia, prędzej czy później
+   * zapomni, a wynik będzie wyglądał jak działający przycisk, który nic
+   * nie robi. To jest zresztą powód, dla którego przewodnik jest trasą,
+   * a nie oknem: do okna nie da się odesłać z ekranu, którego dotyczy.
+   */
+  function guideLink(sekcja) {
+    return '<p class="guide-link"><button class="btn btn--quiet js-guide-link" data-sekcja="' +
+      esc(sekcja) + '">' + esc(t("guide.more")) + "</button></p>";
+  }
+
+  function wireGuide(root) {
+    root.querySelectorAll(".js-guide-link").forEach(function (b) {
+      b.addEventListener("click", function () {
+        global.App.go("guida", { s: b.getAttribute("data-sekcja") });
+      });
+    });
   }
 
   function pageHead(kicker, title, sub) {
@@ -106,7 +129,8 @@
    * set/pageHead/el — trzy kopie tego samego, rozjeżdżające się przy
    * pierwszej zmianie nagłówka.
    */
-  Views.shell = { set: set, head: pageHead, root: el, empty: empty, pct: pct, runCards: runCards };
+  Views.shell = { set: set, head: pageHead, root: el, empty: empty, pct: pct,
+                  runCards: runCards, guideLink: guideLink };
 
   global.Views = Views;
 

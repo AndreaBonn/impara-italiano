@@ -355,10 +355,10 @@ z poprzedniej wersji tego pliku.
 | Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
-| Klucze interfejsu na język | 671 × 5 języków |
-| Pliki silnika | 60 w `assets/js/`, 11 183 linii |
-| Testy jednostkowe | 786 przebiegów w 32 plikach, zielone |
-| Testy DOM | 198 przebiegów w 26 plikach, zielone |
+| Klucze interfejsu na język | 738 × 5 języków |
+| Pliki silnika | 62 w `assets/js/`, 11 471 linii |
+| Testy jednostkowe | 793 przebiegi w 32 plikach, zielone |
+| Testy DOM | 221 przebiegów w 28 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,8% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz

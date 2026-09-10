@@ -37,19 +37,44 @@
       droga("zero", "btn--primary", t("welcome.zeroGo")) +
       droga("test", "btn--ghost", t("place.start")) +
       droga("look", "btn--quiet", t("welcome.lookGo")) +
-      "</div>");
+      "</div>" +
+      /* Przewodnik jest linkiem pod wyborem, nie czwartą drogą: kto tu
+         trafia, ma odpowiedzieć na jedno pytanie, a nie zacząć czytać. */
+      '<p style="margin-top:20px"><button class="btn btn--quiet js-guide">' +
+      esc(t("welcome.guide")) + "</button></p>");
 
     /* Wybór jest tym, co kończy powitanie — nie wyświetlenie ekranu.
        Odwrotnie: kto zamknął kartę w trakcie czytania, wróciłby do
        kursu bez tej jednej odpowiedzi, której ekran miał mu udzielić. */
-    el().querySelector(".js-zero").addEventListener("click", function () { wybrano("percorso"); });
+    el().querySelector(".js-zero").addEventListener("click", function () { odZera(); });
     el().querySelector(".js-test").addEventListener("click", function () { wybrano("piazzamento"); });
     el().querySelector(".js-look").addEventListener("click", function () { wybrano("percorso"); });
+    /* Przewodnik nie kończy powitania: uczeń ma wrócić i wybrać. */
+    el().querySelector(".js-guide").addEventListener("click", function () { App.go("guida"); });
   };
 
-  function wybrano(trasa) {
+  function wybrano(trasa, params) {
     Core.state.onboarded = true;
     Core.save();
-    App.go(trasa);
+    App.go(trasa, params);
+  }
+
+  /**
+   * „Zaczynam od zera" prowadzi do PIERWSZEJ LEKCJI, nie do spisu poziomów.
+   *
+   * Dwa powody. Podpis przycisku obiecuje lekcję („pierwsza lekcja A1, od
+   * przywitania"), a spis poziomów jest o jeden wybór dalej — czyli znowu
+   * wyborem, którego ten ekran miał ucznia pozbawić. Drugi: na ścieżce
+   * czeka pasek „nie wiesz, od którego poziomu zacząć", czyli dokładnie to
+   * pytanie, na które przed chwilą odpowiedział.
+   *
+   * Gdy poziom nie zdążył się wczytać, zostaje ścieżka nauki: pusty ekran
+   * lekcji byłby gorszy niż spis, z którego widać, że kurs w ogóle jest.
+   */
+  function odZera() {
+    var poziom = Core.registry.levels[0];
+    var next = poziom && Core.nextLesson(poziom);
+    if (next) wybrano("lezione", { id: next.lesson.id });
+    else wybrano("percorso");
   }
 })();

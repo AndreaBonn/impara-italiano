@@ -63,6 +63,7 @@
     var zrobione = (Core.state.session || {}).date === dzis();
 
     set(pageHead(t("today.kicker"), t("today.title"), t("today.intro")) +
+      Views.shell.guideLink("oggi") +
       (zrobione ? '<div class="card" style="margin-bottom:18px"><p>' + esc(t("today.alreadyDone")) + "</p></div>" : "") +
       '<div class="stack" style="margin-bottom:20px">' +
       wiersz(t("today.partErrors"), s.bledy.length) +

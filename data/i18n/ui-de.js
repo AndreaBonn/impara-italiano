@@ -201,6 +201,72 @@ LINGUAI.addUI("de", {
   "keys.barLabel": "Italienische Zeichen",
 
   /* ---------------- Einstufungstest ---------------- */
+  /* ---------------- Anleitung ---------------- */
+  "nav.guide": "Anleitung",
+  "guide.kicker": "ANLEITUNG",
+  "guide.title": "So benutzt du den Kurs",
+  "guide.intro": "Fünfzehn Reiter und keiner davon ist Pflicht. Diese Seite sagt, in welcher Reihenfolge das alles Sinn ergibt und wofür jeder Bildschirm da ist.",
+  "guide.tocLabel": "Inhalt",
+  "guide.more": "Wie das funktioniert →",
+  "guide.open": "Öffnen",
+
+  "guide.inizio.h": "Wo anfangen",
+  "guide.inizio.p1": "Wenn du nie Italienisch gelernt hast, geh direkt zur ersten Lektion von A1. Der Kurs ist so gebaut, dass man bei null anfangen kann, und vorher ist nichts einzustellen.",
+  "guide.inizio.p2": "Wenn du schon etwas kannst, mach den Einstufungstest. Er springt zwischen den Niveaus, statt sie der Reihe nach durchzugehen, also ist er schnell vorbei, und am Ende hakt er die Lektionen der unteren Niveaus ab. Das Ergebnis ist ein Vorschlag: du kannst ihn ablehnen und trotzdem von vorn anfangen.",
+
+  "guide.ordine.h": "Die Reihenfolge, die Sinn ergibt",
+  "guide.ordine.p1": "Die Niveaus laufen von A1 bis C2 und die Grammatik baut aufeinander auf: A2 setzt A1 voraus, B1 setzt A2 voraus. Überspringen ist nicht gesperrt, aber ab da hören die Lektionen auf, sich selbst zu erklären.",
+  "guide.ordine.p2": "Innerhalb eines Niveaus stehen die Einheiten in Reihenfolge, die Lektionen innerhalb der Einheit auch. Der Test am Ende einer Einheit prüft die ganze Einheit, nicht die letzte Lektion.",
+
+  "guide.lezione.h": "Wie eine Lektion aussieht",
+  "guide.lezione.p1": "Jede Lektion hat denselben Aufbau: Theorie, Grammatik mit Tabelle und Beispielen, Wortschatz, Dialog, Kulturnotiz, Übungen. Die Theorie liest man einmal und sie bleibt auf der Seite, du kannst also während der Übungen zurückblättern.",
+  "guide.lezione.p2": "Eine Lektion gilt ab 70 Prozent richtiger Antworten als bestanden. Darunter bleibt sie offen und du kannst sie wiederholen: nichts geht verloren, und das Ergebnis zählt neu.",
+  "guide.lezione.p3": "Jede falsche Antwort legt eine Karte im Fehlerheft an und kommt unter Wiederholungen zu dir zurück. Es gibt nichts aufzuschreiben und nichts anzuhaken.",
+
+  "guide.oggi.h": "Heute: zehn Minuten ohne Auswahl",
+  "guide.oggi.p1": "Der Reiter Heute stellt die Sitzung selbst zusammen: zuerst deine Fehler, dann ein Training zu dem Thema, das am schlechtesten läuft, am Ende die fälligen Karten. Das ist der Weg für den Tag, an dem du nicht entscheiden willst.",
+  "guide.oggi.p2": "Die Sitzung hat immer etwas, womit sie sich füllt, auch an einem Tag ohne Rückstand: die erzeugten Aufgaben gehen nie aus.",
+
+  "guide.ripasso.h": "Wiederholungen: zwei Stapel, zwei Rhythmen",
+  "guide.ripasso.p1": "Die Wortschatzkarten laufen mit FSRS: ein Wort, das du kannst, kommt immer später wieder, eines, über das du stolperst, kommt morgen. Der Abstand ergibt sich aus deinen Antworten, nicht aus dem Kalender.",
+  "guide.ripasso.p2": "Das Fehlerheft ist der zweite Stapel. Dorthin wandert genau die Übung, die du falsch hattest, beschriftet mit dem Grammatikthema — man sieht also nicht nur, was schiefging, sondern worum es ging.",
+  "guide.ripasso.p3": "Der Zähler am Reiter Wiederholungen fasst beide Stapel zusammen. Null heißt „heute steht nichts an“, nicht „fertig gelernt“.",
+
+  "guide.esame.h": "Die Prüfung",
+  "guide.esame.p1": "Der Reiter Prüfung ist eine CILS-Simulation: die Teile laufen in fester Reihenfolge, jeder mit eigenem Zeitlimit, und die Antworten kommen in ein Raster, statt einzeln geprüft zu werden. Die Aufgabenstellungen sind auf Italienisch, weil sie es in der echten Prüfung auch sind.",
+  "guide.esame.p2": "Früh anzutreten bringt nichts: sie misst ein Niveau, das du schon hast, und ist kein Weg dorthin. Der sinnvolle Moment ist das Ende des Niveaus, das du ablegen willst.",
+
+  "guide.mappa.h": "Alle Bildschirme der Reihe nach",
+  "guide.mappa.p1": "Die fünfzehn Einträge der Leiste plus vier Bildschirme, die nicht darin stehen, weil man sie über Training und über die Suche erreicht. Kurz, was jeder davon tut.",
+
+  "guide.backup.h": "Sicherung: kein Konto, eine Datei",
+  "guide.backup.p1": "Der Kurs hat kein Konto und keine Synchronisierung. Alles, was du gelernt hast, liegt in diesem Browser, auf diesem Gerät, und das Löschen der Seitendaten ist endgültig.",
+  "guide.backup.p2": "Alle zehn abgeschlossenen Lektionen erinnert der Kurs von selbst an eine Kopie. Die Datei legst du ab, wo du willst, und lädst sie unter Einstellungen wieder ein — das ist zugleich der einzige Weg, deinen Fortschritt auf ein anderes Gerät zu bringen.",
+
+  "guide.bloccato.h": "Wenn etwas nicht hängen bleibt",
+  "guide.bloccato.p1": "Mach dieselbe Lektion nicht zum dritten Mal hintereinander. Nimm stattdessen eine Trainingsrunde zu dem Thema: dort entstehen die Aufgaben aus Regeln und sind jedes Mal andere. Zur Lektion kehrst du am nächsten Tag zurück.",
+  "guide.bloccato.p2": "Wenn es die Aussprache ist, öffne Minimalpaare oder Nachsprechen: das übt Ohr und Mund, nicht die Regel. Und wenn du nicht mehr weißt, wo etwas stand, durchsucht das Feld über der Leiste den ganzen Kurs.",
+
+  "guide.s.oggi": "Eine fertig zusammengestellte Sitzung: Fehler, Training, Karten.",
+  "guide.s.percorso": "Niveaus, Einheiten und Lektionen. Von hier läuft das Lernen.",
+  "guide.s.ripasso": "Karten und Fehlerheft, alles, was zurückkommt.",
+  "guide.s.allenamento": "Aufgaben aus Regeln statt aus einer Liste, sie gehen also nicht aus.",
+  "guide.s.conversazione": "Der Kurs spricht Italienisch, du antwortest ins Mikrofon.",
+  "guide.s.grammatica": "Der ganze Grammatiklehrplan von A1 bis C2, zum Lesen.",
+  "guide.s.coniugatore": "Konjugation beliebiger Verben, auch reflexiver.",
+  "guide.s.lessico": "Die Wörter mit Stern, sortiert nach nächster Wiederholung.",
+  "guide.s.shadowing": "Hören, nachsprechen, dann beide Aufnahmen hintereinander anhören.",
+  "guide.s.velocita": "Derselbe Satz in normalem Tempo. Langsamer ist der Rettungsring, nicht der Anfang.",
+  "guide.s.esame": "CILS-Simulation mit Zeitlimit und Verlauf der Versuche.",
+  "guide.s.falsi": "Wörter, die etwas anderes heißen, als deine Sprache nahelegt.",
+  "guide.s.copertura": "Wie viel vom häufigsten Italienisch du schon verstehst.",
+  "guide.s.progressi": "Serie, Punkte und das Diagramm der Tage. Alles lokal gezählt.",
+  "guide.s.impostazioni": "Stimme, Tempo, Akzente, Sicherung, Einstufungstest.",
+  "guide.s.suoni": "Zwei Wörter, ein Laut Unterschied. Erst das Ohr, dann der Mund.",
+  "guide.s.lettura": "Längere Texte: den Sinn über mehrere Sätze hinweg halten.",
+  "guide.s.scrittura": "Schreiben, geprüft an dem, was prüfbar ist: an den verwendeten Konstruktionen.",
+  "guide.s.cerca": "Sucht in Lektionen, Wortschatz, Grammatik und Gesprächen.",
+
   /* ---------------- Startbildschirm ---------------- */
   "welcome.kicker": "ANFANG",
   "welcome.title": "Willkommen im Italienischkurs",
@@ -213,6 +279,7 @@ LINGUAI.addUI("de", {
   "welcome.lookTitle": "Ich schaue mich erst um",
   "welcome.lookHint": "Öffnet den Lernpfad. Die Niveauwahl kann warten.",
   "welcome.lookGo": "Zeig mir den Kurs",
+  "welcome.guide": "Wie läuft das? Zur Anleitung",
 
   "place.kicker": "NIVEAU",
   "place.title": "Wo anfangen",

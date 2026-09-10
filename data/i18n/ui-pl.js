@@ -201,6 +201,72 @@ LINGUAI.addUI("pl", {
   "keys.barLabel": "Znaki włoskie",
 
   /* ---------------- Test poziomujący ---------------- */
+  /* ---------------- Przewodnik ---------------- */
+  "nav.guide": "Przewodnik",
+  "guide.kicker": "PRZEWODNIK",
+  "guide.title": "Jak korzystać z kursu",
+  "guide.intro": "Piętnaście zakładek i żadna nie jest obowiązkowa. Ta strona mówi, w jakiej kolejności to wszystko ma sens i co robi każdy ekran.",
+  "guide.tocLabel": "Spis treści",
+  "guide.more": "Jak to działa →",
+  "guide.open": "Otwórz",
+
+  "guide.inizio.h": "Od czego zacząć",
+  "guide.inizio.p1": "Jeśli nigdy nie uczyłeś się włoskiego, idź prosto do pierwszej lekcji A1. Kurs jest ułożony tak, żeby dało się zacząć od zera, i nie trzeba wcześniej niczego ustawiać.",
+  "guide.inizio.p2": "Jeśli coś już umiesz, zrób test poziomujący. Skacze między poziomami zamiast iść po kolei, więc kończy się szybko, a na koniec odhacza lekcje z niższych poziomów. Wynik jest propozycją: możesz go odrzucić i zacząć od początku.",
+
+  "guide.ordine.h": "Kolejność, która ma sens",
+  "guide.ordine.p1": "Poziomy idą od A1 do C2 i gramatyka jest kumulatywna: A2 zakłada opanowane A1, B1 zakłada A2. Nic nie blokuje przeskoku, ale od tego miejsca kolejne lekcje przestają tłumaczyć się same.",
+  "guide.ordine.p2": "Wewnątrz poziomu jednostki idą po kolei, tak samo lekcje w jednostce. Test na końcu jednostki sprawdza ją całą, nie ostatnią lekcję.",
+
+  "guide.lezione.h": "Jak wygląda lekcja",
+  "guide.lezione.p1": "Każda lekcja ma tę samą budowę: teoria, gramatyka z tabelą i przykładami, słownictwo, dialog, notatka kulturowa, ćwiczenia. Teorię czyta się raz i zostaje na stronie lekcji, więc można do niej wrócić w trakcie ćwiczeń.",
+  "guide.lezione.p2": "Lekcja zalicza się od 70 procent poprawnych odpowiedzi. Poniżej progu zostaje otwarta i można ją powtórzyć — nic nie przepada, a wynik liczy się od nowa.",
+  "guide.lezione.p3": "Każda zła odpowiedź zakłada kartę w quaderno błędów i wraca do ciebie w Powtórkach. Nie musisz nic notować ani niczego zaznaczać.",
+
+  "guide.oggi.h": "Dziś: dziesięć minut bez wybierania",
+  "guide.oggi.p1": "Zakładka Dziś układa sesję sama: najpierw twoje pomyłki, potem trening tematu, który idzie ci najsłabiej, na koniec fiszki do powtórzenia. To jest droga na dzień, w którym nie chcesz decydować, co robić.",
+  "guide.oggi.p2": "Sesja ma zawsze czym się wypełnić, także wtedy, gdy nie masz zaległości: zadania z generatora nie kończą się nigdy.",
+
+  "guide.ripasso.h": "Powtórki: dwie talie, dwa rytmy",
+  "guide.ripasso.p1": "Fiszki ze słownictwem chodzą algorytmem FSRS: słowo, które znasz, wraca coraz rzadziej, słowo, na którym się potykasz, wraca nazajutrz. Odstęp liczy się z twoich odpowiedzi, nie z kalendarza.",
+  "guide.ripasso.p2": "Quaderno błędów to druga talia. Trafia do niej dokładnie to ćwiczenie, które pomyliłeś, podpisane nazwą zagadnienia — widać więc nie tylko co poszło źle, ale i czego dotyczyło.",
+  "guide.ripasso.p3": "Licznik przy zakładce Powtórki pokazuje obie talie razem. Zero znaczy „na dziś nie ma zaległości”, a nie „koniec nauki”.",
+
+  "guide.esame.h": "Egzamin",
+  "guide.esame.p1": "Zakładka Egzamin to symulacja CILS: sekcje idą w ustalonej kolejności, każda ma swój limit czasu, odpowiedzi wpisuje się w siatkę zamiast sprawdzać po jednej. Całe polecenia są po włosku, bo na prawdziwym egzaminie też będą.",
+  "guide.esame.p2": "Nie ma sensu podchodzić wcześnie: to jest sprawdzian poziomu, który już masz, a nie sposób, żeby się go nauczyć. Rozsądny moment to koniec poziomu, do którego zdajesz.",
+
+  "guide.mappa.h": "Wszystkie ekrany po kolei",
+  "guide.mappa.p1": "Piętnaście pozycji z paska plus cztery ekrany, których w pasku nie ma, bo wchodzi się do nich z Treningu i z wyszukiwarki. Krótko, co robi każdy.",
+
+  "guide.backup.h": "Kopia zapasowa: nie ma konta, jest plik",
+  "guide.backup.p1": "Kurs nie ma konta ani synchronizacji. Wszystko, czego się nauczyłeś, leży w tej przeglądarce, na tym urządzeniu, i wyczyszczenie danych strony kasuje to bezpowrotnie.",
+  "guide.backup.p2": "Co dziesięć ukończonych lekcji kurs sam przypomni o pobraniu kopii. Plik zapisujesz, gdzie chcesz, a wczytujesz go w Ustawieniach — to również jedyny sposób, żeby przenieść naukę na inne urządzenie.",
+
+  "guide.bloccato.h": "Kiedy coś nie wchodzi",
+  "guide.bloccato.p1": "Nie powtarzaj tej samej lekcji trzeci raz z rzędu. Zrób Trening tego zagadnienia — zadania powstają tam z reguł, więc za każdym razem są inne — a do lekcji wróć nazajutrz.",
+  "guide.bloccato.p2": "Jeśli nie wchodzi wymowa, otwórz Pary minimalne albo Powtarzanie: tam ćwiczy się ucho i usta, nie regułę. A jeśli nie pamiętasz, gdzie coś było, wyszukiwarka nad paskiem przeszukuje cały kurs.",
+
+  "guide.s.oggi": "Gotowa sesja na dziś: pomyłki, trening, fiszki.",
+  "guide.s.percorso": "Poziomy, jednostki i lekcje. Stąd prowadzi cała nauka.",
+  "guide.s.ripasso": "Fiszki i quaderno błędów, czyli wszystko, co wraca.",
+  "guide.s.allenamento": "Zadania z reguł, nie z listy, więc nie kończą się po czterech.",
+  "guide.s.conversazione": "Kurs mówi po włosku, ty odpowiadasz do mikrofonu.",
+  "guide.s.grammatica": "Pełny sylabus gramatyczny A1 → C2, do czytania.",
+  "guide.s.coniugatore": "Odmiana dowolnego czasownika, także zwrotnego.",
+  "guide.s.lessico": "Słowa oznaczone gwiazdką, z terminem następnej powtórki.",
+  "guide.s.shadowing": "Posłuchaj, powtórz, odsłuchaj oba nagrania po sobie.",
+  "guide.s.velocita": "To samo zdanie w normalnym tempie. Spowolnienie jest kołem ratunkowym.",
+  "guide.s.esame": "Symulacja CILS z limitem czasu i historią podejść.",
+  "guide.s.falsi": "Słowa, które znaczą co innego, niż podpowiada twój język.",
+  "guide.s.copertura": "Ile najczęstszych włoskich form już rozumiesz.",
+  "guide.s.progressi": "Passa, punkty i wykres dni. Wszystko liczone lokalnie.",
+  "guide.s.impostazioni": "Głos, tempo, akcenty, kopia zapasowa, test poziomujący.",
+  "guide.s.suoni": "Dwa wyrazy, jeden dźwięk różnicy. Najpierw ucho, potem usta.",
+  "guide.s.lettura": "Dłuższe teksty: trzymanie sensu przez kilka zdań z rzędu.",
+  "guide.s.scrittura": "Wypracowania sprawdzane z tego, co da się sprawdzić: użytych konstrukcji.",
+  "guide.s.cerca": "Szuka po lekcjach, słownictwie, gramatyce i rozmowach.",
+
   /* ---------------- Ekran powitalny ---------------- */
   "welcome.kicker": "POCZĄTEK",
   "welcome.title": "Witaj w kursie włoskiego",
@@ -213,6 +279,7 @@ LINGUAI.addUI("pl", {
   "welcome.lookTitle": "Najpierw się rozejrzę",
   "welcome.lookHint": "Otwiera ścieżkę nauki. Wybór poziomu może zaczekać.",
   "welcome.lookGo": "Pokaż kurs",
+  "welcome.guide": "Jak to działa? Przewodnik po kursie",
 
   "place.kicker": "POZIOM",
   "place.title": "Od czego zacząć",

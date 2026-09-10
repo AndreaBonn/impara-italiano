@@ -14,9 +14,9 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine, CORE } from "./_harness.mjs";
+import { loadEngine, CORE, LLM } from "./_harness.mjs";
 
-const FILES = [...CORE, "assets/js/llm-providers.js", "assets/js/llm-keys.js"];
+const FILES = [...CORE, ...LLM];
 
 const KEY = "sk-verysecret1234";
 

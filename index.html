@@ -14,8 +14,17 @@
      from. What remains is a defence against foreign code attached from outside - a
      browser extension, or a dependency that some day arrives over the network.
      `frame-ancestors` is deliberately absent: browsers ignore it in <meta>, and a
-     rule that does nothing looks in the list exactly like one that works. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+     rule that does nothing looks in the list exactly like one that works.
+
+     `connect-src` names four hosts, and that list is the honest statement of
+     where this page can send anything. They are the four model providers a
+     student may hand a key to for checking open answers; the course reaches them
+     only after the student has entered a key and agreed. Note what the shape of
+     this buys: the set of providers is closed HERE, by the browser, so no bug in
+     the JavaScript can widen it. A wildcard would have cost nothing to write and
+     given that up. `default-src 'self'` does not cover connect-src by extension —
+     the directive is explicit, so it had to be edited by hand. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com https://api.groq.com https://api.openai.com https://api.anthropic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title data-i18n="app.title">Impara l'Italiano 🇮🇹 — kurs włoskiego od A1 do C2</title>
 <meta name="description" data-i18n-content="app.description" content="Kompletny kurs języka włoskiego po polsku: gramatyka, teoria, ćwiczenia, słuchanie i mówienie. Od A1 do poziomu native.">
 <!-- The preview a shared link shows. Three things about it are deliberate.
@@ -153,6 +162,13 @@
 <!-- attaching the student's texts to the course content: separate from the interface strings -->
 <script src="assets/js/i18n-merge.js"></script>
 <script src="assets/js/consent.js"></script>
+<!-- the second judge: the provider tables and the rules before the file that
+     makes the request, the same order as verbs-data.js before verbs.js. llm.js
+     reads all three, and llm-rules.js reads Txt at call time -->
+<script src="assets/js/llm-providers.js"></script>
+<script src="assets/js/llm-rules.js"></script>
+<script src="assets/js/llm-keys.js"></script>
+<script src="assets/js/llm.js"></script>
 <script src="assets/js/audio.js"></script>
 <!-- the Italian tables before the conjugation engine: verbs.js reads them at startup -->
 <script src="assets/js/verbs-data.js"></script>

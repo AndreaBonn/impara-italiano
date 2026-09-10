@@ -35,7 +35,8 @@ const globals = require("globals");
    not from memory. */
 const KURS = [
   "Anki", "App", "Audio2", "Cils", "CilsHtml", "CilsRun", "Consent", "Core", "Drills", "Errors", "Ex",
-  "Frequency", "Fsrs", "I18n", "Keys", "Lemma", "Lex", "LINGUAI", "Lookup",
+  "Frequency", "Fsrs", "I18n", "Keys", "Lemma", "Lex", "LINGUAI", "Llm", "LlmKeys",
+  "LlmProviders", "LlmRules", "Lookup",
   "Placement", "PWA", "Recorder", "Router", "Search", "Talk", "Train", "Verbs", "Views", "Writing",
   /* course data: the files in data/ assign these to the global scope */
   "AUDIO_INDEX", "CONVERSATIONS", "GRAMMAR_REF", "PHONETICS", "CILS", "READINGS",

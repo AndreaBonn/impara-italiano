@@ -12,16 +12,9 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine, CORE } from "./_harness.mjs";
+import { loadEngine, CORE, LLM } from "./_harness.mjs";
 
-const FILES = [
-  ...CORE,
-  "assets/js/consent.js",
-  "assets/js/llm-providers.js",
-  "assets/js/llm-rules.js",
-  "assets/js/llm-keys.js",
-  "assets/js/llm.js"
-];
+const FILES = [...CORE, ...LLM];
 
 const TASK = {
   question: "Ordina un caffè.",

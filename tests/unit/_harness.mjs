@@ -65,6 +65,19 @@ export const VERBS = ["assets/js/verbs-data.js", "assets/js/verbs.js"];
 export const LEMMA = ["assets/js/lemma-morf.js", "assets/js/lemma.js"];
 
 /**
+ * The second judge: the provider tables and the pure rules before the file
+ * that makes the request, the same order as in index.html and in PRECACHE.
+ * llm.js reads all three; llm-rules.js reads Txt, which CORE already loads.
+ */
+export const LLM = [
+  "assets/js/consent.js",
+  "assets/js/llm-providers.js",
+  "assets/js/llm-rules.js",
+  "assets/js/llm-keys.js",
+  "assets/js/llm.js"
+];
+
+/**
  * Audio: the recording index before recordings.js, recordings.js before
  * audio.js. Both read their predecessor at module execution, not inside a
  * function.

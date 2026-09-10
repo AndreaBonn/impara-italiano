@@ -42,7 +42,7 @@
 
    A human raises "v35" when they want to name a release; the fingerprint
    is not their job. */
-var SW_VERSION = "v35.b5ea0f08c1cb";
+var SW_VERSION = "v35.0fbc0587fc68";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Recordings are content-addressed, so their cache survives a version change. */
@@ -63,6 +63,10 @@ var PRECACHE = [
   "./assets/js/i18n.js",
   "./assets/js/i18n-merge.js",
   "./assets/js/consent.js",
+  "./assets/js/llm-providers.js",
+  "./assets/js/llm-rules.js",
+  "./assets/js/llm-keys.js",
+  "./assets/js/llm.js",
   "./assets/js/recordings.js",
   "./assets/js/audio.js",
   "./assets/js/recorder.js",

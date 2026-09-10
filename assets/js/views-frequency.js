@@ -35,6 +35,33 @@
     var F = global.FREQUENCY;
     if (!F || !F.words) { set(Views.shell.empty(t("cov.noList"))); return; }
 
+    rysuj(F);
+
+    /* Both numbers are only as complete as the levels sitting in memory, and
+       the levels arrive lazily. Entering this screen straight after opening
+       the course measured A1 alone and presented the result as the ceiling of
+       the whole course — 952 forms instead of 1249, a number that grew later
+       by itself if the student happened to walk through A2. The same fix as
+       in search.js: draw what we have, pull the rest, draw again. The toast
+       is search.partial, because the sentence it carries is about levels that
+       did not load and says nothing about searching. */
+    var brakujace = Core.registry.levels.filter(function (lv) { return !Core.registry.loaded[lv.code]; });
+    if (!brakujace.length) return;
+
+    var zostalo = brakujace.length;
+    var nieudane = [];
+    brakujace.forEach(function (lv) {
+      Core.loadLevelData(lv.code, function (got) {
+        if (!got) nieudane.push(lv.code);
+        if (--zostalo > 0) return;
+        if (global.Lemma && Lemma.odswiez) Lemma.odswiez();   // the dictionary grew
+        rysuj(F);
+        if (nieudane.length) Core.toast(t("search.partial", { levels: nieudane.join(", ") }));
+      });
+    });
+  };
+
+  function rysuj(F) {
     var kurs = Frequency.slownikKursu();
     var uczen = Frequency.slownikUcznia();
     var pKurs = Frequency.pokrycie(F.words, kurs, F.tokens);
@@ -97,6 +124,6 @@
         App.go("copertura");
       });
     });
-  };
+  }
 
 })(window);

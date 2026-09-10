@@ -18,6 +18,40 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title data-i18n="app.title">Impara l'Italiano 🇮🇹 — kurs włoskiego od A1 do C2</title>
 <meta name="description" data-i18n-content="app.description" content="Kompletny kurs języka włoskiego po polsku: gramatyka, teoria, ćwiczenia, słuchanie i mówienie. Od A1 do poziomu native.">
+<!-- The preview a shared link shows. Three things about it are deliberate.
+
+     STATIC, with no `data-i18n`. Every other string on this page is rewritten
+     by I18n.apply() at runtime; these are not, and could not be: a crawler
+     reads the markup and never runs a line of our code, so a translated tag
+     would reach it in whatever language the file was saved in. Marking them
+     up as translatable would look right and change nothing.
+
+     ENGLISH, while <title> above defaults to Polish. The two serve different
+     people. The title belongs to a student who has already chosen a language;
+     the preview belongs to whoever is being handed the link for the first
+     time, and English is the one language this course can assume of someone
+     who has not opened it yet. It is the same call manifest.webmanifest makes
+     with "lang": "en-US". The course name itself stays Italian, as it does in
+     the rail and in every language of the interface.
+
+     ABSOLUTE URLs, which is the only place in this project where one appears.
+     Crawlers do not resolve relative addresses. The prefix is not written by
+     hand twice: it lives in "homepage" in package.json, and
+     scripts/check_ogtags.mjs fails the build if these tags drift away from
+     it, if the image is missing, or if it stops being exactly 1200x630. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Impara l'Italiano">
+<meta property="og:url" content="https://andreabonn.github.io/impara-italiano/">
+<meta property="og:title" content="Impara l'Italiano — a free Italian course, A1 to C2">
+<meta property="og:description" content="An Italian course that runs in your browser, works offline, and explains the grammar in the language you already speak. No account, no tracking.">
+<meta property="og:image" content="https://andreabonn.github.io/impara-italiano/assets/og/cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The name Impara l'Italiano over a warm cream background, next to a badge reading A1 to C2.">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://andreabonn.github.io/impara-italiano/assets/og/cover.png">
+
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#b72e42">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">

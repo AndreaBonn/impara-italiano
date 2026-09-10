@@ -331,6 +331,11 @@ LINGUAI.addUI("fr", {
   "write.showModel": "Afficher le texte modèle",
   "write.model": "Texte modèle",
   "write.modelNote": "Une version possible, pas un modèle à recopier. Compare ce qu'il fait autrement que toi, et pourquoi.",
+  "write.askOpinion": "Demande un avis au modèle",
+  "write.askingOpinion": "Lecture de ton texte…",
+  "write.opinion": "L'avis du modèle",
+  "write.opinionNote": "C'est l'avis du modèle, pas la note du cours. Il ne change ni ta progression ni tes cartes, et il peut se tromper : lis-le comme le mot d'un camarade, pas comme la correction d'un professeur.",
+  "write.opinionFailed": "Aucun avis n'est revenu. Vérifie tes clés dans Réglages ou réessaie plus tard.",
   "write.transDone": "Traduction terminée. Ce que tu as raté revient dans l'onglet Erreurs.",
 
   /* ---------------- Lecture et écoute longue ---------------- */
@@ -925,10 +930,11 @@ LINGUAI.addUI("fr", {
   "privacy.modello.h": "Tes réponses, si tu actives la vérification par un modèle",
   "privacy.modello.p1": "Cette partie du cours est éteinte tant que tu ne l'allumes pas toi-même, et elle reste éteinte pour qui ne fait rien.",
   "privacy.modello.p2": "Le cours compare tes réponses aux réponses attendues lettre par lettre, et cette méthode se trompe dans un seul sens : elle refuse des phrases correctes mais tournées autrement que le modèle. Tu peux lui donner un second avis. Dans {settings} se trouve un endroit où coller la clé d'un fournisseur de modèles que tu utilises déjà : Google Gemini, Groq, OpenAI ou Anthropic. À partir de là, et seulement une fois que la comparaison sur ton appareil a déjà refusé ta réponse, le cours envoie au fournisseur choisi deux phrases, la tienne et celle attendue, et reçoit un jugement. Trois choses qu'il vaut mieux savoir avant :",
+  "privacy.modello.p3": "Il y a un second endroit où cela se produit, et il en sort davantage. Dans les exercices d'écriture, tu peux demander au modèle un avis sur ce que tu as rédigé, et alors le texte entier part avec la consigne de l'exercice. Cela n'arrive jamais tout seul : il y a un bouton, c'est toi qui l'appuies, et tant que tu ne l'appuies pas ton texte reste où il est. Cet avis n'est pas une note et ne touche ni ta progression ni tes cartes.",
   "privacy.modello.l1": "la clé reste sur cet appareil. Elle ne passe par nous à aucun moment : elle va de ton navigateur au fournisseur, un point c'est tout. Elle n'entre même pas dans le fichier que tu télécharges avec {export} ;",
   "privacy.modello.l2": "les requêtes te sont facturées, sur le contrat que tu as avec ce fournisseur. Nous n'avons aucun moyen de les voir ni de les compter ;",
   "privacy.modello.l3": "ce que le fournisseur fait de ta phrase après l'avoir reçue ne dépend pas de nous et nous ne pouvons pas le vérifier, exactement comme pour la reconnaissance vocale. La réponse est dans la politique de confidentialité du fournisseur que tu as choisi.",
-  "privacy.modello.p3": "Ici aussi le cours te demande ton consentement, et c'est un consentement distinct de celui pour la reconnaissance vocale : accepter l'un n'est pas accepter l'autre, et retirer l'un ne retire pas l'autre. Tu le retires quand tu veux dans {settings}, où tu peux aussi supprimer toutes les clés d'un coup. Sans clé ou sans consentement, le cours ne contacte aucun fournisseur et se comporte exactement comme avant.",
+  "privacy.modello.p4": "Ici aussi le cours te demande ton consentement, et c'est un consentement distinct de celui pour la reconnaissance vocale : accepter l'un n'est pas accepter l'autre, et retirer l'un ne retire pas l'autre. Tu le retires quand tu veux dans {settings}, où tu peux aussi supprimer toutes les clés d'un coup. Sans clé ou sans consentement, le cours ne contacte aucun fournisseur et se comporte exactement comme avant.",
 
   "privacy.cache.h": "Les copies que le cours garde pour fonctionner hors ligne",
   "privacy.cache.p1": "Le cours fonctionne aussi sans internet. Pour y arriver, le navigateur garde une copie des fichiers du cours : le code, les textes des leçons et les enregistrements des locuteurs natifs. Ce sont nos fichiers, les mêmes pour tout le monde, et ils ne contiennent rien qui vous concerne. Ils disparaissent quand vous effacez les données du site dans votre navigateur.",

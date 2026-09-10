@@ -86,6 +86,12 @@ OpenAI o Anthropic. Da quel momento, e soltanto dopo che il confronto sul tuo di
 già rifiutato la risposta, il corso manda al fornitore che hai scelto due frasi, la tua e
 quella attesa, e ne riceve un giudizio.
 
+C'è un secondo posto in cui succede, e lì esce di più. Negli esercizi di produzione scritta
+puoi chiedere al modello un parere sul testo che hai composto, e in quel caso esce il testo
+intero insieme alla consegna dell'esercizio. Non accade mai da solo: c'è un pulsante, lo premi
+tu, e finché non lo premi il tuo tema resta dov'è. Quel parere non è un voto e non tocca né i
+tuoi progressi né le tue schede di ripetizione.
+
 Tre cose che è giusto tu sappia prima:
 
 - **la chiave resta su questo dispositivo.** Non passa da noi in nessun momento: viaggia dal

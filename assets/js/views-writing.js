@@ -162,7 +162,68 @@
       esc(t("write.notChecked")) + "</h3><p>" + esc(t("write.notCheckedText")) + "</p>" +
       '<div class="stack" style="margin-top:10px">' + (w.checklist || []).map(function (c) {
         return '<div class="list-row"><span class="list-row__main"><b>' + esc(c) + "</b></span></div>";
-      }).join("") + "</div></div>";
+      }).join("") + "</div>" +
+      /* The offer belongs HERE, inside the card that lists what the course
+         cannot measure — sense, coherence, how it sounds. That is exactly
+         what a reader can say something about, and putting it next to the
+         requirements would suggest it grades them, which it does not. */
+      (global.Llm && Llm.available()
+        ? '<div style="margin-top:12px"><button class="btn btn--ghost btn--sm js-opinion">' +
+          esc(t("write.askOpinion")) + "</button></div>"
+        : "") +
+      "</div>";
+
+    var przycisk = host.querySelector(".js-opinion");
+    if (przycisk) przycisk.addEventListener("click", function () { poprosOParere(w, tekst, przycisk); });
+  }
+
+  /**
+   * A reading of the composition by the model the student set up.
+   *
+   * Asked, never automatic. A composition is long, so this costs more than
+   * a sentence does, and the money is theirs — a request they did not press
+   * a button for is a request they did not agree to make.
+   *
+   * The button dies on the way out and does not come back: a second reading
+   * of the same text says the same thing and bills for it twice. Editing
+   * and checking again is what produces a new one.
+   */
+  function poprosOParere(w, tekst, przycisk) {
+    przycisk.disabled = true;
+    przycisk.textContent = t("write.askingOpinion");
+
+    Llm.review({ title: w.title || "", prompt: w.prompt || "" }, tekst, function (odpowiedz) {
+      var host = document.getElementById("writeResult");
+      /* The student may have left, or checked again: both replace this node,
+         and drawing into the old one writes to nothing. */
+      if (!host || !host.contains(przycisk)) return;
+      /* The parent is read BEFORE the button leaves: afterwards its
+         parentNode is null and the answer would have nowhere to go. */
+      var gniazdo = przycisk.parentNode;
+      przycisk.remove();
+
+      var box = document.createElement("div");
+      box.className = "card js-opinion-box";
+      box.style.marginTop = "12px";
+      var h = document.createElement("h3");
+      h.style.fontSize = "1rem";
+      h.style.marginBottom = "6px";
+      h.textContent = t("write.opinion");
+      var p = document.createElement("p");
+      /* textContent, like everything else in this view: this is the one
+         string here that the course did not write. */
+      p.textContent = odpowiedz || t("write.opinionFailed");
+      box.appendChild(h);
+      box.appendChild(p);
+      if (odpowiedz) {
+        var nota = document.createElement("p");
+        nota.className = "exq__sub";
+        nota.style.marginTop = "8px";
+        nota.textContent = t("write.opinionNote");
+        box.appendChild(nota);
+      }
+      (gniazdo || host).appendChild(box);
+    });
   }
 
   function pokazModel(w, host) {

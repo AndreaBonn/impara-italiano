@@ -60,11 +60,23 @@ przed `exercises-choice/text/voice.js` (czternaście typów, wołają `Ex.regist
 (rejestracja, nasłuchy, komunikat, przeładowanie).
 
 Tą samą granicą idzie drugi sędzia odpowiedzi otwartych: `llm-providers.js` (tabela
-czterech dostawców, cztery czyste funkcje na każdego) i `llm-rules.js` (prompt, kolejka,
-odczyt werdyktu, **clamp**) przed `llm.js` (jedyny plik tej funkcji, który dotyka sieci) —
+czterech dostawców, cztery czyste funkcje na każdego), `llm-prompts.js` (o co pytamy model)
+i `llm-rules.js` (kolejka, odczyt werdyktu, **clamp**) przed `llm.js` (jedyny plik tej funkcji, który dotyka sieci) —
 plus `llm-keys.js`, który trzyma klucze API w **osobnym** pojemniku `linguai.llm.v1`, poza
 stanem: `Store.exportState()` serializuje cały stan do pliku kopii zapasowej, a poświadczenie
 płatne przez ucznia nie ma prawa tam trafić. Nazwa `Keys` jest zajęta przez `keys.js`.
+
+Podział na `llm-prompts.js` i `llm-rules.js` idzie za **tempem zmian**, nie za wielkością:
+to, o co pytamy, zmienia się z powodów dydaktycznych (opinia jest zbyt ogólna, model za
+często odmawia, jeden język brzmi źle), a to, jak traktujemy odpowiedź — z inżynierskich.
+Dwa tempa w jednym pliku to sposób, w jaki plik rośnie poza granicę, za którą nikt go już
+nie czyta przed edycją.
+
+W `llm-prompts.js` siedzą **dwie instrukcje ułożone w przeciwne strony**, i to jest treść
+tego pliku. Sędzia odpowiada na pytanie zamknięte i ma odmawiać w razie wątpliwości, bo
+zdanie błędne przyjęte za dobre uczeń potem ćwiczy. Czytelnik wypracowania nie zmienia
+żadnego wyniku, więc ostrożność nic tam nie kupuje: ma być konkretny i cytować, bo
+grzeczny ogólnik („uważaj na czasy") to opinia, która kosztuje pieniądze i nie uczy niczego.
 
 `clamp` w `llm-rules.js` jest tu rzeczą, której nie wolno rozluźnić: model pytany jest
 **wyłącznie** o odpowiedź już odrzuconą lokalnie, a jego zdanie wchodzi przez `ok || promote`.
@@ -493,10 +505,10 @@ z poprzedniej wersji tego pliku.
 | Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
-| Klucze interfejsu na język | 812 × 5 języków |
-| Pliki silnika | 68 w `assets/js/`, 13 408 linii |
-| Testy jednostkowe | 915 przebiegów w 38 plikach, zielone |
-| Testy DOM | 251 przebiegów w 33 plikach, zielone |
+| Klucze interfejsu na język | 818 × 5 języków |
+| Pliki silnika | 69 w `assets/js/`, 13 725 linii |
+| Testy jednostkowe | 926 przebiegów w 39 plikach, zielone |
+| Testy DOM | 260 przebiegów w 33 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,3% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz

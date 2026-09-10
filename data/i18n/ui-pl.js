@@ -329,6 +329,11 @@ LINGUAI.addUI("pl", {
   "write.showModel": "Pokaż tekst modelowy",
   "write.model": "Tekst modelowy",
   "write.modelNote": "To jedna z możliwych wersji, nie wzorzec do przepisania. Porównaj, co on robi inaczej niż ty, i dlaczego.",
+  "write.askOpinion": "Poproś model o opinię",
+  "write.askingOpinion": "Czytam twój tekst…",
+  "write.opinion": "Opinia modelu",
+  "write.opinionNote": "To zdanie modelu, nie ocena kursu. Nie wpływa na twoje postępy ani na fiszki, i potrafi się mylić — czytaj je jak uwagę kolegi, nie jak poprawkę nauczyciela.",
+  "write.opinionFailed": "Nie udało się dostać opinii. Sprawdź klucze w Ustawieniach albo spróbuj później.",
   "write.transDone": "Koniec tłumaczenia. Pomyłki wrócą w zakładce Błędy.",
 
   /* ---------------- Czytanie i słuchanie ciągłe ---------------- */
@@ -929,10 +934,11 @@ LINGUAI.addUI("pl", {
   "privacy.modello.h": "Twoje odpowiedzi, jeśli włączysz sprawdzanie przez model",
   "privacy.modello.p1": "Ta część kursu jest wyłączona, dopóki sam jej nie włączysz, i pozostaje wyłączona dla każdego, kto nic nie zrobi.",
   "privacy.modello.p2": "Kurs porównuje twoje odpowiedzi ze wzorcowymi litera po literze, a ta metoda myli się w jedną stronę: odrzuca zdania poprawne, ale ułożone inaczej niż wzorzec. Możesz dać jej drugą opinię. W {settings} jest miejsce, gdzie wklejasz klucz do dostawcy modeli, którego już używasz: Google Gemini, Groq, OpenAI albo Anthropic. Od tej chwili — i dopiero wtedy, gdy porównanie na urządzeniu już odrzuciło twoją odpowiedź — kurs wysyła wybranemu dostawcy dwa zdania, twoje i wzorcowe, i dostaje ocenę. Trzy rzeczy, o których warto wiedzieć wcześniej:",
+  "privacy.modello.p3": "Jest drugie miejsce, w którym to się dzieje, i wychodzi tam więcej. W ćwiczeniach z pisania możesz poprosić model o opinię o swoim tekście, a wtedy wychodzi cały tekst razem z poleceniem ćwiczenia. Nigdy nie dzieje się to samo z siebie: jest przycisk, naciskasz go ty, a dopóki go nie naciśniesz, twoje wypracowanie zostaje na miejscu. Ta opinia nie jest oceną i nie rusza ani twoich postępów, ani fiszek.",
   "privacy.modello.l1": "klucz zostaje na tym urządzeniu. Nie przechodzi przez nas w żadnym momencie: idzie z twojej przeglądarki do dostawcy i tyle. Nie trafia nawet do pliku, który pobierasz przez {export};",
   "privacy.modello.l2": "za zapytania płacisz ty, na umowie, którą masz z tym dostawcą. My nie mamy jak ich zobaczyć ani policzyć;",
   "privacy.modello.l3": "co dostawca robi z twoim zdaniem po jego otrzymaniu, nie zależy od nas i nie możemy tego sprawdzić — dokładnie tak samo jak przy rozpoznawaniu mowy. Odpowiedź jest w polityce prywatności dostawcy, którego wybrałeś.",
-  "privacy.modello.p3": "Także tutaj kurs pyta cię o zgodę, i jest to zgoda osobna od tej na rozpoznawanie mowy: przyjęcie jednej nie jest przyjęciem drugiej, a wycofanie jednej nie wycofuje drugiej. Wycofasz ją, kiedy zechcesz, w {settings}, gdzie możesz też skasować wszystkie klucze naraz. Bez klucza albo bez zgody kurs nie kontaktuje się z żadnym dostawcą i zachowuje się dokładnie tak jak wcześniej.",
+  "privacy.modello.p4": "Także tutaj kurs pyta cię o zgodę, i jest to zgoda osobna od tej na rozpoznawanie mowy: przyjęcie jednej nie jest przyjęciem drugiej, a wycofanie jednej nie wycofuje drugiej. Wycofasz ją, kiedy zechcesz, w {settings}, gdzie możesz też skasować wszystkie klucze naraz. Bez klucza albo bez zgody kurs nie kontaktuje się z żadnym dostawcą i zachowuje się dokładnie tak jak wcześniej.",
 
   "privacy.cache.h": "Kopie, które kurs trzyma, żeby działać bez sieci",
   "privacy.cache.p1": "Kurs działa też bez internetu. Żeby to było możliwe, przeglądarka trzyma kopię plików kursu: kodu, tekstów lekcji i nagrań lektorów. To są nasze pliki, takie same dla wszystkich, i nie ma w nich niczego, co dotyczy ciebie. Znikają, kiedy skasujesz dane strony w przeglądarce.",

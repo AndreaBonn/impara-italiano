@@ -329,6 +329,11 @@ LINGUAI.addUI("de", {
   "write.showModel": "Mustertext zeigen",
   "write.model": "Mustertext",
   "write.modelNote": "Eine mögliche Fassung, keine Vorlage zum Abschreiben. Vergleich, was sie anders macht als du, und warum.",
+  "write.askOpinion": "Das Modell um eine Meinung bitten",
+  "write.askingOpinion": "Dein Text wird gelesen…",
+  "write.opinion": "Die Meinung des Modells",
+  "write.opinionNote": "Das ist die Meinung des Modells, nicht die Note des Kurses. Sie ändert weder deinen Fortschritt noch deine Karten, und sie kann falsch liegen — lies sie wie die Notiz eines Mitschülers, nicht wie die Korrektur einer Lehrkraft.",
+  "write.opinionFailed": "Es kam keine Meinung zurück. Prüfe deine Schlüssel in den Einstellungen oder versuche es später.",
   "write.transDone": "Übersetzung beendet. Was schiefging, kommt im Reiter Fehler zurück.",
 
   /* ---------------- Lesen und längeres Hören ---------------- */
@@ -920,10 +925,11 @@ LINGUAI.addUI("de", {
   "privacy.modello.h": "Deine Antworten, wenn du die Prüfung durch ein Modell einschaltest",
   "privacy.modello.p1": "Dieser Teil des Kurses ist aus, bis du ihn selbst einschaltest, und er bleibt aus für alle, die nichts tun.",
   "privacy.modello.p2": "Der Kurs vergleicht deine Antworten Buchstabe für Buchstabe mit den erwarteten, und dieses Verfahren irrt nur in eine Richtung: Es lehnt Sätze ab, die richtig, aber anders formuliert sind als die Musterantwort. Du kannst ihm eine zweite Meinung geben. In {settings} gibt es eine Stelle, an der du den Schlüssel eines Modellanbieters einfügst, den du schon nutzt: Google Gemini, Groq, OpenAI oder Anthropic. Von da an — und erst, wenn der Vergleich auf deinem Gerät deine Antwort bereits abgelehnt hat — schickt der Kurs dem gewählten Anbieter zwei Sätze, deinen und den erwarteten, und erhält ein Urteil. Drei Dinge, die du vorher wissen solltest:",
+  "privacy.modello.p3": "Es gibt eine zweite Stelle, an der das geschieht, und dort geht mehr hinaus. In den Schreibübungen kannst du das Modell um eine Meinung zu deinem Text bitten, und dann geht der ganze Text zusammen mit der Aufgabenstellung hinaus. Von allein passiert das nie: Es gibt einen Knopf, du drückst ihn, und bis dahin bleibt dein Text, wo er ist. Diese Meinung ist keine Note und rührt weder deinen Fortschritt noch deine Karten an.",
   "privacy.modello.l1": "der Schlüssel bleibt auf diesem Gerät. Er geht zu keinem Zeitpunkt über uns: Er läuft von deinem Browser zum Anbieter und sonst nirgendwohin. Er landet nicht einmal in der Datei, die du mit {export} herunterlädst;",
   "privacy.modello.l2": "die Anfragen werden dir berechnet, über den Vertrag, den du mit diesem Anbieter hast. Wir haben keine Möglichkeit, sie zu sehen oder zu zählen;",
   "privacy.modello.l3": "was der Anbieter mit deinem Satz macht, nachdem er ihn erhalten hat, hängt nicht von uns ab und können wir nicht überprüfen — genau wie bei der Spracherkennung. Die Antwort steht in der Datenschutzerklärung des Anbieters, den du gewählt hast.",
-  "privacy.modello.p3": "Auch hier fragt der Kurs nach deiner Einwilligung, und sie ist getrennt von der für die Spracherkennung: Die eine anzunehmen heißt nicht, die andere anzunehmen, und die eine zu widerrufen widerruft die andere nicht. Du widerrufst sie, wann du willst, in {settings}, wo du auch alle Schlüssel auf einmal löschen kannst. Ohne Schlüssel oder ohne Einwilligung nimmt der Kurs zu keinem Anbieter Kontakt auf und verhält sich genau wie zuvor.",
+  "privacy.modello.p4": "Auch hier fragt der Kurs nach deiner Einwilligung, und sie ist getrennt von der für die Spracherkennung: Die eine anzunehmen heißt nicht, die andere anzunehmen, und die eine zu widerrufen widerruft die andere nicht. Du widerrufst sie, wann du willst, in {settings}, wo du auch alle Schlüssel auf einmal löschen kannst. Ohne Schlüssel oder ohne Einwilligung nimmt der Kurs zu keinem Anbieter Kontakt auf und verhält sich genau wie zuvor.",
 
   "privacy.cache.h": "Die Kopien, die der Kurs behält, um offline zu funktionieren",
   "privacy.cache.p1": "Der Kurs funktioniert auch ohne Internet. Damit das geht, behält der Browser eine Kopie der Kursdateien: den Code, die Lektionstexte und die Aufnahmen der Muttersprachler. Das sind unsere Dateien, für alle dieselben, und es steht nichts darin, was dich betrifft. Sie verschwinden, wenn du die Daten der Seite im Browser löschst.",

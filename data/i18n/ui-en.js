@@ -324,6 +324,11 @@ LINGUAI.addUI("en", {
   "write.showModel": "Show the model text",
   "write.model": "Model text",
   "write.modelNote": "One possible version, not a template to copy. Compare what it does differently from you, and why.",
+  "write.askOpinion": "Ask the model for an opinion",
+  "write.askingOpinion": "Reading your text…",
+  "write.opinion": "The model's opinion",
+  "write.opinionNote": "This is the model's view, not the course's mark. It changes neither your progress nor your cards, and it can be wrong — read it the way you would read a note from a classmate, not a correction from a teacher.",
+  "write.opinionFailed": "No opinion came back. Check your keys in Settings, or try again later.",
   "write.transDone": "Translation finished. Anything you got wrong comes back in the Mistakes tab.",
 
   /* ---------------- Reading and extended listening ---------------- */
@@ -917,10 +922,11 @@ LINGUAI.addUI("en", {
   "privacy.modello.h": "Your answers, if you turn on checking by a model",
   "privacy.modello.p1": "This part of the course is off until you turn it on yourself, and it stays off for anybody who does nothing.",
   "privacy.modello.p2": "The course compares your answers with the expected ones letter by letter, and that method errs in one direction only: it rejects sentences that are correct but worded differently from the model answer. You can give it a second opinion. In {settings} there is a place to paste a key for a model provider you already use: Google Gemini, Groq, OpenAI or Anthropic. From then on — and only once the comparison on your device has already rejected your answer — the course sends the provider you chose two sentences, yours and the expected one, and gets back a judgement. Three things worth knowing beforehand:",
+  "privacy.modello.p3": "There is a second place where this happens, and more leaves there. In the writing exercises you can ask the model for an opinion on what you composed, and then the whole text goes out together with the task you were set. It never happens by itself: there is a button, you press it, and until you do your composition stays where it is. That opinion is not a mark and touches neither your progress nor your cards.",
   "privacy.modello.l1": "the key stays on this device. It does not pass through us at any point: it goes from your browser to the provider and no further. It does not even go into the file you download with {export};",
   "privacy.modello.l2": "the requests are billed to you, on the contract you hold with that provider. We have no way of seeing them or counting them;",
   "privacy.modello.l3": "what the provider does with your sentence after receiving it does not depend on us and we cannot verify it — exactly as with speech recognition. The answer is in the privacy notice of the provider you chose.",
-  "privacy.modello.p3": "Here too the course asks for your consent, and it is a consent separate from the one for speech recognition: accepting one is not accepting the other, and withdrawing one does not withdraw the other. You can withdraw it whenever you like in {settings}, where you can also delete every key at once. With no key or no consent the course contacts no provider and behaves exactly as it did before.",
+  "privacy.modello.p4": "Here too the course asks for your consent, and it is a consent separate from the one for speech recognition: accepting one is not accepting the other, and withdrawing one does not withdraw the other. You can withdraw it whenever you like in {settings}, where you can also delete every key at once. With no key or no consent the course contacts no provider and behaves exactly as it did before.",
 
   "privacy.cache.h": "The copies the course keeps in order to work offline",
   "privacy.cache.p1": "The course works without an internet connection too. To manage that, the browser keeps a copy of the course files: the code, the lesson texts and the recordings of the native speakers. Those are our files, the same for everybody, and there is nothing about you in them. They go when you clear the site's data in your browser.",

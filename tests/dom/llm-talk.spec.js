@@ -295,3 +295,88 @@ test.describe("the second judge in a written exercise", () => {
     expect(w.html).not.toContain("<img");
   });
 });
+
+/* ============================================================
+   A composition read by the model.
+
+   The third place this feature reaches, and the one with the loosest
+   contract: no verdict, no clamp, nothing to promote. What matters here is
+   that it stays optional, stays out of the student's progress, and that
+   somebody else's prose lands on the page as text.
+   ============================================================ */
+test.describe("the model reading a composition", () => {
+  async function napisz(page, opcje) {
+    const o = opcje || {};
+    await przygotuj(page, { key: o.key === undefined ? "sk-test-key-1234" : o.key });
+    await zgoda(page);
+    /* The transport answers with prose, not with a verdict. */
+    await page.addInitScript((tekst) => {
+      window.__opinia = tekst;
+    }, o.opinia || "Uwaga: «sono andato» jest poprawne, ale «un gelato» chce rodzajnika.");
+    await page.goto("/index.html#/scrittura?id=w-a2-giornata");
+    await page.waitForSelector(".js-text");
+
+    await page.evaluate(() => {
+      /* Re-point the transport at the prose the test wants back. */
+      window.Llm.useTransport(() => {
+        window.__llmZapytania++;
+        return Promise.resolve({
+          status: 200,
+          json: { choices: [{ message: { content: window.__opinia } }] }
+        });
+      });
+      document.querySelector(".js-text").value =
+        "Ieri sono andato al mare con mia sorella e ho mangiato gelato. È stata una giornata bella e tranquilla.";
+    });
+    await page.click(".js-check");
+    await page.waitForSelector("#writeResult");
+  }
+
+  test("the opinion is asked for, never taken", async ({ page }) => {
+    await napisz(page);
+    /* The button exists and nothing has gone out yet: a composition costs
+       more than a sentence, and the money is the student's. */
+    await expect(page.locator(".js-opinion")).toBeVisible();
+    expect(await page.evaluate(() => window.__llmZapytania)).toBe(0);
+
+    await page.click(".js-opinion");
+    await expect(page.locator(".js-opinion-box")).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".js-opinion-box")).toContainText("un gelato");
+  });
+
+  test("the opinion is prose from outside, so it goes in as text", async ({ page }) => {
+    await napisz(page, { opinia: '<img src=x onerror="window.__xssW=1">' });
+    await page.click(".js-opinion");
+    await expect(page.locator(".js-opinion-box")).toBeVisible({ timeout: 15000 });
+
+    expect(await page.evaluate(() => window.__xssW)).toBe(undefined);
+    await expect(page.locator(".js-opinion-box")).toContainText("onerror");
+    expect(await page.locator(".js-opinion-box").innerHTML()).not.toContain("<img");
+  });
+
+  test("it says it is an opinion and not a mark", async ({ page }) => {
+    await napisz(page);
+    await page.click(".js-opinion");
+    await expect(page.locator(".js-opinion-box")).toBeVisible({ timeout: 15000 });
+    /* The sentence matters: without it a student reads a model's guess as
+       the course's verdict on their Italian. */
+    await expect(page.locator(".js-opinion-box")).toContainText("Nie wpływa");
+  });
+
+  test("asking twice is not offered: the button goes and does not come back", async ({ page }) => {
+    await napisz(page);
+    await page.click(".js-opinion");
+    await expect(page.locator(".js-opinion-box")).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".js-opinion")).toHaveCount(0);
+    expect(await page.evaluate(() => window.__llmZapytania)).toBe(1);
+  });
+
+  test("without a key the composition is checked exactly as before", async ({ page }) => {
+    await napisz(page, { key: "" });
+    /* The mechanical reading is still there — this feature adds a line, it
+       does not replace the one the course already had. */
+    await expect(page.locator("#writeResult .list-row")).not.toHaveCount(0);
+    await expect(page.locator(".js-opinion")).toHaveCount(0);
+    expect(await page.evaluate(() => window.__llmZapytania)).toBe(0);
+  });
+});

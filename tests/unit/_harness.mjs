@@ -72,6 +72,7 @@ export const LEMMA = ["assets/js/lemma-morf.js", "assets/js/lemma.js"];
 export const LLM = [
   "assets/js/consent.js",
   "assets/js/llm-providers.js",
+  "assets/js/llm-prompts.js",
   "assets/js/llm-rules.js",
   "assets/js/llm-keys.js",
   "assets/js/llm.js"

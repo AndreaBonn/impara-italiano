@@ -331,6 +331,11 @@ LINGUAI.addUI("es", {
   "write.showModel": "Mostrar el texto modelo",
   "write.model": "Texto modelo",
   "write.modelNote": "Una versión posible, no una plantilla para copiar. Compara qué hace distinto de ti, y por qué.",
+  "write.askOpinion": "Pide una opinión al modelo",
+  "write.askingOpinion": "Leyendo tu texto…",
+  "write.opinion": "La opinión del modelo",
+  "write.opinionNote": "Es la opinión del modelo, no la nota del curso. No afecta ni a tu progreso ni a tus tarjetas, y puede equivocarse: léela como la nota de un compañero, no como la corrección de un profesor.",
+  "write.opinionFailed": "No llegó ninguna opinión. Revisa tus claves en Ajustes o inténtalo más tarde.",
   "write.transDone": "Traducción terminada. Lo que hayas fallado volverá en la pestaña Fallos.",
 
   /* ---------------- Lectura y escucha larga ---------------- */
@@ -925,10 +930,11 @@ LINGUAI.addUI("es", {
   "privacy.modello.h": "Tus respuestas, si activas la revisión por un modelo",
   "privacy.modello.p1": "Esta parte del curso está apagada hasta que la enciendas tú, y sigue apagada para quien no haga nada.",
   "privacy.modello.p2": "El curso compara tus respuestas con las esperadas letra por letra, y ese método se equivoca en una sola dirección: rechaza frases correctas pero formuladas de otra manera. Puedes darle una segunda opinión. En {settings} hay un sitio donde pegar la clave de un proveedor de modelos que ya uses: Google Gemini, Groq, OpenAI o Anthropic. A partir de ahí, y solo cuando la comparación en tu dispositivo ya ha rechazado tu respuesta, el curso envía al proveedor que elegiste dos frases, la tuya y la esperada, y recibe un juicio. Tres cosas que conviene saber de antemano:",
+  "privacy.modello.p3": "Hay un segundo lugar donde ocurre, y allí sale más. En los ejercicios de escritura puedes pedirle al modelo una opinión sobre lo que has redactado, y entonces sale el texto entero junto con el enunciado del ejercicio. Nunca ocurre solo: hay un botón, lo pulsas tú, y hasta que no lo pulses tu texto se queda donde está. Esa opinión no es una nota y no toca ni tu progreso ni tus tarjetas.",
   "privacy.modello.l1": "la clave se queda en este dispositivo. No pasa por nosotros en ningún momento: va de tu navegador al proveedor y nada más. Ni siquiera entra en el archivo que descargas con {export};",
   "privacy.modello.l2": "las peticiones las pagas tú, con el contrato que tienes con ese proveedor. No tenemos forma de verlas ni de contarlas;",
   "privacy.modello.l3": "lo que el proveedor haga con tu frase después de recibirla no depende de nosotros y no podemos comprobarlo, igual que con el reconocimiento de voz. La respuesta está en la política de privacidad del proveedor que elegiste.",
-  "privacy.modello.p3": "También aquí el curso te pide el consentimiento, y es un consentimiento distinto del de reconocimiento de voz: aceptar uno no es aceptar el otro, y retirar uno no retira el otro. Lo retiras cuando quieras en {settings}, donde también puedes borrar todas las claves de una vez. Sin clave o sin consentimiento el curso no contacta con ningún proveedor y se comporta exactamente como antes.",
+  "privacy.modello.p4": "También aquí el curso te pide el consentimiento, y es un consentimiento distinto del de reconocimiento de voz: aceptar uno no es aceptar el otro, y retirar uno no retira el otro. Lo retiras cuando quieras en {settings}, donde también puedes borrar todas las claves de una vez. Sin clave o sin consentimiento el curso no contacta con ningún proveedor y se comporta exactamente como antes.",
 
   "privacy.cache.h": "Las copias que el curso guarda para funcionar sin conexión",
   "privacy.cache.p1": "El curso funciona también sin internet. Para conseguirlo, el navegador guarda una copia de los archivos del curso: el código, los textos de las lecciones y las grabaciones de los nativos. Son archivos nuestros, iguales para todos, y no contienen nada que tenga que ver contigo. Desaparecen cuando borras los datos del sitio en el navegador.",

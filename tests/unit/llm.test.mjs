@@ -357,3 +357,83 @@ describe("the real transport", () => {
     assert.equal(await judge(c.Llm), null);
   });
 });
+
+/* ============================================================
+   Reading a composition — an opinion, not a verdict.
+
+   The difference from `judge` is the whole reason this is a second entry
+   point rather than a flag: there is no clamp here, because there is
+   nothing to clamp. The course does not mark compositions, so the model
+   changes no score, no card and no progress, and what comes back is prose
+   the caller draws as text.
+   ============================================================ */
+describe("reading a composition", () => {
+  const ZADANIE = { title: "La mia giornata", prompt: "Racconta una giornata tipo." };
+  const TEKST = "Ieri sono andato al mare e ho mangiato un gelato.";
+
+  function opinia(Llm, text) {
+    return new Promise((resolve) => Llm.review(ZADANIE, text || TEKST, resolve));
+  }
+
+  /** The providers answer with prose here, not with a JSON verdict. */
+  function proza(id, tekst) {
+    if (id === "gemini") {
+      return { status: 200, json: { candidates: [{ content: { parts: [{ text: tekst }] } }] } };
+    }
+    if (id === "anthropic") {
+      return { status: 200, json: { content: [{ type: "text", text: tekst }] } };
+    }
+    return { status: 200, json: { choices: [{ message: { content: tekst } }] } };
+  }
+
+  test("the model's prose comes back as it was written", async () => {
+    const c = course({ order: ["openai"], answers: { openai: proza("openai", "Uwaga: «sono andato» jest poprawne.") } });
+    assert.equal(await opinia(c.Llm), "Uwaga: «sono andato» jest poprawne.");
+  });
+
+  test("no key, no consent, no reading", async () => {
+    const bezKlucza = course({ keys: {} });
+    assert.equal(await opinia(bezKlucza.Llm), null);
+    assert.deepEqual(Array.from(bezKlucza.calls), []);
+
+    const bezZgody = course({ consent: false });
+    assert.equal(await opinia(bezZgody.Llm), null);
+    assert.deepEqual(Array.from(bezZgody.calls), [],
+      "the composition left before the student agreed");
+  });
+
+  test("the cascade applies here too", async () => {
+    const c = course({
+      order: ["gemini", "openai"],
+      answers: { gemini: REJECTED, openai: proza("openai", "Dobrze napisane.") }
+    });
+    assert.equal(await opinia(c.Llm), "Dobrze napisane.");
+    assert.deepEqual(Array.from(c.calls), ["gemini", "openai"]);
+  });
+
+  test("a chain with nothing left returns no opinion, not an error", async () => {
+    const c = course({
+      order: ["gemini", "openai"],
+      answers: { gemini: REJECTED, openai: REJECTED }
+    });
+    assert.equal(await opinia(c.Llm), null);
+  });
+
+  test("the same composition asked twice is asked twice", async () => {
+    const c = course({ order: ["openai"], answers: { openai: proza("openai", "ok") } });
+    await opinia(c.Llm);
+    await opinia(c.Llm);
+    /* Deliberately not cached: a student who edits between two readings is
+       asking about a different text, and a key that carried the whole
+       composition would be the only way to tell them apart. */
+    assert.equal(c.calls.length, 2);
+  });
+
+  test("it draws on the same session ceiling as the judge", async () => {
+    const c = course({ order: ["openai"], answers: { openai: proza("openai", "ok") } });
+    for (let i = 0; i < c.Llm.MAX_PER_SESSION; i++) {
+      await judge(c.Llm, { ...TASK, given: "risposta " + i });
+    }
+    assert.equal(await opinia(c.Llm), null, "the ceiling counts judgements but not readings");
+  });
+});

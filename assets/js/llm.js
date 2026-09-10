@@ -222,7 +222,7 @@
 
     global.Consent.zZgodaLlm(function () {
       spent++;
-      var prompt = global.LlmRules.prompt(lang, task);
+      var prompt = global.LlmPrompts.judge(lang, task);
       var deadline = global.Date.now() + TOTAL_MS;
 
       askChain(order, keys, prompt, deadline, function (text, failures) {
@@ -256,6 +256,47 @@
   }
 
   /**
+   * A reading of a whole composition — an opinion, not a verdict.
+   *
+   * Deliberately not `judge`, and the difference is worth naming. The judge
+   * answers a closed question and its answer is clamped so it can only ever
+   * promote a rejection; here there is nothing to clamp, because the course
+   * does not mark compositions and this changes no score, no card and no
+   * progress. What comes back is prose, and the caller draws it as text.
+   *
+   * Not cached either: two readings of the same composition are two
+   * different things to a student who edited it in between, and the cache
+   * key would have to carry the whole text to tell them apart.
+   *
+   * @param {object} task  {title, prompt}
+   * @param {string} text  what the student wrote
+   * @param {function} cb  receives a string, or null when there is no answer
+   */
+  function review(task, text, cb) {
+    if (!available()) return cb(null);
+    if (spent >= MAX_PER_SESSION) return cb(null);
+
+    var settings = global.Core.state.settings;
+    var keys = global.LlmKeys.all();
+    var order = Array.isArray(settings.llmOrder) && settings.llmOrder.length
+      ? settings.llmOrder
+      : global.LlmProviders.ORDER;
+
+    global.Consent.zZgodaLlm(function () {
+      spent++;
+      var prompt = global.LlmPrompts.writing(settings.lang, task, text);
+      var deadline = global.Date.now() + TOTAL_MS;
+      askChain(order, keys, prompt, deadline, function (out, failures) {
+        if (out === null) {
+          announce(failures);
+          return cb(null);
+        }
+        cb(out);
+      });
+    }, function () { cb(null); });
+  }
+
+  /**
    * Tries one key on its own, for the settings page.
    *
    * Deliberately outside `judge`: it must run before any consent exists and
@@ -264,7 +305,7 @@
    */
   function test(id, key, cb) {
     if (!available()) return cb({ ok: false, error: "unavailable" });
-    var prompt = global.LlmRules.prompt("en", {
+    var prompt = global.LlmPrompts.judge("en", {
       question: "Say yes.", accepted: ["sì"], given: "sì"
     });
     askOne(id, key, prompt).then(function (out) {
@@ -278,6 +319,7 @@
 
   global.Llm = {
     judge: judge,
+    review: review,
     test: test,
     available: available,
     useTransport: useTransport,

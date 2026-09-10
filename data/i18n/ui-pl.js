@@ -201,6 +201,19 @@ LINGUAI.addUI("pl", {
   "keys.barLabel": "Znaki włoskie",
 
   /* ---------------- Test poziomujący ---------------- */
+  /* ---------------- Ekran powitalny ---------------- */
+  "welcome.kicker": "POCZĄTEK",
+  "welcome.title": "Witaj w kursie włoskiego",
+  "welcome.intro": "Zanim zaczniemy: od czego chcesz wyjść? Wyboru nie robisz na zawsze, poziom da się zmienić w każdej chwili.",
+  "welcome.zeroTitle": "Zaczynam od zera",
+  "welcome.zeroHint": "Pierwsza lekcja A1, od przywitania i zamówienia kawy.",
+  "welcome.zeroGo": "Zaczynamy →",
+  "welcome.testTitle": "Coś już umiem",
+  "welcome.testHint": "Krótki test wskaże poziom i odhaczy to, co masz za sobą.",
+  "welcome.lookTitle": "Najpierw się rozejrzę",
+  "welcome.lookHint": "Otwiera ścieżkę nauki. Wybór poziomu może zaczekać.",
+  "welcome.lookGo": "Pokaż kurs",
+
   "place.kicker": "POZIOM",
   "place.title": "Od czego zacząć",
   "place.intro": "Krótki test, żeby nie przeklikiwać stu lekcji, których już nie potrzebujesz.",

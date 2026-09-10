@@ -203,6 +203,19 @@ LINGUAI.addUI("es", {
   "keys.barLabel": "Caracteres italianos",
 
   /* ---------------- Prueba de nivel ---------------- */
+  /* ---------------- Pantalla de bienvenida ---------------- */
+  "welcome.kicker": "INICIO",
+  "welcome.title": "Bienvenido al curso de italiano",
+  "welcome.intro": "Antes de empezar: ¿por dónde quieres arrancar? Nada es definitivo, el nivel se cambia cuando quieras.",
+  "welcome.zeroTitle": "Empiezo de cero",
+  "welcome.zeroHint": "Primera lección de A1, desde el saludo hasta pedir un café.",
+  "welcome.zeroGo": "Vamos →",
+  "welcome.testTitle": "Ya sé algo",
+  "welcome.testHint": "Una prueba corta marca tu nivel y da por hecho lo que ya sabes.",
+  "welcome.lookTitle": "Primero echo un vistazo",
+  "welcome.lookHint": "Abre la ruta de aprendizaje. Elegir nivel puede esperar.",
+  "welcome.lookGo": "Enséñame el curso",
+
   "place.kicker": "NIVEL",
   "place.title": "Por dónde empezar",
   "place.intro": "Una prueba corta, para no ir pasando cien lecciones que ya no necesitas.",

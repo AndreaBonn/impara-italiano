@@ -272,3 +272,31 @@ for (const theme of ["light", "dark"]) {
       .toBeGreaterThanOrEqual(TEKST);
   });
 }
+
+/* ============================================================
+   Ekran powitalny: trzy drogi, trzy różne wagi przycisku.
+
+   Jest to pierwsze, co uczeń widzi, i jedyny ekran, na którym stoją
+   obok siebie wszystkie trzy warianty: podstawowy, ghost i quiet.
+   Ten ostatni nie ma ani tła, ani obramowania — zostaje sam napis,
+   więc mierzy się go jak tekst, nie jak kontrolkę.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`powitanie: kontrast trzech dróg w motywie ${theme}`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html#/benvenuto");
+    await page.waitForSelector(".js-zero");
+    await page.evaluate(t => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* przejście palety */
+
+    for (const [sel, opis] of [[".js-zero", "przycisk podstawowy"],
+                               [".js-test", "przycisk ghost"],
+                               [".js-look", "przycisk quiet"],
+                               [".list-row--stack .list-row__main span", "zdanie wyjaśniające"]]) {
+      const m = await page.evaluate(s => window.__kontrast(s), sel);
+      expect(m, `${opis} (${sel}) nie istnieje`).not.toBeNull();
+      expect(m.tekst, `${opis}: ${m.tekst.toFixed(2)}:1, próg ${TEKST}`)
+        .toBeGreaterThanOrEqual(TEKST);
+    }
+  });
+}

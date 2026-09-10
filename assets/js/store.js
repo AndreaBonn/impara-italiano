@@ -70,6 +70,12 @@
          odpowiedzi: te są ćwiczeniem, nie historią. */
       cils: { runs: [] },
       placement: null,    // wynik testu poziomującego, dopóki go nie ma
+      /* Czy uczeń przeszedł już przez ekran powitalny. Pole DOKŁADANE,
+         więc numer schematu się nie rusza — ale samo nie wystarcza:
+         starszy profil dostaje przez merge() `false` i bez dwóch
+         pozostałych warunków (brak postępów, brak wyniku testu)
+         zobaczyłby powitanie po czterdziestu lekcjach nauki. */
+      onboarded: false,
       streak: { count: 0, lastDay: null, best: 0 },
       xp: 0,
       minutes: 0,
@@ -342,7 +348,7 @@
     settings: "object", streak: "object", stats: "object",
     errors: "object", drills: "object", reviews: "array",
     session: "object", writing: "object", cils: "object",
-    backup: "object"
+    backup: "object", onboarded: "boolean"
   };
 
   function typeOf(v) {

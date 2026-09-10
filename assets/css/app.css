@@ -746,6 +746,16 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
 .list-row__main{flex:1;min-width:0;}
 .list-row__main b{display:block;font-size:.96rem;}
 .list-row__main span{font-size:.83rem;color:var(--ink-soft);}
+/* Wiersz, który na wąskim ekranie kładzie przycisk POD tekstem.
+   Zwykły `.list-row` ściska wtedy zdanie do trzech linijek obok
+   przycisku — na liście tematów to drobiazg, na ekranie powitalnym
+   to pierwsze, co uczeń widzi, i jedyne trzy zdania, które ma
+   przeczytać. Modyfikator, nie zmiana `.list-row`: ten wiersz stoi
+   w kursie w pięćdziesięciu kilku miejscach. */
+@media (max-width: 560px){
+  .list-row--stack{flex-direction:column;align-items:stretch;}
+  .list-row--stack .btn{width:100%;justify-content:center;}
+}
 
 .empty{
   border:2px dashed var(--line-strong);border-radius:var(--r-l);

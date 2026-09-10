@@ -218,17 +218,41 @@
     Core.touchDay();
   }
 
+  /**
+   * Czy to pierwsze spotkanie ucznia z kursem.
+   *
+   * Trzy warunki, nie jeden: `onboarded` jest polem DOKŁADANYM, więc
+   * profil sprzed tego ekranu wczytuje się z `false` i sam znacznik
+   * przekierowałby na powitanie kogoś, kto ma za sobą czterdzieści
+   * lekcji. Adres z hasha wygrywa zawsze: kto przyszedł z linkiem do
+   * konkretnej lekcji, dostaje tę lekcję, a nie ekran powitalny.
+   */
+  function pierwszeUruchomienie() {
+    var s = Core.state;
+    if (global.location.hash) return false;
+    return !s.onboarded && !s.placement && s.stats.lessonsDone === 0;
+  }
+
   /** Pierwsze renderowanie: poziom, do którego uczeń wraca. */
   function startRouting() {
+    var powitanie = pierwszeUruchomienie();
     var d = Router.decode(global.location.hash);
     var wanted = d.params.level || guessLevel(d);
+    /* Poziom wczytujemy także pod ekranem powitalnym: zanim uczeń skończy
+       czytać trzy zdania, ścieżka ma już z czego się narysować.
+       Rysowanie po wczytaniu pyta o BIEŻĄCĄ trasę, a nie o to, jak było
+       na starcie: pod powitaniem nie ma co odświeżać, ale gdy uczeń zdążył
+       już wybrać, ścieżka czeka na te dane i bez tego zostałaby na
+       „wczytuję materiał" do końca sesji. */
     if (wanted) {
-      Core.loadLevelData(wanted, function () { Router.onHashChange(); });
+      Core.loadLevelData(wanted, function () {
+        if (Router.current.route !== "benvenuto") Router.onHashChange();
+      });
       // pokaż szkielet od razu, nie czekając na plik
-      Router.render(d.route, d.params);
-    } else {
-      Router.onHashChange();
+      if (!powitanie) Router.render(d.route, d.params);
     }
+    if (powitanie) App.go("benvenuto");
+    else if (!wanted) Router.onHashChange();
     App.refreshRail();
   }
 

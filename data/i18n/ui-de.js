@@ -201,6 +201,19 @@ LINGUAI.addUI("de", {
   "keys.barLabel": "Italienische Zeichen",
 
   /* ---------------- Einstufungstest ---------------- */
+  /* ---------------- Startbildschirm ---------------- */
+  "welcome.kicker": "ANFANG",
+  "welcome.title": "Willkommen im Italienischkurs",
+  "welcome.intro": "Bevor es losgeht: wo willst du anfangen? Nichts davon ist endgültig, das Niveau lässt sich jederzeit ändern.",
+  "welcome.zeroTitle": "Ich fange bei null an",
+  "welcome.zeroHint": "Erste Lektion A1, vom Begrüßen bis zur Bestellung im Café.",
+  "welcome.zeroGo": "Los geht's →",
+  "welcome.testTitle": "Ich kann schon etwas",
+  "welcome.testHint": "Ein kurzer Test findet dein Niveau und hakt ab, was du schon kannst.",
+  "welcome.lookTitle": "Ich schaue mich erst um",
+  "welcome.lookHint": "Öffnet den Lernpfad. Die Niveauwahl kann warten.",
+  "welcome.lookGo": "Zeig mir den Kurs",
+
   "place.kicker": "NIVEAU",
   "place.title": "Wo anfangen",
   "place.intro": "Ein kurzer Test, damit du dich nicht durch hundert Lektionen klickst, die du nicht mehr brauchst.",

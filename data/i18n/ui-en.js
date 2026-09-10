@@ -196,6 +196,19 @@ LINGUAI.addUI("en", {
   "keys.barLabel": "Italian characters",
 
   /* ---------------- Placement test ---------------- */
+  /* ---------------- Welcome screen ---------------- */
+  "welcome.kicker": "START",
+  "welcome.title": "Welcome to the Italian course",
+  "welcome.intro": "Before we start: where do you want to begin? Nothing here is final, you can change your level whenever you like.",
+  "welcome.zeroTitle": "I am starting from scratch",
+  "welcome.zeroHint": "Lesson one of A1, from saying hello to ordering a coffee.",
+  "welcome.zeroGo": "Let's go →",
+  "welcome.testTitle": "I already know some",
+  "welcome.testHint": "A short test finds your level and ticks off what you have behind you.",
+  "welcome.lookTitle": "Let me look around first",
+  "welcome.lookHint": "Opens the learning path. Picking a level can wait.",
+  "welcome.lookGo": "Show me the course",
+
   "place.kicker": "LEVEL",
   "place.title": "Where to start",
   "place.intro": "A short test, so you do not click through a hundred lessons you no longer need.",

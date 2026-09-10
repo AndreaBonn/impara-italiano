@@ -1,0 +1,42 @@
+COURSE CONTENT LICENSE
+
+Copyright (c) 2026 Andrea Bonacci
+
+The teaching material in this repository is licensed under Creative Commons
+Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
+
+What this covers:
+
+  data/core/        lesson structure, Italian sentences, answer keys
+  data/i18n/        explanations in Polish, English, Spanish, French, German
+  audio/            the recorded narration generated from those sentences
+  docs/             the user manual and the other documents in that folder
+
+You are free to share and adapt this material, including commercially, as long
+as you credit the author, link to the license, state whether you changed
+anything, and release your adaptation under the same license.
+
+  Human-readable summary: https://creativecommons.org/licenses/by-sa/4.0/
+  Full legal code:        https://creativecommons.org/licenses/by-sa/4.0/legalcode
+
+The full legal code is not reproduced here on purpose. Creative Commons hosts
+the canonical version, and a copy pasted into a repository is a copy that can
+drift from it.
+
+Suggested attribution:
+
+  "Impara l'Italiano" by Andrea Bonacci, CC BY-SA 4.0
+  https://github.com/AndreaBonn/impara-italiano
+
+--------------------------------------------------------------------------
+
+THIRD-PARTY MATERIAL INSIDE THE CONTENT
+
+The frequency list in data/core/frequenza.js is derived from Italian sentences
+published by the Tatoeba Project (https://tatoeba.org), released under
+CC BY 2.0 FR (https://creativecommons.org/licenses/by/2.0/fr/). The file
+carries the source, sentence count and license in its own header, and the
+Coverage screen shows them to the student.
+
+Attribution to Tatoeba is required by that license and is not waived by
+anything in this file.

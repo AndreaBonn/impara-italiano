@@ -178,7 +178,7 @@ LINGUAI.addUI("pl", {
   "srs.allResting": "Wszystkie {n} fiszek jest w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji.",
   "srs.deckEmpty": "Twoja talia jest pusta. Oznacz słówka gwiazdką ⭐ w dowolnej lekcji, a wrócą tu we właściwym momencie.",
   "srs.howTitle": "System powtórek",
-  "srs.howText": "Fiszki wracają w rosnących odstępach (1 → 3 → 7 → 16 dni…), zależnie od tego, jak pewnie odpowiadasz. To algorytm SM-2, ten sam co w Anki.",
+  "srs.howText": "Fiszki wracają w rosnących odstępach, od jednego dnia do wielu miesięcy, zależnie od tego, jak pewnie odpowiadasz. To algorytm FSRS, ten sam, który liczy terminy w Anki.",
   "srs.dueToday": "Do powtórzenia dziś: {n}",
   "srs.gradeHonestly": "Odpowiadaj na głos albo w myślach, potem oceń szczerze — od tego zależy, kiedy fiszka wróci.",
   /* ---------------- Szukanie w kursie ---------------- */

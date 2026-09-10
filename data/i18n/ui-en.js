@@ -173,7 +173,7 @@ LINGUAI.addUI("en", {
   "srs.allResting": "All {n} cards are resting. Come back tomorrow, or star new words inside a lesson.",
   "srs.deckEmpty": "Your deck is empty. Star ⭐ a word in any lesson and it will come back here at the right moment.",
   "srs.howTitle": "How review works",
-  "srs.howText": "Cards come back at growing intervals (1 → 3 → 7 → 16 days…), depending on how confidently you answer. It is the SM-2 algorithm, the same one Anki uses.",
+  "srs.howText": "Cards come back at growing intervals, from a single day to many months, depending on how confidently you answer. It is the FSRS algorithm, the same one that schedules cards in Anki.",
   "srs.dueToday": "Due today: {n}",
   "srs.gradeHonestly": "Answer out loud or in your head, then grade yourself honestly — that decides when the card comes back.",
   /* ---------------- Searching the course ---------------- */

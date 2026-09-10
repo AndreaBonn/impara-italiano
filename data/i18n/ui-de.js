@@ -178,7 +178,7 @@ LINGUAI.addUI("de", {
   "srs.allResting": "Alle {n} Karten ruhen gerade. Komm morgen wieder, oder markier neue Wörter in einer Lektion.",
   "srs.deckEmpty": "Dein Stapel ist leer. Markier ⭐ ein Wort in einer beliebigen Lektion, und es kommt hier zum richtigen Zeitpunkt zurück.",
   "srs.howTitle": "So funktioniert das Wiederholen",
-  "srs.howText": "Karten kommen in wachsenden Abständen zurück (1 → 3 → 7 → 16 Tage…), je nachdem, wie sicher du antwortest. Das ist der SM-2-Algorithmus, derselbe wie bei Anki.",
+  "srs.howText": "Karten kommen in wachsenden Abständen zurück, von einem Tag bis zu vielen Monaten, je nachdem, wie sicher du antwortest. Das ist der FSRS-Algorithmus, derselbe, der auch in Anki die Termine berechnet.",
   "srs.dueToday": "Heute fällig: {n}",
   "srs.gradeHonestly": "Antworte laut oder im Kopf und bewerte dich dann ehrlich — davon hängt ab, wann die Karte wiederkommt.",
   /* ---------------- Im Kurs suchen ---------------- */

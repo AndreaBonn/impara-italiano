@@ -180,7 +180,7 @@ LINGUAI.addUI("es", {
   "srs.allResting": "Las {n} tarjetas están descansando. Vuelve mañana, o marca palabras nuevas dentro de una lección.",
   "srs.deckEmpty": "Tu baraja está vacía. Marca ⭐ una palabra en cualquier lección y volverá aquí en el momento justo.",
   "srs.howTitle": "Cómo funciona el repaso",
-  "srs.howText": "Las tarjetas vuelven a intervalos cada vez más largos (1 → 3 → 7 → 16 días…), según la seguridad con la que respondas. Es el algoritmo SM-2, el mismo que usa Anki.",
+  "srs.howText": "Las tarjetas vuelven a intervalos cada vez más largos, de un día a varios meses, según la seguridad con la que respondas. Es el algoritmo FSRS, el mismo que calcula los plazos en Anki.",
   "srs.dueToday": "Para hoy: {n}",
   "srs.gradeHonestly": "Responde en voz alta o mentalmente y luego puntúate con sinceridad: de eso depende cuándo vuelve la tarjeta.",
   /* ---------------- Buscar en el curso ---------------- */

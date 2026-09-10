@@ -342,11 +342,31 @@ button{font:inherit;color:inherit;}
 .rail__scrim{display:none;}
 
 /* ══════════════════ MAIN ══════════════════ */
+/* The content column: <main> and the footer one under the other. `.main`
+   carries flex:1, so inside a column it grows vertically and pushes the
+   footer to the bottom of the window — on a short screen (settings, an empty
+   lexicon) the footer then does not hang halfway up the page. */
+.col{flex:1;min-width:0;display:flex;flex-direction:column;}
+
 .main{
   flex:1;min-width:0;
   padding:44px 52px 120px;
   max-width:1080px;
 }
+
+/* The horizontal inset is the one `.main` uses (and changes with it in the
+   media queries below), so the rule above the footer ends where the text
+   above it ends. */
+.site-foot{
+  max-width:1080px;padding:16px 52px 26px;
+  border-top:1px solid var(--line);
+  font-size:.85rem;color:var(--ink-soft);text-align:center;
+}
+.site-foot p{margin:0;}
+/* The name is the only thing to click down here: the padding lifts the touch
+   target off the 16px of the line itself, without breaking the flow of the
+   sentence the way a block would. */
+.site-foot a{display:inline-block;padding:6px 4px;}
 
 .view-head{margin-bottom:30px;}
 .view-head__kicker{
@@ -872,6 +892,7 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 /* ══════════════════ RESPONSIVE ══════════════════ */
 @media (max-width: 1000px){
   .main{padding:36px 30px 110px;}
+  .site-foot{padding-left:30px;padding-right:30px;}
   .node:nth-child(4n+1),.node:nth-child(4n+2),.node:nth-child(4n+3),.node:nth-child(4n+4){padding-left:0;justify-content:flex-start;}
   .path::before{left:34px;}
   .node__btn{margin-left:0;}
@@ -897,6 +918,7 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   .rail-toggle__bars::before{top:-6px;}
   .rail-toggle__bars::after{top:6px;}
   .main{padding:76px 18px 100px;}
+  .site-foot{padding-left:18px;padding-right:18px;}
   .path::before{left:30px;}
   .node__btn{min-width:0;width:100%;max-width:none;}
   .match-grid{grid-template-columns:1fr;}
@@ -913,6 +935,7 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 @media print{
   .rail,.rail-toggle,.toast-stack{display:none;}
   .main{padding:0;max-width:100%;}
+  .site-foot{padding-left:0;padding-right:0;max-width:100%;}
 }
 
 /* ============================================================

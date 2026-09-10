@@ -395,7 +395,7 @@ z poprzedniej wersji tego pliku.
 | Klucze interfejsu na język | 740 × 5 języków |
 | Pliki silnika | 63 w `assets/js/`, 11 695 linii |
 | Testy jednostkowe | 825 przebiegów w 34 plikach, zielone |
-| Testy DOM | 226 przebiegów w 29 plikach, zielone |
+| Testy DOM | 232 przebiegi w 30 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,8% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz

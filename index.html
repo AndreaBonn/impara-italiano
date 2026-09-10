@@ -76,7 +76,19 @@
   <div class="rail__scrim" id="railScrim" hidden></div>
 
   <!-- ══════════ MAIN ══════════ -->
-  <main class="main" id="main" tabindex="-1"></main>
+  <div class="col">
+    <main class="main" id="main" tabindex="-1"></main>
+
+    <!-- The footer is a SIBLING of <main>, not a child of it: `Views.shell.set`
+         replaces the innerHTML of #main at every route, so a footer living
+         inside would vanish at the first change of screen and come back only
+         on a reload. Standing here it is written once and shows on every
+         screen. No data-i18n either — a symbol and a personal name read the
+         same in all five languages. -->
+    <footer class="site-foot">
+      <p>© <a href="https://github.com/AndreaBonn" target="_blank" rel="noopener">Andrea Bonacci</a></p>
+    </footer>
+  </div>
 </div>
 
 <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>

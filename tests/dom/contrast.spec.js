@@ -309,3 +309,28 @@ for (const theme of ["light", "dark"]) {
     }
   });
 }
+
+/* ============================================================
+   The footer: small type, which is where contrast usually goes.
+
+   Two measurements, because the two colours are different: the copyright
+   sign takes the muted text colour, the name is a link and takes the accent
+   one. 0.85rem is below every large-text threshold, so both are held to 4.5.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`the footer: contrast in the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html");
+    await page.waitForSelector(".site-foot");
+    await page.evaluate(t => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* the palette transition */
+
+    for (const [sel, opis] of [[".site-foot p", "the copyright line"],
+                               [".site-foot a", "the name as a link"]]) {
+      const m = await page.evaluate(s => window.__kontrast(s), sel);
+      expect(m, `${opis} (${sel}) nie istnieje`).not.toBeNull();
+      expect(m.tekst, `${opis}: ${m.tekst.toFixed(2)}:1, threshold ${TEKST}`)
+        .toBeGreaterThanOrEqual(TEKST);
+    }
+  });
+}

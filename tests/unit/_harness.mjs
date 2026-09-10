@@ -75,6 +75,7 @@ export const LLM = [
   "assets/js/llm-prompts.js",
   "assets/js/llm-rules.js",
   "assets/js/llm-keys.js",
+  "assets/js/llm-net.js",
   "assets/js/llm.js"
 ];
 

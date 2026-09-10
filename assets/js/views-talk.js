@@ -260,16 +260,21 @@
         }, function (verdict) {
           czekaNaSad = false;
           if (!zywy || run.index !== pytanyIndeks) return;
-          if (verdict && verdict.promote) {
+          /* Through `clamp`, which is the one place that decides what a
+             model may change. Reading `verdict.promote` here instead would
+             be a second copy of that rule, and two copies of a rule are one
+             disagreement waiting to happen. */
+          var sad = LlmRules.clamp(false, verdict);
+          if (sad.ok) {
             Core.recordAnswer(true);
             /* The comment goes through the toast, which writes with
                textContent. It is the only string on this screen that comes
                from outside the course, and the feedback box next to it is
                filled with innerHTML for the course's own markup. */
-            if (verdict.comment) Core.toast(verdict.comment);
+            if (sad.comment) Core.toast(sad.comment);
             return idzDalej(run.commit(text, wynik.opcja));
           }
-          odrzuc(run.reject(), zPola, verdict && verdict.comment);
+          odrzuc(run.reject(), zPola, sad.comment);
         });
       }
 

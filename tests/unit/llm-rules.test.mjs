@@ -51,6 +51,12 @@ describe("the clamp: what the model is allowed to change", () => {
     const out = R.clamp(false, { promote: false, comment: "zły czas" });
     assert.equal(out.ok, false);
     assert.equal(out.promoted, false);
+    /* The comment survives the rejection: it is the sentence that says WHY
+       the answer is wrong, which is worth more to the student than the
+       promotion they did not get. Dropping it here would send every caller
+       back to reading the raw verdict, and a gate everybody walks around
+       is not a gate. */
+    assert.equal(out.comment, "zły czas");
   });
 
   test("no verdict at all is the course as it behaves today", () => {

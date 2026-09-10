@@ -171,6 +171,8 @@
    * replaced, and an operator who edits the instruction.
    */
   function clamp(localOk, verdict) {
+    /* The judge is never even asked about an answer the course accepted, so
+       a comment here would be about a question nobody put. */
     if (localOk) return { ok: true, promoted: false, comment: "" };
     /* Strictly true, not merely truthy. `readVerdict` always hands over a
        boolean, but this function is the guarantee the whole feature rests
@@ -180,7 +182,12 @@
     return {
       ok: promote,
       promoted: promote,
-      comment: promote ? ((verdict && verdict.comment) || "") : ""
+      /* The comment survives a rejection too. It is the sentence that says
+         WHY the answer is wrong, which is worth more to the student than
+         the promotion they did not get — and dropping it here would push
+         every caller into reading the raw verdict again, which is how a
+         single gate turns back into three copies of one rule. */
+      comment: (verdict && verdict.comment) || ""
     };
   }
 

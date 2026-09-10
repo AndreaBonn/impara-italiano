@@ -61,7 +61,9 @@ przed `exercises-choice/text/voice.js` (czternaście typów, wołają `Ex.regist
 
 Tą samą granicą idzie drugi sędzia odpowiedzi otwartych: `llm-providers.js` (tabela
 czterech dostawców, cztery czyste funkcje na każdego), `llm-prompts.js` (o co pytamy model)
-i `llm-rules.js` (kolejka, odczyt werdyktu, **clamp**) przed `llm.js` (jedyny plik tej funkcji, który dotyka sieci) —
+i `llm-rules.js` (kolejka, odczyt werdyktu, **clamp**) przed `llm-net.js` (żądanie, zegar
+na nim i przechodzenie do następnego dostawcy) i `llm.js` (trzy wejścia: `judge`, `review`,
+`test`, oraz bramki, które ich pilnują) —
 plus `llm-keys.js`, który trzyma klucze API w **osobnym** pojemniku `linguai.llm.v1`, poza
 stanem: `Store.exportState()` serializuje cały stan do pliku kopii zapasowej, a poświadczenie
 płatne przez ucznia nie ma prawa tam trafić. Nazwa `Keys` jest zajęta przez `keys.js`.
@@ -506,7 +508,7 @@ z poprzedniej wersji tego pliku.
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
 | Klucze interfejsu na język | 818 × 5 języków |
-| Pliki silnika | 69 w `assets/js/`, 13 725 linii |
+| Pliki silnika | 70 w `assets/js/`, 13 785 linii |
 | Testy jednostkowe | 926 przebiegów w 39 plikach, zielone |
 | Testy DOM | 260 przebiegów w 33 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,3% (`node scripts/coverage.mjs`), próg w CI: 99 |

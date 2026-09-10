@@ -6,6 +6,14 @@
    progress counter rests on that, and so does the mistake capture in
    errors.js, which wraps Ex.build.
 
+   ONE EXCEPTION, and it is worth naming rather than discovering: when a
+   second judge has been asked and the student leaves the lesson before the
+   answer arrives, `onDone` is not called at all. The exercise belongs to a
+   lesson nobody is counting any more, and drawing a verdict into a detached
+   node would record an answer to a question that left the screen. So the
+   contract is "exactly once while the exercise is on screen" — never twice,
+   which is the half the counter actually depends on.
+
    Fourteen types live in three files next door, grouped by what the
    student does: exercises-choice.js (chooses), exercises-text.js
    (writes), exercises-voice.js (speaks and listens). Each of them calls
@@ -111,9 +119,12 @@
          a detached node writes to nothing, and `recordAnswer` on it would
          count an answer to an exercise nobody is looking at. */
       if (!root.isConnected) return;
-      var komentarz = verdict && verdict.comment;
-      if (verdict && verdict.promote) return zakoncz(root, true, why, null, onDone, komentarz);
-      zakoncz(root, false, why, correctText, onDone, komentarz);
+      /* Through `clamp`, not by reading the verdict here. That function is
+         the one place that decides what a model is allowed to change, and a
+         caller that re-implements the same `if` turns a single gate into a
+         copy of a rule — which is fine until the copies disagree. */
+      var out = global.LlmRules.clamp(false, verdict);
+      zakoncz(root, out.ok, why, out.ok ? null : correctText, onDone, out.comment);
     });
   }
 

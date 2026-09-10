@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- GitHub Pages serves this file for every address it cannot find, AT THE
+     DEPTH THE VISITOR ASKED FOR. A link to /impara-italiano/a/b/c/nothing is
+     answered with these bytes, and a relative href inside them would then
+     resolve against /impara-italiano/a/b/c/ - a directory that does not
+     exist. So every reference here starts from the root, and that is the one
+     thing scripts/check_404.mjs verifies.
+
+     The consequence, and it is deliberate: opened through scripts/serve.mjs
+     this page arrives WITHOUT its stylesheet, because /impara-italiano/ is
+     not a path in the working tree. The file is correct only under the
+     prefix Pages puts it behind. That is why the gate reads the attributes
+     instead of loading the page, and why tests/dom/notfound.spec.js rewrites
+     the prefix before opening it.
+
+     THE FIVE LINES ARE WRITTEN HERE AND NOT IN THE DICTIONARIES. The course
+     picks its language from localStorage, which needs a script, and this
+     project has not a single inline one - a property declared in the comment
+     above the CSP in index.html, not a preference. Pulling in the engine to
+     translate eleven words would be the tail wagging the dog. Five short
+     lines side by side cost nothing to read in any of the five, and the
+     heading above them is in Italian, which is the one language every
+     student here has in common.
+
+     The price is real and worth naming: these strings are outside
+     parity.mjs. Nothing tells you they have drifted from the course except
+     reading them. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+
+<title>Questa pagina non esiste — Impara l'Italiano</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#b72e42">
+<link rel="stylesheet" href="/impara-italiano/assets/css/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇮🇹</text></svg>">
+
+<style>
+  body{display:grid; place-items:center; min-height:100vh; padding:32px;}
+
+  .lost{max-width:640px; text-align:left;}
+
+  .lost__code{
+    margin:0 0 18px;
+    font-family:var(--sans);
+    font-size:.95rem; font-weight:600;
+    letter-spacing:.18em; text-transform:uppercase;
+    color:var(--rosa-deep);
+  }
+
+  .lost__title{
+    margin:0 0 22px;
+    font-family:var(--display);
+    font-size:clamp(2rem, 6vw, 3.1rem); font-weight:700;
+    line-height:1.1; color:var(--ink);
+  }
+
+  /* The five languages as a list, not as five paragraphs: they are five
+     forms of one sentence, and a reader only needs to find their own. */
+  .lost__langs{
+    margin:0 0 32px; padding:0; list-style:none;
+    display:flex; flex-direction:column; gap:6px;
+    color:var(--ink-soft); font-size:1.05rem;
+  }
+
+  /* The exact pair of .btn--primary in app.css, not an approximation of it:
+     that combination is the one tests/dom/contrast.spec.js already measures
+     in the browser. A near-identical ink invented here would be a colour
+     nobody has ever put on a canvas and read back. The page is fixed to the
+     light theme (there is no script here to follow the student's choice),
+     so the dark half of that gate does not apply. */
+  .lost__back{
+    display:inline-block;
+    padding:14px 26px;
+    border-radius:var(--r-m);
+    background:var(--rosa-deep); color:oklch(0.99 0.005 40);
+    font-weight:700; text-decoration:none;
+    box-shadow:var(--shadow-s);
+  }
+  .lost__back:hover{background:var(--ink);}
+  .lost__back:focus-visible{outline:3px solid var(--ink); outline-offset:3px;}
+</style>
+</head>
+<body>
+
+<main class="lost">
+  <p class="lost__code">404</p>
+  <h1 class="lost__title">Questa pagina non esiste.</h1>
+
+  <ul class="lost__langs">
+    <li lang="pl">Tej strony nie ma.</li>
+    <li lang="en">This page does not exist.</li>
+    <li lang="es">Esta página no existe.</li>
+    <li lang="fr">Cette page n'existe pas.</li>
+    <li lang="de">Diese Seite existiert nicht.</li>
+  </ul>
+
+  <a class="lost__back" href="/impara-italiano/">Impara l'Italiano &rarr;</a>
+</main>
+
+</body>
+</html>

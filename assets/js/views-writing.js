@@ -192,7 +192,12 @@
     przycisk.disabled = true;
     przycisk.textContent = t("write.askingOpinion");
 
-    Llm.review({ title: w.title || "", prompt: w.prompt || "" }, tekst, function (odpowiedz) {
+    /* `cefr` rides along because the reading is pitched at it: without it the
+       model corrects against the Italian it knows rather than the Italian
+       this task has taught. */
+    Llm.review({
+      title: w.title || "", prompt: w.prompt || "", cefr: w.cefr || ""
+    }, tekst, function (odpowiedz) {
       var host = document.getElementById("writeResult");
       /* The student may have left, or checked again: both replace this node,
          and drawing into the old one writes to nothing. */

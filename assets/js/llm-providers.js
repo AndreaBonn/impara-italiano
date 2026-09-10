@@ -22,21 +22,29 @@
    exception here would have to be caught by the one caller that must not
    care which provider it is talking to.
 
-   MODEL IDS ARE THE PART THAT AGES. Each is the current cheap-and-fast
-   model of its provider as of the day this file was written; only the
-   Anthropic one was verified against vendor documentation. They are
-   constants at the top of each entry precisely so that correcting one is a
-   one-line change.
+   MODEL IDS ARE THE PART THAT AGES, and they age into a 404 the student
+   reads as "the key did not work" — which is what happened to the Gemini
+   one, and to the Groq one on the day its free tier was switched off. All
+   four were checked against vendor documentation in September 2026, and none
+   has had a key through it since. They are constants at the top of each entry
+   precisely so that correcting one is a one-line change — but ageing is not
+   only the name: a model generation also changes what the request around it
+   may say, which is why three of the four entries now carry a comment
+   explaining a field the model before them did not need.
+
+   THE FOUR ARE THE MIDDLE TIER OF THEIR VENDOR, not the top one. The question
+   put to them is closed, the essay they read is a beginner's, and the student
+   pays for every call with their own key.
 
    Classic script.
    ============================================================ */
 (function (global) {
   "use strict";
 
-  /* Room for the answer. Generous because on Anthropic this ceiling covers
-     thinking AND the reply together: sized to the reply alone, the verdict
-     gets cut off mid-JSON and reads as a malformed answer rather than as
-     the configuration mistake it is. */
+  /* Room for the answer. Generous because on Anthropic and on Gemini this
+     ceiling covers thinking AND the reply together: sized to the reply
+     alone, the verdict gets cut off mid-JSON and reads as a malformed
+     answer rather than as the configuration mistake it is. */
   var MAX_OUT = 2048;
 
   /**
@@ -116,7 +124,16 @@
     return { text: String(text) };
   }
 
-  function openAiLike(id, label, model, host, path) {
+  /**
+   * `tune` is where one dialect stops being one dialect. Both providers speak
+   * chat-completions, but OpenAI's current models reason before answering and
+   * their request surface moved with them: the ceiling is named differently
+   * because it now also covers reasoning, and the sampling knob is not one we
+   * are sure they still accept. Rather than copy the body builder for the sake
+   * of three fields — the copy being the thing that drifts — each entry gets a
+   * chance to edit the body it was handed.
+   */
+  function openAiLike(id, label, model, host, path, tune) {
     return {
       id: id,
       label: label,
@@ -128,7 +145,7 @@
       body: function (prompt, cfg) {
         var b = chatBody(prompt);
         b.model = cfg.model;
-        return b;
+        return tune ? tune(b) : b;
       },
       read: chatRead
     };
@@ -143,7 +160,7 @@
     gemini: {
       id: "gemini",
       label: "Google Gemini",
-      model: "gemini-2.0-flash",
+      model: "gemini-3.8-flash",
       url: function (p) {
         return "https://generativelanguage.googleapis.com/v1beta/models/" +
           p.model + ":generateContent";
@@ -151,11 +168,28 @@
       headers: function (key) {
         return { "content-type": "application/json", "x-goog-api-key": key };
       },
+      /* No `temperature` here either, and for the opposite reason to
+         Anthropic's: the vendor asks that Gemini 3 be left at its default of
+         1.0, because a lower value makes the model loop on the kind of
+         reasoning a verdict needs. The determinism we lose was worth having
+         and is not worth a request that never answers; the clamp in
+         llm-rules.js is what keeps a stray verdict harmless.
+         https://ai.google.dev/gemini-api/docs/generate-content/gemini-3
+
+         `thinkingLevel` is the ceiling on how long it thinks before writing.
+         Thinking is on at "medium" by default and its tokens are spent from
+         MAX_OUT, so left alone a long deliberation eats the whole budget and
+         comes back as a candidate with no text — which this provider reports
+         as a permanent failure and retires itself over. "low" is the same
+         call as Anthropic's `effort` above, made against the same ceiling. */
       body: function (prompt) {
         return {
           system_instruction: { parts: [{ text: prompt.system }] },
           contents: [{ role: "user", parts: [{ text: prompt.user }] }],
-          generationConfig: { maxOutputTokens: MAX_OUT, temperature: 0 }
+          generationConfig: {
+            maxOutputTokens: MAX_OUT,
+            thinkingConfig: { thinkingLevel: "low" }
+          }
         };
       },
       read: function (status, json) {
@@ -172,16 +206,49 @@
       }
     },
 
-    groq: openAiLike("groq", "Groq", "llama-3.3-70b-versatile",
+    /* Llama 3.3 stood here until the free tier it served was switched off on
+       16 August 2026; this is the replacement the vendor names. It reasons
+       before answering like the two above, but returns that reasoning in a
+       field of its own, so `chatRead` still reads a verdict and nothing
+       else. https://console.groq.com/docs/deprecations */
+    groq: openAiLike("groq", "Groq", "openai/gpt-oss-120b",
       "https://api.groq.com", "/openai/v1/chat/completions"),
 
-    openai: openAiLike("openai", "OpenAI", "gpt-4o-mini",
-      "https://api.openai.com", "/v1/chat/completions"),
+    /* The three edits below are one decision each, and each one prevents a
+       different silent failure rather than a visible error.
 
+       `reasoning_effort: "none"` because this model reasons at "medium" unless
+       told otherwise, and reasoning is spent from the same ceiling as the
+       reply. The vendor's own advice is to leave tens of thousands of tokens
+       for it — a budget this judge has no use for, since the question is
+       closed and the answer is a word.
+
+       `max_completion_tokens` because `max_tokens` is the older name and does
+       not cover reasoning tokens; on a reasoning model the two are no longer
+       the same ceiling.
+
+       And no `temperature`: this family may refuse a value other than the
+       default, and a refused request reads to us as an ordinary bad request —
+       transient, retried on every sentence, never resolved. Determinism was
+       worth having and is not worth that.
+       https://developers.openai.com/api/docs/models/gpt-5.6-terra */
+    openai: openAiLike("openai", "OpenAI", "gpt-5.6-terra",
+      "https://api.openai.com", "/v1/chat/completions", function (b) {
+        b.max_completion_tokens = b.max_tokens;
+        delete b.max_tokens;
+        delete b.temperature;
+        b.reasoning_effort = "none";
+        return b;
+      }),
+
+    /* The middle tier rather than the top one: the question put to the model
+       is closed, the essay it reads is a beginner's, and the student pays for
+       every call. The top tier costs several times as much for a verdict on
+       "prendo un caffè". */
     anthropic: {
       id: "anthropic",
       label: "Anthropic Claude",
-      model: "claude-opus-5",
+      model: "claude-sonnet-5",
       url: function () { return "https://api.anthropic.com/v1/messages"; },
       /* The third header is what the vendor requires before it will answer
          a browser at all; its name is their opinion of the practice, not

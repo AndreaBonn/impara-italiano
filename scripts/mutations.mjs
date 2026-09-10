@@ -68,6 +68,8 @@ const RULES = "assets/js/llm-rules.js";
 const PROV = "assets/js/llm-providers.js";
 const T_RULES = "tests/unit/llm-rules.test.mjs";
 const T_PROV = "tests/unit/llm-providers.test.mjs";
+const PROMPTS = "assets/js/llm-prompts.js";
+const T_PROMPTS = "tests/unit/llm-prompts.test.mjs";
 
 /**
  * The mutations. `z` must occur in the file EXACTLY ONCE — with two
@@ -196,6 +198,30 @@ const MUTACJE = [
   { plik: PROV, test: T_PROV, opis: "gemini: a withheld answer read as transient",
     z: "        if (!c) return { error: \"answer withheld\", kind: \"permanent\" };",
     na: "        if (!c) return { error: \"answer withheld\", kind: \"transient\" };" },
+  { plik: PROV, test: T_PROV, opis: "gemini: thinking left unbounded",
+    z: "            maxOutputTokens: MAX_OUT,\n            thinkingConfig: { thinkingLevel: \"low\" }",
+    na: "            maxOutputTokens: MAX_OUT" },
+  { plik: PROV, test: T_PROV, opis: "gemini: the temperature the vendor asks us not to send",
+    z: "            thinkingConfig: { thinkingLevel: \"low\" }",
+    na: "            temperature: 0, thinkingConfig: { thinkingLevel: \"low\" }" },
+  { plik: PROV, test: T_PROV, opis: "openai: the temperature the family may refuse",
+    z: "        delete b.temperature;\n", na: "" },
+  { plik: PROV, test: T_PROV, opis: "openai: reasoning left at the vendor's default",
+    z: "        b.reasoning_effort = \"none\";\n", na: "" },
+  { plik: PROV, test: T_PROV, opis: "openai: the ceiling that does not count reasoning",
+    z: "        b.max_completion_tokens = b.max_tokens;\n        delete b.max_tokens;\n",
+    na: "" },
+
+  /* ---- llm-prompts.js: what the model is actually told ---- */
+  { plik: PROMPTS, test: T_PROMPTS, opis: "judge: a comment longer than the one kept",
+    z: "  var MAX_COMMENT_CHARS = 160;", na: "  var MAX_COMMENT_CHARS = 400;" },
+  { plik: PROMPTS, test: T_PROMPTS,
+    opis: "writing: the level invented when the task has none",
+    z: "      ? \"a learner at level \" + cefr + \" of the CEFR\"\n      : \"a learner\";",
+    na: "      ? \"a learner at level \" + cefr + \" of the CEFR\"\n      : \"a learner at level B1 of the CEFR\";" },
+  { plik: PROMPTS, test: T_PROMPTS, opis: "writing: the level never reaches the model",
+    z: "      system: writingSystem(lang, t.cefr),",
+    na: "      system: writingSystem(lang)," },
 ];
 
 /* ---------------- Running ---------------- */

@@ -124,15 +124,42 @@ describe("the request each provider expects", () => {
     assert.equal(h["anthropic-dangerous-direct-browser-access"], "true");
   });
 
-  test("Anthropic sends no temperature: that model rejects the request outright", () => {
+  test("only the provider that still accepts a temperature is sent one", () => {
     const P = providers();
-    const body = P.request("anthropic", "k", PROMPT, {}).body;
-    assert.equal(body.temperature, undefined);
-    /* The others do send it, and send zero — the same sentence judged twice
-       in one lesson must not get two different verdicts. */
-    assert.equal(P.request("openai", "k", PROMPT, {}).body.temperature, 0);
+    /* Anthropic rejects a non-default value outright, Gemini 3 answers but
+       loops, and OpenAI's reasoning family may refuse it. Groq is the one
+       whose model still takes it — and it gets zero, so the same sentence
+       judged twice in one lesson does not get two different verdicts. */
     assert.equal(P.request("groq", "k", PROMPT, {}).body.temperature, 0);
-    assert.equal(P.request("gemini", "k", PROMPT, {}).body.generationConfig.temperature, 0);
+    assert.equal(P.request("anthropic", "k", PROMPT, {}).body.temperature, undefined);
+    assert.equal(P.request("openai", "k", PROMPT, {}).body.temperature, undefined);
+    assert.equal(
+      P.request("gemini", "k", PROMPT, {}).body.generationConfig.temperature, undefined);
+  });
+
+  /* Every model here reasons before answering unless told not to, and on each
+     one that reasoning is spent from the same ceiling as the reply. A request
+     that leaves it unbounded comes back with no text — which this judge reads
+     as a failure and, on Gemini, as a permanent one it retires itself over. */
+  test("each thinking model is told how long to think", () => {
+    const P = providers();
+    assert.equal(
+      P.request("gemini", "k", PROMPT, {}).body.generationConfig.thinkingConfig.thinkingLevel,
+      "low");
+    assert.equal(P.request("anthropic", "k", PROMPT, {}).body.output_config.effort, "low");
+    assert.equal(P.request("openai", "k", PROMPT, {}).body.reasoning_effort, "none");
+  });
+
+  /* On a reasoning model the two names are no longer the same ceiling: the
+     older one does not cover the tokens spent thinking. Sending it leaves the
+     reply bounded by nothing we chose. */
+  test("OpenAI is given the ceiling that counts reasoning", () => {
+    const P = providers();
+    const body = P.request("openai", "k", PROMPT, {}).body;
+    assert.equal(body.max_completion_tokens, 2048);
+    assert.equal(body.max_tokens, undefined);
+    /* Groq's model is not in that family and keeps the original name. */
+    assert.equal(P.request("groq", "k", PROMPT, {}).body.max_tokens, 2048);
   });
 
   test("the Gemini model goes in the address, where that provider wants it", () => {

@@ -509,7 +509,7 @@ z poprzedniej wersji tego pliku.
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
 | Klucze interfejsu na język | 818 × 5 języków |
 | Pliki silnika | 70 w `assets/js/`, 13 785 linii |
-| Testy jednostkowe | 926 przebiegów w 39 plikach, zielone |
+| Testy jednostkowe | 931 przebiegów w 39 plikach, zielone |
 | Testy DOM | 260 przebiegów w 33 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,3% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
@@ -532,8 +532,8 @@ tabeli. Trzy deklaracje, nie trzy przeoczenia.
 sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
 `assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
-decyzji w silniku (45 mutacji w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
-`llm-rules.js` i `llm-providers.js`) i wymaga, żeby wskazany
+decyzji w silniku (53 mutacje w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
+`llm-rules.js`, `llm-providers.js` i `llm-prompts.js`) i wymaga, żeby wskazany
 plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
 puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
 `cils-hint`, `cils.limit` łapiące `cils.limitLabel`.

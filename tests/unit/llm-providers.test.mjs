@@ -54,6 +54,21 @@ describe("the table", () => {
        against a `get` that returned null for everything. */
     assert.equal(P.get("openai").id, "openai");
   });
+
+  test("a name borrowed from Object.prototype is not a provider", () => {
+    const P = providers();
+    /* `PROVIDERS["__proto__"]` resolves through the inherited accessor and
+       hands back Object.prototype — an object, so a plain truthiness guard
+       lets it through and the caller then asks it for `url()`.
+       The chain of providers is stored in the student's settings, and
+       settings travel in the exported backup file: this arrives from a file
+       another person wrote, not from our own list. */
+    for (const borrowed of ["__proto__", "constructor", "toString", "valueOf"]) {
+      assert.equal(P.get(borrowed), null, borrowed + " passed for a provider");
+      assert.equal(P.request(borrowed, "k", PROMPT, {}), null,
+        borrowed + " built a request");
+    }
+  });
 });
 
 describe("the request each provider expects", () => {
@@ -164,6 +179,18 @@ describe("reading a failure", () => {
       assert.equal(p.read(401, { error: { message: "bad key" } }).kind, "permanent", id);
       assert.equal(p.read(429, { error: { message: "slow down" } }).kind, "transient", id);
       assert.equal(p.read(503, {}).kind, "transient", id);
+    }
+  });
+
+  test("a bad request does not retire the provider for the session", () => {
+    const P = providers();
+    /* 400 reads like a configuration fault and usually is not: it is most
+       often about the sentence just sent. Retiring a working provider over
+       one awkward exercise goes unnoticed for the rest of the session,
+       while retrying a genuinely misconfigured one costs a few requests. */
+    for (const id of P.ORDER) {
+      assert.equal(P.get(id).read(400, { error: { message: "too long" } }).kind,
+        "transient", id);
     }
   });
 

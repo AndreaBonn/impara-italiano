@@ -48,9 +48,18 @@
    * The distinction is the whole reason the cascade behaves differently:
    * permanent drops the provider for the session and says so, transient
    * moves on quietly and keeps it eligible.
+   *
+   * 400 SITS ON THE TRANSIENT SIDE, which reads wrong and is deliberate. A
+   * bad request is usually about the sentence just sent (its length, a
+   * content filter) rather than about the setup, so treating it as
+   * permanent would retire a working provider for the rest of the session
+   * over one awkward exercise. The two mistakes are not the same size: a
+   * genuinely misconfigured provider classified transient fails again on
+   * every sentence and costs a few wasted requests, while a working one
+   * classified permanent goes quiet for the session and nobody finds out.
    */
   function kind(status) {
-    if (status === 401 || status === 403 || status === 404 || status === 400) return "permanent";
+    if (status === 401 || status === 403 || status === 404) return "permanent";
     return "transient";
   }
 
@@ -227,7 +236,20 @@
      sentence. */
   var ORDER = ["gemini", "groq", "openai", "anthropic"];
 
-  function get(id) { return PROVIDERS[id] || null; }
+  /**
+   * A provider by name, or nothing.
+   *
+   * The own-property check is not ceremony. `PROVIDERS["__proto__"]`
+   * resolves through the inherited accessor and yields Object.prototype —
+   * an object, so a plain truthiness test lets it through, and the caller
+   * then asks it for a `url()` it does not have. The chain of providers
+   * lives in the student's settings, and settings travel inside the
+   * exported backup file, so this name can arrive from a file somebody else
+   * wrote.
+   */
+  function get(id) {
+    return Object.prototype.hasOwnProperty.call(PROVIDERS, id) ? PROVIDERS[id] : null;
+  }
 
   function list() {
     return ORDER.map(function (id) {
@@ -242,7 +264,7 @@
    * settings does not need a change in this file.
    */
   function request(id, key, prompt, cfg) {
-    var p = PROVIDERS[id];
+    var p = get(id);
     if (!p) return null;
     var settings = { model: (cfg && cfg.model) || p.model };
     return {

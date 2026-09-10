@@ -192,11 +192,16 @@ a{color:var(--rosa-deep);text-underline-offset:3px;}
 button{font:inherit;color:inherit;}
 :focus-visible{outline:3px solid var(--lavanda-deep);outline-offset:3px;border-radius:6px;}
 
+/* Schowany W PIONIE, nie w bok. Odsunięcie poziome jest niewidoczne tylko
+   w jedną stronę: `left:-9999px` znika w LTR, a przy `dir="rtl"` wypada za
+   krawędź i robi 9999px poziomego przewijania całej strony. Własność logiczna
+   nic tu nie ratuje, bo bezpieczna strona zmienia się razem z kierunkiem;
+   góra jest poza ekranem w obu. */
 .skip-link{
-  position:absolute;left:-9999px;top:0;z-index:999;
+  position:absolute;left:0;inset-inline-start:0;top:-9999px;z-index:999;
   background:var(--rosa-deep);color:#fff;padding:12px 20px;border-radius:0 0 var(--r-m) 0;font-weight:600;
 }
-.skip-link:focus{left:0;}
+.skip-link:focus{top:0;}
 
 .visually-hidden{
   position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;

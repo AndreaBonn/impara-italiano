@@ -245,21 +245,27 @@ button{font:inherit;color:inherit;}
 .rail__flag{font-size:1.05rem;}
 .rail__tag{margin:0;font-size:.78rem;opacity:.96;font-weight:500;letter-spacing:.01em;}
 
-/* wybór języka wyjaśnień: widoczna tylko flaga bieżąca, reszta w liście.
-   44 px celu dotykowego na przycisku i na każdej pozycji listy. */
+/* wybór języka wyjaśnień: na przycisku flaga i endonim bieżącego języka,
+   reszta w liście. 44 px celu dotykowego na przycisku i na każdej pozycji listy. */
 .rail__lang{position:relative;margin-top:12px;}
 .rail__lang-btn{
-  min-height:44px;padding:0 8px;gap:4px;
-  display:flex;align-items:center;justify-content:center;
+  min-height:44px;padding:0 10px;gap:7px;
+  display:flex;align-items:center;justify-content:flex-start;
   background:oklch(0 0 0 / .16);border:1px solid oklch(1 0 0 / .30);
   border-radius:var(--r-m);font-size:1.15rem;line-height:1;cursor:pointer;color:inherit;
   transition:background .16s ease, border-color .16s ease;
 }
 .rail__lang-btn:hover{background:oklch(0 0 0 / .28);}
+.rail__lang-name{font-size:.88rem;font-weight:600;line-height:1;}
 .rail__lang-caret{font-size:.7rem;opacity:.8;}
+/* Tło z palety, nie na sztywno: w ciemnym motywie jasne tło zostawało jasne,
+   a dziedziczony `--ink` robił się prawie biały — nazwa języka znikałaby na
+   nim tak, jak dotąd znikała strzałka. Tu przycisk otwarty jest z tego samego
+   papieru co lista pod nim, więc oba motywy trzymają się same. */
 .rail__lang-btn[aria-expanded="true"]{
-  background:oklch(0.99 0.008 60);border-color:transparent;box-shadow:var(--shadow-s);
+  background:var(--paper);border-color:transparent;box-shadow:var(--shadow-s);
 }
+.rail__lang-btn[aria-expanded="true"] .rail__lang-name,
 .rail__lang-btn[aria-expanded="true"] .rail__lang-caret{color:var(--ink);}
 
 .rail__lang-list{

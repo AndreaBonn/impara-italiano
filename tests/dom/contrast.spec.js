@@ -52,11 +52,14 @@ const MIERNIK = () => {
     const strona = getComputedStyle(document.body).backgroundColor;
     return stos.reverse().reduce((pod, c) => `rgb(${srgb(c, pod).join(",")})`, strona);
   }
-  window.__kontrast = (sel) => {
+  /* `tloJawne` dla elementów leżących na gradiencie: `tlo()` idzie po
+     `backgroundColor` przodków i gradientu nie widzi, więc bez tego liczyłoby
+     napis wobec tła strony, czyli wobec czegoś, czego tam nie ma. */
+  window.__kontrast = (sel, tloJawne) => {
     const el = document.querySelector(sel);
     if (!el) return null;
     const cs = getComputedStyle(el);
-    const pod = tlo(el);
+    const pod = tloJawne || tlo(el);
     /* Kontrolka wypełniona odróżnia się tłem, nie krawędzią: WCAG 1.4.11
        pyta, czy WIDAĆ, że to kontrolka, a nie którym pikselem to widać. */
     const podSpodem = el.parentElement ? tlo(el.parentElement) : pod;
@@ -151,6 +154,47 @@ for (const theme of ["light", "dark"]) {
         .toBeGreaterThanOrEqual(TEKST);
       await page.mouse.move(0, 0);
     }
+  });
+}
+
+/* ============================================================
+   Nazwa języka na przełączniku: dwa tła, nie jedno.
+
+   Przycisk zamknięty leży na gradiencie panelu (napis jasny), a otwarty
+   dostaje własne tło z papieru (napis ciemny) — czyli para kolorów zmienia
+   się w środku interakcji i stan spoczynku o drugim nic nie mówi.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`nazwa języka: kontrast w obu stanach, motyw ${theme}`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html");
+    await page.waitForSelector("#langToggle .rail__lang-name");
+    await page.evaluate(t => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* przejście palety */
+
+    /* Panel jest gradientem: napis mierzy się wobec KAŻDEJ jego fermaty,
+       bo najjaśniejszy koniec decyduje, a nie ten, który akurat wypadł
+       pod przyciskiem. Fermaty czyta się z palety, nie przepisuje. */
+    const fermaty = await page.evaluate(() => {
+      const bi = getComputedStyle(document.getElementById("rail")).backgroundImage;
+      return bi.match(/oklch\([^)]*\)|rgba?\([^)]*\)/g) || [];
+    });
+    expect(fermaty.length, "gradient panelu nie ma czytelnych fermat").toBeGreaterThan(1);
+
+    for (const f of fermaty) {
+      const m = await page.evaluate(([s, t]) => window.__kontrast(s, t), [".rail__lang-name", f]);
+      expect(m, "nazwa języka na przycisku nie istnieje").not.toBeNull();
+      expect(m.tekst, `zamknięty na ${f}: ${m.tekst.toFixed(2)}:1, próg ${TEKST}`)
+        .toBeGreaterThanOrEqual(TEKST);
+    }
+
+    await page.click("#langToggle");
+    await page.waitForSelector("#langList:not([hidden])");
+    await page.mouse.move(0, 0); /* klik zostawia kursor na przycisku */
+    await page.waitForTimeout(300);
+    const otwarty = await page.evaluate(() => window.__kontrast(".rail__lang-name"));
+    expect(otwarty.tekst, `otwarty: ${otwarty.tekst.toFixed(2)}:1, próg ${TEKST}`)
+      .toBeGreaterThanOrEqual(TEKST);
   });
 }
 

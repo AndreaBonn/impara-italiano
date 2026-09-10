@@ -76,8 +76,8 @@
   /* ---------------- Język wyjaśnień ---------------- */
 
   /**
-   * Przełącznik jako lista rozwijana: widoczna jest tylko flaga bieżącego
-   * języka, reszta czeka w liście. Przy dwóch językach wystarczyłyby przyciski
+   * Przełącznik jako lista rozwijana: widoczny jest bieżący język (flaga plus
+   * endonim), reszta czeka w liście. Przy dwóch językach wystarczyłyby przyciski
    * obok siebie, przy pięciu zajęłyby pół szerokości panelu.
    *
    * Wzorzec: przycisk aria-haspopup="listbox" + ul role="listbox". Nazwa języka
@@ -95,6 +95,7 @@
       ' aria-label="' + Core.esc(I18n.t("lang.current", { name: cur.name })) + '"' +
       ' title="' + Core.esc(cur.name) + '">' +
       '<span class="rail__lang-flag" aria-hidden="true">' + cur.flag + "</span>" +
+      '<span class="rail__lang-name" aria-hidden="true">' + Core.esc(cur.name) + "</span>" +
       '<span class="rail__lang-caret" aria-hidden="true">▾</span></button>' +
       '<ul class="rail__lang-list" id="langList" role="listbox" hidden' +
       ' aria-label="' + Core.esc(I18n.t("lang.group")) + '">' +

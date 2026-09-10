@@ -268,6 +268,7 @@ LINGUAI.addUI("fr", {
   "guide.s.lettura": "Des textes longs : tenir le sens sur plusieurs phrases de suite.",
   "guide.s.scrittura": "Une rédaction corrigée sur ce qui est vérifiable : les constructions employées.",
   "guide.s.cerca": "Cherche dans les leçons, le vocabulaire, la grammaire et les conversations.",
+  "guide.s.privacy": "Ce que le cours enregistre, ce qui sort de votre appareil et comment revenir en arrière.",
 
   /* ---------------- Écran d'accueil ---------------- */
   "welcome.kicker": "DÉBUT",
@@ -622,6 +623,10 @@ LINGUAI.addUI("fr", {
   "set.rate": "Débit de la voix :",
   "set.autoplay": "Lire les enregistrements automatiquement dans les exercices",
   "set.strictAccents": "Exiger les accents (perché, è, città…)",
+  "set.sttConsent": "Consentement à envoyer ma voix pour la reconnaissance",
+  "set.sttConsentHint": "Sans lui, les exercices oraux n'enregistrent rien. Ce qu'il advient de l'enregistrement est décrit dans Confidentialité.",
+  "set.sttConsentOn": "Consentement donné.",
+  "set.sttConsentOff": "Consentement retiré. Le cours redemandera avant d'enregistrer.",
   "set.reviews": "Révisions",
   "set.retention": "À quelle fréquence les cartes reviennent",
   "set.retentionRelaxed": "Moins souvent — on oublie davantage",
@@ -854,6 +859,62 @@ LINGUAI.addUI("fr", {
   "verb.entrare": "entrer",
   "verb.diventare": "devenir",
   "verb.riuscire": "réussir / arriver à",
-  "verb.succedere": "arriver / se passer"
+  "verb.succedere": "arriver / se passer",
+
+  /* ── Confidentialité ────────────────────────────────────────
+     Texte source : docs/PRIVACY.it.md. Chaque phrase a sa ligne dans
+     specs/004-lancio-pubblico/riscontri.md, avec la commande qui l'a
+     vérifiée sur le code.
+
+     L'adresse et le nom ne sont pas ici : ils arrivent comme {mail} et
+     {name} depuis assets/js/views-privacy.js. Les noms des boutons
+     ({export}, {import}, {reset}) viennent des clés set.*, pour qu'ils ne
+     s'écartent pas de ce que l'élève voit dans les Réglages. */
+  "privacy.kicker": "Vos données",
+  "privacy.title": "Confidentialité",
+  "privacy.intro": "Ce qui reste sur votre appareil, ce qui en sort, et pourquoi.",
+  "privacy.updated": "Dernière mise à jour : {date}.",
+  "privacy.toSettings": "Ouvrir les Réglages",
+
+  "privacy.chi.h": "Qui traite les données",
+  "privacy.chi.p1": "Le responsable du traitement est {name}. Pour toute question sur cette notice ou sur les données elles-mêmes : {mail}.",
+
+  "privacy.breve.h": "En bref",
+  "privacy.breve.p1": "Impara l'Italiano n'a ni comptes ni serveur. Le cours ne vous demande pas votre nom. Votre progression reste dans le navigateur que vous utilisez, et personne d'autre que vous ne peut la lire : nous n'utilisons pas de cookies, nous n'avons installé aucun système de statistiques, et la page ne contacte aucun autre site.",
+  "privacy.breve.p2": "Deux choses sortent malgré tout de votre appareil, et cette notice existe surtout pour vous les dire : votre voix, quand vous faites les exercices de prononciation, et votre adresse IP, que voit celui qui héberge le site.",
+
+  "privacy.dispositivo.h": "Ce qui reste sur votre appareil",
+  "privacy.dispositivo.p1": "Le cours enregistre dans la mémoire locale du navigateur (localStorage, sous la clé linguai.italiano.v2) tout ce qu'il faut pour reprendre là où l'apprentissage s'est arrêté :",
+  "privacy.dispositivo.l1": "les leçons terminées, les points et la série de jours consécutifs ;",
+  "privacy.dispositivo.l2": "les cartes de révision et leurs échéances ;",
+  "privacy.dispositivo.l3": "le cahier d'erreurs : quels exercices ont échoué et sur quel point de grammaire ;",
+  "privacy.dispositivo.l4": "les textes que vous avez écrits dans les exercices de rédaction ;",
+  "privacy.dispositivo.l5": "les réglages, dont la langue des explications et votre réponse au sujet de la reconnaissance vocale.",
+  "privacy.dispositivo.p2": "Rien de tout cela n'est envoyé où que ce soit. Il n'existe aucun endroit où nous pourrions aller le lire, puisqu'il n'y a pas de serveur du cours.",
+  "privacy.dispositivo.p3": "Vous pouvez l'emporter ou l'effacer quand vous voulez, depuis les Réglages : « {export} » télécharge un fichier avec tout votre profil, « {import} » le remet sur un autre appareil, « {reset} » efface tout. Effacer les données de navigation fait la même chose que « {reset} », et c'est sans retour : si votre progression compte pour vous, exportez-la de temps en temps.",
+
+  "privacy.voce.h": "Votre voix dans les exercices de prononciation",
+  "privacy.voce.p1": "C'est la partie qui compte, et nous préférons que vous ne l'appreniez pas après coup.",
+  "privacy.voce.p2": "Dans les exercices où vous parlez et où le cours vérifie la phrase que vous avez dite, nous utilisons la reconnaissance vocale de votre navigateur. Dans les navigateurs qui la proposent (Chrome, Edge, Safari), ce n'est pas une fonction qui tourne sur votre appareil : l'enregistrement de votre voix part vers les serveurs du fabricant du navigateur, y est transformé en texte, et le texte revient au cours. Il ne passe pas par nous, nous ne le recevons pas et nous ne le conservons pas, mais il sort quand même de votre appareil, et il est normal que vous le sachiez avant plutôt qu'après.",
+  "privacy.voce.p3": "C'est pourquoi le cours vous le demande avant la première fois, et sans votre consentement l'exercice n'enregistre rien. Le consentement vaut pour tous les exercices de ce type et reste enregistré dans les réglages.",
+  "privacy.voce.p4": "Vous pouvez le retirer quand vous voulez, dans les Réglages, à la ligne de la reconnaissance vocale : à partir de ce moment le cours redemande avant d'enregistrer quoi que ce soit.",
+  "privacy.voce.p5": "Ce que le fabricant du navigateur fait de l'enregistrement une fois qu'il l'a reçu ne dépend pas de nous et nous ne pouvons pas le vérifier ; la réponse se trouve dans la politique de confidentialité du navigateur que vous utilisez. L'exercice de répétition, où vous vous réécoutez, fonctionne autrement : l'enregistrement y reste dans la page, n'est sauvegardé nulle part et disparaît dès que vous fermez l'onglet ou passez à la phrase suivante.",
+
+  "privacy.cache.h": "Les copies que le cours garde pour fonctionner hors ligne",
+  "privacy.cache.p1": "Le cours fonctionne aussi sans internet. Pour y arriver, le navigateur garde une copie des fichiers du cours : le code, les textes des leçons et les enregistrements des locuteurs natifs. Ce sont nos fichiers, les mêmes pour tout le monde, et ils ne contiennent rien qui vous concerne. Ils disparaissent quand vous effacez les données du site dans votre navigateur.",
+
+  "privacy.hosting.h": "Qui héberge le site",
+  "privacy.hosting.p1": "Le cours est publié sur GitHub Pages. Comme pour n'importe quel site, celui qui l'héberge enregistre les requêtes qu'il reçoit, et ces requêtes portent votre adresse IP. C'est le seul traitement que nous ne décidons pas, et nous ne pouvons pas l'éviter : sans quelqu'un pour délivrer les pages, il n'y a pas de site. Ce qu'il en advient ensuite est décrit dans les conditions de GitHub.",
+
+  "privacy.base.h": "Sur quelle base",
+  "privacy.base.p1": "Les données enregistrées dans le navigateur servent à faire fonctionner le cours que vous ouvrez, et elles naissent de son usage : c'est là-dessus que repose le traitement. La reconnaissance vocale repose en revanche sur votre consentement, qui est facultatif, que nous demandons avant, et que vous pouvez retirer.",
+  "privacy.base.p2": "Nous ne profilons personne et nous ne prenons aucune décision automatisée à votre sujet. Nous ne transmettons rien à personne : il n'y a rien à transmettre.",
+
+  "privacy.diritti.h": "Vos droits",
+  "privacy.diritti.p1": "Le règlement européen vous donne le droit d'accéder à vos données, de les corriger, de les effacer et de les emporter ailleurs. Ici vous le faites vous-même et sans demander la permission, puisque les données sont déjà entre vos mains : « {export} », c'est la portabilité, « {reset} », c'est l'effacement, et l'écran de progression, c'est l'accès.",
+  "privacy.diritti.p2": "Si vous avez une question à laquelle cette page ne répond pas, écrivez à {mail}. Si vous pensez que quelque chose ici ne tient pas, vous pouvez vous adresser à l'autorité de contrôle de votre pays.",
+
+  "privacy.zmiany.h": "Si cette notice change",
+  "privacy.zmiany.p1": "La date en haut dit quand le texte a été écrit pour la dernière fois. Le texte vit dans le dépôt du projet, à côté du code qu'il décrit, donc chaque modification est publique et datée dans l'historique des révisions."
 
 });

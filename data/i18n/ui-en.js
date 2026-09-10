@@ -261,6 +261,7 @@ LINGUAI.addUI("en", {
   "guide.s.lettura": "Longer texts: holding the sense across several sentences in a row.",
   "guide.s.scrittura": "Writing checked on what can be checked: the constructions you used.",
   "guide.s.cerca": "Searches lessons, vocabulary, grammar and conversations.",
+  "guide.s.privacy": "What the course saves, what leaves your device, and how to undo it.",
 
   /* ---------------- Welcome screen ---------------- */
   "welcome.kicker": "START",
@@ -612,6 +613,10 @@ LINGUAI.addUI("en", {
   "set.rate": "Speech rate:",
   "set.autoplay": "Play recordings automatically in exercises",
   "set.strictAccents": "Require accents (perché, è, città…)",
+  "set.sttConsent": "Consent to sending my voice for recognition",
+  "set.sttConsentHint": "Without it the speaking exercises record nothing. What happens to the recording is described in Privacy.",
+  "set.sttConsentOn": "Consent granted.",
+  "set.sttConsentOff": "Consent withdrawn. The course will ask again before recording.",
   "set.reviews": "Reviews",
   "set.retention": "How often cards come back",
   "set.retentionRelaxed": "Less often — more forgetting",
@@ -843,6 +848,65 @@ LINGUAI.addUI("en", {
   "verb.entrare": "to go in / to enter",
   "verb.diventare": "to become",
   "verb.riuscire": "to manage / to succeed",
-  "verb.succedere": "to happen"
+  "verb.succedere": "to happen",
+
+  /* ── Privacy ────────────────────────────────────────────────
+     Source text: docs/PRIVACY.it.md. Every sentence traces back to a line
+     in specs/004-lancio-pubblico/riscontri.md, with the command that
+     checked it against the code.
+
+     The address and the name are not here: they arrive as {mail} and
+     {name} from assets/js/views-privacy.js. The button names ({export},
+     {import}, {reset}) come from the set.* keys, so they cannot drift from
+     what the student actually sees in Settings.
+
+     English is also the fallback language (i18n.js), so a key missing
+     anywhere else is read from here. */
+  "privacy.kicker": "Your data",
+  "privacy.title": "Privacy",
+  "privacy.intro": "What stays on your device, what leaves it, and why.",
+  "privacy.updated": "Last updated: {date}.",
+  "privacy.toSettings": "Open Settings",
+
+  "privacy.chi.h": "Who handles the data",
+  "privacy.chi.p1": "The data controller is {name}. For anything about this notice or about the data itself: {mail}.",
+
+  "privacy.breve.h": "The short version",
+  "privacy.breve.p1": "Impara l'Italiano has no accounts and no server. It does not ask for your name. Your progress stays in the browser you are using, and nobody but you can read it: we use no cookies, we have installed no analytics of any kind, and the page contacts no other site.",
+  "privacy.breve.p2": "Two things do leave your device anyway, and this notice exists mainly to tell you about them: your voice, when you use the pronunciation exercises, and your IP address, which is seen by whoever serves the site.",
+
+  "privacy.dispositivo.h": "What stays on your device",
+  "privacy.dispositivo.p1": "The course saves everything needed to pick up where the learning stopped in your browser's local storage (localStorage, under the key linguai.italiano.v2):",
+  "privacy.dispositivo.l1": "the lessons you have finished, your points and your streak;",
+  "privacy.dispositivo.l2": "your review cards and when they are due;",
+  "privacy.dispositivo.l3": "the mistake notebook: which exercises went wrong and on which topic;",
+  "privacy.dispositivo.l4": "the texts you have written in the writing exercises;",
+  "privacy.dispositivo.l5": "your settings, including the language of the explanations and your answer about speech recognition.",
+  "privacy.dispositivo.p2": "None of it is sent anywhere. There is no place we could go and read it, because there is no course server.",
+  "privacy.dispositivo.p3": "You can take it with you or delete it whenever you want, from Settings: “{export}” downloads a file with your whole profile, “{import}” puts it back on another device, “{reset}” deletes everything. Clearing your browsing data does the same thing as “{reset}”, and it cannot be undone: if you care about your progress, export it now and then.",
+
+  "privacy.voce.h": "Your voice in the pronunciation exercises",
+  "privacy.voce.p1": "This is the part that matters, and we would rather you did not find out afterwards.",
+  "privacy.voce.p2": "In the exercises where you speak and the course checks the sentence you said, we use the speech recognition built into your browser. In the browsers that offer it (Chrome, Edge, Safari) this is not a feature that runs on your device: the recording of your voice is sent to the servers of whoever makes your browser, turned into text there, and the text comes back to the course. It does not pass through us, we do not receive it and we do not keep it, but it leaves your device all the same, and you should know that beforehand rather than afterwards.",
+  "privacy.voce.p3": "That is why the course asks you before the first time, and without your consent the exercise records nothing. The consent covers every exercise of that kind and is stored in your settings.",
+  "privacy.voce.p4": "You can withdraw it whenever you want, in Settings, under speech recognition: from that moment the course goes back to asking before it records anything.",
+  "privacy.voce.p5": "What the makers of the browser do with the recording once they have it is not up to us and not something we can verify; the answer is in the privacy notice of the browser you use. The shadowing exercise, where you listen back to yourself, works differently: there the recording stays inside the page, is saved nowhere, and is gone when you close the tab or move to the next sentence.",
+
+  "privacy.cache.h": "The copies the course keeps in order to work offline",
+  "privacy.cache.p1": "The course works without an internet connection too. To manage that, the browser keeps a copy of the course files: the code, the lesson texts and the recordings of the native speakers. Those are our files, the same for everybody, and there is nothing about you in them. They go when you clear the site's data in your browser.",
+
+  "privacy.hosting.h": "Who serves the site",
+  "privacy.hosting.p1": "The course is published on GitHub Pages. As with any site, whoever serves it records the requests it receives, and those requests carry your IP address. It is the one processing we do not decide, and we cannot avoid it: without someone to hand out the pages there is no site. What happens to it from there is described in GitHub's terms.",
+
+  "privacy.base.h": "On what grounds",
+  "privacy.base.p1": "The data saved in your browser is there to run the course you open, and it comes into being through your use of it: that is what the processing rests on. Speech recognition rests instead on your consent, which is optional, which we ask for beforehand, and which you can withdraw.",
+  "privacy.base.p2": "We do not profile anyone and we make no automated decisions about you. We pass nothing on to anyone: there is nothing to pass on.",
+
+  "privacy.diritti.h": "Your rights",
+  "privacy.diritti.p1": "European law gives you the right to see your data, correct it, delete it and take it elsewhere. Here you do all of that without asking permission, because the data is already in your hands: “{export}” is portability, “{reset}” is erasure, and the progress screen is access.",
+  "privacy.diritti.p2": "If you have a question this page does not answer, write to {mail}. If you think something here does not add up, you can contact the supervisory authority in your country.",
+
+  "privacy.zmiany.h": "If this notice changes",
+  "privacy.zmiany.p1": "The date at the top says when the text was last written. The text lives in the project's repository next to the code it describes, so every change is public and dated in the revision history."
 
 });

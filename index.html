@@ -117,10 +117,20 @@
          replaces the innerHTML of #main at every route, so a footer living
          inside would vanish at the first change of screen and come back only
          on a reload. Standing here it is written once and shows on every
-         screen. No data-i18n either — a symbol and a personal name read the
-         same in all five languages. -->
+         screen.
+
+         That property is the reason the privacy notice is linked from here
+         and not from the rail: the rail lists things to do, and this is a
+         thing to read, but it has to be one click away from wherever the
+         student happens to be standing.
+
+         The name needs no data-i18n, being a personal name. The link does,
+         and gets it for free: I18n.apply() runs over the whole document,
+         not over #main, so it reaches outside the part the router
+         rewrites. -->
     <footer class="site-foot">
-      <p>© <a href="https://github.com/AndreaBonn" target="_blank" rel="noopener">Andrea Bonacci</a></p>
+      <p>© <a href="https://github.com/AndreaBonn" target="_blank" rel="noopener">Andrea Bonacci</a>
+        · <a href="#/privacy" data-i18n="privacy.title">Prywatność</a></p>
     </footer>
   </div>
 </div>
@@ -180,6 +190,7 @@
 <script src="assets/js/views-placement.js"></script>
 <script src="assets/js/views-welcome.js"></script>
 <script src="assets/js/views-guide.js"></script>
+<script src="assets/js/views-privacy.js"></script>
 <script src="assets/js/writing.js"></script>
 <script src="assets/js/cils.js"></script>
 <!-- the rules of form before the verdict: lemma.js reads LemmaMorf at module execution -->

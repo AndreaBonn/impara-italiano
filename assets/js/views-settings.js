@@ -67,6 +67,28 @@
       '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-autoplay"' + (st.autoplay ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("set.autoplay") + "</span></label>" +
       '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-strict"' + (st.strictAccents ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("set.strictAccents") + "</span></label>" +
       '<button class="btn btn--ghost btn--sm js-test" style="align-self:flex-start">' + t("set.testVoice") + "</button>" +
+
+      /* Withdrawing the speech-recognition consent. It sits HERE, next to
+         the other voice settings, and not on the privacy page: the notice
+         explains, this screen acts, and a student looking for a switch
+         looks where the switches are.
+
+         The checkbox exists because the notice says the consent can be
+         withdrawn. `Consent.ustaw(false)` had been in consent.js since the
+         gate was written, and no view ever called it - so the only way back
+         was erasing the whole profile, and the sentence "you can withdraw
+         it whenever you want" would have been false the day it was written.
+
+         Shown only where the browser has speech recognition at all: an
+         inert switch for a permission that can never be asked for is worse
+         than no switch. */
+      (Audio2.sttSupported
+        ? '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-consent"' +
+          (Consent.udzielona() ? " checked" : "") +
+          ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("set.sttConsent") + "</span></label>" +
+          '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
+          esc(t("set.sttConsentHint")) + "</span>"
+        : "") +
       "</div></div>" +
 
       /* Reviews sit between speech and the backup, because they are still a
@@ -123,7 +145,18 @@
                  t(Audio2.sttSupported ? "set.works" : "set.absentTyping")) +
       supportRow(t("set.italianVoices"), t("set.fallbackOnly"), false, String(voices.length)) +
       offlineRow() +
-      "</div></div>");
+      "</div></div>" +
+
+      /* The notice, last on the page and reachable in one click. The footer
+         carries the same link from every screen; this row is here because
+         Settings is where a student ends up when they start wondering what
+         the course keeps, and arriving at the answer should not require
+         remembering that a footer exists. */
+      '<div class="card" style="margin-top:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' +
+      esc(t("privacy.title")) + "</h3>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem">' + esc(t("privacy.intro")) + "</p>" +
+      '<button class="btn btn--ghost btn--sm js-privacy" style="margin-top:12px">' +
+      esc(t("privacy.title")) + "</button></div>");
 
     var src = el().querySelector(".js-source");
     src.addEventListener("change", function () { Core.state.settings.voiceSource = src.value; Core.save(); });
@@ -135,6 +168,20 @@
     });
     el().querySelector(".js-autoplay").addEventListener("change", function (e) { Core.state.settings.autoplay = e.target.checked; Core.save(); });
     el().querySelector(".js-strict").addEventListener("change", function (e) { Core.state.settings.strictAccents = e.target.checked; Core.save(); });
+
+    el().querySelector(".js-privacy").addEventListener("click", function () { App.go("privacy"); });
+
+    /* Only present where the browser has speech recognition (see the render
+       above), so the handler is conditional too. Ticking it grants consent
+       without going through an exercise; unticking withdraws it, and the
+       next exercise that needs the microphone asks again. */
+    var zgoda = el().querySelector(".js-consent");
+    if (zgoda) {
+      zgoda.addEventListener("change", function (e) {
+        Consent.ustaw(e.target.checked);
+        Core.toast(t(e.target.checked ? "set.sttConsentOn" : "set.sttConsentOff"));
+      });
+    }
     /* The change takes effect from the NEXT answer: the due dates already
        set are left alone. Recomputing the whole deck would shift cards the
        student does not see today, and they changed a setting rather than

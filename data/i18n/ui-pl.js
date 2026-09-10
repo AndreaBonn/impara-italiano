@@ -266,6 +266,7 @@ LINGUAI.addUI("pl", {
   "guide.s.lettura": "Dłuższe teksty: trzymanie sensu przez kilka zdań z rzędu.",
   "guide.s.scrittura": "Wypracowania sprawdzane z tego, co da się sprawdzić: użytych konstrukcji.",
   "guide.s.cerca": "Szuka po lekcjach, słownictwie, gramatyce i rozmowach.",
+  "guide.s.privacy": "Co kurs zapisuje, co wychodzi poza twoje urządzenie i jak to cofnąć.",
 
   /* ---------------- Ekran powitalny ---------------- */
   "welcome.kicker": "POCZĄTEK",
@@ -623,6 +624,10 @@ LINGUAI.addUI("pl", {
   "set.rate": "Tempo mowy:",
   "set.autoplay": "Automatycznie odtwarzaj nagrania w ćwiczeniach",
   "set.strictAccents": "Wymagaj akcentów (perché, è, città…)",
+  "set.sttConsent": "Zgoda na wysyłanie głosu do rozpoznawania",
+  "set.sttConsentHint": "Bez niej ćwiczenia z mówieniem niczego nie nagrywają. Co dokładnie się dzieje z nagraniem, opisuje Prywatność.",
+  "set.sttConsentOn": "Zgoda udzielona.",
+  "set.sttConsentOff": "Zgoda wycofana. Kurs zapyta ponownie przed nagraniem.",
   "set.reviews": "Powtórki",
   "set.retention": "Jak często wracają fiszki",
   "set.retentionRelaxed": "Rzadziej — więcej zapominania",
@@ -856,6 +861,64 @@ LINGUAI.addUI("pl", {
   "verb.entrare": "wchodzić",
   "verb.diventare": "stawać się",
   "verb.riuscire": "udawać się",
-  "verb.succedere": "zdarzać się"
+  "verb.succedere": "zdarzać się",
+
+  /* ── Prywatność ─────────────────────────────────────────────
+     Tekst źródłowy: docs/PRIVACY.it.md (po włosku, bo w tym języku
+     administrator podpisuje to, co dokument twierdzi). Każde zdanie ma
+     swój wiersz w specs/004-lancio-pubblico/riscontri.md, z poleceniem,
+     które sprawdziło je na kodzie.
+
+     Adresu ani nazwiska tu nie ma: wchodzą jako {mail} i {name}
+     z assets/js/views-privacy.js, więc stoją w jednym miejscu, a nie
+     w pięciu słownikach. Nazwy przycisków ({export}, {import}, {reset})
+     przychodzą z kluczy set.*, czyli z tych samych napisów, które uczeń
+     widzi w Ustawieniach. */
+  "privacy.kicker": "Twoje dane",
+  "privacy.title": "Prywatność",
+  "privacy.intro": "Co zostaje na twoim urządzeniu, co z niego wychodzi i dlaczego.",
+  "privacy.updated": "Ostatnia aktualizacja: {date}.",
+  "privacy.toSettings": "Otwórz Ustawienia",
+
+  "privacy.chi.h": "Kto przetwarza dane",
+  "privacy.chi.p1": "Administratorem danych jest {name}. W każdej sprawie dotyczącej tej informacji albo samych danych: {mail}.",
+
+  "privacy.breve.h": "W skrócie",
+  "privacy.breve.p1": "Impara l'Italiano nie ma kont ani serwera. Nie pyta cię o imię. Twoje postępy zostają w przeglądarce, której właśnie używasz, i nikt poza tobą ich nie odczyta: nie używamy ciasteczek, nie mamy zainstalowanego żadnego systemu statystyk, strona nie łączy się z żadną obcą witryną.",
+  "privacy.breve.p2": "Są dwie rzeczy, które mimo to wychodzą z twojego urządzenia, i ta informacja istnieje przede wszystkim po to, żeby o nich powiedzieć: twój głos w ćwiczeniach wymowy oraz twój adres IP, który widzi ten, kto udostępnia stronę.",
+
+  "privacy.dispositivo.h": "Co zostaje na twoim urządzeniu",
+  "privacy.dispositivo.p1": "Kurs zapisuje w pamięci lokalnej przeglądarki (localStorage, pod kluczem linguai.italiano.v2) wszystko, co pozwala wrócić do miejsca, w którym nauka się zatrzymała:",
+  "privacy.dispositivo.l1": "ukończone lekcje, punkty i passę kolejnych dni;",
+  "privacy.dispositivo.l2": "fiszki powtórek razem z ich terminami;",
+  "privacy.dispositivo.l3": "zeszyt błędów, czyli które ćwiczenia poszły źle i z jakiego zagadnienia;",
+  "privacy.dispositivo.l4": "teksty napisane w ćwiczeniach pisemnych;",
+  "privacy.dispositivo.l5": "ustawienia, w tym język wyjaśnień i odpowiedź w sprawie rozpoznawania mowy.",
+  "privacy.dispositivo.p2": "Te dane nigdzie nie są wysyłane. Nie ma miejsca, w którym moglibyśmy je przeczytać, bo nie ma serwera kursu.",
+  "privacy.dispositivo.p3": "Możesz je zabrać albo skasować, kiedy zechcesz, w Ustawieniach: „{export}” pobiera plik z całym profilem, „{import}” wgrywa go na innym urządzeniu, „{reset}” kasuje wszystko. Skasowanie danych przeglądania działa tak samo jak „{reset}” i jest nieodwracalne: jeśli zależy ci na postępach, eksportuj je co jakiś czas.",
+
+  "privacy.voce.h": "Twój głos w ćwiczeniach wymowy",
+  "privacy.voce.p1": "To jest ta część, która się liczy, i nie chcemy, żeby cię zaskoczyła.",
+  "privacy.voce.p2": "W ćwiczeniach, w których mówisz na głos, a kurs sprawdza wypowiedziane zdanie, używamy rozpoznawania mowy wbudowanego w przeglądarkę. W przeglądarkach, które je udostępniają (Chrome, Edge, Safari), nie jest to funkcja działająca na twoim urządzeniu: nagranie twojego głosu jedzie na serwery producenta przeglądarki, tam zamienia się w tekst i wraca do kursu jako tekst. Nie przechodzi przez nas, nie dostajemy go i nie przechowujemy, ale i tak wychodzi z twojego urządzenia, a o tym trzeba wiedzieć wcześniej, nie później.",
+  "privacy.voce.p3": "Dlatego kurs pyta o zgodę przed pierwszym razem, a bez zgody ćwiczenie nie nagrywa niczego. Zgoda obejmuje wszystkie ćwiczenia tego rodzaju i zostaje zapisana w ustawieniach.",
+  "privacy.voce.p4": "Możesz ją wycofać, kiedy zechcesz, w Ustawieniach, przy rozpoznawaniu mowy: od tego momentu kurs znowu pyta, zanim cokolwiek nagra.",
+  "privacy.voce.p5": "Co producent przeglądarki robi z nagraniem po jego otrzymaniu, nie zależy od nas i nie umiemy tego sprawdzić; odpowiedź jest w informacji o prywatności przeglądarki, której używasz. Inaczej wygląda ćwiczenie z powtarzaniem, w którym słuchasz samego siebie: tam nagranie zostaje w stronie, nigdzie się nie zapisuje i znika przy zamknięciu karty albo przy przejściu do następnego zdania.",
+
+  "privacy.cache.h": "Kopie, które kurs trzyma, żeby działać bez sieci",
+  "privacy.cache.p1": "Kurs działa też bez internetu. Żeby to było możliwe, przeglądarka trzyma kopię plików kursu: kodu, tekstów lekcji i nagrań lektorów. To są nasze pliki, takie same dla wszystkich, i nie ma w nich niczego, co dotyczy ciebie. Znikają, kiedy skasujesz dane strony w przeglądarce.",
+
+  "privacy.hosting.h": "Kto udostępnia stronę",
+  "privacy.hosting.p1": "Kurs jest opublikowany na GitHub Pages. Jak przy każdej stronie, ten, kto ją udostępnia, zapisuje przychodzące żądania, a w tych żądaniach jest twój adres IP. To jedyne przetwarzanie, o którym nie decydujemy my, i nie da się go uniknąć: bez kogoś, kto poda stronę, nie ma strony. Co się z tym dzieje dalej, opisują warunki GitHuba.",
+
+  "privacy.base.h": "Na jakiej podstawie",
+  "privacy.base.p1": "Dane zapisane w przeglądarce służą do tego, żeby działał kurs, który otwierasz, i powstają z jego używania: na tym opiera się ich przetwarzanie. Rozpoznawanie mowy opiera się natomiast na twojej zgodzie, która jest dobrowolna, o którą pytamy wcześniej i którą możesz wycofać.",
+  "privacy.base.p2": "Nie profilujemy nikogo i nie podejmujemy automatycznych decyzji na twój temat. Nie przekazujemy niczego nikomu: nie ma czego przekazywać.",
+
+  "privacy.diritti.h": "Twoje prawa",
+  "privacy.diritti.p1": "Rozporządzenie europejskie daje ci prawo dostępu do danych, ich sprostowania, usunięcia i przeniesienia. Tutaj korzystasz z nich bez pytania o pozwolenie, bo dane są już w twoich rękach: „{export}” to przeniesienie, „{reset}” to usunięcie, a ekran postępów to dostęp.",
+  "privacy.diritti.p2": "Jeśli masz pytanie, na które ta strona nie odpowiada, napisz na {mail}. Jeśli uważasz, że coś tu się nie zgadza, możesz zwrócić się do organu nadzorczego w swoim kraju.",
+
+  "privacy.zmiany.h": "Jeśli ta informacja się zmieni",
+  "privacy.zmiany.p1": "Data na górze mówi, kiedy tekst był pisany ostatni raz. Tekst leży w repozytorium projektu razem z kodem, który opisuje, więc każda zmiana jest jawna i ma datę w historii zmian."
 
 });

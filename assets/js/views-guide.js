@@ -52,7 +52,7 @@
     ["velocita", "nav.speed"], ["esame", "nav.exam"], ["falsi", "nav.falsi"],
     ["copertura", "nav.coverage"], ["progressi", "nav.progress"], ["impostazioni", "nav.settings"],
     ["suoni", "sound.title"], ["lettura", "read.title"], ["scrittura", "write.title"],
-    ["cerca", "search.title"]
+    ["cerca", "search.title"], ["privacy", "privacy.title"]
   ];
 
   function akapity(id, ile) {

@@ -46,6 +46,12 @@ jobs:
       - name: Can the worker load what the page loads
         run: node scripts/check_precache.mjs
 
+      # A broken social preview shows up in somebody else's chat window and
+      # nowhere else: no test goes red, the course keeps working. This is the
+      # only place the failure is visible before a person sees it.
+      - name: Can a shared link show a preview
+        run: node scripts/check_ogtags.mjs
+
       # The browser recognises a release by the bytes of sw.js. Without a
       # fresh fingerprint a fix goes out as a release nobody will see, and the
       # student gets no update message.

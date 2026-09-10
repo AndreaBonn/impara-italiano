@@ -53,7 +53,16 @@
           fb.innerHTML = esc(t("ex.almost"));
           return;
         }
-        finish(root, res.ok, ex.why, res.ok ? null : accepted[0], onDone);
+        /* A second judge is worth asking here and not in `order` below:
+           these two types accept a sentence the student composed, so a
+           correct wording the list does not contain is a real possibility.
+           `order` is assembled from tiles the course itself supplied —
+           there is no other correct sentence to find. */
+        finish(root, res.ok, ex.why, res.ok ? null : accepted[0], onDone, {
+          question: kit.stripTags(ex.q || ""),
+          accepted: accepted,
+          given: input.value
+        });
       }
       btn.addEventListener("click", go);
       input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); go(); } });

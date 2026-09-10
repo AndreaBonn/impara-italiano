@@ -42,20 +42,79 @@
     return '<button type="button" class="btn btn--primary js-check">' + esc(txt || t("ex.check")) + '</button>';
   }
 
-  /** The shared ending of an exercise. */
-  function finish(root, ok, why, correctText, onDone) {
+  /**
+   * Closing an exercise: the verdict on screen, in the statistics, and out
+   * to the caller.
+   *
+   * `komentarz` is the model's sentence when a second judge was asked, and
+   * it goes in through `textContent` into a node of its own. `why` next to
+   * it is deliberately HTML, because it is the course's own markup — which
+   * is exactly why the two must not share a slot.
+   */
+  function zakoncz(root, ok, why, correctText, onDone, komentarz) {
     var fb = root.querySelector(".fb");
     var btn = root.querySelector(".js-check");
     if (btn) { btn.disabled = true; btn.textContent = t(ok ? "ex.done.ok" : "ex.done.checked"); }
+    root.classList.remove("exq--waiting");
     root.classList.add(ok ? "exq--ok" : "exq--ko");
     if (fb) {
       fb.className = "fb is-on " + (ok ? "fb--ok" : "fb--ko");
       var headTxt = ok ? t("ex.bravo")
         : (correctText ? t("ex.correctIs", { answer: correctText }) : t("ex.notYet"));
       fb.innerHTML = esc(headTxt) + (why ? '<span class="fb__why">' + why + "</span>" : "");
+      if (komentarz) {
+        var uwaga = global.document.createElement("span");
+        uwaga.className = "fb__why";
+        uwaga.textContent = komentarz;
+        fb.appendChild(uwaga);
+      }
     }
     Core.recordAnswer(ok);
     onDone && onDone(ok);
+  }
+
+  /**
+   * The shared ending of an exercise.
+   *
+   * THE ONE PLACE THAT CALLS `onDone`, which is why the second judge sits
+   * here rather than in the two builders that need it: the "exactly once"
+   * contract every counter in the course rests on survives by construction,
+   * and none of the fourteen types changes a line.
+   *
+   * `sad` is `{question, accepted, given}` and only the written types pass
+   * it. Without it — and for a correct answer, and for a student who never
+   * set a judge up — this function does exactly what it did before,
+   * synchronously.
+   *
+   * @param {object} [sad] what to ask a second judge about, if anything
+   */
+  function finish(root, ok, why, correctText, onDone, sad) {
+    if (ok || !sad || !global.Llm || !Llm.available()) {
+      return zakoncz(root, ok, why, correctText, onDone);
+    }
+
+    /* The button goes dead now, not when the answer comes back. It stays
+       clickable during the wait otherwise, and a second click would run a
+       second `finish` — two calls to `onDone` for one exercise, which the
+       progress counter reads as two answers. */
+    var btn = root.querySelector(".js-check");
+    if (btn) btn.disabled = true;
+    root.classList.add("exq--waiting");
+    var fb = root.querySelector(".fb");
+    if (fb) {
+      fb.className = "fb is-on";
+      fb.textContent = t("talk.checking");
+    }
+
+    Llm.judge(sad, function (verdict) {
+      /* The lesson may have moved on while we waited: a verdict drawn into
+         a detached node writes to nothing, and `recordAnswer` on it would
+         count an answer to an exercise nobody is looking at. */
+      if (!root.isConnected) return;
+      var komentarz = verdict && verdict.comment;
+      if (verdict && verdict.promote) return zakoncz(root, true, why, null, onDone, komentarz);
+      zakoncz(root, false, why, correctText, onDone, komentarz);
+    });
   }
 
   function stripTags(s) { return String(s).replace(/<[^>]+>/g, ""); }

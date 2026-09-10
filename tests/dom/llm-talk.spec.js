@@ -213,3 +213,85 @@ test.describe("the order of the providers", () => {
     expect(rzad[0], "the one name in the file we do serve should lead").toBe("openai");
   });
 });
+
+/* ============================================================
+   Written exercises: the same judge, a different contract.
+
+   In a conversation the run has no "exactly once" rule. Here it does:
+   `onDone` is what the lesson progress counts, and the gate now sits
+   between the click and that call. Everything a wait introduces — a second
+   click, a lesson that moves on, a comment drawn into the page — lands on
+   a counter nobody watches.
+   ============================================================ */
+test.describe("the second judge in a written exercise", () => {
+  /**
+   * Builds one exercise in the page and answers it, with the model scripted.
+   *
+   * Returns how many times `onDone` fired and with what, because that pair
+   * is the contract: called twice, or called with the wrong verdict, both
+   * read on screen as an ordinary wrong answer.
+   */
+  async function odpowiedz(page, opcje) {
+    await przygotuj(page, { key: "sk-test-key-1234", esito: opcje.esito, commento: opcje.commento });
+    await zgoda(page);
+    await page.goto("/index.html#/impostazioni");
+    await page.waitForSelector(".js-llm-key");
+
+    return page.evaluate(async (cfg) => {
+      const host = document.createElement("div");
+      document.getElementById("main").appendChild(host);
+      const built = window.Ex.build(
+        { t: "trans", q: "Traduci: vorrei un caffè", a: ["vorrei un caffè"] }, 0, "s");
+      host.innerHTML = built.html;
+      const root = host.firstElementChild;
+
+      let wywolan = 0, ok = null;
+      built.wire(root, (v) => { wywolan++; ok = v; });
+
+      root.querySelector(".js-in").value = "prendo un caffè";
+      root.querySelector(".js-check").click();
+      /* A second click while the verdict is in flight. */
+      if (cfg.dwaRazy) root.querySelector(".js-check").click();
+
+      await new Promise((r) => setTimeout(r, 1500));
+      return {
+        wywolan, ok,
+        fb: root.querySelector(".fb").textContent,
+        html: root.querySelector(".fb").innerHTML,
+        klasa: root.className
+      };
+    }, { dwaRazy: !!opcje.dwaRazy });
+  }
+
+  test("a promotion turns the exercise green, once", async ({ page }) => {
+    const w = await odpowiedz(page, { esito: "SI", commento: "Też poprawnie." });
+    expect(w.ok).toBe(true);
+    expect(w.wywolan, "the progress counter was told twice about one answer").toBe(1);
+    expect(w.klasa).toContain("exq--ok");
+    expect(w.fb).toContain("Też poprawnie.");
+  });
+
+  test("a rejection keeps the answer wrong, and says why", async ({ page }) => {
+    const w = await odpowiedz(page, { esito: "NO", commento: "Zły czasownik." });
+    expect(w.ok).toBe(false);
+    expect(w.wywolan).toBe(1);
+    expect(w.klasa).toContain("exq--ko");
+    expect(w.fb).toContain("Zły czasownik.");
+  });
+
+  test("a second click during the wait does not answer twice", async ({ page }) => {
+    const w = await odpowiedz(page, { esito: "SI", commento: "Dobrze.", dwaRazy: true });
+    expect(w.wywolan, "two clicks produced two answers to one exercise").toBe(1);
+  });
+
+  test("the model's comment is text, in an exercise too", async ({ page }) => {
+    const w = await odpowiedz(page, {
+      esito: "NO",
+      commento: '<img src=x onerror="window.__xssEx=1">'
+    });
+    expect(await page.evaluate(() => window.__xssEx)).toBe(undefined);
+    /* Paired: it did arrive, as text. */
+    expect(w.fb).toContain("onerror");
+    expect(w.html).not.toContain("<img");
+  });
+});

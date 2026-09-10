@@ -107,7 +107,7 @@ Dwa miejsca wymagają uwagi:
   nie przejdą, bo nie mają czego — na to nie ma automatu i zostaje czytanie danych oczami.
 
 Tablice łączą się **po indeksie**, więc ich długość musi być identyczna po obu stronach.
-`LINGUAI.applyStrings(lang)` (`assets/js/i18n.js`) jest idempotentne i nigdy nie nadpisuje pól
+`LINGUAI.applyStrings(lang)` (`assets/js/i18n-merge.js`) jest idempotentne i nigdy nie nadpisuje pól
 neutralnych — dlatego drugi język można nałożyć na te same obiekty bez przeładowania strony.
 
 ### Ćwiczenie
@@ -373,7 +373,7 @@ wywracają, widać bez testu.
   obramowanie zakładki przy 1.58:1 i licznik przy 2.58:1.
 
 `validate.mjs` uruchamia prawdziwe pliki danych w piaskownicy `node:vm` i scala je **tym samym**
-`assets/js/i18n.js`, którego używa przeglądarka — sprawdza więc dane po scaleniu, nie ich kopię.
+`assets/js/i18n-merge.js`, którego używa przeglądarka — sprawdza więc dane po scaleniu, nie ich kopię.
 Kończy się kodem 1 przy błędzie, nadaje się do CI.
 
 `extract_strings.mjs` czyta **wyłącznie `data/core/`**. To nie oszczędność, tylko dowód: gdyby

@@ -57,6 +57,7 @@ function run(path) {
 const LANG = process.argv[2] || "pl";
 
 run("assets/js/i18n.js");
+run("assets/js/i18n-merge.js");
 const dataFiles = readdirSync(join(ROOT, "data", "core"))
   .filter(f => /^[abc]\d-\d+\.js$/.test(f))
   .sort();

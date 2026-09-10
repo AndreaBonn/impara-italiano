@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "description": "Static Italian course. The manifest exists for the test toolchain only: the application itself has no runtime dependency and no build step.",
+  "homepage": "https://andreabonn.github.io/impara-italiano/",
   "scripts": {
     "test": "node --test \"tests/unit/**/*.test.mjs\"",
     "test:dom": "playwright test",

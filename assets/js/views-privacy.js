@@ -65,8 +65,12 @@
   var SEKCJE = [
     { id: "chi", akapity: 1, mail: [1] },
     { id: "breve", akapity: 2 },
-    { id: "dispositivo", akapity: 3, lista: 5, listaPo: 1, doUstawien: true },
+    { id: "dispositivo", akapity: 4, lista: 5, listaPo: 1, doUstawien: true },
     { id: "voce", akapity: 5, doUstawien: true },
+    /* The second thing that leaves the device, after the voice and before
+       the paperwork. Its list sits after the second paragraph, which is the
+       one that introduces it. */
+    { id: "modello", akapity: 3, lista: 3, listaPo: 2, doUstawien: true },
     { id: "cache", akapity: 1 },
     { id: "hosting", akapity: 1 },
     { id: "base", akapity: 2 },
@@ -95,7 +99,12 @@
       mail: ZNACZNIK,
       export: etykieta("set.export"),
       import: etykieta("set.import"),
-      reset: etykieta("set.reset")
+      reset: etykieta("set.reset"),
+      /* The name of the screen, taken from the rail the student clicks,
+         for the same reason as the three button labels above: a separately
+         worded "Settings" drifts from the menu at the first change, on the
+         page whose whole job is telling people where to go. */
+      settings: etykieta("nav.settings")
     };
   }
 
@@ -128,7 +137,10 @@
 
   function lista(s) {
     var out = "";
-    for (var i = 1; i <= s.lista; i++) out += "<li>" + esc(t("privacy." + s.id + ".l" + i)) + "</li>";
+    /* The bullets take the same variables as the paragraphs. Without them a
+       list item naming a button would print the placeholder instead of the
+       word the student reads on the screen it points at. */
+    for (var i = 1; i <= s.lista; i++) out += "<li>" + esc(t("privacy." + s.id + ".l" + i, zmienne())) + "</li>";
     /* The bottom margin is not symmetry: without it the paragraph that
        follows the list sits flush against the last bullet and reads as one
        more item of it. */

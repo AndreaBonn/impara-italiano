@@ -893,7 +893,7 @@ LINGUAI.addUI("en", {
 
   "privacy.breve.h": "The short version",
   "privacy.breve.p1": "Impara l'Italiano has no accounts and no server. It does not ask for your name. Your progress stays in the browser you are using, and nobody but you can read it: we use no cookies, we have installed no analytics of any kind, and the page contacts no other site.",
-  "privacy.breve.p2": "Two things do leave your device anyway, and this notice exists mainly to tell you about them: your voice, when you use the pronunciation exercises, and your IP address, which is seen by whoever serves the site.",
+  "privacy.breve.p2": "There are three things that do leave your device, and this notice exists mainly to tell you about them: your voice, when you use the pronunciation exercises; your written answers, but only if you turn on checking by a model yourself; and your IP address, which whoever hosts the site can see.",
 
   "privacy.dispositivo.h": "What stays on your device",
   "privacy.dispositivo.p1": "The course saves everything needed to pick up where the learning stopped in your browser's local storage (localStorage, under the key linguai.italiano.v2):",
@@ -911,6 +911,14 @@ LINGUAI.addUI("en", {
   "privacy.voce.p3": "That is why the course asks you before the first time, and without your consent the exercise records nothing. The consent covers every exercise of that kind and is stored in your settings.",
   "privacy.voce.p4": "You can withdraw it whenever you want, in Settings, under speech recognition: from that moment the course goes back to asking before it records anything.",
   "privacy.voce.p5": "What the makers of the browser do with the recording once they have it is not up to us and not something we can verify; the answer is in the privacy notice of the browser you use. The shadowing exercise, where you listen back to yourself, works differently: there the recording stays inside the page, is saved nowhere, and is gone when you close the tab or move to the next sentence.",
+  "privacy.dispositivo.p4": "If you have turned on answer checking by a model, the keys you pasted also sit in the browser's storage, but in a separate container (`linguai.llm.v1`) rather than inside the profile. The reason is practical: {export} downloads the profile, and a file we encourage you to keep and carry between devices should not contain a credential that is billed to you. For the same reason, {reset} deletes the keys too.",
+  "privacy.modello.h": "Your answers, if you turn on checking by a model",
+  "privacy.modello.p1": "This part of the course is off until you turn it on yourself, and it stays off for anybody who does nothing.",
+  "privacy.modello.p2": "The course compares your answers with the expected ones letter by letter, and that method errs in one direction only: it rejects sentences that are correct but worded differently from the model answer. You can give it a second opinion. In {settings} there is a place to paste a key for a model provider you already use: Google Gemini, Groq, OpenAI or Anthropic. From then on — and only once the comparison on your device has already rejected your answer — the course sends the provider you chose two sentences, yours and the expected one, and gets back a judgement. Three things worth knowing beforehand:",
+  "privacy.modello.l1": "the key stays on this device. It does not pass through us at any point: it goes from your browser to the provider and no further. It does not even go into the file you download with {export};",
+  "privacy.modello.l2": "the requests are billed to you, on the contract you hold with that provider. We have no way of seeing them or counting them;",
+  "privacy.modello.l3": "what the provider does with your sentence after receiving it does not depend on us and we cannot verify it — exactly as with speech recognition. The answer is in the privacy notice of the provider you chose.",
+  "privacy.modello.p3": "Here too the course asks for your consent, and it is a consent separate from the one for speech recognition: accepting one is not accepting the other, and withdrawing one does not withdraw the other. You can withdraw it whenever you like in {settings}, where you can also delete every key at once. With no key or no consent the course contacts no provider and behaves exactly as it did before.",
 
   "privacy.cache.h": "The copies the course keeps in order to work offline",
   "privacy.cache.p1": "The course works without an internet connection too. To manage that, the browser keeps a copy of the course files: the code, the lesson texts and the recordings of the native speakers. Those are our files, the same for everybody, and there is nothing about you in them. They go when you clear the site's data in your browser.",
@@ -919,7 +927,7 @@ LINGUAI.addUI("en", {
   "privacy.hosting.p1": "The course is published on GitHub Pages. As with any site, whoever serves it records the requests it receives, and those requests carry your IP address. It is the one processing we do not decide, and we cannot avoid it: without someone to hand out the pages there is no site. What happens to it from there is described in GitHub's terms.",
 
   "privacy.base.h": "On what grounds",
-  "privacy.base.p1": "The data saved in your browser is there to run the course you open, and it comes into being through your use of it: that is what the processing rests on. Speech recognition rests instead on your consent, which is optional, which we ask for beforehand, and which you can withdraw.",
+  "privacy.base.p1": "The data saved in the browser is there to run the course you opened, and you produce it by using it: that is what the processing rests on. Speech recognition and answer checking by a model rest instead on your consent, which is optional, which we ask for beforehand and which you can withdraw. They are two separate consents and you handle them separately.",
   "privacy.base.p2": "We do not profile anyone and we make no automated decisions about you. We pass nothing on to anyone: there is nothing to pass on.",
 
   "privacy.diritti.h": "Your rights",

@@ -47,8 +47,9 @@ test("the notice draws in all five languages, with no key falling back", async (
     await page.evaluate(() => window.App.go("privacy", {}));
 
     /* Drawn, not merely routed to: every section is a card with an id, and
-       the view builds nine of them. */
-    await expect(page.locator("#main section[id^='p-']")).toHaveCount(9);
+       the view builds ten of them — the tenth is the model checking, added
+       when the course gained a way to send answers off the device. */
+    await expect(page.locator("#main section[id^='p-']")).toHaveCount(10);
 
     /* No heading left as its own key: t() returns the key itself when
        nothing is found, so "privacy.voce.h" on screen is what a missing
@@ -95,11 +96,11 @@ test("the buttons inside the notice open the screen where you can act", async ({
   await otworz(page);
   await page.evaluate(() => window.App.go("privacy", {}));
 
-  /* Two sections carry the button: the one about what stays on the device
-     and the one about the voice. Both talk about things the student can
-     change, and both are useless without a way to get there. */
+  /* Three sections carry the button: what stays on the device, the voice,
+     and the model checking. All three talk about something the student can
+     change, and all three are useless without a way to get there. */
   const przyciski = page.locator("#main .js-ustawienia");
-  await expect(przyciski).toHaveCount(2);
+  await expect(przyciski).toHaveCount(3);
 
   await przyciski.first().click();
   await page.waitForFunction(() => window.Router.current.route === "impostazioni");

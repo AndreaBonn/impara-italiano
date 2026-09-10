@@ -18,13 +18,27 @@ l'informativa la dice. Le tre righe scomode sono R6, R9 e R10.
 | R2 | Non c'è nessun sistema di statistiche | `grep -rniE "gtag\|googletagmanager\|google-analytics\|plausible\|matomo\|umami\|posthog\|fathom\|sendBeacon\|mixpanel\|hotjar\|clarity" assets/js/ sw.js index.html 404.html` | nessuna occorrenza in codice eseguibile (l'unico match è la parola `build` dentro un commento di `index.html:40`) |
 | R3 | Il corso non usa cookie | `grep -rn "document.cookie" assets/js/ sw.js index.html` | zero occorrenze |
 | R4 | I caratteri tipografici stanno nel repository, non su un dominio di terzi | `grep -rnE "fonts\.googleapis\|fonts\.gstatic\|typekit\|cdn\." assets/ index.html 404.html sw.js` | due occorrenze, entrambe dentro commenti che raccontano la migrazione (`app.css:19`, `sw.js:141`). Nessun riferimento attivo |
-| R5 | La pagina non fa richieste di rete verso l'esterno | `grep -rnE "fetch\(\|XMLHttpRequest\|new WebSocket\|navigator\.sendBeacon" assets/js/ sw.js` | tre `fetch`, tutte in `sw.js` (`215`, `251`, `263`), tutte su richieste già filtrate per origine |
+| R5 | La pagina non fa richieste verso l'esterno, tranne quelle che lo studente accende da solo | `grep -rnE "fetch\(\|XMLHttpRequest\|new WebSocket\|navigator\.sendBeacon" assets/js/ sw.js` | quattro `fetch`. Tre in `sw.js` (`220`, `256`, `268`), tutte su richieste già filtrate per origine. La quarta è `llm.js:60`, l'unica che esce dal dominio del corso, e parte solo dopo i tre varchi di R11 |
 | R5b | I file dei livelli entrano come `<script>` con percorso relativo del repository | `assets/js/registry.js:79-81` | `s.src = src` dove `src` viene dall'indice del corso: nessun dominio esterno può finirci |
 | R6 | **Il riconoscimento vocale manda la voce fuori dal dispositivo** | `assets/js/audio.js:219` e il commento a `audio.js:227` | `SpeechRecognition` / `webkitSpeechRecognition`: nei browser che la espongono, l'audio va al server del produttore del browser e torna il testo. Riguarda gli esercizi `speak` e le conversazioni |
 | R7 | La voce non parte senza consenso, e il consenso è chiesto una volta e memorizzato | `assets/js/audio.js:240-247`, `assets/js/consent.js:44-71` | il varco è unico, in `Audio2.listen`: senza consenso l'esercizio riceve `no-consent` e non si registra nulla. La risposta finisce in `settings.sttConsent` |
 | R8 | Le registrazioni fatte dallo studente (shadowing) restano nella pagina | `grep -nE "MediaRecorder\|createObjectURL\|fetch" assets/js/recorder.js` | `recorder.js:100-108`: `MediaRecorder` produce un `Blob` e un `createObjectURL`, revocato al tentativo successivo. Nessuna `fetch`, nessuna scrittura su disco, niente sopravvive alla chiusura della scheda |
 | R9 | **Il service worker conserva copie di ciò che il corso scarica** | `sw.js:235-275` | codice e dati in `linguai-shell-<versione>`, registrazioni in `linguai-audio`. Solo risorse della stessa origine: `sw.js:244` esce sulle altre. Sono file del corso, non attività dello studente |
 | R10 | **Il fornitore dell'hosting vede l'indirizzo IP di chi apre il sito** | `package.json` `homepage` + `README.md:17` | il corso è pubblicato su GitHub Pages. È l'unico trattamento del progetto che non avviene sul dispositivo dello studente, e non dipende da una scelta del codice |
+
+## Riscontri per il controllo delle risposte con un modello
+
+Raccolti il 2026-09-10, dopo l'aggiunta del secondo giudice. La riga scomoda qui è R14.
+
+| id | Affermazione | Comando | Esito osservato |
+|---|---|---|---|
+| R11 | Senza chiave, senza consenso o da `file://` non parte nessuna richiesta | `assets/js/llm.js:87-91` (`available`) e `llm.js:190-196` (`judge`) | tre varchi in fila: `available()` esce su `protocol === "file:"` e su `LlmKeys.any()` falso; `judge` non chiama la rete se non dentro `Consent.zZgodaLlm`. Con lo storage vuoto la funzione ritorna prima di costruire il prompt |
+| R12 | Le chiavi stanno in un contenitore separato dal profilo | `grep -n "STORE_KEY =" assets/js/llm-keys.js assets/js/store.js` | `llm-keys.js:30` `linguai.llm.v1`, `store.js:27` `linguai.italiano.v2`: due chiavi distinte, due moduli distinti |
+| R12b | La chiave non entra nel file scaricato con `Esporta` | `grep -c "Core.state\|Store.state" assets/js/llm-keys.js` | zero occorrenze: il modulo delle chiavi non scrive mai nello stato, che è ciò che `Store.exportState` serializza. Pinnato anche da `tests/unit/llm-keys.test.mjs`, che asserisce entrambi i lati (assente dall'export, presente nel contenitore) |
+| R12c | `Azzera` cancella anche le chiavi | `grep -n "LlmKeys.clear" assets/js/core.js assets/js/views-settings.js` | `core.js:256`, dentro `Core.resetState`: il varco è unico e sta nella facciata, non nella vista, quindi vale per ogni futuro punto che azzeri il profilo |
+| R13 | Il corso può contattare soltanto quattro host, e l'elenco lo chiude il browser | `grep -o "connect-src[^;]*" index.html` | `connect-src 'self' https://generativelanguage.googleapis.com https://api.groq.com https://api.openai.com https://api.anthropic.com`. Nessun carattere jolly: un errore nel JavaScript non può allargare l'insieme |
+| R14 | **Escono la frase dello studente e le frasi attese, e nient'altro** | `assets/js/llm-rules.js:106-108` | il corpo del messaggio è costruito da tre campi: `<question>` (la consegna dell'esercizio), `<model_answers>` (le risposte accettate) e `<student_answer>` (ciò che lo studente ha scritto). Nessun identificativo, nessun progresso, nessuna impostazione |
+| R15 | Il consenso è distinto da quello sul riconoscimento vocale ed è revocabile | `grep -n "llmConsent" assets/js/consent.js` | `consent.js:90` legge `settings.llmConsent`, `consent.js:95` lo scrive: campo proprio, accanto a `sttConsent` e indipendente da esso. La revoca è nella scheda delle Impostazioni (`views-settings.js`, `.js-llm-consent`) |
 
 ## Cosa NON risulta, e va detto così
 
@@ -37,6 +51,12 @@ affermare:
   succede dopo, e rimanda alla privacy del browser.
 - **Che GitHub non conservi altro oltre all'IP.** Non è verificabile da qui. L'informativa
   nomina il fatto e rimanda alle condizioni di GitHub Pages.
+- **Che cosa il fornitore del modello faccia della frase dopo averla ricevuta.** Stessa
+  posizione di R6 e per la stessa ragione: fuori dal nostro codice. L'informativa dice dove
+  finisce e rimanda all'informativa del fornitore che lo studente ha scelto.
+- **Che i quattro fornitori siano quelli giusti, o che le loro condizioni siano
+  accettabili.** Non è una domanda a cui il codice possa rispondere. La scelta è dello
+  studente, e l'informativa la presenta come tale.
 
 ## Una revoca che il codice espone e l'interfaccia non offre
 

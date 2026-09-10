@@ -905,7 +905,7 @@ LINGUAI.addUI("pl", {
 
   "privacy.breve.h": "W skrócie",
   "privacy.breve.p1": "Impara l'Italiano nie ma kont ani serwera. Nie pyta cię o imię. Twoje postępy zostają w przeglądarce, której właśnie używasz, i nikt poza tobą ich nie odczyta: nie używamy ciasteczek, nie mamy zainstalowanego żadnego systemu statystyk, strona nie łączy się z żadną obcą witryną.",
-  "privacy.breve.p2": "Są dwie rzeczy, które mimo to wychodzą z twojego urządzenia, i ta informacja istnieje przede wszystkim po to, żeby o nich powiedzieć: twój głos w ćwiczeniach wymowy oraz twój adres IP, który widzi ten, kto udostępnia stronę.",
+  "privacy.breve.p2": "Są trzy rzeczy, które mimo to wychodzą z twojego urządzenia, i ta informacja istnieje przede wszystkim po to, żeby ci je powiedzieć: twój głos, kiedy używasz ćwiczeń z wymową; twoje pisane odpowiedzi, ale tylko jeśli sam włączysz sprawdzanie przez model; oraz twój adres IP, który widzi ten, kto hostuje stronę.",
 
   "privacy.dispositivo.h": "Co zostaje na twoim urządzeniu",
   "privacy.dispositivo.p1": "Kurs zapisuje w pamięci lokalnej przeglądarki (localStorage, pod kluczem linguai.italiano.v2) wszystko, co pozwala wrócić do miejsca, w którym nauka się zatrzymała:",
@@ -923,6 +923,14 @@ LINGUAI.addUI("pl", {
   "privacy.voce.p3": "Dlatego kurs pyta o zgodę przed pierwszym razem, a bez zgody ćwiczenie nie nagrywa niczego. Zgoda obejmuje wszystkie ćwiczenia tego rodzaju i zostaje zapisana w ustawieniach.",
   "privacy.voce.p4": "Możesz ją wycofać, kiedy zechcesz, w Ustawieniach, przy rozpoznawaniu mowy: od tego momentu kurs znowu pyta, zanim cokolwiek nagra.",
   "privacy.voce.p5": "Co producent przeglądarki robi z nagraniem po jego otrzymaniu, nie zależy od nas i nie umiemy tego sprawdzić; odpowiedź jest w informacji o prywatności przeglądarki, której używasz. Inaczej wygląda ćwiczenie z powtarzaniem, w którym słuchasz samego siebie: tam nagranie zostaje w stronie, nigdzie się nie zapisuje i znika przy zamknięciu karty albo przy przejściu do następnego zdania.",
+  "privacy.dispositivo.p4": "Jeśli włączyłeś sprawdzanie odpowiedzi przez model, wklejone klucze też leżą w pamięci przeglądarki, ale w osobnym pojemniku (`linguai.llm.v1`), poza profilem. Powód jest praktyczny: {export} pobiera profil, a plik, który zachęcamy cię trzymać i przenosić między urządzeniami, nie powinien zawierać danych, za które płacisz. Dlatego {reset} kasuje również klucze.",
+  "privacy.modello.h": "Twoje odpowiedzi, jeśli włączysz sprawdzanie przez model",
+  "privacy.modello.p1": "Ta część kursu jest wyłączona, dopóki sam jej nie włączysz, i pozostaje wyłączona dla każdego, kto nic nie zrobi.",
+  "privacy.modello.p2": "Kurs porównuje twoje odpowiedzi ze wzorcowymi litera po literze, a ta metoda myli się w jedną stronę: odrzuca zdania poprawne, ale ułożone inaczej niż wzorzec. Możesz dać jej drugą opinię. W {settings} jest miejsce, gdzie wklejasz klucz do dostawcy modeli, którego już używasz: Google Gemini, Groq, OpenAI albo Anthropic. Od tej chwili — i dopiero wtedy, gdy porównanie na urządzeniu już odrzuciło twoją odpowiedź — kurs wysyła wybranemu dostawcy dwa zdania, twoje i wzorcowe, i dostaje ocenę. Trzy rzeczy, o których warto wiedzieć wcześniej:",
+  "privacy.modello.l1": "klucz zostaje na tym urządzeniu. Nie przechodzi przez nas w żadnym momencie: idzie z twojej przeglądarki do dostawcy i tyle. Nie trafia nawet do pliku, który pobierasz przez {export};",
+  "privacy.modello.l2": "za zapytania płacisz ty, na umowie, którą masz z tym dostawcą. My nie mamy jak ich zobaczyć ani policzyć;",
+  "privacy.modello.l3": "co dostawca robi z twoim zdaniem po jego otrzymaniu, nie zależy od nas i nie możemy tego sprawdzić — dokładnie tak samo jak przy rozpoznawaniu mowy. Odpowiedź jest w polityce prywatności dostawcy, którego wybrałeś.",
+  "privacy.modello.p3": "Także tutaj kurs pyta cię o zgodę, i jest to zgoda osobna od tej na rozpoznawanie mowy: przyjęcie jednej nie jest przyjęciem drugiej, a wycofanie jednej nie wycofuje drugiej. Wycofasz ją, kiedy zechcesz, w {settings}, gdzie możesz też skasować wszystkie klucze naraz. Bez klucza albo bez zgody kurs nie kontaktuje się z żadnym dostawcą i zachowuje się dokładnie tak jak wcześniej.",
 
   "privacy.cache.h": "Kopie, które kurs trzyma, żeby działać bez sieci",
   "privacy.cache.p1": "Kurs działa też bez internetu. Żeby to było możliwe, przeglądarka trzyma kopię plików kursu: kodu, tekstów lekcji i nagrań lektorów. To są nasze pliki, takie same dla wszystkich, i nie ma w nich niczego, co dotyczy ciebie. Znikają, kiedy skasujesz dane strony w przeglądarce.",
@@ -931,7 +939,7 @@ LINGUAI.addUI("pl", {
   "privacy.hosting.p1": "Kurs jest opublikowany na GitHub Pages. Jak przy każdej stronie, ten, kto ją udostępnia, zapisuje przychodzące żądania, a w tych żądaniach jest twój adres IP. To jedyne przetwarzanie, o którym nie decydujemy my, i nie da się go uniknąć: bez kogoś, kto poda stronę, nie ma strony. Co się z tym dzieje dalej, opisują warunki GitHuba.",
 
   "privacy.base.h": "Na jakiej podstawie",
-  "privacy.base.p1": "Dane zapisane w przeglądarce służą do tego, żeby działał kurs, który otwierasz, i powstają z jego używania: na tym opiera się ich przetwarzanie. Rozpoznawanie mowy opiera się natomiast na twojej zgodzie, która jest dobrowolna, o którą pytamy wcześniej i którą możesz wycofać.",
+  "privacy.base.p1": "Dane zapisane w przeglądarce służą do działania kursu, który otworzyłeś, i produkujesz je ty, używając go: na tym opiera się przetwarzanie. Rozpoznawanie mowy i sprawdzanie odpowiedzi przez model opierają się natomiast na twojej zgodzie, która jest dobrowolna, o którą pytamy wcześniej i którą możesz wycofać. To dwie osobne zgody i traktujesz je osobno.",
   "privacy.base.p2": "Nie profilujemy nikogo i nie podejmujemy automatycznych decyzji na twój temat. Nie przekazujemy niczego nikomu: nie ma czego przekazywać.",
 
   "privacy.diritti.h": "Twoje prawa",

@@ -901,7 +901,7 @@ LINGUAI.addUI("es", {
 
   "privacy.breve.h": "En pocas palabras",
   "privacy.breve.p1": "Impara l'Italiano no tiene cuentas ni servidor. No te pregunta el nombre. Tu progreso se queda en el navegador que estás usando, y nadie más que tú puede leerlo: no usamos cookies, no hemos instalado ningún sistema de estadísticas y la página no contacta con ningún otro sitio.",
-  "privacy.breve.p2": "Aun así, hay dos cosas que sí salen de tu dispositivo, y este aviso existe sobre todo para contártelas: tu voz, cuando usas los ejercicios de pronunciación, y tu dirección IP, que ve quien sirve la página.",
+  "privacy.breve.p2": "Hay tres cosas que sí salen de tu dispositivo, y este aviso existe sobre todo para decírtelas: tu voz, cuando usas los ejercicios de pronunciación; tus respuestas escritas, pero solo si activas tú la revisión por un modelo; y tu dirección IP, que ve quien aloja el sitio.",
 
   "privacy.dispositivo.h": "Qué se queda en tu dispositivo",
   "privacy.dispositivo.p1": "El curso guarda en la memoria local del navegador (localStorage, bajo la clave linguai.italiano.v2) todo lo que hace falta para volver al punto donde se quedó el estudio:",
@@ -919,6 +919,14 @@ LINGUAI.addUI("es", {
   "privacy.voce.p3": "Por eso el curso te lo pregunta antes de la primera vez, y sin tu consentimiento el ejercicio no graba nada. El consentimiento vale para todos los ejercicios de ese tipo y queda guardado en los ajustes.",
   "privacy.voce.p4": "Puedes retirarlo cuando quieras, en Ajustes, en el apartado del reconocimiento de voz: a partir de ese momento el curso vuelve a preguntártelo antes de grabar.",
   "privacy.voce.p5": "Qué hace con la grabación quien fabrica el navegador, una vez la ha recibido, no depende de nosotros y no podemos comprobarlo; la respuesta está en el aviso de privacidad del navegador que uses. El ejercicio de repetición, en el que te escuchas a ti mismo, funciona distinto: allí la grabación se queda dentro de la página, no se guarda en ningún sitio y desaparece al cerrar la pestaña o al pasar a la frase siguiente.",
+  "privacy.dispositivo.p4": "Si has activado la revisión de respuestas por un modelo, las claves que pegaste también están en el almacenamiento del navegador, pero en un contenedor aparte (`linguai.llm.v1`) y no dentro del perfil. El motivo es práctico: {export} descarga el perfil, y un archivo que te animamos a guardar y a llevar entre dispositivos no debería contener una credencial que se te factura. Por eso {reset} borra también las claves.",
+  "privacy.modello.h": "Tus respuestas, si activas la revisión por un modelo",
+  "privacy.modello.p1": "Esta parte del curso está apagada hasta que la enciendas tú, y sigue apagada para quien no haga nada.",
+  "privacy.modello.p2": "El curso compara tus respuestas con las esperadas letra por letra, y ese método se equivoca en una sola dirección: rechaza frases correctas pero formuladas de otra manera. Puedes darle una segunda opinión. En {settings} hay un sitio donde pegar la clave de un proveedor de modelos que ya uses: Google Gemini, Groq, OpenAI o Anthropic. A partir de ahí, y solo cuando la comparación en tu dispositivo ya ha rechazado tu respuesta, el curso envía al proveedor que elegiste dos frases, la tuya y la esperada, y recibe un juicio. Tres cosas que conviene saber de antemano:",
+  "privacy.modello.l1": "la clave se queda en este dispositivo. No pasa por nosotros en ningún momento: va de tu navegador al proveedor y nada más. Ni siquiera entra en el archivo que descargas con {export};",
+  "privacy.modello.l2": "las peticiones las pagas tú, con el contrato que tienes con ese proveedor. No tenemos forma de verlas ni de contarlas;",
+  "privacy.modello.l3": "lo que el proveedor haga con tu frase después de recibirla no depende de nosotros y no podemos comprobarlo, igual que con el reconocimiento de voz. La respuesta está en la política de privacidad del proveedor que elegiste.",
+  "privacy.modello.p3": "También aquí el curso te pide el consentimiento, y es un consentimiento distinto del de reconocimiento de voz: aceptar uno no es aceptar el otro, y retirar uno no retira el otro. Lo retiras cuando quieras en {settings}, donde también puedes borrar todas las claves de una vez. Sin clave o sin consentimiento el curso no contacta con ningún proveedor y se comporta exactamente como antes.",
 
   "privacy.cache.h": "Las copias que el curso guarda para funcionar sin conexión",
   "privacy.cache.p1": "El curso funciona también sin internet. Para conseguirlo, el navegador guarda una copia de los archivos del curso: el código, los textos de las lecciones y las grabaciones de los nativos. Son archivos nuestros, iguales para todos, y no contienen nada que tenga que ver contigo. Desaparecen cuando borras los datos del sitio en el navegador.",
@@ -927,7 +935,7 @@ LINGUAI.addUI("es", {
   "privacy.hosting.p1": "El curso está publicado en GitHub Pages. Como en cualquier sitio, quien lo sirve registra las peticiones que recibe, y en esas peticiones va tu dirección IP. Es el único tratamiento que no decidimos nosotros, y no podemos evitarlo: sin alguien que entregue las páginas no hay sitio. Qué pasa a partir de ahí lo describen las condiciones de GitHub.",
 
   "privacy.base.h": "Con qué base",
-  "privacy.base.p1": "Los datos guardados en el navegador están ahí para que funcione el curso que abres, y nacen de que lo uses: en eso se apoya el tratamiento. El reconocimiento de voz se apoya en cambio en tu consentimiento, que es voluntario, que te pedimos antes y que puedes retirar.",
+  "privacy.base.p1": "Los datos guardados en el navegador sirven para que funcione el curso que has abierto, y los produces tú al usarlo: en eso se basa el tratamiento. El reconocimiento de voz y la revisión de respuestas por un modelo se basan en cambio en tu consentimiento, que es opcional, que te pedimos antes y que puedes retirar. Son dos consentimientos distintos y los tratas por separado.",
   "privacy.base.p2": "No hacemos perfiles de nadie y no tomamos decisiones automáticas sobre ti. No pasamos nada a nadie: no hay nada que pasar.",
 
   "privacy.diritti.h": "Tus derechos",

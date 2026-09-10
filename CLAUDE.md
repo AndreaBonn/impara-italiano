@@ -329,6 +329,30 @@ czy plik obrazka leży na dysku i czy ma dokładnie 1200×630. Bramka chodzi w C
 podgląd widać wyłącznie w cudzym oknie rozmowy - żaden test nie robi się od tego czerwony,
 a kurs działa dalej.
 
+## Zabłąkany adres
+
+`404.html` leży w katalogu głównym, bo stamtąd bierze go GitHub Pages. Dwie rzeczy w tym
+pliku wyglądają na przeoczenie i są decyzją.
+
+**Ani jednej ścieżki względnej.** Pages odpowiada tym plikiem na KAŻDY nieznany adres,
+zachowując głębokość, o którą poprosił odwiedzający: `/impara-italiano/a/b/c/nic` dostaje
+te bajty, a przeglądarka nadal uważa, że stoi w `/a/b/c/`. Względny `href` rozwiązałby się
+więc względem katalogu, którego nie ma. Wszystko idzie od korzenia, spod prefiksu z pola
+`homepage` w `package.json`, i tego pilnuje `node scripts/check_404.mjs`.
+
+Cena jest realna: **otwarty przez `scripts/serve.mjs` ten plik przychodzi bez arkusza
+stylów**, bo `/impara-italiano/` nie jest ścieżką w drzewie roboczym. To nie jest usterka.
+Bramka czyta atrybuty zamiast ładować stronę, a `tests/dom/notfound.spec.js` przepisuje
+prefiks przed otwarciem - i dopiero dzięki temu może sprawdzić rzecz najważniejszą:
+że po przepisaniu arkusz NAPRAWDĘ się wczytuje, czyli że ścieżki wskazują na pliki,
+a nie na prawdopodobnie wyglądające napisy.
+
+**Pięć zdań wpisanych w plik, nie w słowniki.** Kurs wybiera język z `localStorage`, a do
+tego potrzebny jest skrypt; ten projekt nie ma ani jednego wbudowanego i to jest własność
+zadeklarowana w komentarzu nad CSP, nie preferencja. Nagłówek stoi po włosku, bo to jedyny
+język, który mają wspólny wszyscy uczniowie. Te pięć wierszy jest poza `parity.mjs`
+i nic nie powie, że rozjechały się z kursem - poza przeczytaniem ich.
+
 ## Silnik adaptacyjny
 
 Dopisany w całości po pierwszym wydaniu kursu. Sedno: kurs zapamiętuje, co uczeń
@@ -382,6 +406,7 @@ node scripts/check_precache.mjs     # czy guska wczyta wszystko, co ładuje inde
 node scripts/check_swversion.mjs [--napraw]   # czy nowe wydanie ma jak się ogłosić
 node scripts/check_ogtags.mjs       # czy wysłany komuś link pokaże podgląd
 node scripts/build_og.mjs           # przerysowuje obrazek podglądu (Chromium z testów DOM)
+node scripts/check_404.mjs          # czy strona 404 działa tam, gdzie jest serwowana
 node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store

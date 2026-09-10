@@ -275,3 +275,74 @@ describe("rewinding to the last choice", () => {
       "a fresh pass through the branch starts without somebody else's mistake");
   });
 });
+
+/* ============================================================
+   Judging apart from acting.
+
+   `answer` is now a facade over three parts, and the split exists so that
+   a slow second opinion can be asked BETWEEN deciding and acting. That is
+   only worth anything if judging really changes nothing: the moment the
+   run records a mistake, promoting the answer afterwards would mean
+   undoing a statistic, and a statistic that can be undone is the bug this
+   arrangement was chosen to avoid.
+   ============================================================ */
+describe("judging without acting", () => {
+  test("judging a wrong answer costs nothing: no mistake, no lost point", () => {
+    const run = Talk().create(prosta());
+    run.advance();
+    run.beginTurn(0);
+
+    const verdict = run.judge("zupełnie nie to");
+    assert.equal(verdict.ok, false);
+
+    /* The turn is untouched: the same answer, committed afterwards, still
+       scores. If judging had recorded the mistake, this point would be
+       gone and nothing on screen would say why. */
+    assert.equal(run.commit("un caffè", verdict.opcja).punkt, true);
+    assert.equal(run.score, 1);
+  });
+
+  test("judging does not move the scene", () => {
+    const run = Talk().create(prosta());
+    run.advance();
+    const before = run.index;
+    run.judge("un caffè");
+    assert.equal(run.index, before, "the scene advanced on a judgement alone");
+    /* Paired: committing does move it. */
+    run.beginTurn(0);
+    run.commit("un caffè", null);
+    assert.notEqual(run.index, before);
+  });
+
+  test("a rejection recorded by hand counts the mistake exactly once", () => {
+    const run = Talk().create(prosta());
+    run.advance();
+    run.beginTurn(0);
+
+    assert.equal(run.reject().pierwszaPomylka, true);
+    assert.equal(run.reject().pierwszaPomylka, false,
+      "ten attempts at one sentence are one mistake, not ten");
+  });
+
+  test("the facade still behaves as the whole course expects", () => {
+    const run = Talk().create(prosta());
+    run.advance();
+    run.beginTurn(0);
+    const out = run.answer("un caffè");
+    assert.equal(out.ok, true);
+    assert.equal(out.punkt, true);
+    assert.equal(out.tekst, "un caffè", "the bubble must hold what the student said");
+  });
+
+  test("at a branch, judging picks the branch the answer is closest to", () => {
+    const run = Talk().create(zRozwidleniem());
+    run.advance();
+    run.beginTurn(0);
+    const verdict = run.judge("un caffè e un dolce");
+    assert.equal(verdict.ok, true);
+    /* Committing on the judged branch goes where that branch goes, rather
+       than to wherever the first matching option led. */
+    run.commit("un caffè e un dolce", verdict.opcja);
+    assert.equal(run.current().it, "Ecco il dolce.");
+  });
+});

@@ -128,19 +128,49 @@
     }
 
     /**
+     * Whether the utterance counts, and on which branch. CHANGES NOTHING.
+     *
+     * Split out of `answer` so that a slower second opinion can be asked
+     * between deciding and acting. The moment `answer` rejects it has
+     * already written `bledny`, and the view has already recorded the
+     * mistake — so a verdict arriving afterwards would have to undo a
+     * statistic, which is the trap that sank every "accept now, revoke
+     * later" version of this. Nothing to undo is cheaper than undoing.
+     *
+     * @returns {{ok:boolean, opcja:object, sim:number}}
+     */
+    function judge(text) {
+      var naj = dopasuj(text);
+      return { ok: naj.wynik >= PROG, opcja: naj.opcja, sim: naj.wynik };
+    }
+
+    /** Passing the turn on the given branch: the point, the bubble, the move. */
+    function commit(text, gal) {
+      var t = biezaca();
+      var punkt = !bledny;
+      if (punkt) punkty++;
+      var wynik = idzDalej(text, gal, (gal && gal.tr) || (t && t.tr));
+      wynik.punkt = punkt;
+      return wynik;
+    }
+
+    /** Failing the turn: the scene stops, the mistake counts once. */
+    function reject() {
+      return { ok: false, pierwszaPomylka: pomylka() };
+    }
+
+    /**
      * The student's answer — from the keyboard or from the microphone.
+     *
+     * A facade over the three above, kept because a dozen call sites and
+     * every test speak this shape. It stays synchronous: whoever wants the
+     * second opinion uses the three parts instead.
+     *
      * @returns {{ok:boolean, tekst?:string, tr?:string, punkt?:boolean, pierwszaPomylka?:boolean}}
      */
     function answer(text) {
-      var t = biezaca();
-      var naj = dopasuj(text);
-      if (naj.wynik < PROG) return { ok: false, pierwszaPomylka: pomylka() };
-
-      var punkt = !bledny;
-      if (punkt) punkty++;
-      var wynik = idzDalej(text, naj.opcja, (naj.opcja && naj.opcja.tr) || (t && t.tr));
-      wynik.punkt = punkt;
-      return wynik;
+      var wynik = judge(text);
+      return wynik.ok ? commit(text, wynik.opcja) : reject();
     }
 
     /**
@@ -203,6 +233,9 @@
       advance: advance,
       beginTurn: beginTurn,
       answer: answer,
+      judge: judge,
+      commit: commit,
+      reject: reject,
       choose: choose,
       reveal: reveal,
       rewind: rewind,

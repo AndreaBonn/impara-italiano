@@ -23,6 +23,12 @@
      ═══════════════════════════════════════════════════════════ */
   var activeLevel = null;
 
+  /* Do ilu ukończonych lekcji kurs sam przypomina o teście poziomującym.
+     Po pięciu lekcjach poziom jest już wybrany, a kto się nudzi, znajdzie
+     test w Ustawieniach; podpowiedź na stałe byłaby szumem na ekranie,
+     na który uczeń patrzy najczęściej. */
+  var LEKCJE_Z_PODPOWIEDZIA = 5;
+
   Views.percorso = function (params) {
     var levels = Core.registry.levels;
     if (!levels.length) { set(empty(t("path.noData"), t("path.noDataHint"))); return; }
@@ -53,9 +59,12 @@
       body = renderResume(level, next) + level.units.map(renderUnit).join("");
     }
 
-    set(strip +
+    set(podpowiedzPoziomu() + strip +
       pageHead(t("path.levelKicker", { code: level.code, cefr: level.cefrLabel }), level.name, level.desc) +
       body);
+
+    var doTestu = el().querySelector(".js-place");
+    if (doTestu) doTestu.addEventListener("click", function () { App.go("piazzamento"); });
 
     el().querySelectorAll(".level-pill").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -70,6 +79,24 @@
       b.addEventListener("click", function () { App.go("lezione", { id: b.getAttribute("data-lesson") }); });
     });
   };
+
+  /**
+   * Pasek „nie wiesz, od którego poziomu zacząć?" nad listą poziomów.
+   *
+   * Test poziomujący istnieje od dawna, ale prowadziła do niego wyłącznie
+   * zakładka Ustawienia — czyli miejsce, którego nikt nowy nie otwiera.
+   * Uczeń, który zna już włoski, zaczynał więc od A1 i przeklikiwał sto
+   * lekcji, o których sam test mówi, że nie są mu potrzebne. Pasek stoi
+   * nad paskiem poziomów, bo to tam pada pytanie „który wybrać".
+   */
+  function podpowiedzPoziomu() {
+    var s = Core.state;
+    if (s.placement || s.stats.lessonsDone >= LEKCJE_Z_PODPOWIEDZIA) return "";
+    return '<div class="list-row" style="margin-bottom:18px">' +
+      '<span class="list-row__main"><b>' + esc(t("place.title")) + "</b>" +
+      "<span>" + esc(t("path.placementNudge")) + "</span></span>" +
+      '<button class="btn btn--ghost btn--sm js-place">' + esc(t("place.start")) + "</button></div>";
+  }
 
   function pickStartLevel() {
     var levels = Core.registry.levels;

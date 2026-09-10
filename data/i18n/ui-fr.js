@@ -70,6 +70,7 @@ LINGUAI.addUI("fr", {
   "path.levelDoneHint": "Passe au niveau suivant, ou reviens aux révisions pour bien ancrer tout ça.",
   "path.continue": "Reprends où tu t'es arrêté",
   "path.start": "C'est parti →",
+  "path.placementNudge": "Tu ne sais pas par quel niveau commencer ? Un test court te le dira.",
 
   /* ---------------- Leçon ---------------- */
   "lesson.back": "← Parcours",

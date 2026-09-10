@@ -125,6 +125,29 @@ test("wejście jest dostępne z ustawień", async ({ page }) => {
   await expect(page).toHaveURL(/#\/piazzamento/);
 });
 
+/* Ustawienia to jedyne wejście, jakie test miał przez długi czas, i jest to
+   zakładka, której nikt nowy nie otwiera. Ścieżka nauki jest tym ekranem,
+   na którym pada pytanie „od którego poziomu", więc podpowiedź stoi tam —
+   ale tylko dopóki wybór jeszcze przed uczniem. */
+test("ścieżka nauki prowadzi do testu, dopóki poziom nie jest wybrany", async ({ page }) => {
+  await page.goto("/index.html#/percorso");
+  await page.waitForFunction(() => window.App && window.Core.registry.levels.length);
+  await expect(page.locator(".js-place")).toBeVisible();
+
+  await page.evaluate(() => {
+    window.Core.state.stats.lessonsDone = 5;
+    window.App.go("percorso");
+  });
+  await expect(page.locator(".js-place")).toHaveCount(0);
+
+  await page.evaluate(() => {
+    window.Core.state.stats.lessonsDone = 0;
+    window.App.go("percorso");
+  });
+  await page.locator(".js-place").click();
+  await expect(page).toHaveURL(/#\/piazzamento/);
+});
+
 test("napisy testu istnieją w pięciu językach", async ({ page }) => {
   await wejscie(page);
   const braki = await page.evaluate(async () => {

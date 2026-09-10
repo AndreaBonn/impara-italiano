@@ -67,6 +67,7 @@ LINGUAI.addUI("pl", {
   "path.levelDoneHint": "Przejdź do kolejnego poziomu albo wróć do powtórek, żeby utrwalić materiał.",
   "path.continue": "Kontynuuj",
   "path.start": "Zaczynamy →",
+  "path.placementNudge": "Nie wiesz, od którego poziomu zacząć? Krótki test to podpowie.",
 
   /* ---------------- Lekcja ---------------- */
   "lesson.back": "← Ścieżka",

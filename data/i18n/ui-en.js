@@ -64,6 +64,7 @@ LINGUAI.addUI("en", {
   "path.levelDoneHint": "Move on to the next level, or go back to review to make it stick.",
   "path.continue": "Pick up where you left off",
   "path.start": "Let's go →",
+  "path.placementNudge": "Not sure which level to start from? A short test will tell you.",
 
   /* ---------------- Lesson ---------------- */
   "lesson.back": "← Path",

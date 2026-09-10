@@ -302,6 +302,33 @@ Odcisk to skrót treści wszystkich plików z `PRECACHE`; dopisuje go
 zwietrzeć. Granica jest świadoma: liczy się powłoka, bo pliki poziomów dociągane są
 w czasie działania i odświeżają się same strategią „najpierw sieć".
 
+## Podgląd linku
+
+Obrazek, który widać po wysłaniu komuś adresu kursu, powstaje ze skryptu, nie z ręki.
+`scripts/og-template.html` maluje kartę arkuszem stylów samego kursu (stamtąd bierze kroje,
+paletę OKLCH i papierowe tło z dwoma poświatami), a `node scripts/build_og.mjs` fotografuje
+ją Chromium, tym samym, którego potrzebują testy DOM. Nowa zależność nie jest potrzebna.
+Ponowne uruchomienie nie rusza gita: ten sam szablon daje ten sam plik co do bajtu, i to
+właśnie czyni `assets/og/cover.png` wynikiem repozytorium, a nie doczepionym do niego
+załącznikiem. Skrypt czeka na `document.fonts.ready` przed zdjęciem: bez tego zdjęcie ściga
+się z czterema plikami woff2 i Chromium maluje zastępczą szeryfową, co nadal wygląda jak
+poprawna karta.
+
+**Adres serwisu stoi w jednym miejscu**: w polu `homepage` w `package.json`. Czytają go
+oba skrypty, więc zmiana domeny to zmiana tej jednej linii plus przebieg `build_og.mjs`.
+
+**Znaczniki `og:*` i `twitter:*` w `index.html` są statyczne i po angielsku**, jako jedyne
+napisy na tej stronie. Robot czytający link nie wykonuje ani jednej linii naszego kodu, więc
+`data-i18n` nigdy by się na nich nie odpaliło: wyglądałoby poprawnie i nie robiło nic.
+Angielski jest tu tym, czego można się spodziewać po kimś, kto kursu jeszcze nie otworzył,
+tą samą decyzją co `"lang": "en-US"` w `manifest.webmanifest`. Nazwa kursu zostaje włoska,
+jak w szynie i w każdym języku interfejsu.
+
+Pilnuje tego `node scripts/check_ogtags.mjs`: czy prefiks znaczników zgadza się z `homepage`,
+czy plik obrazka leży na dysku i czy ma dokładnie 1200×630. Bramka chodzi w CI, bo zepsuty
+podgląd widać wyłącznie w cudzym oknie rozmowy - żaden test nie robi się od tego czerwony,
+a kurs działa dalej.
+
 ## Silnik adaptacyjny
 
 Dopisany w całości po pierwszym wydaniu kursu. Sedno: kurs zapamiętuje, co uczeń
@@ -353,6 +380,8 @@ node scripts/validate.mjs en        # to samo dla nakładki angielskiej
 node scripts/parity.mjs             # czy każdy język ma ten sam kształt co polski
 node scripts/check_precache.mjs     # czy guska wczyta wszystko, co ładuje index.html
 node scripts/check_swversion.mjs [--napraw]   # czy nowe wydanie ma jak się ogłosić
+node scripts/check_ogtags.mjs       # czy wysłany komuś link pokaże podgląd
+node scripts/build_og.mjs           # przerysowuje obrazek podglądu (Chromium z testów DOM)
 node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
@@ -369,10 +398,15 @@ zgłosił się w sekundach, a nie po minucie testów w przeglądarce.
 
 **`npm run lint` nie pilnuje stylu, tylko poprawności.** Reguł kosmetycznych nie
 ma i nie należy ich dodawać: formatowanie tego repozytorium jest spójne bez
-automatu, a lista zakazów zamieniłaby bramkę w szum. Konfiguracja ma cztery
-bloki, bo pliki mają cztery natury (skrypty przeglądarki łączone globalami,
+automatu, a lista zakazów zamieniłaby bramkę w szum. Konfiguracja ma pięć
+bloków, bo pliki mają pięć natur (skrypty przeglądarki łączone globalami,
 guska z `self`, moduły Node w `scripts/`, CommonJS Playwrighta, którego wnętrze
-`page.evaluate` wykonuje się w przeglądarce). Uwaga na środowisko: jeśli wynik
+`page.evaluate` wykonuje się w przeglądarce, i sam `scripts/build_og.mjs`, który
+ma tę samą naturę co poprzedni, a inną składnię: moduł z await na górnym
+poziomie, więc do tamtego bloku nie wchodzi). Piąty blok wymienia jeden plik,
+nie `scripts/**`: pozostałe dziewiętnaście skryptów nigdy nie dotyka
+przeglądarki i rozdanie im `document` zamieniłoby tam literówkę w kod, który
+wygląda na działający. Uwaga na środowisko: jeśli wynik
 mówi `ESLint: 6.4.0`, to odezwał się eslint systemowy, a nie ten z projektu —
 wtedy `./node_modules/.bin/eslint .`.
 

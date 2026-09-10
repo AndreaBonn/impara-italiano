@@ -52,6 +52,12 @@ jobs:
       - name: Can a shared link show a preview
         run: node scripts/check_ogtags.mjs
 
+      # Pages serves 404.html at whatever depth the visitor asked for, so a
+      # relative reference in it resolves against a directory that does not
+      # exist. That misbehaves only at depths nobody tries by hand.
+      - name: Does the not-found page work where it is served
+        run: node scripts/check_404.mjs
+
       # The browser recognises a release by the bytes of sw.js. Without a
       # fresh fingerprint a fix goes out as a release nobody will see, and the
       # student gets no update message.

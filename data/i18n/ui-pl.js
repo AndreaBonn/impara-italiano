@@ -781,6 +781,8 @@ LINGUAI.addUI("pl", {
     other: "Od ostatniej kopii minęło {n} ukończonych lekcji. Kurs trzyma postępy tylko w tej przeglądarce: zapisz kopię, bo wyczyszczonej pamięci nie ma z czego odtworzyć."
   },
   "core.backupSave": "Zapisz kopię",
+  "pwa.updateReady": "Jest nowa wersja kursu. Aktualizacja trwa chwilę i nie rusza postępów ani fiszek.",
+  "pwa.updateNow": "Zaktualizuj",
 
   /* ---------------- Znaczenia czasowników w podpowiedziach koniugatora ---------------- */
   "verb.essere": "być",

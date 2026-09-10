@@ -55,7 +55,9 @@ synteza → cisza); `i18n.js` (napisy interfejsu) obok `i18n-merge.js` (doklejan
 ucznia do treści kursu); `router.js` (adres, wybór widoku, `Views.onLeave`) przed `app.js`
 (pasek, motyw, przełącznik języka, start); `exercises.js` (dyspozytor + wspólne kawałki)
 przed `exercises-choice/text/voice.js` (czternaście typów, wołają `Ex.register`);
-`views.js` (skorupa i `Views.shell`) przed kilkunastoma `views-*.js`, po jednym na ekran.
+`views.js` (skorupa i `Views.shell`) przed kilkunastoma `views-*.js`, po jednym na ekran;
+`pwa-rules.js` (trzy decyzje o zapowiedzi nowej wersji, czyste funkcje) przed `pwa.js`
+(rejestracja, nasłuchy, komunikat, przeładowanie).
 
 Ta sama zasada dotyczy dwóch ekranów, na których przebieg jest czymś więcej niż rysowaniem:
 `talk-run.js` (rozmowa: rozwidlenia, wynik, powrót na ostatni wybór) przed `views-talk.js`,
@@ -238,11 +240,11 @@ Dwie strategie i obie mają powód:
   porównując pamięć z `data/audio-index.js`.
 - **Kod i dane** — network-first, pamięć jako siatka pod spodem. **Nie zamieniaj tego na
   cache-first.** Projekt nie ma kroku budowania, więc pliki nie mają skrótu w nazwie i
-  jedyną wersją jest `SW_VERSION` podnoszone ręcznie. Zapomniane podniesienie przy
-  cache-first zamraża ucznia na starym kodzie: on tego nie zauważy ani nie odkręci,
-  a my nie zobaczymy tego w żadnym logu.
+  jedyną wersją jest `SW_VERSION`. Zapomniane podniesienie przy cache-first zamraża
+  ucznia na starym kodzie: on tego nie zauważy ani nie odkręci, a my nie zobaczymy
+  tego w żadnym logu.
 
-Rejestracja idzie **tylko po http(s)** (`registerWorker()` w `app.js`). Z `file://`
+Rejestracja idzie **tylko po http(s)** (`PWA.register()` w `assets/js/pwa.js`). Z `file://`
 rejestracja rzuca wyjątkiem, a otwieranie kursu z dysku jest wymogiem projektu:
 strażnik stoi na protokole, nie w `try/catch`, i żadna ścieżka kodu nie zakłada, że
 worker istnieje. Zakładka Ustawienia pokazuje, w którym z trzech stanów jest kurs.
@@ -265,6 +267,40 @@ Chodzi w CI. Porównanie idzie w jedną stronę, bo `PRECACHE` z założenia trz
 pliki dociągane w czasie działania (nakładki `ui-*.js`, kroje, ikony).
 Gdyby mimo wszystko czegoś zabrakło, guska nie milczy: nazwa pliku, który nie
 wszedł do pamięci, ląduje w konsoli (DevTools → Application → Service Workers).
+
+### Nowa wersja się ogłasza, a nie wchodzi sama
+
+`pwa-rules.js` (globalna `PwaRules`, trzy czyste decyzje) przed `pwa.js` (rejestracja,
+nasłuchy, komunikat, przeładowanie). Podział jak przy `lemma-morf.js` / `lemma.js`:
+reguła osobno od tego, co dotyka przeglądarki.
+
+- **Nowa wersja czeka w kolejce.** W `install` NIE MA `skipWaiting()`: jedyna droga
+  z „waiting" do „active" prowadzi przez `postMessage({typ:"przejmij"})` ze strony.
+  Przejęcie w tle zostawiłoby otwartą kartę ze starym kodem nad nowymi plikami, a bez
+  kroku budowania nazwy plików się nie zmieniają, więc stary kod sięgałby po adresy,
+  których nowe wydanie już nie zna.
+- **Zapowiedź przy otwarciu kursu**: przy wczytaniu strony i przy powrocie na pierwszy
+  plan (na zainstalowanej aplikacji to jest prawdziwe otwarcie). Pytanie do serwera ma
+  próg 15 minut, żeby przełączanie okien nie zamieniło się w serię żądań.
+- **„Zaktualizuj" działa w dwóch krokach**: prośba do workera, przeładowanie dopiero po
+  `controllerchange`. Przeładowanie w uchwycie kliknięcia otworzyłoby jeszcze raz starą
+  wersję. Krzyżyk zostawia wersję w kolejce i komunikat wraca przy następnym otwarciu.
+- **Pierwsza wizyta milczy.** Pierwszy worker też przechodzi przez „installed", więc bez
+  warunku „strona miała kontrolera w chwili wczytania" uczeń dostawałby prośbę
+  o odświeżenie strony, którą właśnie otworzył. Ten sam warunek trzyma przeładowanie
+  po `clients.claim()`, żeby pierwsze wejście nie migało ekranem.
+- **`updatefound` przychodzi za wcześnie**: worker jest wtedy w „installing", a
+  `registration.waiting` jest puste. Przejście do „installed" widać wyłącznie przez
+  `statechange` NA WORKERZE. Kod czytający `waiting` w tamtym uchwycie wygląda poprawnie
+  i nie pokazuje komunikatu ani razu — pilnuje tego mutacja w `scripts/mutations.mjs`.
+
+**Wersja ma odcisk treści: `v35.<12 hex>`.** Przeglądarka rozpoznaje wydanie po BAJTACH
+`sw.js` i po niczym innym, a poprawka w `core.js` tego pliku nie rusza: dopóki wersja
+była samą liczbą przepisywaną ręcznie, wydanie wychodziło bez szans na ogłoszenie się.
+Odcisk to skrót treści wszystkich plików z `PRECACHE`; dopisuje go
+`node scripts/check_swversion.mjs --napraw`, a bramka w CI (bez flagi) nie pozwala mu
+zwietrzeć. Granica jest świadoma: liczy się powłoka, bo pliki poziomów dociągane są
+w czasie działania i odświeżają się same strategią „najpierw sieć".
 
 ## Silnik adaptacyjny
 
@@ -316,11 +352,12 @@ node scripts/validate.mjs           # duplikaty id, kompletność ćwiczeń, sta
 node scripts/validate.mjs en        # to samo dla nakładki angielskiej
 node scripts/parity.mjs             # czy każdy język ma ten sam kształt co polski
 node scripts/check_precache.mjs     # czy guska wczyta wszystko, co ładuje index.html
+node scripts/check_swversion.mjs [--napraw]   # czy nowe wydanie ma jak się ogłosić
 node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
-npm run test:mutations              # czy testy widzą czerwone (27 mutacji, 2 pliki)
+npm run test:mutations              # czy testy widzą czerwone (34 mutacje, 4 pliki)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
@@ -355,10 +392,10 @@ z poprzedniej wersji tego pliku.
 | Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
-| Klucze interfejsu na język | 738 × 5 języków |
-| Pliki silnika | 62 w `assets/js/`, 11 471 linii |
-| Testy jednostkowe | 793 przebiegi w 32 plikach, zielone |
-| Testy DOM | 221 przebiegów w 28 plikach, zielone |
+| Klucze interfejsu na język | 740 × 5 języków |
+| Pliki silnika | 63 w `assets/js/`, 11 695 linii |
+| Testy jednostkowe | 825 przebiegów w 34 plikach, zielone |
+| Testy DOM | 226 przebiegów w 29 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,8% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
@@ -380,7 +417,7 @@ tabeli. Trzy deklaracje, nie trzy przeoczenia.
 sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
 `assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
-decyzji w silniku (27 mutacji w `cils-html.js` i `lemma-morf.js`) i wymaga, żeby wskazany
+decyzji w silniku (34 mutacje w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js` i `pwa.js`) i wymaga, żeby wskazany
 plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
 puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
 `cils-hint`, `cils.limit` łapiące `cils.limitLabel`.

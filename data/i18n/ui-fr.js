@@ -779,6 +779,8 @@ LINGUAI.addUI("fr", {
     other: "{n} leçons terminées depuis la dernière sauvegarde. Le cours ne garde ta progression que dans ce navigateur : enregistre une copie, car une mémoire effacée ne se reconstitue pas."
   },
   "core.backupSave": "Enregistrer une copie",
+  "pwa.updateReady": "Une nouvelle version du cours est prête. La mise à jour prend un instant et ne touche ni à ta progression ni à tes cartes.",
+  "pwa.updateNow": "Mettre à jour",
 
   /* ---------------- Sens des verbes dans le conjugueur ---------------- */
   "verb.essere": "être",

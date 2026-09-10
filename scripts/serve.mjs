@@ -50,20 +50,51 @@ function resolvePath(url) {
   }
 }
 
-const server = createServer((req, res) => {
-  const path = resolvePath(req.url || "/");
-  if (!path) {
-    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
-    res.end("404");
-    return;
-  }
-  res.writeHead(200, {
-    "Content-Type": TYPES[extname(path).toLowerCase()] || "application/octet-stream",
-    "Cache-Control": "no-store"
-  });
-  createReadStream(path).pipe(res);
-});
+/**
+ * Serwer plików projektu.
+ *
+ * Wystawiony jako funkcja, nie tylko jako polecenie, z jednego powodu:
+ * test dwóch kolejnych wydań (tests/dom/pwa-update.spec.js) potrzebuje
+ * serwera, który odda sw.js o INNEJ treści za drugim razem. Przeglądarka
+ * rozpoznaje nowe wydanie po bajtach tego pliku, więc bez tego nie da się
+ * odtworzyć wydania inaczej niż psując plik w drzewie roboczym.
+ *
+ * @param {object} [opcje]
+ * @param {Record<string, () => string>} [opcje.podmiany]
+ *        adres -> funkcja oddająca treść; pytana przy KAŻDYM żądaniu,
+ *        żeby dało się zmienić wydanie w trakcie testu
+ */
+export function serwer(opcje) {
+  const podmiany = (opcje && opcje.podmiany) || {};
 
-server.listen(PORT, () => {
-  process.stdout.write(`serve: http://localhost:${PORT} (no-store)\n`);
-});
+  return createServer((req, res) => {
+    const adres = (req.url || "/").split("?")[0];
+    const naglowki = { "Cache-Control": "no-store" };
+
+    if (Object.prototype.hasOwnProperty.call(podmiany, adres)) {
+      res.writeHead(200, { ...naglowki, "Content-Type": TYPES[".js"] });
+      res.end(podmiany[adres]());
+      return;
+    }
+
+    const path = resolvePath(adres);
+    if (!path) {
+      res.writeHead(404, { ...naglowki, "Content-Type": "text/plain; charset=utf-8" });
+      res.end("404");
+      return;
+    }
+    res.writeHead(200, {
+      ...naglowki,
+      "Content-Type": TYPES[extname(path).toLowerCase()] || "application/octet-stream"
+    });
+    createReadStream(path).pipe(res);
+  });
+}
+
+/* Nasłuch tylko przy uruchomieniu z wiersza poleceń: zaimportowanie tego
+   pliku w teście nie ma zajmować portu. */
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  serwer().listen(PORT, () => {
+    process.stdout.write(`serve: http://localhost:${PORT} (no-store)\n`);
+  });
+}

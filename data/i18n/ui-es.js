@@ -779,6 +779,8 @@ LINGUAI.addUI("es", {
     other: "Has terminado {n} lecciones desde la última copia. El curso guarda tu progreso solo en este navegador: guarda una copia, porque una memoria borrada no se puede reconstruir."
   },
   "core.backupSave": "Guardar copia",
+  "pwa.updateReady": "Hay una versión nueva del curso. Actualizar tarda un momento y no toca tu progreso ni tus tarjetas.",
+  "pwa.updateNow": "Actualizar",
 
   /* ---------------- Significado de los verbos en el conjugador ---------------- */
   "verb.essere": "ser / estar",

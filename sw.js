@@ -14,18 +14,31 @@
 
    - KOD I DANE — network-first, z pamięci dopiero przy braku sieci.
      Projekt nie ma kroku budowania, więc pliki nie mają skrótu w
-     nazwie i jedyną wersją jest stała niżej, podnoszona ręcznie.
-     Zapomniane podniesienie MUSI kosztować jeden obieg po sieci, a nie
-     zamrożenie ucznia na starym kodzie — czego on nie umie ani
-     zauważyć, ani odkręcić.
+     nazwie i jedyną wersją jest stała niżej. Rozjazd wersji MUSI
+     kosztować jeden obieg po sieci, a nie zamrożenie ucznia na starym
+     kodzie — czego on nie umie ani zauważyć, ani odkręcić.
+
+   Nowa wersja nie przejmuje kursu sama: czeka w kolejce, aż strona
+   (assets/js/pwa.js) zapyta o to ucznia. Szczegóły przy `install`
+   i przy obsłudze `message`.
 
    Cudzych domen nie dotykamy w ogóle: nieprzejrzysta odpowiedź w pamięci
    to rozmiar bez treści i błędy nie do zdiagnozowania. Od kiedy kroje
    pisma leżą w assets/fonts/, żadne żądanie kursu i tak tam nie idzie.
    ============================================================ */
 
-/* Podnieś przy każdej zmianie plików z PRECACHE. */
-var SW_VERSION = "v34";
+/* Wydanie, po kropce odcisk treści plików z PRECACHE.
+   Odcisk DOPISUJE skrypt: `node scripts/check_swversion.mjs --napraw`.
+
+   Przeglądarka rozpoznaje nowe wydanie po BAJTACH tego pliku i po niczym
+   innym. Dopóki wersja była tylko liczbą przepisywaną ręcznie, poprawka
+   w core.js nie zmieniała sw.js ani o bajt: aktualizacja nie miała jak
+   się ogłosić, dopóki ktoś o niej nie pamiętał. Odcisk zmienia się sam
+   przy każdej zmianie treści, a bramka w CI nie pozwala mu zwietrzeć.
+
+   Człowiek podnosi „v35" wtedy, gdy chce nazwać wydanie; odcisk to nie
+   jest jego robota. */
+var SW_VERSION = "v35.9937b68d324d";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Nagrania są adresowane treścią, więc ich pamięć przeżywa zmianę wersji. */
@@ -97,6 +110,7 @@ var PRECACHE = [
   "./assets/js/keys.js",
   "./assets/js/router.js",
   "./assets/js/app.js",
+  "./assets/js/pwa-rules.js",
   "./assets/js/pwa.js",
   "./data/audio-index.js",
   "./data/i18n/ui-pl.js",
@@ -151,8 +165,24 @@ self.addEventListener("install", function (e) {
           });
         }));
       })
-      .then(function () { return self.skipWaiting(); })
   );
+  /* Bez skipWaiting: nowa wersja NIE przejmuje kursu sama z siebie.
+     Przejęcie w tle zostawia otwartą stronę z kodem starego wydania nad
+     plikami nowego — a przy braku kroku budowania nazwy plików się nie
+     zmieniają, więc stary kod sięga po adresy, których nowe wydanie już
+     nie zna. Zamiast tego czekamy w kolejce, a strona ogłasza to uczniowi
+     (assets/js/pwa.js) i pyta go, czy teraz. */
+});
+
+/**
+ * Przejęcie NA ŻĄDANIE STRONY, nigdy z własnej woli.
+ *
+ * Jedyna droga z „waiting" do „active" przed zamknięciem wszystkich kart.
+ * Po drugiej stronie stoi przycisk „Zaktualizuj", a nie zegar ani
+ * heurystyka: to uczeń decyduje, kiedy przerwać sobie lekcję.
+ */
+self.addEventListener("message", function (e) {
+  if (e.data && e.data.typ === "przejmij") self.skipWaiting();
 });
 
 self.addEventListener("activate", function (e) {

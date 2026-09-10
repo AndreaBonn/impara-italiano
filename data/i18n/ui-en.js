@@ -768,6 +768,8 @@ LINGUAI.addUI("en", {
     other: "{n} lessons finished since your last backup. The course keeps your progress in this browser only: save a copy, because cleared storage cannot be rebuilt from anything."
   },
   "core.backupSave": "Save a copy",
+  "pwa.updateReady": "A new version of the course is ready. Updating takes a moment and leaves your progress and cards untouched.",
+  "pwa.updateNow": "Update now",
 
   /* ---------------- Verb meanings in the conjugator datalist ---------------- */
   "verb.essere": "to be",

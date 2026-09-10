@@ -773,6 +773,8 @@ LINGUAI.addUI("de", {
     other: "Seit der letzten Sicherung hast du {n} Lektionen abgeschlossen. Der Kurs bewahrt deinen Fortschritt nur in diesem Browser auf: Speichere eine Kopie, denn ein geleerter Speicher lässt sich aus nichts wiederherstellen."
   },
   "core.backupSave": "Kopie speichern",
+  "pwa.updateReady": "Es gibt eine neue Version des Kurses. Das Update dauert einen Moment und rührt weder deinen Fortschritt noch deine Karten an.",
+  "pwa.updateNow": "Jetzt aktualisieren",
 
   /* ---------------- Verbbedeutungen im Konjugator ---------------- */
   "verb.essere": "sein",

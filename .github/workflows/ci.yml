@@ -46,6 +46,12 @@ jobs:
       - name: Czy guska wczyta to, co ładuje strona
         run: node scripts/check_precache.mjs
 
+      # Przeglądarka rozpoznaje wydanie po bajtach sw.js. Bez świeżego
+      # odcisku poprawka wychodzi jako wydanie, którego nikt nie zobaczy,
+      # i uczeń nie dostaje komunikatu o aktualizacji.
+      - name: Czy nowe wydanie ma jak się ogłosić
+        run: node scripts/check_swversion.mjs
+
       - name: Testy jednostkowe
         run: npm test
 

@@ -12,6 +12,7 @@
     "validate": "node scripts/validate.mjs",
     "parity": "node scripts/parity.mjs",
     "check:precache": "node scripts/check_precache.mjs",
+    "check:swversion": "node scripts/check_swversion.mjs",
     "lint": "eslint .",
     "serve": "node scripts/serve.mjs"
   },

@@ -19,11 +19,18 @@
    - `cils.limit` jako podciąg łapiący `cils.limitLabel`, więc całe
      ostrzeżenie o granicy symulatora mogło zniknąć na zielono.
 
-   ZASIĘG JEST WĄSKI I MA BYĆ ZADEKLAROWANY. Tabela pokrywa dwa pliki
-   (`cils-html.js`, `lemma-morf.js`) z sześćdziesięciu w `assets/js/`.
-   Wynik „27/27" nie znaczy „silnik jest sprawdzony", znaczy „te 27 decyzji
-   jest sprawdzonych". Dopisanie pliku z czystymi funkcjami to dobry moment
-   na dopisanie tu wiersza; obowiązku pokrycia całego silnika nie ma.
+   ZASIĘG JEST WĄSKI I MA BYĆ ZADEKLAROWANY. Tabela pokrywa cztery pliki
+   (`cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`) z sześćdziesięciu
+   z górą w `assets/js/`. Wynik „34/34" nie znaczy „silnik jest sprawdzony",
+   znaczy „te 34 decyzje są sprawdzone". Dopisanie pliku z czystymi funkcjami
+   to dobry moment na dopisanie tu wiersza; obowiązku pokrycia całego silnika
+   nie ma.
+
+   Wyjątkiem od „czystych funkcji" jest `pwa.js`, który czystą funkcją nie
+   jest: siedzi w nim PODPIĘCIE reguł do stanów service workera, a każda
+   pomyłka w tym podpięciu wygląda na ekranie jak brak aktualizacji, czyli
+   jak nic. Cztery mutacje niżej to cztery sposoby, na które ta funkcja
+   przestaje działać bez jednego czerwonego testu.
 
    NIE DOTYKA PLIKÓW W DRZEWIE ROBOCZYM. Zmutowana wersja leży w katalogu
    tymczasowym, a `tests/unit/_harness.mjs` czyta ją przez `LINGUAI_PODMIANA`.
@@ -49,8 +56,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const HTML = "assets/js/cils-html.js";
 const MORF = "assets/js/lemma-morf.js";
+const REG = "assets/js/pwa-rules.js";
+const PWA = "assets/js/pwa.js";
 const T_HTML = "tests/unit/cils-html.test.mjs";
 const T_MORF = "tests/unit/lemma-morf.test.mjs";
+const T_REG = "tests/unit/pwa-rules.test.mjs";
+const T_PWA = "tests/unit/pwa.test.mjs";
 
 /**
  * Mutacje. `z` musi występować w pliku DOKŁADNIE RAZ — przy dwóch
@@ -122,7 +133,32 @@ const MUTACJE = [
     z: "FUNKCYJNE.concat(LICZEBNIKI).forEach", na: "FUNKCYJNE.forEach" },
   { plik: MORF, test: T_MORF, opis: "akcent: toniczny nie jest zdejmowany",
     z: "return w.replace(/[àáèéìíòóùú]/g, function (c) { return AKCENTY[c] || c; });",
-    na: "return w;" }
+    na: "return w;" },
+
+  /* ---- pwa-rules.js: reguły ogłaszania nowej wersji ---- */
+  { plik: REG, test: T_REG, opis: "zapowiedź: pierwsza wizyta jako aktualizacja",
+    z: "return !!stan.czeka && !!stan.kontrolowana;", na: "return !!stan.czeka;" },
+  { plik: REG, test: T_REG, opis: "próg: cofnięty zegar zamyka pytania do skutku",
+    z: "if (teraz < ostatnie) return true;", na: "if (false) return true;" },
+  { plik: REG, test: T_REG, opis: "przeładowanie: bez strażnika pętli",
+    z: "return !!stan.kontrolowana && !stan.juzPrzeladowana;", na: "return !!stan.kontrolowana;" },
+
+  /* ---- pwa.js: podpięcie reguł do stanów przeglądarki ---- */
+
+  /* Usterka pierwsza z brzegu i najtrudniejsza do zobaczenia: w chwili
+     `updatefound` worker jest w „installing", a `waiting` jest puste. */
+  { plik: PWA, test: T_PWA, opis: "zapowiedź czytana w updatefound, nie po instalacji",
+    z: 'reg.addEventListener("updatefound", function () { sledz(reg.installing); });',
+    na: 'reg.addEventListener("updatefound", function () { zapowiedz(reg.waiting); });' },
+  { plik: PWA, test: T_PWA, opis: "aktualizuj przeładowuje od razu, zamiast prosić workera",
+    z: "czeka.postMessage({ typ: \"przejmij\" });", na: "global.location.reload();" },
+  { plik: PWA, test: T_PWA, opis: "aktualizuj prosi workera z chwili zapowiedzi, nie bieżącego",
+    z: "var czeka = (rejestracja && rejestracja.waiting) || worker;", na: "var czeka = worker;" },
+  { plik: PWA, test: T_PWA, opis: "rejestracja tylko na „load”, bez sprawdzenia readyState",
+    z: 'if (global.document.readyState === "complete") register();', na: "if (false) register();" },
+  { plik: PWA, test: T_PWA, opis: "pytanie do serwera bez progu",
+    z: "if (!global.PwaRules.sprawdzac(ostatnieSprawdzenie, teraz)) return false;",
+    na: "if (false) return false;" }
 ];
 
 /* ---------------- Uruchamianie ---------------- */

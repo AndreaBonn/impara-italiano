@@ -71,6 +71,13 @@ export const LEMMA = ["assets/js/lemma-morf.js", "assets/js/lemma.js"];
 export const AUDIO = ["data/audio-index.js", "assets/js/recordings.js", "assets/js/audio.js"];
 
 /**
+ * Zapowiedź nowej wersji: reguły przed skutkami, ta sama kolejność co
+ * w index.html. pwa.js pyta PwaRules o każdą decyzję.
+ * Notice na początku, bo komunikat idzie przez niego.
+ */
+export const PWA = ["assets/js/notice.js", "assets/js/pwa-rules.js", "assets/js/pwa.js"];
+
+/**
  * localStorage z kontrolowanym limitem.
  * Prawdziwa przeglądarka rzuca QuotaExceededError przy przepełnieniu;
  * bez tego nie da się przetestować zachowania save() na pełnym dysku.
@@ -239,16 +246,20 @@ export function glos(name, lang) {
  * argumentów oddaje ustalony moment, a `new Date("2026-03-01T00:00:00")`
  * dalej parsuje napis, bo tego używa liczenie odstępu między dniami.
  *
- * @param {number} [now] moment w milisekundach; bez niego prawdziwy zegar
+ * Moment siedzi w pudełku, a nie w domknięciu, bo bywa PRZESUWANY w trakcie
+ * testu: próg między dwoma pytaniami o nową wersję (pwa-rules.js) mierzy
+ * odstęp, więc test na nim potrzebuje dwóch różnych chwil, a nie jednej.
+ *
+ * @param {{teraz: number|undefined}} zegar pudełko z momentem w ms
  */
-function makeDate(now) {
-  if (now === undefined) return Date;
+function makeDate(zegar) {
+  if (zegar.teraz === undefined) return Date;
   return class Zegar extends Date {
     constructor(...args) {
-      if (args.length === 0) super(now);
+      if (args.length === 0) super(zegar.teraz);
       else super(...args);
     }
-    static now() { return now; }
+    static now() { return zegar.teraz; }
   };
 }
 
@@ -261,26 +272,121 @@ function makeDate(now) {
  * przypisanie hasha odpala tu uchwyty, dokładnie jak w przeglądarce,
  * i dokładnie tak samo NIE odpala ich, gdy adres się nie zmienia.
  */
-function makeWindowEvents() {
+function makeWindowEvents(opts) {
   const uchwyty = {};
   let hash = "";
+  /** Ile razy strona się przeładowała. Przeglądarka po tym wraca do
+      pierwszej linijki; tu liczy się samo wywołanie, bo sprawdzana jest
+      różnica między jednym przeładowaniem a pętlą przeładowań. */
+  const przeladowania = { ile: 0 };
 
   const location = {
+    protocol: (opts && opts.protocol) || "https:",
     get hash() { return hash; },
     set hash(v) {
       const next = String(v);
       if (next === hash) return;
       hash = next;
       (uchwyty.hashchange || []).slice().forEach((fn) => fn({ type: "hashchange" }));
-    }
+    },
+    reload() { przeladowania.ile++; }
   };
 
   return {
     location: location,
+    przeladowania: przeladowania,
     addEventListener(type, fn) { (uchwyty[type] = uchwyty[type] || []).push(fn); },
     /** Poza API przeglądarki: wejście „z zewnątrz", np. z zakładki. */
     idzNa(nowy) { location.hash = nowy; },
+    /** Poza API przeglądarki: zdarzenie okna, np. „load". */
+    odpal(type) { (uchwyty[type] || []).slice().forEach((fn) => fn({ type: type })); },
     uchwyty: uchwyty
+  };
+}
+
+/**
+ * Service worker widziany od strony STRONY, nie workera.
+ *
+ * Cała zapowiedź nowej wersji (assets/js/pwa.js) mieszka w stanach, które
+ * przeglądarka wystawia w określonej kolejności, i to ta kolejność jest
+ * tu treścią. `updatefound` przychodzi, gdy worker jest dopiero w
+ * „installing", a `registration.waiting` jest jeszcze puste — atrapa,
+ * która od razu podaje gotowego workera, przepuszcza kod czytający
+ * `waiting` w uchwycie `updatefound`, czyli dokładnie tę usterkę, przez
+ * którą komunikat nie pojawia się przy pierwszym wczytaniu po wydaniu.
+ *
+ * Dlatego stany przestawia test, po jednym: `znaleziono()` daje
+ * „installing", `zainstalowany()` przesuwa na „installed" i wysyła
+ * `statechange`, `przejmuje()` wysyła `controllerchange`.
+ */
+function makeServiceWorker(opts) {
+  const o = opts || {};
+  const uchwyty = {};                 // zdarzenia na navigator.serviceWorker
+  const log = {
+    rejestracje: [],                  // adresy przekazane do register()
+    wiadomosci: [],                   // ładunki wysłane do czekającego workera
+    /* Numery workerów, które ładunki dostały. Osobno od treści, bo przy
+       dwóch wydaniach pod rząd „co wysłano" jest identyczne, a „do kogo"
+       jest całą różnicą między działającym przyciskiem a martwym. */
+    odbiorcy: [],
+    sprawdzenia: 0,                   // wywołania registration.update()
+    kontroler: o.kontroler === undefined ? null : o.kontroler
+  };
+
+  let numer = 0;
+
+  function worker(state) {
+    const wUchwyty = {};
+    const nr = ++numer;
+    return {
+      state: state,
+      nr: nr,
+      addEventListener(type, fn) { (wUchwyty[type] = wUchwyty[type] || []).push(fn); },
+      postMessage(dane) { log.wiadomosci.push(dane); log.odbiorcy.push(nr); },
+      _odpal(type) { (wUchwyty[type] || []).slice().forEach((fn) => fn({ type: type })); }
+    };
+  }
+
+  const rUchwyty = {};
+  const rejestracja = {
+    installing: null,
+    waiting: o.waiting ? worker("installed") : null,
+    active: worker("activated"),
+    addEventListener(type, fn) { (rUchwyty[type] = rUchwyty[type] || []).push(fn); },
+    update() { log.sprawdzenia++; return o.updateOdrzuca ? Promise.reject(new Error("brak sieci")) : Promise.resolve(); }
+  };
+
+  const api = {
+    get controller() { return log.kontroler; },
+    addEventListener(type, fn) { (uchwyty[type] = uchwyty[type] || []).push(fn); },
+    register(url) {
+      log.rejestracje.push(url);
+      return o.rejestracjaOdrzuca ? Promise.reject(new Error("odmowa")) : Promise.resolve(rejestracja);
+    }
+  };
+
+  return {
+    api, log, rejestracja,
+    /** Przeglądarka znalazła nową wersję: worker jest w „installing". */
+    znaleziono() {
+      rejestracja.installing = worker("installing");
+      (rUchwyty.updatefound || []).slice().forEach((fn) => fn({ type: "updatefound" }));
+      return rejestracja.installing;
+    },
+    /** Instalacja dobiegła końca: „installed" plus statechange na workerze. */
+    zainstalowany() {
+      const w = rejestracja.installing;
+      w.state = "installed";
+      rejestracja.waiting = w;
+      rejestracja.installing = null;
+      w._odpal("statechange");
+      return w;
+    },
+    /** Nowy worker przejął stronę. */
+    przejmuje() {
+      log.kontroler = rejestracja.waiting || rejestracja.active;
+      (uchwyty.controllerchange || []).slice().forEach((fn) => fn({ type: "controllerchange" }));
+    }
   };
 }
 
@@ -292,7 +398,7 @@ function makeWindowEvents() {
  * komunikatem znikającym po trzech sekundach a takim, który zostaje,
  * JEST tym, co się testuje.
  */
-function makeDocument(toasts, notices) {
+function makeDocument(toasts, notices, opcje) {
   function makeEl() {
     const attrs = {};
     const handlers = {};
@@ -366,8 +472,16 @@ function makeDocument(toasts, notices) {
   const naZamowienie = new Map();
   const utworzone = [];
 
+  /* Uchwyty na samym dokumencie. Do niedawna szły do kosza: `visibilitychange`
+     jest jedynym miejscem, w którym kurs pyta o nową wersję po starcie, więc
+     atrapa wyrzucająca uchwyt sprawdzałaby wyłącznie, że rejestracja nie
+     wybucha. */
+  const docUchwyty = {};
+
   const document = {
     documentElement: { setAttribute() {}, getAttribute() { return null; } },
+    readyState: (opcje && opcje.readyState) || "loading",
+    visibilityState: "visible",
     head: head,
     getElementById(id) {
       if (id === "toastStack") return stack;
@@ -379,8 +493,11 @@ function makeDocument(toasts, notices) {
     createElement() { const el = makeEl(); utworzone.push(el); return el; },
     querySelectorAll() { return []; },
     querySelector() { return null; },
-    addEventListener() {}
+    addEventListener(type, fn) { (docUchwyty[type] = docUchwyty[type] || []).push(fn); }
   };
+
+  /** Poza API przeglądarki: zdarzenie dokumentu odpalone z testu. */
+  function odpal(type) { (docUchwyty[type] || []).slice().forEach((fn) => fn({ type: type })); }
 
   function el(id) {
     if (!naZamowienie.has(id)) {
@@ -394,7 +511,7 @@ function makeDocument(toasts, notices) {
 
   return {
     document: document, stack: stack, el: el, utworzone: utworzone,
-    wstrzykniete: wstrzykniete, czekajace: czekajace
+    wstrzykniete: wstrzykniete, czekajace: czekajace, odpal: odpal
   };
 }
 
@@ -419,7 +536,9 @@ export function loadEngine(options) {
   const notices = [];
   const warnings = [];
   const audio = makeAudioEnv(opts);
-  const okno = makeWindowEvents();
+  const okno = makeWindowEvents(opts);
+  const guska = makeServiceWorker(opts);
+  const zegar = { teraz: opts.now };
   /** Co poszło na dysk ucznia: treść pobranych plików i zwolnione uchwyty. */
   const pobrania = { blobs: [], zwolnione: [] };
 
@@ -435,10 +554,14 @@ export function loadEngine(options) {
       log() {}, error() {}, info() {},
       warn(...a) { warnings.push(a.join(" ")); }
     },
-    Intl, JSON, Math, Date: makeDate(opts.now), Object, Array, String, Number, Boolean,
+    Intl, JSON, Math, Date: makeDate(zegar), Object, Array, String, Number, Boolean,
     RegExp, Error, TypeError, Map, Set, BigInt, TextEncoder,
     isNaN, parseInt, parseFloat, encodeURIComponent, decodeURIComponent,
     localStorage: storage,
+    /* Tyle nawigatora, ile dotyka pwa.js: obecność klucza „serviceWorker"
+       jest u niego pierwszym strażnikiem, więc `brakGuski` musi dawać
+       obiekt BEZ tego pola, a nie pole z wartością null. */
+    navigator: opts.brakGuski ? {} : { serviceWorker: guska.api },
     setTimeout: clock.setTimeout,
     clearTimeout: clock.clearTimeout,
     /**
@@ -480,7 +603,7 @@ export function loadEngine(options) {
   sandbox.window = sandbox;
   sandbox.self = sandbox;
   sandbox.globalThis = sandbox;
-  const dom = makeDocument(toasts, notices);
+  const dom = makeDocument(toasts, notices, opts);
   sandbox.document = dom.document;
 
   vm.createContext(sandbox);
@@ -497,6 +620,10 @@ export function loadEngine(options) {
     get utworzone() { return dom.utworzone; },
     /** Adres strony; przypisanie hasha odpala hashchange jak w przeglądarce. */
     okno: okno,
+    /** Service worker od strony strony: rejestracja, stany, przejęcie kontroli. */
+    guska: guska,
+    /** Zdarzenie dokumentu z testu, np. `box.wDokumencie("visibilitychange")`. */
+    wDokumencie(type) { dom.odpal(type); return box; },
     /** Co nadal wisi na ekranie po upływie czasu — bez znikających toastów. */
     visible() { return dom.stack.children.map(c => c.textContent); },
     /** Wykonuje kolejny plik silnika w tej samej piaskownicy. */
@@ -509,6 +636,12 @@ export function loadEngine(options) {
     },
     /** Zapis jest zdebouncowany: bez tego nic nie trafia do localStorage. */
     flush() { clock.flush(); return box; },
+    /** Przesuwa ustalony moment. Wymaga `now` przy tworzeniu piaskownicy. */
+    przesunZegar(ms) {
+      if (zegar.teraz === undefined) throw new Error("przesunZegar: piaskownica bez `now`");
+      zegar.teraz += ms;
+      return box;
+    },
     /** Stan tak, jak leży w localStorage — nie w pamięci. */
     stored(key) {
       const raw = storage.getItem(key || "linguai.italiano.v2");

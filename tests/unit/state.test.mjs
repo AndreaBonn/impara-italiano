@@ -1,23 +1,23 @@
 /* ============================================================
-   Siatka bezpieczeństwa pod stan.
+   A safety net under the state.
 
-   Te testy opisują zachowanie, które JEST, nie to, które ma być.
-   F0 zmienia merge(), importState() i save() — czyli trzy funkcje,
-   przez które przechodzą postępy każdego, kto już używa aplikacji.
-   Zmiana, która przewróci coś tutaj, przewróci cudzy zapis.
+   These tests describe the behaviour that IS, not the one that ought to be.
+   F0 changes merge(), importState() and save() - the three functions every
+   existing user's progress passes through. A change that knocks something
+   over here knocks over somebody's saved data.
 
-   Czego tu celowo nie ma: zanieczyszczenia prototypu przez merge().
-   To jest defekt, nie zachowanie do utrwalenia; jego test powstaje
-   razem z poprawką w F0 (T005) i ma być najpierw czerwony.
+   What is deliberately absent: prototype pollution through merge(). That is a
+   defect, not behaviour to pin down; its test is written together with the
+   fix in F0 (T005) and has to be red first.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { loadEngine, makeStorage, probePrototype, CORE } from "./_harness.mjs";
 
 /**
- * Obiekty z piaskownicy mają prototyp z innego realm, więc deepEqual
- * w trybie strict odrzuca nawet {} wobec {}. Tam, gdzie chodzi o samą
- * zawartość, pytamy o klucze zamiast porównywać tożsamość prototypu.
+ * Objects from the sandbox have a prototype from another realm, so a strict
+ * deepEqual rejects even {} against {}. Where only the content matters, we ask
+ * for the keys instead of comparing prototype identity.
  */
 function pusty(o, opis) {
   assert.equal(Object.keys(o).length, 0, opis);
@@ -27,54 +27,54 @@ const KEY = "linguai.italiano.v2";
 const KEY_V1 = "linguai.italiano.pl.v1";
 const SCHEMA = 2;
 
-/** Zapis w kształcie, jaki naprawdę leży w localStorage. */
+/** A saved state in the shape that really sits in localStorage. */
 function saved(over) {
   return JSON.stringify(Object.assign({ schema: SCHEMA }, over));
 }
 
 describe("merge", () => {
-  test("schodzi w głąb obiektów zamiast podmieniać całe gałęzie", () => {
+  test("it descends into objects instead of replacing whole branches", () => {
     const box = loadEngine({ seed: { [KEY]: saved({ settings: { rate: 0.8 } }) } });
     box.Core.load();
     const s = box.Core.state;
-    assert.equal(s.settings.rate, 0.8, "wartość z zapisu");
-    assert.equal(s.settings.lang, "pl", "reszta gałęzi z domyślnych");
+    assert.equal(s.settings.rate, 0.8, "the value from the saved state");
+    assert.equal(s.settings.lang, "pl", "the rest of the branch from the defaults");
     assert.equal(s.settings.autoplay, true);
   });
 
-  test("tablica z zapisu zastępuje domyślną, nie dokleja się do niej", () => {
+  test("an array from the saved state replaces the default, it does not append to it", () => {
     const box = loadEngine({ seed: { [KEY]: saved({ srs: {}, lessons: {}, tagList: ["a"] }) } });
     box.Core.load();
     assert.deepEqual(box.Core.state.tagList, ["a"]);
   });
 
-  test("pole nieobecne w zapisie przychodzi z domyślnych", () => {
+  test("a field absent from the saved state comes from the defaults", () => {
     const box = loadEngine({ seed: { [KEY]: saved({ xp: 40 }) } });
     box.Core.load();
     assert.equal(box.Core.state.xp, 40);
-    assert.equal(box.Core.state.minutes, 0, "brakujące pole dostaje wartość domyślną");
-    pusty(box.Core.state.stats.days, "statystyki dzienne startują puste");
+    assert.equal(box.Core.state.minutes, 0, "a missing field gets the default value");
+    pusty(box.Core.state.stats.days, "the daily stats start empty");
   });
 });
 
-describe("kontenery silnika adaptacyjnego", () => {
-  /* `gsrs` był tu do F1. Zadeklarowany przy silniku adaptacyjnym, nigdy
-     przez nikogo nie zapisany ani nie odczytany — jedynym dotknięciem był
-     test niżej, który wpisywał go ręcznie. Usunięty razem z kontenerem. */
+describe("the containers of the adaptive engine", () => {
+  /* `gsrs` was here until F1. Declared along with the adaptive engine, never
+     written or read by anybody - the only thing touching it was the test
+     below, which filled it in by hand. Removed together with the container. */
   const NOWE = ["errors", "drills", "session", "writing"];
 
-  test("profil zapisany przed zmianą dostaje je puste, bez migracji", () => {
+  test("a profile saved before the change gets them empty, with no migration", () => {
     const box = loadEngine({ seed: { [KEY]: saved({ xp: 40, lessons: { "a1-u01-l1": { done: true } } }) } });
     box.Core.load();
 
-    assert.equal(box.Core.state.schema, SCHEMA, "numer schematu się nie rusza");
-    assert.equal(box.Core.state.xp, 40, "postępy przechodzą nietknięte");
+    assert.equal(box.Core.state.schema, SCHEMA, "the schema number does not move");
+    assert.equal(box.Core.state.xp, 40, "the progress passes through untouched");
     assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true);
-    NOWE.forEach(k => pusty(box.Core.state[k], `${k} startuje pusty`));
-    assert.equal(box.Core.state.placement, null, "brak testu poziomującego to null, nie obiekt");
+    NOWE.forEach(k => pusty(box.Core.state[k], `${k} starts empty`));
+    assert.equal(box.Core.state.placement, null, "no placement test means null, not an object");
   });
 
-  test("zawartość kontenerów przeżywa zapis i odczyt", () => {
+  test("the contents of the containers survive a save and a load", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.state.errors["klucz-1"] = { kind: "authored", tag: "g-presente", lapses: 1 };
@@ -87,38 +87,38 @@ describe("kontenery silnika adaptacyjnego", () => {
     assert.equal(zapis.drills["prep-art"].podejscia, 3);
   });
 
-  test("czyszczenie postępów opróżnia je razem z resztą", () => {
+  test("clearing the progress empties them along with the rest", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.state.errors["klucz-1"] = { kind: "authored" };
     box.Core.resetState();
-    pusty(box.Core.state.errors, "quaderno errori znika razem z postępami");
+    pusty(box.Core.state.errors, "the quaderno errori goes away with the progress");
   });
 });
 
 describe("load", () => {
-  test("pusty magazyn zostawia stan domyślny", () => {
+  test("empty storage leaves the default state", () => {
     const box = loadEngine();
     box.Core.load();
     assert.equal(box.Core.state.schema, SCHEMA);
     assert.equal(box.Core.state.xp, 0);
   });
 
-  test("inna wersja schematu jest ignorowana, stan zostaje domyślny", () => {
+  test("a different schema version is ignored, the state stays default", () => {
     const box = loadEngine({ seed: { [KEY]: JSON.stringify({ schema: 99, xp: 999 }) } });
     box.Core.load();
-    assert.equal(box.Core.state.xp, 0, "zapis z przyszłości nie wchodzi");
+    assert.equal(box.Core.state.xp, 0, "a save from the future does not come in");
   });
 
-  test("uszkodzony JSON nie wywraca startu", () => {
+  test("broken JSON does not break the startup", () => {
     const box = loadEngine({ seed: { [KEY]: "{ to nie jest json" } });
     assert.doesNotThrow(() => box.Core.load());
     assert.equal(box.Core.state.xp, 0);
   });
 });
 
-describe("migracja v1 → v2", () => {
-  test("fiszka przeklucza się na sam włoski, tłumaczenie schodzi do tr.pl", () => {
+describe("the v1 -> v2 migration", () => {
+  test("a card is rekeyed to Italian alone, the translation moves down into tr.pl", () => {
     const v1 = {
       schema: 1,
       srs: { "andare|iść": { it: "andare", pl: "iść", ef: 2.5, reps: 3, interval: 8, due: 111, lapses: 0 } },
@@ -130,11 +130,11 @@ describe("migracja v1 → v2", () => {
     assert.deepEqual(Object.keys(srs), ["andare"]);
     assert.equal(srs.andare.tr.pl, "iść");
     assert.equal(srs.andare.interval, 8);
-    assert.equal(box.Core.state.xp, 120, "postępy przechodzą bez zerowania");
+    assert.equal(box.Core.state.xp, 120, "the progress passes through without being reset");
     assert.equal(box.Core.state.schema, SCHEMA);
   });
 
-  test("dwie fiszki v1 o tym samym włoskim schodzą się w pilniejszą", () => {
+  test("two v1 cards with the same Italian merge into the more urgent one", () => {
     const v1 = {
       schema: 1,
       srs: {
@@ -145,11 +145,11 @@ describe("migracja v1 → v2", () => {
     const box = loadEngine({ seed: { [KEY_V1]: JSON.stringify(v1) } });
     box.Core.load();
     assert.equal(Object.keys(box.Core.state.srs).length, 1);
-    assert.equal(box.Core.state.srs.stare.due, 100, "zostaje ta z bliższym terminem");
+    assert.equal(box.Core.state.srs.stare.due, 100, "the one with the nearer due date stays");
     assert.equal(box.Core.state.srs.stare.lapses, 2);
   });
 
-  test("v1 istniał tylko po polsku, więc język wyjaśnień wraca na pl", () => {
+  test("v1 existed in Polish only, so the explanation language goes back to pl", () => {
     const box = loadEngine({ seed: { [KEY_V1]: JSON.stringify({ schema: 1, srs: {}, settings: { lang: "de" } }) } });
     box.Core.load();
     assert.equal(box.Core.state.settings.lang, "pl");
@@ -157,26 +157,26 @@ describe("migracja v1 → v2", () => {
 });
 
 describe("save", () => {
-  test("jest zdebouncowane: bez upływu czasu nic nie leży w magazynie", () => {
+  test("it is debounced: with no time passing nothing sits in storage", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.state.xp = 7;
     box.Core.save();
-    assert.equal(box.storage.getItem(KEY), null, "zapis nie poszedł natychmiast");
+    assert.equal(box.storage.getItem(KEY), null, "the save did not go out immediately");
     box.flush();
     assert.equal(box.stored(KEY).xp, 7);
   });
 
-  test("wielokrotne wywołanie w jednym oknie zapisuje raz", () => {
+  test("several calls within one window save once", () => {
     const box = loadEngine();
     box.Core.load();
     for (let i = 0; i < 5; i++) { box.Core.state.xp = i; box.Core.save(); }
-    assert.equal(box.clock.size, 1, "jeden timer, nie pięć");
+    assert.equal(box.clock.size, 1, "one timer, not five");
     box.flush();
     assert.equal(box.stored(KEY).xp, 4);
   });
 
-  test("pełna kwota nie wyrzuca wyjątku, tylko komunikat", () => {
+  test("a full quota throws no exception, it shows a message", () => {
     const box = loadEngine({ storage: makeStorage({ limit: 50 }) });
     box.Core.load();
     box.Core.state.xp = 1;
@@ -185,20 +185,20 @@ describe("save", () => {
     assert.deepEqual(box.toasts, ["core.saveBlocked"]);
   });
 
-  test("zwykły toast znika sam", () => {
+  test("an ordinary toast disappears by itself", () => {
     const box = loadEngine();
     box.Core.load();
-    box.Core.toast("wiadomość");
+    box.Core.toast("a message");
     box.flush();
-    assert.deepEqual(box.visible(), [], "toast nie zostaje na ekranie");
+    assert.deepEqual(box.visible(), [], "the toast does not stay on screen");
   });
 });
 
-/* R6. Przed F0 przy pełnej pamięci nie zapisywało się NIC: cały stan
-   siedzi pod jednym kluczem, więc razem z fiszkami przepadały postępy
-   lekcji, czyli jedyna rzecz, której uczeń nie odtworzy. */
-describe("pełna pamięć: co ustępuje miejsca", () => {
-  /** Zapis, w którym karty błędów zajmują dużo, a postępy mało. */
+/* R6. Before F0, with storage full NOTHING was saved: the whole state sits
+   under one key, so the lesson progress - the one thing a student cannot
+   reproduce - was lost along with the cards. */
+describe("full storage: what gives way", () => {
+  /** A state where the mistake cards take a lot of room and the progress little. */
   function zapchany(limit) {
     const box = loadEngine({ storage: makeStorage({ limit: limit }) });
     box.Core.load();
@@ -214,19 +214,19 @@ describe("pełna pamięć: co ustępuje miejsca", () => {
     return box;
   }
 
-  test("postępy lekcji zostają zapisane, karty błędów ustępują", () => {
+  test("the lesson progress gets saved, the mistake cards give way", () => {
     const box = zapchany(4000);
     box.Core.save();
     box.flush();
 
     const zapis = box.stored(KEY);
-    assert.notEqual(zapis, null, "zapis doszedł do skutku mimo braku miejsca");
-    assert.equal(zapis.lessons["a1-u01-l1"].done, true, "postęp lekcji przetrwał");
+    assert.notEqual(zapis, null, "the save went through despite the lack of room");
+    assert.equal(zapis.lessons["a1-u01-l1"].done, true, "the lesson progress survived");
     assert.equal(zapis.stats.lessonsDone, 1);
-    assert.ok(Object.keys(zapis.errors).length < 40, "część kart błędów wyrzucona");
+    assert.ok(Object.keys(zapis.errors).length < 40, "some of the mistake cards were dropped");
   });
 
-  test("wyrzucane są najpierw karty najlepiej opanowane", () => {
+  test("the best-known cards are dropped first", () => {
     const box = zapchany(4000);
     box.Core.state.errors["swieza"] = {
       kind: "authored", tag: "g-presente", ef: 2.5, reps: 0, interval: 0,
@@ -236,13 +236,13 @@ describe("pełna pamięć: co ustępuje miejsca", () => {
     box.flush();
 
     const zostale = box.stored(KEY).errors;
-    assert.ok(zostale["swieza"], "karta z trzema pomyłkami i bez serii zostaje");
+    assert.ok(zostale["swieza"], "a card with three lapses and no streak stays");
   });
 
-  test("liczniki drilli ustępują przed wypracowaniami: wracają same przy dalszej nauce", () => {
-    /* Kolejność potarcia jest listą tego, co uczeń odzyska bez wysiłku.
-       Licznik podejść do generatora odbuduje się przy pierwszym treningu;
-       wypracowanie to zdania, których nie napisze nikt inny. */
+  test("the drill counters give way before the essays: they come back by themselves with further study", () => {
+    /* The order of the sweep is a list of what the student gets back without
+       effort. The attempt counter of a generator rebuilds itself on the first
+       practice run; an essay is sentences nobody else will write. */
     const box = zapchany(4000);
     for (let i = 0; i < 30; i++) box.Core.state.drills["temat-" + i] = { podejscia: i, wypelniacz: "x".repeat(200) };
     box.Core.state.writing["w1"] = { text: "Ciao, sono a Roma.", ts: 1, words: 4, found: 1, total: 1 };
@@ -250,28 +250,28 @@ describe("pełna pamięć: co ustępuje miejsca", () => {
     box.flush();
 
     const zapis = box.stored(KEY);
-    assert.ok(Object.keys(zapis.drills).length < 30, "część liczników wyrzucona");
-    assert.equal(zapis.writing["w1"].text, "Ciao, sono a Roma.", "wypracowanie zostaje nietknięte");
+    assert.ok(Object.keys(zapis.drills).length < 30, "some of the counters were dropped");
+    assert.equal(zapis.writing["w1"].text, "Ciao, sono a Roma.", "the essay stays untouched");
   });
 
-  test("komunikat o utracie danych zostaje na ekranie, nie znika po chwili", () => {
+  test("the data-loss message stays on screen, it does not vanish after a moment", () => {
     const box = zapchany(4000);
     box.Core.save();
     box.flush();
-    assert.ok(box.visible().length > 0, "ostrzeżenie nadal widoczne po upływie czasu");
+    assert.ok(box.visible().length > 0, "the warning is still visible once time has passed");
   });
 
-  test("gdy nie ma już czego wyrzucić, uczeń dowiaduje się o tym wprost", () => {
+  test("when there is nothing left to drop, the student is told plainly", () => {
     const box = loadEngine({ storage: makeStorage({ limit: 20 }) });
     box.Core.load();
     box.Core.recordLesson("a1-u01-l1", 9, 10, 60);
     box.flush();
 
-    assert.equal(box.storage.getItem(KEY), null, "naprawdę się nie zmieściło");
-    assert.ok(box.visible().length > 0, "i jest o tym trwały komunikat, nie znikający toast");
+    assert.equal(box.storage.getItem(KEY), null, "it really did not fit");
+    assert.ok(box.visible().length > 0, "and there is a sticky message about it, not a vanishing toast");
   });
 
-  test("czyszczenie i tak nie rusza ustawień ani passy", () => {
+  test("the sweep touches neither the settings nor the streak", () => {
     const box = zapchany(4000);
     box.Core.state.streak = { count: 12, lastDay: "2026-09-09", best: 12 };
     box.Core.state.settings.lang = "de";
@@ -285,7 +285,7 @@ describe("pełna pamięć: co ustępuje miejsca", () => {
 });
 
 describe("importState / exportState", () => {
-  test("obieg tam i z powrotem zachowuje postępy", () => {
+  test("a round trip preserves the progress", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.recordLesson("a1-u01-l1", 8, 10, 30);
@@ -298,24 +298,24 @@ describe("importState / exportState", () => {
     assert.equal(drugi.Core.state.stats.lessonsDone, 1);
   });
 
-  test("plik z przyszłości jest odrzucany", () => {
+  test("a file from the future is rejected", () => {
     const box = loadEngine();
     box.Core.load();
     assert.throws(() => box.Core.importState(JSON.stringify({ schema: 99, xp: 1 })));
   });
 
-  test("plik bez pola schema jest odrzucany", () => {
+  test("a file with no schema field is rejected", () => {
     const box = loadEngine();
     box.Core.load();
     assert.throws(() => box.Core.importState(JSON.stringify({ xp: 1 })));
     assert.throws(() => box.Core.importState(JSON.stringify({ schema: "2", xp: 1 })));
   });
 
-  /* Zmiana wobec stanu sprzed F0: wcześniej odrzucany był KAŻDY plik
-     o innym numerze, także starszy. To zamykało drogę powrotu z kopii
-     zapasowej zrobionej przed migracją i sprawiało, że polityka „nie
-     podnosimy schematu" była odroczeniem, a nie polityką. */
-  test("starszy plik wchodzi i migruje po drodze", () => {
+  /* A change from the state before F0: previously EVERY file with a different
+     number was rejected, including older ones. That closed the way back from a
+     backup made before a migration and turned the "we do not bump the schema"
+     policy into a postponement rather than a policy. */
+  test("an older file comes in and migrates on the way", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.importState(JSON.stringify({
@@ -324,31 +324,31 @@ describe("importState / exportState", () => {
       srs: { "andare|iść": { it: "andare", pl: "iść", ef: 2.5, reps: 2, interval: 3, due: 42, lapses: 0 } }
     }));
     assert.equal(box.Core.state.xp, 55);
-    assert.deepEqual(Object.keys(box.Core.state.srs), ["andare"], "fiszka przekluczona na sam włoski");
+    assert.deepEqual(Object.keys(box.Core.state.srs), ["andare"], "the card is rekeyed to Italian alone");
     assert.equal(box.Core.state.srs.andare.tr.pl, "iść");
     assert.equal(box.Core.state.schema, SCHEMA);
   });
 
-  test("plik o złym kształcie odpada na wejściu, nie trzy ekrany dalej", () => {
+  test("a file of the wrong shape is rejected at the door, not three screens later", () => {
     const box = loadEngine();
     box.Core.load();
     assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, lessons: "ciao" })));
     assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, srs: [1, 2, 3] })));
-    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: "dużo" })));
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: "a lot" })));
     assert.throws(() => box.Core.importState(JSON.stringify([1, 2, 3])));
-    assert.throws(() => box.Core.importState('"tekst"'));
+    assert.throws(() => box.Core.importState('"text"'));
   });
 
-  test("odrzucony plik nie zostawia po sobie połowy stanu", () => {
+  test("a rejected file does not leave half a state behind", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.recordLesson("a1-u01-l1", 10, 10, 20);
     assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: 999, lessons: "ciao" })));
-    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "poprzedni stan nietknięty");
+    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "the previous state is untouched");
     assert.notEqual(box.Core.state.xp, 999);
   });
 
-  test("plik ponad rozmiar sensownego zapisu odpada przed parsowaniem", () => {
+  test("a file larger than any sensible save is rejected before parsing", () => {
     const box = loadEngine();
     box.Core.load();
     const ogromny = '{"schema":2,"note":"' + "x".repeat(9 * 1024 * 1024) + '"}';
@@ -357,30 +357,30 @@ describe("importState / exportState", () => {
 });
 
 describe("reset", () => {
-  test("kasuje postępy, zostawia ustawienia", () => {
+  test("it clears the progress and leaves the settings", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.state.settings.lang = "de";
     box.Core.state.settings.theme = "dark";
     box.Core.recordLesson("a1-u01-l1", 10, 10, 20);
     box.Core.resetState();
-    pusty(box.Core.state.lessons, "postępy lekcji wyczyszczone");
-    assert.equal(box.Core.state.settings.lang, "de", "język wyjaśnień przeżywa czyszczenie");
+    pusty(box.Core.state.lessons, "the lesson progress is cleared");
+    assert.equal(box.Core.state.settings.lang, "de", "the explanation language survives the clearing");
     assert.equal(box.Core.state.settings.theme, "dark");
   });
 });
 
-/* Od F1 `Core.schedule` obsługuje WYŁĄCZNIE quaderno błędów: talia
-   słownictwa poszła na FSRS (gradeCard niżej). Te trzy asercje opisują to
-   samo zachowanie, co przed zmianą, tylko wołają je tam, gdzie ono teraz
-   mieszka — przez `schedule` na luźnej karcie, jak robi to errors.js. */
-describe("harmonogram SM-2 (od F1 tylko quaderno błędów)", () => {
-  /** Karta w kształcie, jaki zakłada errors.js. */
+/* Since F1 `Core.schedule` serves ONLY the mistake notebook: the vocabulary
+   deck moved to FSRS (gradeCard below). These three assertions describe the
+   same behaviour as before the change, they just call it where it now lives -
+   through `schedule` on a loose card, the way errors.js does. */
+describe("the SM-2 schedule (since F1 the mistake notebook only)", () => {
+  /** A card in the shape errors.js assumes. */
   function karta() {
     return { ef: 2.5, reps: 0, interval: 0, due: Date.now(), lapses: 0 };
   }
 
-  test("dobra odpowiedź wydłuża odstęp: 1 dzień, 3 dni, potem × ef", () => {
+  test("a correct answer lengthens the interval: 1 day, 3 days, then x ef", () => {
     const box = loadEngine();
     box.Core.load();
     const c = karta();
@@ -388,10 +388,10 @@ describe("harmonogram SM-2 (od F1 tylko quaderno błędów)", () => {
     assert.equal(box.Core.schedule(c, 5).interval, 1);
     assert.equal(box.Core.schedule(c, 5).interval, 3);
     const trzecia = box.Core.schedule(c, 5);
-    assert.ok(trzecia.interval > 3, `trzeci odstęp ${trzecia.interval} ma rosnąć`);
+    assert.ok(trzecia.interval > 3, `the third interval ${trzecia.interval} has to grow`);
   });
 
-  test("zła odpowiedź zeruje serię i wraca w tej samej sesji", () => {
+  test("a wrong answer resets the streak and comes back in the same session", () => {
     const box = loadEngine();
     box.Core.load();
     const c = karta();
@@ -401,10 +401,10 @@ describe("harmonogram SM-2 (od F1 tylko quaderno błędów)", () => {
     assert.equal(c.reps, 0);
     assert.equal(c.interval, 0);
     assert.equal(c.lapses, 1);
-    assert.ok(c.due - Date.now() <= 10 * 60000 + 50, "termin w ciągu dziesięciu minut");
+    assert.ok(c.due - Date.now() <= 10 * 60000 + 50, "due within ten minutes");
   });
 
-  test("ef nie schodzi poniżej 1.3 mimo pasma złych odpowiedzi", () => {
+  test("ef does not drop below 1.3 despite a run of wrong answers", () => {
     const box = loadEngine();
     box.Core.load();
     const c = karta();
@@ -412,7 +412,7 @@ describe("harmonogram SM-2 (od F1 tylko quaderno błędów)", () => {
     assert.ok(c.ef >= 1.3);
   });
 
-  test("kluczem fiszki jest sam włoski, bez tłumaczenia", () => {
+  test("the card key is Italian alone, with no translation", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.addCard("il pane", "chleb", "a1-u01-l1");
@@ -420,51 +420,51 @@ describe("harmonogram SM-2 (od F1 tylko quaderno błędów)", () => {
   });
 });
 
-describe("postęp lekcji", () => {
-  test("próg zaliczenia to 70 procent", () => {
+describe("lesson progress", () => {
+  test("the pass threshold is 70 per cent", () => {
     const box = loadEngine();
     box.Core.load();
     assert.equal(box.Core.recordLesson("l-a", 7, 10, 60).done, true);
     assert.equal(box.Core.recordLesson("l-b", 6, 10, 60).done, false);
   });
 
-  test("raz zaliczona lekcja nie odzalicza się gorszym podejściem", () => {
+  test("a lesson once passed is not un-passed by a worse attempt", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.recordLesson("l-a", 10, 10, 60);
     const drugie = box.Core.recordLesson("l-a", 2, 10, 60);
     assert.equal(drugie.done, true);
-    assert.equal(drugie.best, 1, "najlepszy wynik zostaje");
-    assert.equal(box.Core.state.stats.lessonsDone, 1, "liczy się raz");
+    assert.equal(drugie.best, 1, "the best score stays");
+    assert.equal(box.Core.state.stats.lessonsDone, 1, "counted once");
   });
 });
 
-/* Znalezione w przeglądzie: potarcie ruszało przy KAŻDYM błędzie zapisu,
-   także wtedy, gdy magazyn jest zablokowany (tryb prywatny, polityka).
-   Tam wyrzucanie kart niczego nie naprawia, a kasuje pracę z tej sesji. */
-describe("potarcie tylko przy braku miejsca", () => {
+/* Found in review: the sweep ran on EVERY save error, including when storage
+   is blocked (private mode, a policy). There, dropping cards fixes nothing and
+   destroys the work of this session. */
+describe("the sweep only when there is no room", () => {
   function zablokowany(nazwaBledu) {
     const storage = makeStorage();
     storage.setItem = function () {
-      const e = new Error("odmowa");
+      const e = new Error("refused");
       e.name = nazwaBledu;
       throw e;
     };
     return storage;
   }
 
-  test("zablokowany magazyn nie kasuje kart", () => {
+  test("blocked storage does not delete cards", () => {
     const box = loadEngine({ storage: zablokowany("SecurityError") });
     box.Core.load();
     for (let i = 0; i < 10; i++) box.Core.state.errors["k" + i] = { kind: "authored", reps: 3, ts: i };
     box.Core.save();
     box.flush();
 
-    assert.equal(Object.keys(box.Core.state.errors).length, 10, "karty nietknięte");
-    assert.deepEqual(box.toasts, ["core.saveBlocked"], "ale uczeń wie, że nie zapisano");
+    assert.equal(Object.keys(box.Core.state.errors).length, 10, "the cards are untouched");
+    assert.deepEqual(box.toasts, ["core.saveBlocked"], "but the student knows nothing was saved");
   });
 
-  test("brak miejsca nadal uruchamia potarcie", () => {
+  test("lack of room still triggers the sweep", () => {
     const box = loadEngine({ storage: makeStorage({ limit: 2000 }) });
     box.Core.load();
     for (let i = 0; i < 40; i++) {
@@ -472,29 +472,29 @@ describe("potarcie tylko przy braku miejsca", () => {
     }
     box.Core.save();
     box.flush();
-    assert.ok(Object.keys(box.Core.state.errors).length < 40, "coś ustąpiło miejsca");
+    assert.ok(Object.keys(box.Core.state.errors).length < 40, "something gave way");
   });
 });
 
 /* ============================================================
-   T010 — load() a schodki migracji.
+   T010 - load() and the migration steps.
 
-   Defekt utajony, znaleziony przy planowaniu F1, niezależny od FSRS:
-   `load()` (core.js:68) przyjmuje zapis WYŁĄCZNIE przy `schema === SCHEMA`
-   i nigdy nie woła `migrateUp`. Schodki migracji są podpięte tylko pod
-   `importState` (core.js:698). Zapis o innym numerze schematu jest więc
-   po cichu pomijany, bez błędu i bez śladu: uczeń widzi pusty profil i
-   nie ma jak się domyślić, co się stało ani tego odkręcić.
+   A latent defect found while planning F1, unrelated to FSRS: `load()`
+   (core.js:68) accepts a saved state ONLY when `schema === SCHEMA` and never
+   calls `migrateUp`. The migration steps are wired to `importState` alone
+   (core.js:698). A save with a different schema number is therefore skipped
+   silently, with no error and no trace: the student sees an empty profile with
+   no way to guess what happened or to undo it.
 
-   Dziś to nie wybucha, bo nikt jeszcze nie podniósł schematu. Wybuchłoby
-   przy pierwszym podniesieniu, czyli w najgorszym możliwym momencie —
-   dlatego naprawa idzie TERAZ, osobno od decyzji o FSRS (R1 w
+   Today this does not blow up, because nobody has bumped the schema yet. It
+   would blow up on the first bump, that is at the worst possible moment -
+   hence the fix goes in NOW, separately from the decision about FSRS (R1 in
    specs/002-corso-irrinunciabile/riconciliazione.md).
 
-   Te testy mają być czerwone przed poprawką z T011.
+   These tests have to be red before the fix from T011.
    ============================================================ */
-describe("load: zapis starszego schematu przechodzi przez migracje", () => {
-  /** Zapis w kształcie v1: fiszka kluczowana włoskim RAZEM z polskim. */
+describe("load: a save of an older schema goes through the migrations", () => {
+  /** A save in the v1 shape: a card keyed by Italian TOGETHER with Polish. */
   function zapisV1(over) {
     return JSON.stringify(Object.assign({
       schema: 1,
@@ -506,51 +506,51 @@ describe("load: zapis starszego schematu przechodzi przez migracje", () => {
     }, over));
   }
 
-  test("postępy z zapisu v1 pod kluczem v2 nie przepadają", () => {
+  test("progress from a v1 save under the v2 key is not lost", () => {
     const box = loadEngine({ seed: { [KEY]: zapisV1() } });
     box.Core.load();
 
-    assert.equal(box.Core.state.xp, 40, "XP przechodzi przez migrację");
-    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "postęp lekcji przechodzi");
-    assert.equal(box.Core.state.schema, SCHEMA, "po migracji numer schematu jest bieżący");
+    assert.equal(box.Core.state.xp, 40, "the XP goes through the migration");
+    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "the lesson progress goes through");
+    assert.equal(box.Core.state.schema, SCHEMA, "after the migration the schema number is current");
   });
 
-  test("fiszka v1 zostaje przekluczowana na sam włoski", () => {
+  test("a v1 card is rekeyed to Italian alone", () => {
     const box = loadEngine({ seed: { [KEY]: zapisV1() } });
     box.Core.load();
 
     const klucze = Object.keys(box.Core.state.srs);
-    assert.equal(klucze.length, 1, "jedna fiszka, jeden klucz");
-    assert.ok(!klucze[0].includes("|"), "klucz nie niesie już tłumaczenia");
-    assert.equal(box.Core.state.srs[klucze[0]].tr.pl, "kawa", "glosa ląduje pod językiem");
-    assert.equal(box.Core.state.srs[klucze[0]].interval, 9, "harmonogram zostaje nietknięty");
+    assert.equal(klucze.length, 1, "one card, one key");
+    assert.ok(!klucze[0].includes("|"), "the key no longer carries the translation");
+    assert.equal(box.Core.state.srs[klucze[0]].tr.pl, "kawa", "the gloss lands under its language");
+    assert.equal(box.Core.state.srs[klucze[0]].interval, 9, "the schedule stays untouched");
   });
 
-  test("zapis bieżącego schematu wczytuje się jak dotąd", () => {
+  test("a save of the current schema loads as before", () => {
     const box = loadEngine({ seed: { [KEY]: saved({ xp: 7, settings: { rate: 0.8 } }) } });
     box.Core.load();
     assert.equal(box.Core.state.xp, 7);
     assert.equal(box.Core.state.settings.rate, 0.8);
   });
 
-  test("zapis z przyszłości jest odrzucany, a nie wczytywany połowicznie", () => {
+  test("a save from the future is rejected rather than loaded halfway", () => {
     const box = loadEngine({ seed: { [KEY]: saved({ schema: SCHEMA + 1, xp: 999 }) } });
     box.Core.load();
-    assert.equal(box.Core.state.xp, 0, "nic z nowszego pliku nie wchodzi do stanu");
-    assert.equal(box.Core.state.schema, SCHEMA, "stan zostaje na swoim schemacie");
+    assert.equal(box.Core.state.xp, 0, "nothing from the newer file enters the state");
+    assert.equal(box.Core.state.schema, SCHEMA, "the state stays on its own schema");
   });
 });
 
 /* ============================================================
-   F1 — talia słownictwa na FSRS.
+   F1 - the vocabulary deck on FSRS.
 
-   Numer schematu zostaje przy 2, bo żadne istniejące pole nie zmienia
-   znaczenia: `due`, `interval`, `reps` i `lapses` znaczą to samo, `s` i `d`
-   są nowe, a `ef` staje się balastem na starych kartach. Przeliczenia
-   hurtem nie ma — karta przechodzi na nowe tory dopiero wtedy, gdy uczeń
-   ją ZOBACZY (R1 w specs/002-corso-irrinunciabile/riconciliazione.md).
+   The schema number stays at 2, because no existing field changes meaning:
+   `due`, `interval`, `reps` and `lapses` mean the same, `s` and `d` are new,
+   and `ef` becomes ballast on old cards. There is no bulk recalculation - a
+   card moves onto the new tracks only once the student SEES it (R1 in
+   specs/002-corso-irrinunciabile/riconciliazione.md).
    ============================================================ */
-describe("gradeCard: FSRS na talii słownictwa", () => {
+describe("gradeCard: FSRS on the vocabulary deck", () => {
   function zTalia() {
     const box = loadEngine();
     box.Core.load();
@@ -558,56 +558,57 @@ describe("gradeCard: FSRS na talii słownictwa", () => {
     return { box, key: box.Core.cardKey("mangiare") };
   }
 
-  test("nowa karta dostaje stabilność i trudność, a nie ef", () => {
+  test("a new card gets stability and difficulty, not ef", () => {
     const { box, key } = zTalia();
     const c = box.Core.gradeCard(key, 4);
-    assert.equal(typeof c.s, "number", "stabilność");
-    assert.equal(typeof c.d, "number", "trudność");
-    assert.ok(c.d >= 1 && c.d <= 10, `trudność ${c.d} mieści się w 1..10`);
-    assert.ok(c.due > Date.now(), "termin w przyszłości");
+    assert.equal(typeof c.s, "number", "stability");
+    assert.equal(typeof c.d, "number", "difficulty");
+    assert.ok(c.d >= 1 && c.d <= 10, `difficulty ${c.d} fits within 1..10`);
+    assert.ok(c.due > Date.now(), "due in the future");
   });
 
-  test("kolejne dobre odpowiedzi wydłużają odstęp", () => {
+  test("successive correct answers lengthen the interval", () => {
     const { box, key } = zTalia();
-    /* Karta idzie przez kroki nauki, więc pierwsze terminy są minutowe;
-       liczy się kierunek, nie konkretna liczba — te są w fsrs.test.mjs. */
+    /* The card goes through the learning steps, so the first due dates are in
+       minutes; what counts is the direction, not the exact number - those are
+       in fsrs.test.mjs. */
     let poprzedni = 0;
     for (let i = 0; i < 4; i++) {
       const c = box.Core.gradeCard(key, 5);
-      assert.ok(c.due - Date.now() >= poprzedni, `krok ${i + 1} nie skraca terminu`);
+      assert.ok(c.due - Date.now() >= poprzedni, `step ${i + 1} does not shorten the due date`);
       poprzedni = c.due - Date.now();
     }
   });
 
-  test("wpadka liczy się w lapses i zeruje serię", () => {
+  test("a slip counts as a lapse and resets the streak", () => {
     const { box, key } = zTalia();
     box.Core.gradeCard(key, 5);
     box.Core.gradeCard(key, 5);
     const c = box.Core.gradeCard(key, 0);
-    assert.equal(c.reps, 0, "seria od nowa");
+    assert.equal(c.reps, 0, "the streak starts over");
     assert.equal(c.lapses, 1);
   });
 
-  test("stara karta SM-2 przechodzi na FSRS dopiero przy pierwszej powtórce", () => {
+  test("an old SM-2 card moves to FSRS only on its first review", () => {
     const box = loadEngine();
     box.Core.load();
-    /* Profil sprzed zmiany: fiszka z odstępem i ef, bez s i d. */
+    /* A profile from before the change: a card with an interval and ef, no s and d. */
     box.Core.state.srs["il pane"] = {
       it: "il pane", tr: { pl: "chleb" }, src: "a1-u01-l1",
       ef: 2.1, reps: 4, interval: 12, due: Date.now() + 3 * 86400000, lapses: 0
     };
     const przed = box.Core.state.srs["il pane"].due;
 
-    assert.equal(box.Core.state.srs["il pane"].s, undefined, "przed powtórką nic się nie rusza");
-    assert.equal(box.Core.state.srs["il pane"].due, przed, "termin nietknięty");
+    assert.equal(box.Core.state.srs["il pane"].s, undefined, "before the review nothing moves");
+    assert.equal(box.Core.state.srs["il pane"].due, przed, "the due date is untouched");
 
     const c = box.Core.gradeCard("il pane", 4);
-    assert.equal(typeof c.s, "number", "stabilność pojawia się przy powtórce");
-    assert.ok(c.s >= 12, `stabilność ${c.s} wychodzi z dotychczasowego odstępu`);
-    assert.ok(c.d > 1 && c.d < 10, `ef 2.1 daje trudność pośrednią, jest ${c.d}`);
+    assert.equal(typeof c.s, "number", "stability appears at the review");
+    assert.ok(c.s >= 12, `stability ${c.s} comes out of the previous interval`);
+    assert.ok(c.d > 1 && c.d < 10, `ef 2.1 gives an intermediate difficulty, it is ${c.d}`);
   });
 
-  test("nietknięte karty nie dostają s ani d przy samym wczytaniu profilu", () => {
+  test("untouched cards get neither s nor d from merely loading the profile", () => {
     const box = loadEngine({
       seed: {
         [KEY]: saved({
@@ -620,59 +621,60 @@ describe("gradeCard: FSRS na talii słownictwa", () => {
     box.Core.load();
     const c = box.Core.state.srs["il pane"];
     assert.equal(c.s, undefined);
-    assert.equal(c.interval, 9, "harmonogram sprzed zmiany zostaje na miejscu");
+    assert.equal(c.interval, 9, "the schedule from before the change stays in place");
   });
 
-  test("quaderno błędów nie zauważa zmiany: dalej chodzi po SM-2", () => {
+  test("the mistake notebook does not notice the change: it still runs on SM-2", () => {
     const box = loadEngine({ files: CORE });
     box.Core.load();
     const c = { ef: 2.5, reps: 0, interval: 0, due: Date.now(), lapses: 0 };
     box.Core.schedule(c, 5);
-    assert.equal(c.interval, 1, "SM-2, nie FSRS");
-    assert.equal(c.s, undefined, "żadnych pól FSRS w quaderno");
+    assert.equal(c.interval, 1, "SM-2, not FSRS");
+    assert.equal(c.s, undefined, "no FSRS fields in the notebook");
   });
 });
 
-describe("retencja: ustawienie ucznia zmienia terminy", () => {
+describe("retention: the student's setting changes the due dates", () => {
   function zKarta(retencja) {
     const box = loadEngine();
     box.Core.load();
     if (retencja !== undefined) box.Core.state.settings.retention = retencja;
     box.Core.addCard("mangiare", "jeść", "a1-u01-l1");
     const key = box.Core.cardKey("mangiare");
-    /* Karta ma wyjść z kroków nauki, żeby odstęp liczył się ze stabilności,
-       a nie z minutowych kroków — inaczej test mierzyłby stałe, nie retencję. */
+    /* The card has to leave the learning steps so the interval is computed
+       from stability rather than from the minute-long steps - otherwise the
+       test would measure constants, not retention. */
     box.Core.gradeCard(key, 5);
     box.Core.gradeCard(key, 5);
     return box.Core.gradeCard(key, 4);
   }
 
-  test("domyślna wartość to 0.9", () => {
+  test("the default value is 0.9", () => {
     const box = loadEngine();
     box.Core.load();
     assert.equal(box.Core.state.settings.retention, 0.9);
   });
 
-  test("wyższa retencja skraca odstęp, niższa go wydłuża", () => {
+  test("a higher retention shortens the interval, a lower one lengthens it", () => {
     const ostra = zKarta(0.95).interval;
     const domyslna = zKarta(0.9).interval;
     const luzna = zKarta(0.85).interval;
-    assert.ok(ostra < domyslna, `0.95 (${ostra}) ma być krótsze niż 0.9 (${domyslna})`);
-    assert.ok(domyslna < luzna, `0.9 (${domyslna}) ma być krótsze niż 0.85 (${luzna})`);
+    assert.ok(ostra < domyslna, `0.95 (${ostra}) has to be shorter than 0.9 (${domyslna})`);
+    assert.ok(domyslna < luzna, `0.9 (${domyslna}) has to be shorter than 0.85 (${luzna})`);
   });
 
-  test("starszy profil bez tego pola dostaje wartość domyślną", () => {
+  test("an older profile without this field gets the default value", () => {
     const box = loadEngine({ seed: { [KEY]: saved({ settings: { rate: 0.8 } }) } });
     box.Core.load();
-    assert.equal(box.Core.state.settings.retention, 0.9, "merge dokłada nowe pole");
-    assert.equal(box.Core.state.settings.rate, 0.8, "a starych nie rusza");
+    assert.equal(box.Core.state.settings.retention, 0.9, "merge adds the new field");
+    assert.equal(box.Core.state.settings.rate, 0.8, "and does not touch the old ones");
   });
 });
 
-describe("ciągłość eksportu przez F1", () => {
-  test("plik sprzed FSRS wraca z tymi samymi kartami i terminami", () => {
-    /* Eksport z profilu w kształcie sprzed zmiany: ef i interval, zero
-       pól FSRS. To jest plik, który uczeń ma dziś na dysku. */
+describe("export continuity across F1", () => {
+  test("a file from before FSRS comes back with the same cards and due dates", () => {
+    /* An export from a profile in the pre-change shape: ef and interval, no
+       FSRS fields. This is the file a student has on disk today. */
     const przed = JSON.stringify({
       schema: SCHEMA, xp: 55,
       lessons: { "a1-u01-l1": { done: true } },
@@ -686,14 +688,14 @@ describe("ciągłość eksportu przez F1", () => {
     box.Core.load();
     box.Core.importState(przed);
 
-    assert.equal(box.Core.state.schema, SCHEMA, "numer schematu nadal 2");
+    assert.equal(box.Core.state.schema, SCHEMA, "the schema number is still 2");
     assert.equal(Object.keys(box.Core.state.srs).length, 2);
-    assert.equal(box.Core.state.srs["il pane"].due, 1800000000000, "termin nietknięty importem");
+    assert.equal(box.Core.state.srs["il pane"].due, 1800000000000, "the due date is untouched by the import");
     assert.equal(box.Core.state.srs["il pane"].interval, 12);
-    assert.equal(box.Core.state.srs["il pane"].s, undefined, "import nie przelicza na FSRS");
+    assert.equal(box.Core.state.srs["il pane"].s, undefined, "the import does not convert to FSRS");
     assert.equal(box.Core.state.xp, 55);
 
-    /* I z powrotem: to, co wyjdzie, ma się dać wczytać jeszcze raz. */
+    /* And back again: whatever comes out has to be loadable once more. */
     const znowu = loadEngine();
     znowu.Core.load();
     znowu.Core.importState(box.Core.exportState());
@@ -702,8 +704,8 @@ describe("ciągłość eksportu przez F1", () => {
   });
 });
 
-describe("dziennik powtórek", () => {
-  test("każda ocena zostawia wpis z kluczem, czasem i oceną", () => {
+describe("the review log", () => {
+  test("every grade leaves an entry with a key, a time and the grade", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.addCard("mangiare", "jeść", "a1-u01-l1");
@@ -716,17 +718,17 @@ describe("dziennik powtórek", () => {
     assert.equal(d[0].k, key);
     assert.equal(d[0].q, 5);
     assert.equal(d[1].q, 0);
-    assert.ok(d[0].t > 0 && d[1].t >= d[0].t, "czasy rosną");
+    assert.ok(d[0].t > 0 && d[1].t >= d[0].t, "the times increase");
   });
 
-  test("starszy profil bez dziennika dostaje go pustym", () => {
+  test("an older profile with no log gets it empty", () => {
     const box = loadEngine({ seed: { [KEY]: saved({ xp: 3 }) } });
     box.Core.load();
     assert.deepEqual(Array.from(box.Core.state.reviews), []);
     assert.equal(box.Core.state.xp, 3);
   });
 
-  test("dziennik przeżywa zapis, odczyt i eksport", () => {
+  test("the log survives a save, a load and an export", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.addCard("mangiare", "jeść", "a1-u01-l1");
@@ -738,10 +740,10 @@ describe("dziennik powtórek", () => {
     const znowu = loadEngine();
     znowu.Core.load();
     znowu.Core.importState(box.Core.exportState());
-    assert.equal(znowu.Core.state.reviews.length, 1, "przechodzi przez eksport");
+    assert.equal(znowu.Core.state.reviews.length, 1, "it goes through the export");
   });
 
-  test("dziennik ustępuje miejsca PO błędach, a przed postępami lekcji", () => {
+  test("the log gives way AFTER the mistakes and before the lesson progress", () => {
     const box = loadEngine({ storage: makeStorage({ limit: 4000 }) });
     box.Core.load();
     box.Core.state.lessons["a1-u01-l1"] = { done: true, score: 9, total: 10 };
@@ -750,63 +752,63 @@ describe("dziennik powtórek", () => {
     box.Core.save();
     box.flush();
 
-    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "postęp lekcji zostaje");
+    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "the lesson progress stays");
     assert.ok(
       Object.keys(box.Core.state.errors).length < 30 || box.Core.state.reviews.length < 300,
-      "coś ustąpiło miejsca"
+      "something gave way"
     );
   });
 });
 
 /* ============================================================
-   T063 — zanieczyszczenie prototypu przez addCard.
+   T063 - prototype pollution through addCard.
 
-   `merge()` filtruje `__proto__`, `constructor` i `prototype`, i ta obrona
-   działa: zapis wczytany z pliku przez importState jej nie obchodzi.
-   Ale `addCard` jej NIE przechodzi. Idzie prosto:
+   `merge()` filters out `__proto__`, `constructor` and `prototype`, and that
+   defence works: a state loaded from a file through importState does not get
+   past it. But `addCard` does NOT go through it. It goes straight:
 
-       cardKey(it) = norm(it)  ->  state.srs[k] = { … }
+       cardKey(it) = norm(it)  ->  state.srs[k] = { ... }
 
-   `norm()` nie rusza podkreśleń, więc fiszka o treści „__proto__" ustawia
-   PROTOTYP obiektu zamiast założyć w nim właściwość. Karta znika z
-   Object.keys i z JSON.stringify, a odczyt dowolnego nieistniejącego
-   klucza zaczyna trafiać w podstawiony obiekt.
+   `norm()` does not touch underscores, so a card whose content is "__proto__"
+   sets the object's PROTOTYPE instead of creating a property on it. The card
+   disappears from Object.keys and from JSON.stringify, and reading any
+   non-existent key starts hitting the substituted object.
 
-   Do tej pory było to nieosiągalne, bo fiszki zakładał tylko kurs. Import
-   talii z pliku (F4) czyni z tego wektor: wystarczy jedna linia w cudzym
-   zestawie. Test ma być czerwony przed poprawką.
+   Until now this was unreachable, because only the course created cards.
+   Importing a deck from a file (F4) turns it into a vector: one line in
+   somebody else's set is enough. The test has to be red before the fix.
    ============================================================ */
-describe("addCard: klucze zastrzeżone nie dotykają prototypu", () => {
+describe("addCard: reserved keys do not touch the prototype", () => {
   const ZASTRZEZONE = ["__proto__", "constructor", "prototype"];
 
   for (const zly of ZASTRZEZONE) {
-    test(`fiszka „${zly}" zostaje właściwością własną, nie prototypem`, () => {
+    test(`a card named "${zly}" stays an own property, not the prototype`, () => {
       const box = loadEngine();
       box.Core.load();
-      box.Core.addCard(zly, "cokolwiek", "import");
+      box.Core.addCard(zly, "whatever", "import");
       box.Core.save();
       box.flush();
 
       assert.ok(
         Object.prototype.hasOwnProperty.call(box.Core.state.srs, zly) ||
         Object.keys(box.Core.state.srs).length === 0,
-        `„${zly}" albo jest własną właściwością, albo została odrzucona — nie może zniknąć w prototypie`
+        `"${zly}" is either an own property or was rejected - it must not vanish into the prototype`
       );
-      assert.equal(probePrototype(box, "polluted"), undefined, "prototyp nietknięty");
+      assert.equal(probePrototype(box, "polluted"), undefined, "the prototype is untouched");
     });
   }
 
-  test("karta z zastrzeżoną nazwą przeżywa zapis i odczyt albo nie powstaje", () => {
+  test("a card with a reserved name survives a save and a load, or is never created", () => {
     const box = loadEngine();
     box.Core.load();
-    box.Core.addCard("__proto__", "kawa", "import");
+    box.Core.addCard("__proto__", "coffee", "import");
     box.Core.save();
     box.flush();
 
     const zapis = box.stored("linguai.italiano.v2");
     const klucze = Object.keys(zapis.srs || {});
-    /* Albo jest w zapisie, albo jej nie ma. Czego nie wolno: żeby addCard
-       zwróciło klucz, a w zapisie nie było po niej śladu. */
+    /* Either it is in the saved state or it is not. What is not allowed: that
+       addCard returns a key and the save shows no trace of it. */
     if (klucze.length) assert.ok(klucze.includes("__proto__"));
   });
 });

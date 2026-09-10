@@ -1,20 +1,20 @@
 /* ============================================================
-   Symulacja egzaminu w przeglądarce.
+   The exam simulation in a browser.
 
-   Silnik liczy poprawnie (tests/unit/cils.test.mjs). Tutaj sprawdzamy
-   rzeczy, których w silniku nie ma: że sekcja zamknięta zostaje
-   zamknięta, że zdanie o granicy symulatora pada PRZED startem, i że
-   podsumowanie nie obiecuje wyniku egzaminu.
+   The engine scores correctly (tests/unit/cils.test.mjs). What we check
+   here is what the engine does not contain: that a closed section stays
+   closed, that the sentence about the simulator's limit is said BEFORE the
+   start, and that the summary does not promise an exam result.
 
-   Zegara nie odmierzamy naprawdę: sekcja trwa trzydzieści minut, a test,
-   który je odczekuje, jest testem o cierpliwości. Podmieniamy czasy w
-   danych zaraz po wczytaniu strony, przed wejściem w symulację.
+   We do not really wait out the clock: a section lasts thirty minutes, and a
+   test that waits them out is a test about patience. We replace the times in
+   the data right after the page loads, before entering the simulation.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
 test.describe.configure({ timeout: 60000 });
 
-/** Wchodzi w symulację ze skróconymi czasami sekcji. */
+/** Enters the simulation with shortened section times. */
 async function otworz(page, sekundy) {
   await page.goto("/index.html#/esame");
   await page.waitForSelector(".js-start");

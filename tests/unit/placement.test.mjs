@@ -1,9 +1,9 @@
 /* ============================================================
-   Test poziomujący: sama logika wyszukiwania.
+   The placement test: the search logic alone.
 
-   Widok pokazuje zadania, ale to, czy uczeń wyląduje na właściwym
-   poziomie, rozstrzyga ta arytmetyka. Sprawdzalna bez przeglądarki
-   i bez ani jednego prawdziwego ćwiczenia.
+   The view shows the tasks, but whether the student lands on the right level
+   is settled by this arithmetic. Checkable without a browser and without a
+   single real exercise.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -15,14 +15,14 @@ const KODY = ["A1", "A2", "B1", "B2", "C1", "C2"];
 function silnik() {
   const box = loadEngine({ files: PLIKI });
   box.Core.load();
-  /* Sześć pustych poziomów: logika przebiegu nie potrzebuje treści. */
+  /* Six empty levels: the run logic needs no content. */
   KODY.forEach(code => box.Core.registerLevel({ code: code, dataFiles: [], units: [] }));
   return box;
 }
 
 /**
- * Przechodzi cały test, udając ucznia, który zdaje wszystko do poziomu
- * `az` włącznie, a wyżej nie.
+ * Walks the whole test, playing a student who passes everything up to and
+ * including level `az`, and nothing above it.
  */
 function przejdz(box, az) {
   const P = box.sandbox.Placement;
@@ -31,7 +31,7 @@ function przejdz(box, az) {
   for (;;) {
     const kod = P.nastepnyPoziom(p);
     if (!kod) break;
-    if (++rundy > 10) throw new Error("przebieg się nie kończy");
+    if (++rundy > 10) throw new Error("the run does not end");
     const zdaje = KODY.indexOf(kod) <= KODY.indexOf(az);
     P.zapiszRunde(p, kod, zdaje ? P.NA_RUNDE : 0, P.NA_RUNDE);
   }
@@ -40,13 +40,13 @@ function przejdz(box, az) {
 
 describe("wyszukiwanie poziomu", () => {
   KODY.forEach(az => {
-    test(`uczeń na poziomie ${az} zostaje umieszczony na ${az}`, () => {
+    test(`a student at level ${az} is placed at ${az}`, () => {
       const box = silnik();
       assert.equal(przejdz(box, az).wynik.code, az);
     });
   });
 
-  test("kto nie zdaje niczego, ląduje na A1", () => {
+  test("whoever passes nothing lands on A1", () => {
     const box = silnik();
     const P = box.sandbox.Placement;
     let p = P.nowyPrzebieg("s");
@@ -55,40 +55,40 @@ describe("wyszukiwanie poziomu", () => {
     assert.equal(P.wynik(p).code, "A1");
   });
 
-  test("sześć poziomów mieści się w trzech rundach", () => {
+  test("six levels fit into three rounds", () => {
     const box = silnik();
     KODY.forEach(az => {
       assert.ok(przejdz(box, az).rundy <= 3, `${az}: ${przejdz(box, az).rundy} rund`);
     });
   });
 
-  test("cały test to najwyżej osiemnaście zadań", () => {
+  test("the whole test is eighteen tasks at most", () => {
     const box = silnik();
     KODY.forEach(az => {
-      assert.ok(przejdz(box, az).wynik.asked <= 18, `${az}: ${przejdz(box, az).wynik.asked} zadań`);
+      assert.ok(przejdz(box, az).wynik.asked <= 18, `${az}: ${przejdz(box, az).wynik.asked} tasks`);
     });
   });
 
-  test("wynik tuż pod progiem nie zalicza poziomu", () => {
+  test("a score just under the threshold does not pass the level", () => {
     const box = silnik();
     const P = box.sandbox.Placement;
     let p = P.nowyPrzebieg("s");
-    /* 4 z 6 to 0.67, próg wynosi 0.7 */
+    /* 4 out of 6 is 0.67, the threshold is 0.7 */
     P.zapiszRunde(p, "B1", 4, 6);
     assert.ok(P.wynik(p).index < KODY.indexOf("B1"));
   });
 });
 
 describe("zastosowanie wyniku", () => {
-  test("lekcje niższych poziomów są oznaczone, poziom docelowy zostaje otwarty", () => {
+  test("the lessons of the lower levels are marked, the target level stays open", () => {
     const box = silnik();
-    /* Dwa poziomy z jedną lekcją każdy. */
+    /* Two levels with one lesson each. */
     box.Core.registry.byCode.A1.units = [{ id: "u1", lessons: [{ id: "a1-l1" }], test: { id: "a1-test" } }];
     box.Core.registry.byCode.A2.units = [{ id: "u2", lessons: [{ id: "a2-l1" }], test: { id: "a2-test" } }];
 
     const P = box.sandbox.Placement;
     let p = P.nowyPrzebieg("s");
-    P.zapiszRunde(p, "A2", 6, 6);      // zdał A2
+    P.zapiszRunde(p, "A2", 6, 6);      // passed A2
     const r = P.zastosuj(p);
 
     assert.equal(box.Core.state.lessons["a1-l1"].done, true, "A1 zaliczone");
@@ -97,7 +97,7 @@ describe("zastosowanie wyniku", () => {
     assert.equal(r.marked, 2);
   });
 
-  test("oznaczone lekcje nie dają punktów ani nie wchodzą do statystyki", () => {
+  test("marked lessons give no points and do not enter the statistics", () => {
     const box = silnik();
     box.Core.registry.byCode.A1.units = [{ id: "u1", lessons: [{ id: "a1-l1" }, { id: "a1-l2" }] }];
     const P = box.sandbox.Placement;
@@ -105,12 +105,12 @@ describe("zastosowanie wyniku", () => {
     P.zapiszRunde(p, "A2", 6, 6);
     P.zastosuj(p);
 
-    assert.equal(box.Core.state.xp, 0, "punktów za nieodrobione lekcje nie ma");
-    assert.equal(box.Core.state.stats.lessonsDone, 0, "licznik ukończonych mówi prawdę");
-    assert.equal(box.Core.state.lessons["a1-l1"].placed, true, "widać, skąd wzięło się zaliczenie");
+    assert.equal(box.Core.state.xp, 0, "there are no points for lessons that were not done");
+    assert.equal(box.Core.state.stats.lessonsDone, 0, "the finished counter tells the truth");
+    assert.equal(box.Core.state.lessons["a1-l1"].placed, true, "you can see where the pass came from");
   });
 
-  test("test nie kasuje postępu, który uczeń już ma", () => {
+  test("the test does not erase progress the student already has", () => {
     const box = silnik();
     box.Core.registry.byCode.A1.units = [{ id: "u1", lessons: [{ id: "a1-l1" }] }];
     box.Core.recordLesson("a1-l1", 10, 10, 60);
@@ -121,11 +121,11 @@ describe("zastosowanie wyniku", () => {
     P.zapiszRunde(p, "A2", 6, 6);
     P.zastosuj(p);
 
-    assert.equal(box.Core.state.lessons["a1-l1"].score, przed, "prawdziwy wynik nietknięty");
+    assert.equal(box.Core.state.lessons["a1-l1"].score, przed, "the real score untouched");
     assert.equal(box.Core.state.lessons["a1-l1"].placed, undefined);
   });
 
-  test("wynik zapisuje się w stanie i przeżywa zapis", () => {
+  test("the result is stored in the state and survives the save", () => {
     const box = silnik();
     const P = box.sandbox.Placement;
     let p = P.nowyPrzebieg("s");
@@ -140,8 +140,8 @@ describe("zastosowanie wyniku", () => {
   });
 });
 
-describe("pula zadań", () => {
-  test("bierze zadania ze sprawdzianów i pomija typy z mikrofonem", () => {
+describe("the task pool", () => {
+  test("it takes tasks from the unit tests and skips the microphone types", () => {
     const box = silnik();
     box.Core.registry.byCode.B1.units = [{
       id: "u", lessons: [],
@@ -158,7 +158,7 @@ describe("pula zadań", () => {
     assert.deepEqual(JSON.stringify(typy), JSON.stringify(["fill", "mcq"]));
   });
 
-  test("nieznany poziom daje pustą pulę, nie wyjątek", () => {
+  test("an unknown level gives an empty pool, not an exception", () => {
     assert.equal(silnik().sandbox.Placement.pulaDla("Z9", "s").length, 0);
   });
 });

@@ -9,7 +9,7 @@ async function oggi(page) {
   await page.waitForSelector(".list-row");
 }
 
-/** Zakłada n kart błędów z terminem w przeszłości. */
+/** Creates n mistake cards with a due date in the past. */
 async function zalegleBledy(page, n) {
   return page.evaluate(ile => {
     const L = window.Core.getLesson("a1-u01-l2").lesson;
@@ -23,22 +23,22 @@ async function zalegleBledy(page, n) {
   }, n);
 }
 
-/* Sesja nigdy nie bywa pusta i to jest jej sens: zadania z generatora
-   są zawsze dostępne, więc dziesięć minut zawsze ma czym się wypełnić.
-   Gdyby przy braku zaległości pokazywała „dziś nic nie ma", odsyłałaby
-   ucznia z powrotem do wyboru, którego ma go pozbawić. */
-test("sesja ma co zaproponować także wtedy, gdy nic nie zalega", async ({ page }) => {
+/* The session is never empty and that is its point: generated tasks are
+   always available, so there is always something to fill ten minutes with.
+   If it showed "nothing today" when nothing was due, it would send the
+   student back to the choice it exists to spare them. */
+test("the session has something to offer even when nothing is due", async ({ page }) => {
   await oggi(page);
   const zalegle = await page.evaluate(() =>
     window.Errors.dueCount() + window.Core.dueCards().length);
-  expect(zalegle, "start bez żadnych zaległości").toBe(0);
+  expect(zalegle, "a start with nothing due").toBe(0);
 
   await expect(page.locator(".js-start")).toBeVisible();
   await page.locator(".js-start").click();
   await expect(page.locator(".exq")).toBeVisible();
 });
 
-test("sesja wymienia trzy części i liczy je", async ({ page }) => {
+test("the session lists three parts and counts them", async ({ page }) => {
   await oggi(page);
   await expect(page.locator(".list-row")).toHaveCount(3);
 
@@ -47,10 +47,10 @@ test("sesja wymienia trzy części i liczy je", async ({ page }) => {
   await page.waitForSelector(".js-start");
 
   const etykieta = await page.locator(".js-start").innerText();
-  expect(etykieta, "przycisk niesie liczbę zadań").toMatch(/\d/);
+  expect(etykieta, "the button carries the number of tasks").toMatch(/\d/);
 });
 
-test("przebieg pokazuje zadania i kończy się podsumowaniem", async ({ page }) => {
+test("the run shows the tasks and ends with a summary", async ({ page }) => {
   await oggi(page);
   await zalegleBledy(page, 2);
   await page.reload();
@@ -59,8 +59,8 @@ test("przebieg pokazuje zadania i kończy się podsumowaniem", async ({ page }) 
 
   await expect(page.locator(".exq")).toBeVisible();
 
-  /* Przechodzimy przez wszystkie zadania: odpowiedź nie ma znaczenia,
-     liczy się to, że przebieg dochodzi do końca i nie gubi kroku. */
+  /* We walk through every task: the answer does not matter, what counts is
+     that the run reaches the end and loses no step. */
   for (let krok = 0; krok < 20; krok++) {
     if (await page.locator(".summary").count()) break;
     const check = page.locator(".exq .js-check").first();
@@ -79,13 +79,13 @@ test("przebieg pokazuje zadania i kończy się podsumowaniem", async ({ page }) 
   await expect(page.locator(".summary")).toBeVisible();
 });
 
-test("zamknięta sesja zostaje zapisana na dzisiejszą datę", async ({ page }) => {
+test("a closed session is recorded under today's date", async ({ page }) => {
   await oggi(page);
   const zapis = await page.evaluate(async () => {
     window.Core.state.session = { date: window.Core.today(), score: 5, total: 8 };
     window.Core.save();
-    /* save() jest zdebouncowane na 180 ms: bez odczekania przeładowanie
-       wyprzedziłoby zapis i test mierzyłby wyścig, nie zachowanie. */
+    /* save() is debounced by 180 ms: without waiting, the reload would
+       overtake the save and the test would measure a race, not behaviour. */
     await new Promise(r => setTimeout(r, 300));
     return window.Core.state.session.date;
   });
@@ -93,7 +93,7 @@ test("zamknięta sesja zostaje zapisana na dzisiejszą datę", async ({ page }) 
 
   await page.reload();
   await page.waitForSelector(".list-row");
-  await expect(page.locator(".card").first(), "informacja o zamkniętej sesji").toBeVisible();
+  await expect(page.locator(".card").first(), "the notice about a closed session").toBeVisible();
 });
 
 test("rail prowadzi do sesji dnia", async ({ page }) => {
@@ -104,7 +104,7 @@ test("rail prowadzi do sesji dnia", async ({ page }) => {
   await expect(page.locator('.rail__item[data-route="oggi"]')).toHaveAttribute("aria-current", "page");
 });
 
-test("napisy sesji dnia istnieją w pięciu językach", async ({ page }) => {
+test("the daily session strings exist in five languages", async ({ page }) => {
   await oggi(page);
   await zalegleBledy(page, 2);
   const braki = await page.evaluate(async () => {

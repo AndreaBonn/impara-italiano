@@ -1,13 +1,13 @@
 /* ============================================================
-   Przewodnik: strona, która obiecuje, że mówi, gdzie co jest.
+   The guide: a page that promises to say where everything is.
 
-   Obietnica psuje się cicho i w dwie strony. Trasa wypisana w mapie,
-   której nikt nie zarejestrował, prowadzi przez router z powrotem na
-   ścieżkę nauki — przycisk działa, tylko idzie gdzie indziej. Ekran
-   dopisany do paska i pominięty w mapie sprawia, że strona mówiąca
-   „wszystkie ekrany po kolei" po prostu o nim milczy.
+   The promise breaks silently and in both directions. A route listed in the
+   map that nobody registered leads through the router back to the learning
+   path — the button works, it just goes somewhere else. A screen added to
+   the rail and left out of the map makes a page saying "every screen in
+   order" simply keep quiet about it.
 
-   Żadnego z tych dwóch nie widać ani w kodzie, ani na ekranie.
+   Neither of the two is visible in the code or on the screen.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
@@ -16,7 +16,7 @@ async function przewodnik(page) {
   await page.waitForSelector("#g-inizio");
 }
 
-test("wszystkie sekcje są na stronie", async ({ page }) => {
+test("all the sections are on the page", async ({ page }) => {
   await przewodnik(page);
   for (const id of ["inizio", "ordine", "lezione", "oggi", "ripasso",
                     "esame", "mappa", "backup", "bloccato"]) {
@@ -24,35 +24,35 @@ test("wszystkie sekcje są na stronie", async ({ page }) => {
   }
 });
 
-test("spis treści przenosi fokus na sekcję, nie tylko obraz", async ({ page }) => {
+test("the table of contents moves the focus to the section, not only the view", async ({ page }) => {
   await przewodnik(page);
   await page.locator('.js-toc[data-sekcja="esame"]').click();
   const id = await page.evaluate(() => document.activeElement.id);
-  expect(id, "fokus po kliknięciu w spisie").toBe("g-esame");
+  expect(id, "the focus after a click in the contents").toBe("g-esame");
 });
 
-test("adres z sekcją otwiera się na niej", async ({ page }) => {
+test("an address with a section opens at it", async ({ page }) => {
   await page.goto("/index.html#/guida?s=backup");
   await page.waitForSelector("#g-backup");
   const id = await page.evaluate(() => document.activeElement.id);
   expect(id).toBe("g-backup");
 });
 
-/* Nazwa sekcji przychodzi z adresu, więc bywa nieaktualna: stara zakładka,
-   sekcja przemianowana, literówka w linku. Widok podnosi wtedy `keepFocus`
-   tylko wtedy, gdy naprawdę ustawił fokus — inaczej odbiera go również
-   routerowi i czytnik ekranu zostaje tam, gdzie był PRZED przejściem.
-   Przypadek trafiony stoi w teście wyżej: bez niego to sprawdzenie
-   przechodziłoby też dla widoku, który nie umie skoczyć do żadnej sekcji. */
-test("adres z nieistniejącą sekcją nie zabiera fokusu treści", async ({ page }) => {
+/* The section name comes from the address, so it is sometimes stale: an old
+   bookmark, a renamed section, a typo in a link. The view then raises
+   `keepFocus` only when it really set the focus — otherwise it takes it away
+   from the router too and the screen reader stays where it was BEFORE the
+   move. The hit case is in the test above: without it this check would also
+   pass for a view unable to jump to any section at all. */
+test("an address with a non-existent section does not steal the content focus", async ({ page }) => {
   await page.goto("/index.html#/guida?s=nie-ma-takiej");
   await page.waitForSelector("#g-inizio");
   const id = await page.evaluate(() => document.activeElement.id);
-  expect(id, "fokus po wejściu z błędną nazwą sekcji").toBe("main");
+  expect(id, "the focus after arriving with a wrong section name").toBe("main");
 });
 
-/* Sedno pierwsze: każda trasa z mapy ma swój widok. */
-test("żaden ekran z mapy nie prowadzi donikąd", async ({ page }) => {
+/* The first point: every route in the map has its view. */
+test("no screen in the map leads nowhere", async ({ page }) => {
   await przewodnik(page);
   const sieroty = await page.evaluate(() =>
     [...document.querySelectorAll(".js-goto")]
@@ -61,8 +61,8 @@ test("żaden ekran z mapy nie prowadzi donikąd", async ({ page }) => {
   expect(sieroty, `trasy bez widoku: ${sieroty.join(", ")}`).toEqual([]);
 });
 
-/* Sedno drugie: pasek i mapa mówią o tym samym kursie. */
-test("każda pozycja paska jest opisana w mapie", async ({ page }) => {
+/* The second point: the rail and the map speak about the same course. */
+test("every rail entry is described in the map", async ({ page }) => {
   await przewodnik(page);
   const brakujace = await page.evaluate(() => {
     const wMapie = new Set([...document.querySelectorAll(".js-goto")]
@@ -71,22 +71,22 @@ test("każda pozycja paska jest opisana w mapie", async ({ page }) => {
       .map(b => b.getAttribute("data-route"))
       .filter(r => r !== "guida" && !wMapie.has(r));
   });
-  expect(brakujace, `ekrany z paska poza mapą: ${brakujace.join(", ")}`).toEqual([]);
+  expect(brakujace, `rail screens outside the map: ${brakujace.join(", ")}`).toEqual([]);
 });
 
-test("przycisk w mapie otwiera swój ekran", async ({ page }) => {
+test("a button in the map opens its screen", async ({ page }) => {
   await przewodnik(page);
   await page.locator('.js-goto[data-route="suoni"]').click();
   await expect(page).toHaveURL(/#\/suoni/);
 });
 
-test("test poziomujący da się zacząć z przewodnika", async ({ page }) => {
+test("the placement test can be started from the guide", async ({ page }) => {
   await przewodnik(page);
   await page.locator(".js-place").click();
   await expect(page).toHaveURL(/#\/piazzamento/);
 });
 
-test("napisy przewodnika istnieją w pięciu językach", async ({ page }) => {
+test("the guide strings exist in five languages", async ({ page }) => {
   await przewodnik(page);
   const braki = await page.evaluate(async () => {
     const out = {};

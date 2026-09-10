@@ -1,27 +1,28 @@
 /* ============================================================
-   Rozmowy: liniowa i rozgałęziona, tym samym silnikiem.
+   Conversations: linear and branching, on the same engine.
 
-   Rozwidlenia zostały DOŁOŻONE do silnika, który przez dziesięć dialogów
-   umiał tylko iść po kolei. Dlatego pierwszy test nie dotyczy nowej
-   funkcji: sprawdza, że stara droga jest nietknięta. Gdyby `go` albo
-   `opts` przeciekły do dialogu bez tych pól, objawiłoby się to rozmową
-   uciętą w środku — a taka wygląda na skończoną i nikt by nie zgłosił.
+   The branches were ADDED to an engine that for ten dialogues could only go
+   in order. That is why the first test is not about the new feature: it
+   checks that the old road is untouched. If `go` or `opts` leaked into a
+   dialogue without those fields, it would show up as a conversation cut off
+   in the middle — and one of those looks finished and nobody would report it.
 
-   Drugi test pilnuje tego, po co rozwidlenia w ogóle są: konsekwencji.
-   Odmowa deseru ma być widoczna na rachunku kilka tur PÓŹNIEJ, a nie
-   tylko w następnej replice kelnera.
+   The second test guards what branches are there for at all: consequence.
+   Refusing dessert has to be visible on the bill a few turns LATER, not only
+   in the waiter's next line.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/* Dialog czeka na KONIEC nagrania, zanim pokaże następną turę, a nagrań w tych
-   rozmowach jest kilkanaście po dwie-trzy sekundy. Domyślne trzydzieści sekund
-   na test wystarczało tylko dopóki nagrań nie było i silnik schodził na
-   syntezę systemową, która w headless kończy się natychmiast: te testy były
-   szybkie przez PRZYPADEK, a nie z projektu. Odtwarzanie zostaje prawdziwe,
-   bo to ono odpalało `step()` dalej; rośnie limit. */
+/* The dialogue waits for the END of a recording before showing the next
+   turn, and these conversations hold a dozen or so recordings of two or
+   three seconds each. The default thirty seconds per test was only enough as
+   long as there were no recordings and the engine fell back to system
+   synthesis, which in headless finishes immediately: those tests were fast
+   BY ACCIDENT, not by design. Playback stays real, because it is what drove
+   `step()` onwards; the limit goes up instead. */
 test.describe.configure({ timeout: 120000 });
 
-/** Czeka, aż silnik poprosi o replikę ucznia (pole tekstowe albo wybór). */
+/** Waits until the engine asks for the student's line (a text field or a choice). */
 async function czekajNaTure(page) {
   await page.waitForSelector(".js-in, .dlg-opts", { timeout: 30000 });
 }
@@ -31,10 +32,10 @@ async function otworz(page, id) {
   await czekajNaTure(page);
 }
 
-test.describe("rozmowy", () => {
-  /* Poprawne repliki z `data/core/conversations.js` (bar-mattina). Treść MA
-     teraz znaczenie: od kiedy zła odpowiedź zatrzymuje scenę, dowolne słowo
-     wpisane w pole nie przesuwa dialogu ani o jedną turę. */
+test.describe("conversations", () => {
+  /* The correct lines from `data/core/conversations.js` (bar-mattina). The
+     content MATTERS now: since a wrong answer stops the scene, any old word
+     typed into the field does not move the dialogue by a single turn. */
   const BAR = [
     "buongiorno, un caffè e un cornetto per favore",
     "vuoto grazie",
@@ -42,7 +43,7 @@ test.describe("rozmowy", () => {
     "grazie buona giornata"
   ];
 
-  test("dialog liniowy idzie po kolei i kończy się podsumowaniem", async ({ page }) => {
+  test("a linear dialogue goes in order and ends with a summary", async ({ page }) => {
     await otworz(page, "bar-mattina");
     for (const replika of BAR) {
       await czekajNaTure(page);
@@ -51,11 +52,11 @@ test.describe("rozmowy", () => {
       await page.click(".js-send");
     }
     await expect(page.locator(".summary__score")).toBeVisible({ timeout: 30000 });
-    /* Bez rozwidleń nie ma dokąd wracać: przycisk gałęzi się nie pokazuje. */
+    /* With no branches there is nowhere to return to: the branch button does not appear. */
     await expect(page.locator(".js-branch")).toHaveCount(0);
   });
 
-  test("wybór zmienia rachunek kilka tur później", async ({ page }) => {
+  test("the choice changes the bill a few turns later", async ({ page }) => {
     await otworz(page, "ristorante-scelte");
 
     await page.waitForSelector(".dlg-opts");
@@ -64,7 +65,7 @@ test.describe("rozmowy", () => {
     await page.fill(".js-in", "una bottiglia d'acqua naturale");
     await page.click(".js-send");
     await page.waitForSelector(".dlg-opts");
-    await page.locator(".js-opt").nth(1).click();   // danie wegetariańskie
+    await page.locator(".js-opt").nth(1).click();   // the vegetarian dish
     await page.waitForSelector(".dlg-opts");
     await page.locator(".js-opt").nth(1).click();   // bez deseru
     await page.waitForSelector(".js-in");
@@ -72,12 +73,13 @@ test.describe("rozmowy", () => {
     const linie = await page.locator(".dlg__it").allTextContents();
     expect(linie.some(x => x.includes("basilico"))).toBe(true);
     expect(linie.some(x => x.includes("acqua e caffè"))).toBe(true);
-    /* Deser pada wcześniej w PYTANIU kelnera, więc samo słowo nic nie mówi.
-       Sprawdzamy pozycję na rachunku, bo to ona zależy od wyboru. */
+    /* Dessert comes up earlier in the waiter's QUESTION, so the word alone
+       says nothing. We check the item on the bill, because that is what
+       depends on the choice. */
     expect(linie.some(x => x.includes("acqua e tiramisù"))).toBe(false);
   });
 
-  test("powrót do wyboru pokazuje drugą gałąź bez powtarzania dialogu", async ({ page }) => {
+  test("returning to the choice shows the other branch without replaying the dialogue", async ({ page }) => {
     await otworz(page, "ristorante-scelte");
     for (const n of [0, null, 0, 1]) {
       if (n === null) {
@@ -98,43 +100,44 @@ test.describe("rozmowy", () => {
     const przed = await page.locator(".dlg__line").count();
     await gal.click();
 
-    /* Wracamy NA rozwidlenie, nie na początek: transkrypt się skraca,
-       ale nie znika. */
+    /* We return TO the branch, not to the beginning: the transcript gets
+       shorter but does not disappear. */
     await page.waitForSelector(".dlg-opts");
     const po = await page.locator(".dlg__line").count();
     expect(po).toBeLessThan(przed);
     expect(po).toBeGreaterThan(0);
 
-    await page.locator(".js-opt").nth(0).click();   // tym razem z deserem
+    await page.locator(".js-opt").nth(0).click();   // this time with dessert
     await page.waitForSelector(".js-in");
     const linie = await page.locator(".dlg__it").allTextContents();
     expect(linie.some(x => x.includes("acqua e tiramisù"))).toBe(true);
   });
 
-  test("obie repliki są widoczne przy wyborze, razem z tłumaczeniem", async ({ page }) => {
+  test("both lines are visible at the choice, together with the translation", async ({ page }) => {
     await otworz(page, "ristorante-scelte");
     await page.waitForSelector(".dlg-opts");
-    /* Wybór ma być wyborem, a nie zgadywanką: uczeń widzi obie możliwości
-       po włosku i po swojemu, zanim zdecyduje. */
+    /* A choice has to be a choice and not a guess: the student sees both
+       possibilities in Italian and in their own language before deciding. */
     await expect(page.locator(".js-opt")).toHaveCount(2);
     for (const n of [0, 1]) {
       await expect(page.locator(".js-opt").nth(n).locator("i")).not.toBeEmpty();
       await expect(page.locator(".js-opt").nth(n).locator("span")).not.toBeEmpty();
     }
-    /* Mikrofon albo pole tekstowe zostaje: kliknięcie jest skrótem. */
+    /* The microphone or the text field stays: clicking is a shortcut. */
     await expect(page.locator(".js-in")).toBeVisible();
   });
 
   /* ─────────────────────────────────────────────────────────────
-     Brak rozpoznawania mowy w przeglądarce.
+     No speech recognition in the browser.
 
-     Zgłoszone z ekranu: „nie widzę, jak mówić". Scena bez mikrofonu
-     wygląda dokładnie jak scena z usterką, bo nic w niej nie mówi,
-     że mikrofonu nie ma z powodu przeglądarki. Nota z listy rozmów
-     tego nie ratuje: uczeń czyta ją raz, a pyta trzy sceny później.
+     Reported from the screen: "I cannot see how to speak". A scene with no
+     microphone looks exactly like a scene with a fault, because nothing in
+     it says the microphone is missing because of the browser. The note on
+     the conversation list does not save it: the student reads it once and
+     asks three scenes later.
 
-     Obie strony są sprawdzane, bo test na samą NIEOBECNOŚĆ noty
-     przechodziłby także wtedy, gdyby widok przestał ją rysować w ogóle.
+     Both sides are checked, because a test on the mere ABSENCE of the note
+     would also pass if the view stopped drawing it altogether.
      ───────────────────────────────────────────────────────────── */
   async function otworzZeStt(page, wspierane) {
     await page.goto("/index.html#/");
@@ -144,7 +147,7 @@ test.describe("rozmowy", () => {
     await czekajNaTure(page);
   }
 
-  test("z rozpoznawaniem mowy scena daje mikrofon, a pole jest alternatywą", async ({ page }) => {
+  test("with speech recognition the scene offers a microphone and the field is an alternative", async ({ page }) => {
     await otworzZeStt(page, true);
     await expect(page.locator(".js-turn .js-mic")).toBeVisible();
     await expect(page.locator(".js-turn .callout")).toHaveCount(0);
@@ -153,7 +156,7 @@ test.describe("rozmowy", () => {
     expect(await page.getAttribute(".js-in", "placeholder")).toMatch(/^…/);
   });
 
-  test("bez rozpoznawania mowy scena tłumaczy brak mikrofonu, raz na przejście", async ({ page }) => {
+  test("without speech recognition the scene explains the missing microphone, once per run", async ({ page }) => {
     await otworzZeStt(page, false);
     await expect(page.locator(".js-turn .js-mic")).toHaveCount(0);
     await expect(page.locator(".js-turn .callout")).toBeVisible();
@@ -162,19 +165,20 @@ test.describe("rozmowy", () => {
     await page.fill(".js-in", BAR[0]);
     await page.click(".js-send");
     await czekajNaTure(page);
-    /* Powtarzana pod każdą repliką nota przestaje być informacją. */
+    /* A note repeated under every line stops being information. */
     await expect(page.locator(".js-turn .callout")).toHaveCount(0);
     await expect(page.locator(".js-in")).toBeVisible();
   });
 
   /* ─────────────────────────────────────────────────────────────
-     Zła odpowiedź zatrzymuje scenę.
+     A wrong answer stops the scene.
 
-     Przedtem rozmowa szła dalej, a w dymku stawał wzór zamiast tego, co
-     uczeń powiedział: z ekranu wyglądało to jak zaliczone. Zgłoszone z
-     ekranu: „nawet jak odpowiem źle, idzie dalej jakby nigdy nic".
+     Before, the conversation went on and the bubble held the model line
+     instead of what the student said: on screen it looked like a pass.
+     Reported from the screen: "even when I answer wrongly it goes on as if
+     nothing happened".
      ───────────────────────────────────────────────────────────── */
-  test("zła odpowiedź nie przesuwa dialogu i mówi o tym wprost", async ({ page }) => {
+  test("a wrong answer does not move the dialogue and says so plainly", async ({ page }) => {
     await otworz(page, "bar-mattina");
     const bable = await page.locator(".dlg__line").count();
 
@@ -183,22 +187,22 @@ test.describe("rozmowy", () => {
 
     await expect(page.locator(".js-fb.is-on")).toBeVisible();
     await expect(page.locator(".js-fb")).toHaveClass(/fb--ko/);
-    /* Ani jednego nowego dymka: scena stoi tam, gdzie stała. */
+    /* Not one new bubble: the scene stands where it stood. */
     expect(await page.locator(".dlg__line").count()).toBe(bable);
     await expect(page.locator(".js-in")).toBeVisible();
-    /* Wpisane słowa zostają — poprawianie własnej odpowiedzi jest sensem
-       zatrzymania, a czyszczenie pola kazałoby pisać od nowa. */
+    /* The typed words stay — correcting your own answer is the point of
+       stopping, and clearing the field would mean typing it all again. */
     expect(await page.inputValue(".js-in")).toBe("spaghetti alle vongole");
 
-    /* Ta sama tura przyjmuje poprawną replikę: blokada jest na odpowiedzi,
-       nie na scenie. */
+    /* The same turn accepts the correct line: the block is on the answer,
+       not on the scene. */
     await page.fill(".js-in", BAR[0]);
     await page.click(".js-send");
     await czekajNaTure(page);
     expect(await page.locator(".dlg__line").count()).toBeGreaterThan(bable);
   });
 
-  test("„Pokaż odpowiedź\" jest wyjściem z tury: wzór wchodzi do transkryptu", async ({ page }) => {
+  test("\"Show the answer\" is the way out of a turn: the model enters the transcript", async ({ page }) => {
     await otworz(page, "bar-mattina");
     await page.fill(".js-in", "qualcosa a caso");
     await page.click(".js-send");
@@ -216,10 +220,10 @@ test.describe("rozmowy", () => {
     await expect(page.locator(".summary__score")).toHaveText("0/4", { timeout: 30000 });
   });
 
-  test("podpowiedź jest w języku ucznia, włoski wzór dopiero po rezygnacji", async ({ page }) => {
+  test("the hint is in the student's language, the Italian model only after giving up", async ({ page }) => {
     await otworz(page, "presentarsi");
     await czekajNaTure(page);
-    /* Włoskie zdanie w podpowiedzi robiło z rozmowy przepisywanie. */
+    /* An Italian sentence in the hint turned the conversation into copying. */
     const podp = await page.locator(".voice-pl").first().innerText();
     expect(podp).toContain("Jasne, proszę!");
     expect(podp).not.toContain("Certo, prego");

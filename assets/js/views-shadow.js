@@ -143,7 +143,7 @@
           stan(t(klucz));
         }
       });
-      if (uchwyt) { /* uchwyt zwrócony dla symetrii; stop idzie przez moduł */ }
+      if (uchwyt) { /* the handle is returned for symmetry; stop goes through the module */ }
     });
 
     root.querySelector(".js-play-mine").addEventListener("click", function () {

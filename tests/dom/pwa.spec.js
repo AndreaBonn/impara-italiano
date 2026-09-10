@@ -1,34 +1,34 @@
 /* ============================================================
    Praca bez sieci.
 
-   README obiecywał to od dawna; do tej pory obietnica kończyła się
-   na pierwszym odświeżeniu. Te testy sprawdzają obietnicę, a nie
-   obecność pliku sw.js.
+   The README promised this for a long time; until now the promise ended at
+   the first refresh. These tests check the promise, not the presence of a
+   sw.js file.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
 /**
- * Czeka, aż worker NAPRAWDĘ przejmie stronę.
+ * Waits until the worker REALLY takes over the page.
  *
- * Pierwsza wersja czekała na `controller !== undefined`, a przy stronie
- * jeszcze nieprzejętej `controller` jest **null** — warunek spełniał się
- * natychmiast i test biegł bez workera. Wychodziło to na jaw dopiero,
- * gdy zmiana wersji przesunęła moment przejęcia.
+ * The first version waited for `controller !== undefined`, and on a page not
+ * yet taken over `controller` is **null** — the condition was satisfied
+ * immediately and the test ran without a worker. It only came to light when
+ * a version change moved the moment of takeover.
  */
 async function workerGotowy(page) {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.App);
   await page.evaluate(() => navigator.serviceWorker.ready);
   if (!(await page.evaluate(() => !!navigator.serviceWorker.controller))) {
-    /* Zarejestrowany, ale ta karta wystartowała wcześniej: po odświeżeniu
-       wchodzi już pod jego kontrolą. */
+    /* Registered, but this tab started earlier: after a refresh it comes in
+       under its control. */
     await page.reload();
     await page.waitForFunction(() => window.App);
   }
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 10000 });
 }
 
-test("manifest jest kompletny i wskazuje na istniejące ikony", async ({ page, request }) => {
+test("the manifest is complete and points at icons that exist", async ({ page, request }) => {
   await page.goto("/index.html");
   const href = await page.locator('link[rel="manifest"]').getAttribute("href");
   expect(href).toBe("manifest.webmanifest");
@@ -38,12 +38,12 @@ test("manifest jest kompletny i wskazuje na istniejące ikony", async ({ page, r
   const m = await res.json();
 
   expect(m.name).toBeTruthy();
-  expect(m.short_name.length, "short_name powinien się mieścić pod ikoną").toBeLessThanOrEqual(12);
+  expect(m.short_name.length, "short_name should fit under the icon").toBeLessThanOrEqual(12);
   expect(m.display).toBe("standalone");
   expect(m.start_url).toBeTruthy();
 
-  /* Instalacja wymaga ikony 192 i 512; maskable decyduje o tym, czy
-     Android nie obetnie rogów własnym kształtem. */
+  /* Installation requires a 192 and a 512 icon; maskable decides whether
+     Android cuts the corners off with a shape of its own. */
   const rozmiary = m.icons.map(i => i.sizes);
   expect(rozmiary).toContain("192x192");
   expect(rozmiary).toContain("512x512");
@@ -51,12 +51,12 @@ test("manifest jest kompletny i wskazuje na istniejące ikony", async ({ page, r
 
   for (const ikona of m.icons) {
     const r = await request.get("/" + ikona.src);
-    expect(r.ok(), `brakująca ikona: ${ikona.src}`).toBe(true);
+    expect(r.ok(), `missing icon: ${ikona.src}`).toBe(true);
     expect(r.headers()["content-type"]).toContain("image/png");
   }
 });
 
-test("worker rejestruje się i przejmuje stronę", async ({ page }) => {
+test("the worker registers and takes over the page", async ({ page }) => {
   await workerGotowy(page);
   const stan = await page.evaluate(async () => {
     const reg = await navigator.serviceWorker.getRegistration();
@@ -66,9 +66,9 @@ test("worker rejestruje się i przejmuje stronę", async ({ page }) => {
   expect(stan.aktywny).toBe(true);
 });
 
-test("po utracie sieci strona nadal się otwiera", async ({ page, context }) => {
+test("with the network gone the page still opens", async ({ page, context }) => {
   await workerGotowy(page);
-  /* Pierwsze wejście napełnia pamięć; dopiero potem odcinamy sieć. */
+  /* The first visit fills the cache; only then do we cut the network. */
   await page.reload();
   await page.waitForFunction(() => window.Core && window.Core.registry.levels.length > 0);
 
@@ -78,16 +78,16 @@ test("po utracie sieci strona nadal się otwiera", async ({ page, context }) => 
   await expect(page.locator("#main")).toBeVisible();
   await page.waitForFunction(() => window.Core && window.Views && window.Ex, null, { timeout: 10000 });
   const poziomy = await page.evaluate(() => window.Core.registry.levels.length);
-  expect(poziomy, "spis poziomów przetrwał brak sieci").toBeGreaterThan(0);
+  expect(poziomy, "the level index survived the loss of network").toBeGreaterThan(0);
 
   await context.setOffline(false);
 });
 
-/* Bez kroku budowania pliki nie mają skrótu w nazwie, więc jedyną wersją
-   jest stała w sw.js, podnoszona ręcznie. Cache-first zamroziłby ucznia
-   na starym kodzie po zapomnianym podniesieniu — nieodwracalnie z jego
-   strony i niewidocznie z naszej. */
-test("kod pobiera się z sieci, gdy sieć jest", async ({ page }) => {
+/* With no build step the files have no hash in their names, so the only
+   version is the constant in sw.js. Cache-first would freeze the student on
+   old code after a forgotten bump — irreversibly from their side and
+   invisibly from ours. */
+test("the code is fetched from the network while there is a network", async ({ page }) => {
   await workerGotowy(page);
 
   const zadania = [];
@@ -95,14 +95,14 @@ test("kod pobiera się z sieci, gdy sieć jest", async ({ page }) => {
   await page.reload();
   await page.waitForFunction(() => window.Core);
 
-  expect(zadania.length, "core.js poszedł po sieć, a nie prosto z pamięci").toBeGreaterThan(0);
+  expect(zadania.length, "core.js went to the network rather than straight to the cache").toBeGreaterThan(0);
 });
 
-test("nagrania nie są pobierane po raz drugi", async ({ page }) => {
+test("recordings are not fetched a second time", async ({ page }) => {
   await workerGotowy(page);
 
   const wynik = await page.evaluate(async () => {
-    /* Bierzemy pierwszy skrót z indeksu: plik na pewno istnieje. */
+    /* We take the first hash from the index: the file certainly exists. */
     const hash = window.AUDIO_INDEX.slice(0, 16);
     const url = "audio/" + hash.slice(0, 2) + "/" + hash + ".mp3";
     await fetch(url);
@@ -112,10 +112,10 @@ test("nagrania nie są pobierane po raz drugi", async ({ page }) => {
     return { url: url, wPamieci: klucze.some(k => k.url.endsWith(url)) };
   });
 
-  expect(wynik.wPamieci, `nagranie ${wynik.url} nie trafiło do pamięci`).toBe(true);
+  expect(wynik.wPamieci, `the recording ${wynik.url} did not reach the cache`).toBe(true);
 });
 
-test("cudza domena nie jest przechwytywana", async ({ page }) => {
+test("a foreign origin is not intercepted", async ({ page }) => {
   await workerGotowy(page);
   const obce = await page.evaluate(async () => {
     const nazwy = await caches.keys();
@@ -128,5 +128,5 @@ test("cudza domena nie jest przechwytywana", async ({ page }) => {
     }
     return wszystkie;
   });
-  expect(obce, `w pamięci wylądowały cudze adresy: ${obce.join(", ")}`).toEqual([]);
+  expect(obce, `foreign addresses landed in the cache: ${obce.join(", ")}`).toEqual([]);
 });

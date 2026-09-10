@@ -1,5 +1,5 @@
 /* ============================================================
-   Czytanie, słuchanie ciągłe, dyktando.
+   Reading, continuous listening, dictation.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
@@ -15,7 +15,7 @@ async function tekst(page, id, mode) {
   await page.waitForSelector("#readBox");
 }
 
-test("każde zdanie każdej czytanki ma nagranie", async ({ page }) => {
+test("every sentence of every reading has a recording", async ({ page }) => {
   await lista(page);
   const brak = await page.evaluate(() => {
     const zle = [];
@@ -27,7 +27,7 @@ test("każde zdanie każdej czytanki ma nagranie", async ({ page }) => {
   expect(brak, `bez nagrania: ${brak.slice(0, 3).join(" | ")}`).toEqual([]);
 });
 
-test("lista pokazuje tytuł włoski i tłumaczenie", async ({ page }) => {
+test("the list shows the Italian title and the translation", async ({ page }) => {
   await lista(page);
   const n = await page.evaluate(() => window.READINGS.length);
   await expect(page.locator(".js-open")).toHaveCount(n);
@@ -37,33 +37,33 @@ test("lista pokazuje tytuł włoski i tłumaczenie", async ({ page }) => {
   await expect(wiersz.locator("span span").first()).not.toBeEmpty();
 });
 
-test("tryb czytania pokazuje tekst i przycisk przy każdym zdaniu", async ({ page }) => {
+test("reading mode shows the text and a button at every sentence", async ({ page }) => {
   await tekst(page, "r-a1-mattina");
   const zdan = await page.evaluate(() => window.READINGS[0].sentences.length);
   await expect(page.locator("#readBox .say-btn")).toHaveCount(zdan);
   await expect(page.locator("#readBox .js-all")).toBeVisible();
 });
 
-test("glosy pokazują słowo i jego tłumaczenie", async ({ page }) => {
+test("the glosses show a word and its translation", async ({ page }) => {
   await tekst(page, "r-a1-mattina");
   const glosy = await page.locator("#readBox .card .list-row").count();
   const ile = await page.evaluate(() => window.READINGS[0].glossIt.length);
   expect(glosy).toBe(ile);
 });
 
-/* Sedno trybu słuchania: tekst NIE może być widoczny, bo inaczej to jest
-   czytanie z podkładem, nie rozumienie ze słuchu. */
-test("tryb słuchania nie pokazuje tekstu", async ({ page }) => {
+/* The point of listening mode: the text must NOT be visible, otherwise this
+   is reading with a soundtrack, not listening comprehension. */
+test("listening mode does not show the text", async ({ page }) => {
   await tekst(page, "r-a1-mattina", "listen");
   const widoczne = await page.evaluate(() => {
     const zdanie = window.READINGS[0].sentences[0];
     return document.getElementById("readBox").innerText.includes(zdanie);
   });
-  expect(widoczne, "zdania z tekstu nie mogą być na ekranie").toBe(false);
+  expect(widoczne, "the sentences of the text must not be on screen").toBe(false);
   await expect(page.locator("#readBox .js-all")).toBeVisible();
 });
 
-test("pytania są po włosku i pojawiają się na żądanie", async ({ page }) => {
+test("the questions are in Italian and appear on demand", async ({ page }) => {
   await tekst(page, "r-a1-mattina", "listen");
   await expect(page.locator("#quizBox .exq")).toHaveCount(0);
 
@@ -71,16 +71,16 @@ test("pytania są po włosku i pojawiają się na żądanie", async ({ page }) =
   const ile = await page.evaluate(() => window.READINGS[0].questions.length);
   await expect(page.locator("#quizBox .exq")).toHaveCount(ile);
 
-  /* Pytania siedzą w warstwie neutralnej, więc nie zmieniają się z językiem. */
+  /* The questions sit in the neutral layer, so they do not change with the language. */
   const przed = await page.locator("#quizBox .exq__prompt").first().innerText();
   await page.evaluate(() => new Promise(r => window.Core.setLanguage("de", r)));
   await page.locator(".js-mode[data-mode='listen']").click();
   await page.locator(".js-quiz").click();
   const po = await page.locator("#quizBox .exq__prompt").first().innerText();
-  expect(po, "treść pytania jest włoska i niezależna od języka wyjaśnień").toBe(przed);
+  expect(po, "the question text is Italian and independent of the explanation language").toBe(przed);
 });
 
-test("dyktando idzie zdanie po zdaniu i kończy się wynikiem", async ({ page }) => {
+test("dictation goes sentence by sentence and ends with a result", async ({ page }) => {
   await tekst(page, "r-a1-mattina", "dictation");
   await expect(page.locator(".exq")).toBeVisible();
 
@@ -98,7 +98,7 @@ test("dyktando idzie zdanie po zdaniu i kończy się wynikiem", async ({ page })
   await expect(page.locator(".summary")).toBeVisible();
 });
 
-test("przełączanie trybów zostaje w adresie", async ({ page }) => {
+test("switching modes stays in the address", async ({ page }) => {
   await tekst(page, "r-a1-mattina");
   await page.locator('.js-mode[data-mode="dictation"]').click();
   await expect(page).toHaveURL(/mode=dictation/);
@@ -106,7 +106,7 @@ test("przełączanie trybów zostaje w adresie", async ({ page }) => {
   await expect(page.locator('.js-mode[data-mode="dictation"]')).toHaveAttribute("aria-current", "true");
 });
 
-test("napisy czytanek istnieją w pięciu językach", async ({ page }) => {
+test("the reading strings exist in five languages", async ({ page }) => {
   await lista(page);
   const braki = await page.evaluate(async () => {
     const out = {};

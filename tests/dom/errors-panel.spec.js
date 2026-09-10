@@ -1,9 +1,9 @@
 /* ============================================================
-   Zakładka „Błędy" w Powtórkach.
+   The "Mistakes" tab inside Reviews.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/** Zakłada kartę błędu bez przechodzenia przez interfejs lekcji. */
+/** Creates a mistake card without going through the lesson interface. */
 async function zepsujOdpowiedz(page, lekcjaId, indeks) {
   return page.evaluate(([id, i]) => {
     const L = window.Core.getLesson(id).lesson;
@@ -16,7 +16,7 @@ async function start(page) {
   await page.waitForFunction(() => window.Core && window.Errors && window.Train);
 }
 
-test("zakładki są widoczne i przełączają się przez adres", async ({ page }) => {
+test("the tabs are visible and switch through the address", async ({ page }) => {
   await start(page);
   await expect(page.locator(".tab")).toHaveCount(2);
 
@@ -24,12 +24,12 @@ test("zakładki są widoczne i przełączają się przez adres", async ({ page }
   await expect(page).toHaveURL(/tab=errori/);
   await expect(page.locator('.tab[data-tab="errori"]')).toHaveAttribute("aria-current", "true");
 
-  /* Adres niesie stan, więc odświeżenie wraca w to samo miejsce. */
+  /* The address carries the state, so a refresh comes back to the same place. */
   await page.reload();
   await expect(page.locator('.tab[data-tab="errori"]')).toHaveAttribute("aria-current", "true");
 });
 
-test("bez błędów zakładka tłumaczy, po co jest", async ({ page }) => {
+test("with no mistakes the tab explains what it is for", async ({ page }) => {
   await start(page);
   await page.locator('.tab[data-tab="errori"]').click();
   const pusty = page.locator(".empty");
@@ -37,22 +37,23 @@ test("bez błędów zakładka tłumaczy, po co jest", async ({ page }) => {
   await expect(pusty.locator("h3")).not.toBeEmpty();
 });
 
-test("po pomyłce zakładka pokazuje zadanie do powtórki i zagadnienie", async ({ page }) => {
+test("after a mistake the tab shows a task to review and its topic", async ({ page }) => {
   await start(page);
   const klucz = await zepsujOdpowiedz(page, "a1-u01-l2", 1);
   expect(klucz).toContain("a1-u01-l2");
 
-  /* Świeża pomyłka wraca za dziesięć minut: cofamy termin, żeby test
-     nie czekał na zegar (i nie zależał od jego dokładności). */
+  /* A fresh mistake comes back in ten minutes: we move the due date back so
+     the test does not wait on the clock (and does not depend on its
+     accuracy). */
   await page.evaluate(k => { window.Core.state.errors[k].due = Date.now() - 1000; }, klucz);
 
   await page.goto("/index.html#/ripasso?tab=errori");
   await page.waitForSelector(".js-start");
   await expect(page.locator("#ripassoBody")).toContainText("a1-u01-l2".slice(0, 0) + "");
-  await expect(page.locator(".list-row b").first(), "nazwa zagadnienia z hasła gramatycznego").not.toBeEmpty();
+  await expect(page.locator(".list-row b").first(), "the topic name taken from a grammar entry").not.toBeEmpty();
 });
 
-test("powtórka pokazuje to samo ćwiczenie i przyjmuje odpowiedź", async ({ page }) => {
+test("the review shows the same exercise and accepts an answer", async ({ page }) => {
   await start(page);
   const klucz = await zepsujOdpowiedz(page, "a1-u01-l2", 1);
   await page.evaluate(k => { window.Core.state.errors[k].due = Date.now() - 1000; }, klucz);
@@ -72,15 +73,15 @@ test("powtórka pokazuje to samo ćwiczenie i przyjmuje odpowiedź", async ({ pa
 
   await expect(page.locator(".js-next")).toBeVisible();
 
-  /* Jedna poprawna odpowiedź posuwa kartę, ale jej nie kończy: próg to dwie. */
+  /* One correct answer moves the card forward but does not retire it: the threshold is two. */
   const reps = await page.evaluate(k => (window.Core.state.errors[k] || {}).reps, klucz);
   expect(reps).toBe(1);
 });
 
-test("karta bez ćwiczenia znika i uczeń się o tym dowiaduje", async ({ page }) => {
+test("a card with no exercise disappears and the student is told", async ({ page }) => {
   await start(page);
 
-  /* Karta wskazująca na treść, której w kursie nie ma. */
+  /* A card pointing at content that is not in the course. */
   await page.evaluate(() => {
     window.Core.state.errors["a1-u01-l2#deadbeefdeadbeef#0"] = {
       kind: "authored", tag: "g-nome-genere", srcId: "a1-u01-l2",
@@ -94,10 +95,10 @@ test("karta bez ćwiczenia znika i uczeń się o tym dowiaduje", async ({ page }
   await expect(page.locator(".summary")).toBeVisible();
   await expect(page.locator(".summary")).toContainText(/./);
   const zostalo = await page.evaluate(() => Object.keys(window.Core.state.errors).length);
-  expect(zostalo, "karta bez ćwiczenia została usunięta").toBe(0);
+  expect(zostalo, "the card with no exercise was removed").toBe(0);
 });
 
-test("wszystkie napisy zakładki istnieją w pięciu językach", async ({ page }) => {
+test("every string of the tab exists in five languages", async ({ page }) => {
   await start(page);
 
   const brakujace = await page.evaluate(async () => {

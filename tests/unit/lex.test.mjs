@@ -1,9 +1,10 @@
 /* ============================================================
-   Leksykon: reguły, nie tabele.
+   The lexicon: rules, not tables.
 
-   Każda z tych funkcji jest kluczem odpowiedzi dla generatora, więc
-   błąd tutaj nie wygląda na błąd — wygląda na ćwiczenie, w którym
-   uczeń „się myli". Formy sprawdzane wprost, po jednej.
+   Every one of these functions is an answer key for the generator, so a
+   mistake here does not look like a mistake — it looks like an exercise in
+   which the student "gets it wrong". The forms are checked explicitly, one
+   by one.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -13,18 +14,18 @@ function lex() {
   return loadEngine({ files: ["assets/js/drills-lex.js"] }).sandbox.Lex;
 }
 
-describe("rodzajnik określony", () => {
+describe("the definite article", () => {
   const przypadki = [
     ["libro", "m", false, "il"],
     ["tavolo", "m", false, "il"],
     ["zaino", "m", false, "lo"],          // z
-    ["studente", "m", false, "lo"],       // s + spółgłoska
+    ["studente", "m", false, "lo"],       // s + consonant
     ["specchio", "m", false, "lo"],       // sp
     ["stadio", "m", false, "lo"],         // st
     ["gnocco", "m", false, "lo"],         // gn
     ["psicologo", "m", false, "lo"],      // ps
     ["yogurt", "m", false, "lo"],         // y
-    ["amico", "m", false, "l'"],          // samogłoska
+    ["amico", "m", false, "l'"],          // a vowel
     ["casa", "f", false, "la"],
     ["acqua", "f", false, "l'"],
     ["isola", "f", false, "l'"],
@@ -42,10 +43,10 @@ describe("rodzajnik określony", () => {
   });
 });
 
-describe("rodzajnik nieokreślony", () => {
+describe("the indefinite article", () => {
   const przypadki = [
     ["libro", "m", "un"], ["zaino", "m", "uno"], ["studente", "m", "uno"],
-    ["amico", "m", "un"],                 // męski przed samogłoską to „un", bez apostrofu
+    ["amico", "m", "un"],                 // the masculine before a vowel is "un", with no apostrophe
     ["casa", "f", "una"], ["acqua", "f", "un'"], ["isola", "f", "un'"]
   ];
   przypadki.forEach(([w, g, oczek]) => {
@@ -76,14 +77,14 @@ describe("liczba mnoga", () => {
     });
   });
 
-  test("nieregularne z leksykonu mają pierwszeństwo przed regułą", () => {
+  test("the irregulars from the lexicon take precedence over the rule", () => {
     const L = lex();
     const uomo = L.NOUNS.filter(n => n.s === "uomo")[0];
     assert.equal(L.pluralOf(uomo), "uomini");
   });
 });
 
-describe("zgodność przymiotnika", () => {
+describe("adjective agreement", () => {
   const przypadki = [
     [{ s: "rosso", t: "o" }, "m", false, "rosso"],
     [{ s: "rosso", t: "o" }, "f", false, "rossa"],
@@ -106,9 +107,9 @@ describe("zgodność przymiotnika", () => {
   });
 });
 
-describe("przyimek ściągnięty", () => {
-  /* Pełna tablica 5 × 7: to jest klucz odpowiedzi całego generatora,
-     więc sprawdzana jest w całości, a nie na próbce. */
+describe("the contracted preposition", () => {
+  /* The full 5 × 7 table: it is the answer key of the whole generator, so it
+     is checked in full rather than on a sample. */
   const TABELA = {
     di: { il: "del", lo: "dello", "l'": "dell'", la: "della", i: "dei", gli: "degli", le: "delle" },
     a: { il: "al", lo: "allo", "l'": "all'", la: "alla", i: "ai", gli: "agli", le: "alle" },
@@ -126,43 +127,43 @@ describe("przyimek ściągnięty", () => {
     });
   });
 
-  test("con nie ściąga się: zostaje osobno", () => {
+  test("con does not contract: it stays separate", () => {
     assert.equal(lex().articulate("con", "il"), "con il");
   });
 });
 
 describe("higiena leksykonu", () => {
-  test("ani jednego słowa w języku ucznia", () => {
+  test("not one word in the student's language", () => {
     const L = lex();
     const tekst = JSON.stringify([L.NOUNS, L.ADJ, L.VERBS]);
-    assert.equal(/[ąęłżźćńśáéíóúñçäöüß]/.test(tekst), false, "leksykon jest wyłącznie włoski");
+    assert.equal(/[ąęłżźćńśáéíóúñçäöüß]/.test(tekst), false, "the lexicon is Italian only");
   });
 
-  test("każdy czasownik ma zadeklarowane posiłkowe", () => {
+  test("every verb has its auxiliary declared", () => {
     lex().VERBS.forEach(v => {
       assert.ok(["avere", "essere", "both"].indexOf(v.aux) >= 0, `${v.inf}: ${v.aux}`);
     });
   });
 
-  test("zbiór jest dość duży, żeby ćwiczenia się nie powtarzały", () => {
+  test("the set is large enough for the exercises not to repeat", () => {
     const L = lex();
-    assert.ok(L.NOUNS.length >= 50, `rzeczowników: ${L.NOUNS.length}`);
-    assert.ok(L.ADJ.length >= 20, `przymiotników: ${L.ADJ.length}`);
-    assert.ok(L.VERBS.length >= 30, `czasowników: ${L.VERBS.length}`);
+    assert.ok(L.NOUNS.length >= 50, `nouns: ${L.NOUNS.length}`);
+    assert.ok(L.ADJ.length >= 20, `adjectives: ${L.ADJ.length}`);
+    assert.ok(L.VERBS.length >= 30, `verbs: ${L.VERBS.length}`);
   });
 });
 
-/* Znalezione w przeglądzie: gałąź i+samogłoska w regule LO była martwa,
-   bo test samogłoski wypadał wcześniej. W leksykonie nie ma dziś takiego
-   słowa, więc żaden istniejący test tego nie łapał. */
-describe("regresje z przeglądu", () => {
-  test("i+samogłoska bierze lo, nie l'", () => {
+/* Found in review: the i+vowel branch of the LO rule was dead, because the
+   vowel test came first. There is no such word in the lexicon today, so no
+   existing test caught it. */
+describe("regressions from the review", () => {
+  test("i+vowel takes lo, not l'", () => {
     const L = lex();
     assert.equal(L.definite("iodio", "m", false), "lo");
     assert.equal(L.definite("iugoslavo", "m", false), "lo");
   });
 
-  test("a zwykła samogłoska nadal bierze l'", () => {
+  test("while an ordinary vowel still takes l'", () => {
     const L = lex();
     assert.equal(L.definite("amico", "m", false), "l'");
     assert.equal(L.definite("uomo", "m", false), "l'");
@@ -170,7 +171,7 @@ describe("regresje z przeglądu", () => {
     assert.equal(L.definite("esame", "m", false), "l'");
   });
 
-  test("reszta reguły LO nietknięta", () => {
+  test("the rest of the LO rule untouched", () => {
     const L = lex();
     [["studente","lo"],["zaino","lo"],["gnocco","lo"],["psicologo","lo"],
      ["yogurt","lo"],["libro","il"],["cane","il"]].forEach(([w, oczek]) => {
@@ -180,14 +181,15 @@ describe("regresje z przeglądu", () => {
 });
 
 describe("liczba mnoga: wyrazy niezmienne", () => {
-  /* Reguły kończą się na samogłosce; wyraz z akcentem na końcu albo
-     zakończony spółgłoską nie ma reguły i ZOSTAJE. Bez tej gałęzi klucz
-     odpowiedzi brzmiałby „cittài" i uczeń dostawałby błąd za formę poprawną. */
+  /* The rules end on a vowel; a word with a final accent or ending in a
+     consonant has no rule and STAYS. Without that branch the answer key
+     would read "cittài" and the student would be marked wrong for a correct
+     form. */
   test("wyraz z akcentem na ostatniej sylabie nie zmienia formy", () => {
     assert.equal(lex().pluralOf({ s: "città", g: "f" }), "città");
   });
 
-  test("zapożyczenie zakończone spółgłoską też zostaje", () => {
+  test("a loanword ending in a consonant stays too", () => {
     assert.equal(lex().pluralOf({ s: "yogurt", g: "m" }), "yogurt");
   });
 });

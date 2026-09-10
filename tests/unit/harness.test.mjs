@@ -1,7 +1,7 @@
 /* ============================================================
-   Sprawdzenie samej piaskownicy. Jeśli te testy padają, to nie
-   silnik jest zepsuty, tylko sposób, w jaki go wczytujemy —
-   a wtedy każdy inny wynik w tym katalogu jest bez wartości.
+   A check on the sandbox itself. If these tests fail, it is not the engine
+   that is broken but the way we load it — and then every other result in
+   this directory is worthless.
    ============================================================ */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -13,22 +13,22 @@ test("piaskownica wystawia Core bez zmiany w aplikacji", () => {
   assert.equal(typeof box.Core.norm, "function");
 });
 
-test("norm zwęża białe znaki i przycina", () => {
+test("norm collapses whitespace and trims", () => {
   const box = loadEngine();
   assert.equal(box.Core.norm(" A  b "), "a b");
 });
 
-test("norm zdejmuje akcenty, chyba że proszono inaczej", () => {
+test("norm removes the accents unless asked otherwise", () => {
   const box = loadEngine();
   assert.equal(box.Core.norm("perché"), "perche");
   assert.equal(box.Core.norm("perché", { keepAccents: true }), "perché");
 });
 
-test("podstawiony zegar nie płynie sam", () => {
+test("the substituted clock does not run on its own", () => {
   const box = loadEngine();
   let fired = false;
   box.sandbox.setTimeout(() => { fired = true; }, 180);
-  assert.equal(fired, false, "timer nie może odpalić bez flush");
+  assert.equal(fired, false, "a timer must not fire without flush");
   box.flush();
   assert.equal(fired, true);
 });
@@ -41,6 +41,6 @@ test("localStorage z limitem rzuca QuotaExceededError", () => {
 
 test("toast trafia do zebranego rejestru zamiast do DOM", () => {
   const box = loadEngine();
-  box.Core.toast("wiadomość");
-  assert.deepEqual(box.toasts, ["wiadomość"]);
+  box.Core.toast("a message");
+  assert.deepEqual(box.toasts, ["a message"]);
 });

@@ -1,11 +1,11 @@
 /* ============================================================
-   T067 — treść z cudzego pliku nie wykonuje się w ŻADNYM widoku.
+   T067 — content from somebody else's file does not execute in ANY view.
 
-   Import to jedyne miejsce, w którym uczeń wpuszcza do kursu napis
-   napisany przez kogoś innego. Ten napis wraca potem w trzech miejscach:
-   w podglądzie importu, w Moim słowniku i w Pokryciu. Sprawdzenie samego
-   podglądu dawałoby fałszywe poczucie: wystarczy jedno miejsce, które
-   wstawia go przez innerHTML, i obrona jest po nic.
+   The import is the only place where the student lets a string written by
+   somebody else into the course. That string then comes back in three
+   places: in the import preview, in My dictionary and in Coverage. Checking
+   the preview alone would give a false sense of safety: one place inserting
+   it through innerHTML is enough and the defence is worth nothing.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
@@ -20,13 +20,13 @@ async function zTaliaOstila(page) {
   }, OSTILE);
 }
 
-/** Czy przeglądarka wykonała cokolwiek z wstrzykniętego napisu. */
+/** Whether the browser executed anything from the injected string. */
 async function wykonane(page) {
   return page.evaluate(() => window.__wykonane === 1);
 }
 
-test.describe("import: wroga treść zostaje napisem", () => {
-  test("Mój słownik pokazuje napis, nie znacznik", async ({ page }) => {
+test.describe("import: hostile content stays a string", () => {
+  test("My dictionary shows a string, not markup", async ({ page }) => {
     await zTaliaOstila(page);
     await page.evaluate(() => App.go("lessico"));
     await page.waitForSelector(".list-row");
@@ -36,7 +36,7 @@ test.describe("import: wroga treść zostaje napisem", () => {
     await expect(page.locator("#lexList").first()).toContainText("onerror");
   });
 
-  test("Powtórki pokazują napis, nie znacznik", async ({ page }) => {
+  test("Reviews show a string, not markup", async ({ page }) => {
     await zTaliaOstila(page);
     await page.evaluate(() => { Object.keys(Core.state.srs).forEach(k => { Core.state.srs[k].due = 1; }); App.go("ripasso"); });
     await page.waitForTimeout(400);
@@ -58,7 +58,7 @@ test.describe("import: wroga treść zostaje napisem", () => {
     expect(await page.locator("#covList img").count()).toBe(0);
   });
 
-  test("podgląd importu pokazuje napis i nie dotyka stanu przed potwierdzeniem", async ({ page }) => {
+  test("the import preview shows a string and does not touch the state before confirmation", async ({ page }) => {
     await page.goto("/index.html#/impostazioni");
     await page.waitForSelector(".js-tsv-in", { state: "attached" });
 

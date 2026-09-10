@@ -1,14 +1,14 @@
 /* ============================================================
-   Pokrycie listy częstości — funkcje czyste.
+   Frequency-list coverage - pure functions.
 
-   Listy są budowane ręcznie i mają po kilka pozycji: chodzi o to, żeby
-   przy zerwaniu było widać, KTÓRA reguła się zmieniła, a nie żeby test
-   powtórzył obliczenie na dwa tysiące form.
+   The lists are built by hand and hold a few entries each: the point is that
+   when something breaks it is clear WHICH rule changed, not that the test
+   repeats the computation over two thousand forms.
 
-   Rzecz, której ten test pilnuje przede wszystkim: forma odmieniona ma
-   się zaliczać. Lista częstości jest listą FORM, a talia jest talią
-   HASEŁ, więc bez przejścia przez resolver licznik pokazywałby braki
-   dokładnie tam, gdzie uczeń słowo umie — i to systematycznie.
+   The thing this test guards above all: an inflected form must count. The
+   frequency list is a list of FORMS and the deck is a deck of LEMMAS, so
+   without going through the resolver the counter would report gaps exactly
+   where the student knows the word - and systematically so.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -24,15 +24,15 @@ function silnik(czytanki) {
   return box.sandbox;
 }
 
-/* [forma, ile razy] — jak w data/core/frequenza.js */
+/* [form, occurrences] - as in data/core/frequenza.js */
 const LISTA = [
   ["che", 100], ["bevo", 50], ["casa", 40], ["libri", 30],
   ["mangiato", 20], ["turisti", 10], ["xyzzy", 5]
 ];
 const TOKENOW = 255;
 
-describe("frequency: pokrycie zbioru haseł", () => {
-  test("puste hasła dają zero, ale nie wywracają liczenia", () => {
+describe("frequency: coverage of the lemma set", () => {
+  test("an empty lemma set gives zero without breaking the count", () => {
     const s = silnik();
     const p = s.Frequency.pokrycie(LISTA, {}, TOKENOW);
     assert.equal(p.znane, 0);
@@ -40,28 +40,28 @@ describe("frequency: pokrycie zbioru haseł", () => {
     assert.equal(p.udzialTokenow, 0);
   });
 
-  test("trafienie dosłowne liczy się razem ze swoją częstością", () => {
+  test("a literal hit counts together with its frequency", () => {
     const s = silnik();
     const p = s.Frequency.pokrycie(LISTA, { casa: true }, TOKENOW);
     assert.equal(p.znane, 1);
-    assert.ok(Math.abs(p.udzialTokenow - 40 / 255) < 1e-9, "udział to 40 z 255 tokenów");
+    assert.ok(Math.abs(p.udzialTokenow - 40 / 255) < 1e-9, "the share is 40 out of 255 tokens");
   });
 
-  test("forma odmieniona zalicza się do hasła podstawowego", () => {
+  test("an inflected form counts towards its base lemma", () => {
     const s = silnik();
-    /* „bere” w talii ma pokryć „bevo” na liście, „libro” ma pokryć
-       „libri”, a „mangiare” ma pokryć imiesłów „mangiato”. */
+    /* "bere" in the deck must cover "bevo" on the list, "libro" must cover
+       "libri", and "mangiare" must cover the participle "mangiato". */
     const p = s.Frequency.pokrycie(LISTA, { bere: true, libro: true, mangiare: true }, TOKENOW);
-    assert.equal(p.znane, 3, "trzy formy zaliczone przez odmianę, nie przez zbieżność napisów");
+    assert.equal(p.znane, 3, "three forms counted through inflection, not through string similarity");
   });
 
-  test("słowo spoza zbioru zostaje niepokryte", () => {
+  test("a word outside the set stays uncovered", () => {
     const s = silnik();
     const p = s.Frequency.pokrycie(LISTA, { casa: true }, TOKENOW);
-    assert.ok(p.znane < p.wszystkie, "xyzzy nie ma prawa się zaliczyć");
+    assert.ok(p.znane < p.wszystkie, "xyzzy has no right to count");
   });
 
-  test("lista pusta nie dzieli przez zero", () => {
+  test("an empty list does not divide by zero", () => {
     const s = silnik();
     const p = s.Frequency.pokrycie([], { casa: true }, 0);
     assert.equal(p.znane, 0);
@@ -69,58 +69,59 @@ describe("frequency: pokrycie zbioru haseł", () => {
   });
 });
 
-describe("frequency: najbliższe braki", () => {
-  test("wychodzą tylko te, których kurs uczy, a uczeń nie ma", () => {
+describe("frequency: the nearest gaps", () => {
+  test("only the ones the course teaches and the student does not have come out", () => {
     const s = silnik();
     const kurs = { casa: true, libro: true, bere: true };
     const uczen = { bere: true };
     const hasla = Array.from(s.Frequency.brakujace(LISTA, kurs, uczen, 10)).map(b => b.haslo);
-    assert.ok(hasla.includes("casa"), "kurs zna, uczeń nie ma");
-    assert.ok(hasla.includes("libro"), "wychodzi HASŁO, nie forma „libri” z listy");
-    assert.ok(!hasla.includes("bere"), "uczeń ma bere, więc bevo nie jest brakiem");
-    assert.ok(!hasla.includes("xyzzy"), "kurs tego nie uczy: podsuwanie byłoby przerzuceniem roboty");
+    assert.ok(hasla.includes("casa"), "the course knows it, the student does not have it");
+    assert.ok(hasla.includes("libro"), "the LEMMA comes out, not the form \"libri\" from the list");
+    assert.ok(!hasla.includes("bere"), "the student has bere, so bevo is not a gap");
+    assert.ok(!hasla.includes("xyzzy"), "the course does not teach it: suggesting it would be passing the work on");
   });
 
-  test("formy tego samego hasła zwijają się w jeden wiersz", () => {
+  test("forms of the same lemma collapse into one row", () => {
     const s = silnik();
-    /* Lista częstości ma osobno „ho”, „ha”, „hai”: bez zwinięcia pierwsza
-       piątka braków to cztery razy to samo słowo. */
+    /* The frequency list holds "ho", "ha", "hai" separately: without
+       collapsing, the top five gaps are the same word four times. */
     const lista = [["ho", 90], ["ha", 80], ["hai", 70], ["casa", 10]];
     const braki = Array.from(s.Frequency.brakujace(lista, { avere: true, casa: true }, {}, 10));
     const hasla = braki.map(b => b.haslo);
-    assert.equal(hasla.filter(h => h === "avere").length, 1, "jeden wiersz na hasło");
+    assert.equal(hasla.filter(h => h === "avere").length, 1, "one row per lemma");
     const avere = braki.filter(b => b.haslo === "avere")[0];
-    assert.equal(avere.ile, 240, "częstość to suma form");
-    assert.equal(avere.ranga, 1, "ranga to najlepsza z rang jego form");
-    assert.ok(Array.from(avere.formy).length >= 3, "formy zachowane jako kontekst");
+    assert.equal(avere.ile, 240, "the frequency is the sum over the forms");
+    assert.equal(avere.ranga, 1, "the rank is the best rank among its forms");
+    assert.ok(Array.from(avere.formy).length >= 3, "the forms are kept as context");
   });
 
-  test("wyrazy funkcyjne nie trafiają na listę do klikania", () => {
+  test("function words do not make it onto the clickable list", () => {
     const s = silnik();
     const hasla = Array.from(s.Frequency.brakujace(LISTA, { che: true, casa: true }, {}, 10)).map(b => b.haslo);
-    assert.ok(!hasla.includes("che"), "„che” jest rodzajem gramatyki, nie fiszką");
+    assert.ok(!hasla.includes("che"), "\"che\" is a piece of grammar, not a flashcard");
     assert.ok(hasla.includes("casa"));
   });
 
-  test("kolejność idzie za częstością i niesie rangę", () => {
+  test("the order follows frequency and carries the rank", () => {
     const s = silnik();
     const braki = Array.from(s.Frequency.brakujace(LISTA, { casa: true, libro: true }, {}, 10));
-    assert.equal(braki[0].haslo, "casa", "częstsze pierwsze");
-    assert.equal(braki[0].ranga, 3, "ranga to pozycja na liście, nie w wyniku");
+    assert.equal(braki[0].haslo, "casa", "the more frequent one first");
+    assert.equal(braki[0].ranga, 3, "the rank is the position on the list, not in the result");
     assert.ok(braki[0].ile > braki[1].ile);
   });
 
-  test("limit jest przestrzegany", () => {
+  test("the limit is respected", () => {
     const s = silnik();
     const braki = s.Frequency.brakujace(LISTA, { casa: true, libro: true, mangiare: true }, {}, 2);
     assert.equal(Array.from(braki).length, 2);
   });
 });
 
-describe("frequency: skąd biorą się dwa zbiory", () => {
-  /* Widok pokrycia porównuje dwa zbiory: czego uczy kurs i co uczeń ma
-     w talii. Oba są budowane tu, i oba mogą po cichu wyjść puste — wtedy
-     ekran mówi „0% pokrycia" i wygląda to na wynik nauki, nie na usterkę. */
+describe("frequency: where the two sets come from", () => {
+  /* The coverage screen compares two sets: what the course teaches and what
+     the student has in the deck. Both are built here, and both can quietly
+     come out empty - and then the screen says "0% coverage", which looks like
+     a result of studying rather than a fault. */
   function zSilnikiem() {
     const box = loadEngine({
       files: [...CORE, ...VERBS, ...LEMMA, "assets/js/frequency.js"]
@@ -132,24 +133,25 @@ describe("frequency: skąd biorą się dwa zbiory", () => {
     return box;
   }
 
-  test("zbiór ucznia to klucze talii, czyli sam włoski", () => {
+  test("the student's set is the deck keys, that is Italian alone", () => {
     const box = zSilnikiem();
     box.Core.addCard("il caffè", "kawa", "a1-u01-l1");
     const uczen = box.sandbox.Frequency.slownikUcznia();
 
-    /* Klucz jest znormalizowany (bez akcentów i wielkich liter), bo lista
-       częstości też podaje formy w tej postaci: gdyby zbiory były w dwóch
-       zapisach, uczeń widziałby braki dokładnie tam, gdzie słowo umie. */
+    /* The key is normalised (no accents, no capitals) because the frequency
+       list gives its forms in the same shape: were the two sets written
+       differently, the student would see gaps exactly where they know the
+       word. */
     assert.deepEqual(Object.keys(uczen), ["il caffe"],
-      "klucz fiszki to znormalizowany włoski, bez tłumaczenia: to on jest tożsamością");
+      "the card key is normalised Italian with no translation: that is its identity");
   });
 
-  test("pusta talia daje pusty zbiór, a nie wyjątek", () => {
+  test("an empty deck gives an empty set, not an exception", () => {
     const box = zSilnikiem();
     assert.deepEqual(Object.keys(box.sandbox.Frequency.slownikUcznia()), []);
   });
 
-  test("zbiór kursu bierze się z leksykonu wczytanych lekcji", () => {
+  test("the course set comes from the vocabulary of the loaded lessons", () => {
     const box = zSilnikiem();
     box.sandbox.Registry.registerLevel({
       code: "A1", dataFiles: [], units: [{
@@ -159,22 +161,23 @@ describe("frequency: skąd biorą się dwa zbiory", () => {
     });
     const kurs = box.sandbox.Frequency.slownikKursu();
 
-    assert.ok(kurs["caffè"], "zwroty wielowyrazowe wchodzą rozłożone na słowa");
+    assert.ok(kurs["caffè"], "multi-word phrases go in split into words");
     assert.ok(kurs["casa"]);
     assert.ok(!kurs["xyzzy"]);
   });
 
-  test("kurs bez wczytanego poziomu daje zbiór pusty, nie wywraca widoku", () => {
+  test("a course with no level loaded gives an empty set instead of breaking the screen", () => {
     const box = zSilnikiem();
     assert.deepEqual(Object.keys(box.sandbox.Frequency.slownikKursu()), []);
   });
 });
 
-describe("frequency bez lematyzatora", () => {
-  test("bez Lemma zbiór kursu jest pusty, zamiast wywracać ekran pokrycia", () => {
-    /* lemma.js jest wczytywany osobnym <script>; zapomniany znacznik zabiera
-       cały słownik kursu. Ekran ma wtedy pokazać zero pokrycia, a nie paść —
-       usterkę widać po liczbie, a nie po pustej stronie. */
+describe("frequency without the lemmatiser", () => {
+  test("without Lemma the course set is empty instead of breaking the coverage screen", () => {
+    /* lemma.js is loaded by a <script> of its own; a forgotten tag takes the
+       whole course dictionary with it. The screen must then show zero coverage
+       rather than fall over - the fault shows in the number, not in a blank
+       page. */
     const box = loadEngine({ files: [...CORE, "assets/js/frequency.js"] });
     box.Core.load();
     assert.deepEqual(Object.keys(box.sandbox.Frequency.slownikKursu()), []);

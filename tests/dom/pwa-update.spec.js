@@ -1,17 +1,17 @@
 /* ============================================================
-   Zapowiedź nowej wersji — dwa kolejne wydania, w prawdziwej przeglądarce.
+   The new-version announcement — two successive releases, in a real browser.
 
-   Testy jednostkowe (tests/unit/pwa.test.mjs) sprawdzają podpięcie reguł
-   do stanów przez atrapę: kolejność zdarzeń jest tam TAKA, JAKĄ JĄ
-   OPISALIŚMY. Tutaj kolejność ustala przeglądarka, a wydanie jest
-   prawdziwym wydaniem — inne bajty sw.js pod tym samym adresem, czyli
-   dokładnie to, co widzi uczeń po naszym wypchnięciu zmian.
+   The unit tests (tests/unit/pwa.test.mjs) check the wiring of the rules to
+   the states through a double: the order of events there is THE ONE WE
+   DESCRIBED. Here the browser sets the order, and the release is a real
+   release — different sw.js bytes at the same address, that is exactly what
+   the student sees after we push our changes.
 
-   Serwer jest własny, na osobnym porcie: rejestracja workera jest
-   przypisana do origin, więc test na porcie z playwright.config.js
-   dzieliłby ją z resztą suity i „pierwsza wizyta" nie byłaby pierwsza.
-   Wydanie podmienia funkcja z `scripts/serve.mjs`, żeby nie trzeba było
-   psuć pliku w drzewie roboczym.
+   The server is our own, on a port of its own: a worker registration is
+   bound to an origin, so a test on the port from playwright.config.js would
+   share it with the rest of the suite and a "first visit" would not be
+   first. The release is swapped by a function from `scripts/serve.mjs`, so
+   that no file in the working tree has to be broken.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 const { readFileSync } = require("node:fs");
@@ -22,7 +22,7 @@ const ZRODLO = readFileSync(join(ROOT, "sw.js"), "utf8");
 
 const KOMUNIKAT = "#toastStack .toast--stuck";
 
-/** Ta sama guska pod inną wersją: inne bajty i inna nazwa pamięci powłoki. */
+/** The same worker under a different version: different bytes and a different shell cache name. */
 function wydanie(nazwa) {
   return ZRODLO.replace(/var SW_VERSION = "[^"]+";/, `var SW_VERSION = "${nazwa}";`);
 }
@@ -42,11 +42,11 @@ test.afterAll(async () => {
 });
 
 /**
- * Otwiera kurs i czeka, aż worker NAPRAWDĘ przejmie stronę.
+ * Opens the course and waits until the worker REALLY takes over the page.
  *
- * Karta, która wystartowała przed rejestracją, nie ma kontrolera aż do
- * odświeżenia — a bez kontrolera nie ma czego aktualizować i cały ten
- * plik sprawdzałby pierwszą wizytę pięć razy.
+ * A tab that started before the registration has no controller until a
+ * refresh — and with no controller there is nothing to update, so this whole
+ * file would be checking a first visit five times over.
  */
 async function podKontrola(page) {
   await page.goto(ADRES + "/index.html");
@@ -57,14 +57,14 @@ async function podKontrola(page) {
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 });
 }
 
-/** Nowe wydanie na serwerze plus odświeżenie: dokładnie to, co robi uczeń. */
+/** A new release on the server plus a refresh: exactly what a student does. */
 async function nowaWersja(page, nazwa) {
   biezace = nazwa;
   await page.reload();
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 });
 }
 
-/** Czy powłoka nowego wydania jest już w pamięci — czyli czy worker aktywny. */
+/** Whether the new release's shell is already cached — that is, whether the worker is active. */
 function pamiecPowloki(page, nazwa) {
   return page.waitForFunction(
     async (n) => (await caches.keys()).includes("linguai-shell-" + n),
@@ -72,19 +72,20 @@ function pamiecPowloki(page, nazwa) {
   );
 }
 
-test("pierwsza wizyta w czystej przeglądarce nie ogłasza niczego", async ({ browser }) => {
+test("a first visit in a clean browser announces nothing", async ({ browser }) => {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
 
   await podKontrola(page);
-  /* Pierwszy worker też przechodzi przez „installed": gdyby zapowiedź nie
-     pytała o kontrolera, komunikat wyszedłby właśnie tutaj. */
+  /* The first worker also passes through "installed": if the announcement
+     did not ask about the controller, the message would come out right
+     here. */
   await expect(page.locator(KOMUNIKAT)).toHaveCount(0);
 
   await ctx.close();
 });
 
-test("po wydaniu komunikat pojawia się sam, a „Zaktualizuj” przenosi na nową wersję", async ({ browser }) => {
+test("after a release the message appears by itself, and \"Update\" moves to the new version", async ({ browser }) => {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
 
@@ -95,8 +96,8 @@ test("po wydaniu komunikat pojawia się sam, a „Zaktualizuj” przenosi na now
   await expect(komunikat).toBeVisible({ timeout: 20000 });
   await expect(komunikat).toContainText("nowa wersja");
 
-  /* Znacznik przeżywa wszystko poza przeładowaniem strony: po kliknięciu
-     ma go nie być, i to jest jedyny dowód, że strona wróciła od zera. */
+  /* The marker survives everything except a page reload: after the click it
+     must be gone, and that is the only proof the page started from scratch. */
   await page.evaluate(() => { window.__znacznik = 1; });
   await komunikat.locator(".toast__act").click();
 
@@ -107,7 +108,7 @@ test("po wydaniu komunikat pojawia się sam, a „Zaktualizuj” przenosi na now
   await ctx.close();
 });
 
-test("„później” zostawia wersję w kolejce, a komunikat wraca przy otwarciu", async ({ browser }) => {
+test("\"later\" leaves the version in the queue and the message returns on opening", async ({ browser }) => {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
 
@@ -122,7 +123,7 @@ test("„później” zostawia wersję w kolejce, a komunikat wraca przy otwarci
     const reg = await navigator.serviceWorker.getRegistration();
     return !!(reg && reg.waiting);
   });
-  expect(czeka, "wersja została w kolejce, nie została zastosowana").toBe(true);
+  expect(czeka, "the version stayed in the queue, it was not applied").toBe(true);
 
   await page.reload();
   await expect(page.locator(KOMUNIKAT)).toBeVisible({ timeout: 20000 });
@@ -130,7 +131,7 @@ test("„później” zostawia wersję w kolejce, a komunikat wraca przy otwarci
   await ctx.close();
 });
 
-test("dwie karty: przyjęcie w jednej wyrównuje drugą", async ({ browser }) => {
+test("two tabs: accepting in one brings the other into line", async ({ browser }) => {
   const ctx = await browser.newContext();
   const pierwsza = await ctx.newPage();
   const druga = await ctx.newPage();
@@ -141,10 +142,10 @@ test("dwie karty: przyjęcie w jednej wyrównuje drugą", async ({ browser }) =>
   await nowaWersja(pierwsza, "v903.000000000000");
   await expect(pierwsza.locator(KOMUNIKAT)).toBeVisible({ timeout: 20000 });
 
-  /* W drugiej karcie nikt nic nie klika. Ma się przeładować sama, bo od
-     przejęcia kontroli jej żądania obsługuje już nowa wersja — a stary kod
-     nad nowymi plikami jest dokładnie tym rozjazdem, przed którym broni
-     cała ta funkcja. */
+  /* Nobody clicks anything in the second tab. It has to reload by itself,
+     because from the takeover on its requests are served by the new version
+     — and old code over new files is exactly the mismatch this whole feature
+     defends against. */
   await druga.evaluate(() => { window.__znacznik = 1; });
   await pierwsza.locator(KOMUNIKAT + " .toast__act").click();
 

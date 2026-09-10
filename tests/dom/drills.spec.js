@@ -9,21 +9,21 @@ async function hub(page) {
   await page.waitForSelector(".js-topic");
 }
 
-test("hub wymienia wszystkie zagadnienia z własnymi nazwami", async ({ page }) => {
+test("the hub lists every topic under its own name", async ({ page }) => {
   await hub(page);
   const n = await page.evaluate(() => window.Drills.TOPICS.length);
   await expect(page.locator(".js-topic")).toHaveCount(n);
 
-  /* Nazwa zagadnienia NIE może być tytułem hasła gramatycznego: tag
-     „numeri" wskazuje na g-frase, czyli „strukturę zdania". */
-  /* W hubie stoi też wiersz prowadzący do rozróżniania dźwięków, więc
-     liczymy tylko wiersze z przyciskiem zagadnienia. */
+  /* The topic name must NOT be the title of a grammar entry: the "numeri"
+     tag points at g-frase, that is "sentence structure". */
+  /* The hub also has a row leading to sound discrimination, so we count only
+     the rows with a topic button. */
   const nazwy = await page.locator(".list-row:has(.js-topic) b").allInnerTexts();
   expect(nazwy.filter(Boolean).length).toBe(n);
-  expect(new Set(nazwy).size, "nazwy nie powtarzają się").toBe(n);
+  expect(new Set(nazwy).size, "the names do not repeat").toBe(n);
 });
 
-test("rail prowadzi do treningu i oznacza go jako bieżący", async ({ page }) => {
+test("the rail leads to training and marks it as current", async ({ page }) => {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.App);
   await page.locator('.rail__item[data-route="allenamento"]').click();
@@ -31,7 +31,7 @@ test("rail prowadzi do treningu i oznacza go jako bieżący", async ({ page }) =
   await expect(page.locator('.rail__item[data-route="allenamento"]')).toHaveAttribute("aria-current", "page");
 });
 
-test("seria pokazuje dziesięć zadań i liczy postęp", async ({ page }) => {
+test("a run shows ten tasks and counts the progress", async ({ page }) => {
   await hub(page);
   await page.locator('.js-topic[data-topic="numeri"]').click();
   await expect(page.locator(".exq")).toBeVisible();
@@ -41,13 +41,13 @@ test("seria pokazuje dziesięć zadań i liczy postęp", async ({ page }) => {
   expect(naglowek).toMatch(new RegExp(String(await page.evaluate(() => window.Train.DRILL_N))));
 });
 
-test("zła odpowiedź w treningu zakłada kartę oznaczoną jako generowana", async ({ page }) => {
+test("a wrong answer in training creates a card marked as generated", async ({ page }) => {
   await hub(page);
   await page.locator('.js-topic[data-topic="prep-art"]').click();
   await expect(page.locator(".exq .js-in")).toBeVisible();
 
-  /* Odpowiedź jest jawnie zła, nie „prawie": jedno kliknięcie kończy zadanie. */
-  await page.locator(".exq .js-in").fill("na pewno zła");
+  /* The answer is plainly wrong, not "almost": one click ends the task. */
+  await page.locator(".exq .js-in").fill("definitely wrong");
   await page.locator(".exq .js-check").click();
 
   await expect(page.locator(".js-next")).toBeVisible();
@@ -58,17 +58,17 @@ test("zła odpowiedź w treningu zakłada kartę oznaczoną jako generowana", as
   expect(karta.srcId).toBe("prep-art");
 });
 
-/* Karta z generatora nie zapisuje treści: musi się odtworzyć z pary
-   (generator, ziarno). Gdyby ziarno nie było stabilne, powtórka
-   pokazałaby inne zadanie niż to, na którym uczeń się potknął. */
-test("karta z treningu odtwarza dokładnie to samo zadanie", async ({ page }) => {
+/* A generated card stores no content: it has to be reconstructed from the
+   pair (generator, seed). If the seed were not stable, the review would show
+   a different task from the one the student stumbled on. */
+test("a training card reproduces exactly the same task", async ({ page }) => {
   await hub(page);
   await page.locator('.js-topic[data-topic="date"]').click();
   await expect(page.locator(".exq")).toBeVisible();
 
   const trescPrzed = await page.locator(".exq__prompt").first().innerText();
 
-  await page.locator(".exq .js-in").fill("zła data");
+  await page.locator(".exq .js-in").fill("wrong date");
   await page.locator(".exq .js-check").click();
   await expect(page.locator(".js-next")).toBeVisible();
 
@@ -79,11 +79,11 @@ test("karta z treningu odtwarza dokładnie to samo zadanie", async ({ page }) =>
   });
 
   expect(odtworzone.generated).toBe(true);
-  /* q niesie znaczniki HTML, treść porównujemy po zdjęciu tagów. */
+  /* q carries HTML markup, so we compare the content with the tags stripped. */
   expect(odtworzone.q.replace(/<[^>]+>/g, "")).toBe(trescPrzed.replace(/\s+/g, " ").trim());
 });
 
-test("żadne zadanie treningu nie ma przycisku głośnika", async ({ page }) => {
+test("no training task has a speaker button", async ({ page }) => {
   await hub(page);
   const bezDzwieku = await page.evaluate(() => {
     const zle = [];
@@ -96,10 +96,10 @@ test("żadne zadanie treningu nie ma przycisku głośnika", async ({ page }) => 
     });
     return zle;
   });
-  expect(bezDzwieku, "wygenerowane zdanie nie ma nagrania, więc nie ma przycisku").toEqual([]);
+  expect(bezDzwieku, "a generated sentence has no recording, so it has no button").toEqual([]);
 });
 
-test("napisy treningu istnieją w pięciu językach", async ({ page }) => {
+test("the training strings exist in five languages", async ({ page }) => {
   await hub(page);
   const braki = await page.evaluate(async () => {
     const out = {};

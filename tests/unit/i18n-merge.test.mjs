@@ -1,24 +1,24 @@
 /* ============================================================
-   Doklejanie tekstów ucznia do treści kursu (assets/js/i18n-merge.js).
+   Attaching the student's texts to the course content (assets/js/i18n-merge.js).
 
-   Nakładka łączy się z warstwą neutralną PO INDEKSIE: element n-ty
-   nakładki dokleja się do n-tego elementu danych. Kształt pilnuje
-   scripts/parity.mjs, ale tylko kształt — sam mechanizm scalania nie
-   miał testu.
+   An overlay joins the neutral layer BY INDEX: the nth element of the overlay
+   attaches to the nth element of the data. The shape is guarded by
+   scripts/parity.mjs, but only the shape - the merging mechanism itself had
+   no test.
 
-   Trzy niezmienniki, których złamanie nie wywraca niczego na ekranie:
-   - pola NEUTRALNE (włoskie zdania, klucze odpowiedzi) nie mają prawa
-     przyjść z nakładki: zmiana języka wyjaśnień osierociłaby nagrania,
-     bo ich nazwy liczą się z treści włoskiej;
-   - scalanie jest IDEMPOTENTNE i odwracalne: drugi język nakłada się na
-     te same obiekty, bez przeładowania strony;
-   - brak wpisu w nakładce zostawia pole takim, jakie było, a nie kasuje
-     je do undefined — pusty tytuł lekcji wygląda jak brak lekcji.
+   Three invariants whose breakage upsets nothing on screen:
+   - NEUTRAL fields (Italian sentences, answer keys) must never come from an
+     overlay: a change of the explanation language would orphan the
+     recordings, because their names are computed from the Italian content;
+   - merging is IDEMPOTENT and reversible: a second language lays over the
+     same objects without reloading the page;
+   - a missing overlay entry leaves the field as it was rather than clearing
+     it to undefined - an empty lesson title looks like a missing lesson.
 
-   Lekcje to jedna z ośmiu kategorii, które ten plik scala. Pozostałe
-   siedem (rozmowy, gramatyka, pary minimalne, czytanki, pisanie, fałszywi
-   przyjaciele, jednostki) chodziły dotąd bez ani jednego testu, mimo że
-   dwie z nich mają w kodzie wyjątki od reguły ogólnej.
+   Lessons are one of the eight categories this file merges. The other seven
+   (conversations, grammar, minimal pairs, readings, writing, false friends,
+   units) ran without a single test until now, even though two of them have
+   exceptions to the general rule in the code.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -27,11 +27,12 @@ import { loadEngine, CORE } from "./_harness.mjs";
 const I18N = ["assets/js/i18n.js", "assets/js/i18n-merge.js"];
 
 /**
- * Prawdziwa droga scalania: nakładka wchodzi przez LINGUAI.addStrings,
- * a applyStrings chodzi po rejestrze kursu — tak, jak robi to
- * registry.loadLevelData po dociągnięciu plików poziomu.
+ * The real merging route: the overlay comes in through LINGUAI.addStrings and
+ * applyStrings walks the course registry - exactly as registry.loadLevelData
+ * does after fetching a level's files.
  *
- * i18n.js wczytujemy PO silniku, żeby nadpisał atrapę I18n z piaskownicy.
+ * i18n.js is loaded AFTER the engine so that it overrides the sandbox I18n
+ * stub.
  */
 function swiezy() {
   const box = loadEngine({ files: [...CORE, ...I18N] });
@@ -44,7 +45,7 @@ function swiezy() {
   };
 }
 
-/** Lekcja w warstwie neutralnej: włoski, klucze odpowiedzi, struktura. */
+/** A lesson in the neutral layer: Italian, answer keys, structure. */
 function lekcjaNeutralna() {
   return {
     id: "a1-u01-l1",
@@ -65,7 +66,7 @@ function lekcjaNeutralna() {
   };
 }
 
-/** Nakładka: wyłącznie to, co uczeń czyta po swojemu. */
+/** The overlay: nothing but what the student reads in their own language. */
 function nakladkaPl() {
   return {
     "lesson:a1-u01-l1": {
@@ -96,8 +97,8 @@ function przygotuj() {
   return Object.assign(box, { L });
 }
 
-describe("scalanie nakładki z warstwą neutralną", () => {
-  test("teksty ucznia trafiają na miejsce", () => {
+describe("merging an overlay with the neutral layer", () => {
+  test("the student's texts land in place", () => {
     const { LINGUAI, L } = przygotuj();
     LINGUAI.applyStrings("pl");
     assert.equal(L.title, "Kawa");
@@ -106,18 +107,18 @@ describe("scalanie nakładki z warstwą neutralną", () => {
     assert.equal(L.culture.title, "Bar");
   });
 
-  test("pola neutralne zostają nietknięte", () => {
+  test("the neutral fields stay untouched", () => {
     const { LINGUAI, L } = przygotuj();
     LINGUAI.applyStrings("pl");
-    assert.equal(L.titleIt, "Il caffè", "włoski tytuł jest tożsamością lekcji");
+    assert.equal(L.titleIt, "Il caffè", "the Italian title is the lesson's identity");
     assert.equal(L.vocab[0].it, "caffè");
     assert.equal(L.dialogue.lines[0].it, "Un caffè?");
-    assert.equal(L.exercises[0].a, 1, "klucz odpowiedzi nie pochodzi z nakładki");
-    assert.equal(L.exercises[2].items[0].a, "il", "rodzajnik to klucz odpowiedzi, nie napis");
+    assert.equal(L.exercises[0].a, 1, "the answer key does not come from the overlay");
+    assert.equal(L.exercises[2].items[0].a, "il", "the article is an answer key, not copy");
     assert.deepEqual(Array.from(L.tags), ["g-presente"]);
   });
 
-  test("tablice łączą się po indeksie, każda pozycja ze swoją", () => {
+  test("arrays join by index, every entry with its own", () => {
     const { LINGUAI, L } = przygotuj();
     LINGUAI.applyStrings("pl");
     assert.equal(L.vocab[0].tr, "kawa");
@@ -126,7 +127,7 @@ describe("scalanie nakładki z warstwą neutralną", () => {
     assert.equal(L.grammar.examples[1].tr, "Piję herbatę.");
   });
 
-  test("ćwiczenia dostają swoje pola, każdy typ po swojemu", () => {
+  test("exercises get their fields, each type in its own way", () => {
     const { LINGUAI, L } = przygotuj();
     LINGUAI.applyStrings("pl");
     assert.deepEqual(Array.from(L.exercises[0].opts), ["herbatę", "kawę"]);
@@ -136,14 +137,14 @@ describe("scalanie nakładki z warstwą neutralną", () => {
     assert.equal(L.exercises[3].lines[0].answerTr, "Cześć");
   });
 
-  test("cała tabela gramatyczna przychodzi z nakładki, razem z komórkami", () => {
+  test("the whole grammar table comes from the overlay, cells included", () => {
     const { LINGUAI, L } = przygotuj();
     LINGUAI.applyStrings("pl");
     assert.equal(L.grammar.title, "Czas teraźniejszy");
     assert.deepEqual(Array.from(L.grammar.table.head), ["osoba"]);
   });
 
-  test("jednostka dostaje swój tytuł osobno od lekcji", () => {
+  test("a unit gets its title separately from the lessons", () => {
     const { LINGUAI, Registry } = swiezy();
     const u = { id: "a1-u01", titleIt: "Al bar", lessons: [] };
     Registry.registerLevel({ code: "A1", dataFiles: [], units: [u] });
@@ -154,7 +155,7 @@ describe("scalanie nakładki z warstwą neutralną", () => {
     assert.equal(u.titleIt, "Al bar");
   });
 
-  test("poziom dostaje nazwę i opis", () => {
+  test("a level gets a name and a description", () => {
     const { LINGUAI, Registry } = swiezy();
     const lv = { code: "A1", dataFiles: [], units: [] };
     Registry.registerLevel(lv);
@@ -162,52 +163,52 @@ describe("scalanie nakładki z warstwą neutralną", () => {
     LINGUAI.applyStrings("pl");
     assert.equal(lv.name, "Początkujący");
     assert.equal(lv.desc, "Pierwsze kroki.");
-    assert.equal(lv.code, "A1", "kod poziomu jest identyfikatorem, nie napisem");
+    assert.equal(lv.code, "A1", "the level code is an identifier, not copy");
   });
 });
 
-describe("odporność scalania", () => {
-  test("drugie nałożenie tego samego języka niczego nie psuje", () => {
+describe("the robustness of the merge", () => {
+  test("applying the same language twice breaks nothing", () => {
     const { LINGUAI, L } = przygotuj();
     LINGUAI.applyStrings("pl");
     const poPierwszym = L.title;
     LINGUAI.applyStrings("pl");
     assert.equal(L.title, poPierwszym);
-    assert.equal(L.vocab[0].tr, "kawa", "nie doklejone dwa razy");
+    assert.equal(L.vocab[0].tr, "kawa", "not appended twice");
     assert.equal(L.vocab[0].it, "caffè");
   });
 
-  test("drugi język nadpisuje teksty na tych samych obiektach", () => {
+  test("a second language overwrites the texts on the same objects", () => {
     const { LINGUAI, L } = przygotuj();
     LINGUAI.applyStrings("pl");
     LINGUAI.addStrings("en", { "lesson:a1-u01-l1": { title: "Coffee", vocab: ["coffee", "tea"] } });
     LINGUAI.applyStrings("en");
 
-    assert.equal(L.title, "Coffee", "bez przeładowania strony");
+    assert.equal(L.title, "Coffee", "with no page reload");
     assert.equal(L.vocab[0].tr, "coffee");
-    assert.equal(L.titleIt, "Il caffè", "włoski nadal ten sam");
-    assert.equal(L.theme, "W barze", "pole nieobecne w nowej nakładce zostaje z poprzedniej");
+    assert.equal(L.titleIt, "Il caffè", "the Italian is still the same");
+    assert.equal(L.theme, "W barze", "a field absent from the new overlay stays from the previous one");
   });
 
-  test("brak nakładki dla języka zostawia lekcję taką, jaka była", () => {
+  test("no overlay for a language leaves the lesson as it was", () => {
     const { LINGUAI, L } = przygotuj();
     LINGUAI.applyStrings("de");
-    assert.equal(L.title, undefined, "nic nie doszło");
-    assert.equal(L.titleIt, "Il caffè", "i nic nie zginęło");
+    assert.equal(L.title, undefined, "nothing was added");
+    assert.equal(L.titleIt, "Il caffè", "and nothing was lost");
   });
 
-  test("nakładka krótsza od danych dokleja się do tego, co pokryła", () => {
+  test("an overlay shorter than the data attaches to what it covers", () => {
     const { LINGUAI, Registry } = swiezy();
     const L = lekcjaNeutralna();
     Registry.registerLevel({ code: "A1", dataFiles: [], units: [{ id: "u", lessons: [L] }] });
     LINGUAI.addStrings("pl", { "lesson:a1-u01-l1": { vocab: ["kawa"] } });
     LINGUAI.applyStrings("pl");
     assert.equal(L.vocab[0].tr, "kawa");
-    assert.equal(L.vocab[1].tr, undefined, "druga pozycja zostaje bez glosy, zamiast dostać cudzą");
-    assert.equal(L.vocab[1].it, "tè", "i nie gubi włoskiego");
+    assert.equal(L.vocab[1].tr, undefined, "the second entry stays without a gloss rather than taking somebody else's");
+    assert.equal(L.vocab[1].it, "tè", "and does not lose its Italian");
   });
 
-  test("test jednostki jedzie tą samą drogą co zwykła lekcja", () => {
+  test("a unit test travels the same route as an ordinary lesson", () => {
     const { LINGUAI, Registry } = swiezy();
     const test1 = Object.assign(lekcjaNeutralna(), { id: "a1-u01-test" });
     Registry.registerLevel({ code: "A1", dataFiles: [], units: [{ id: "u", lessons: [], test: test1 }] });
@@ -216,16 +217,16 @@ describe("odporność scalania", () => {
     assert.equal(test1.title, "Sprawdzian");
   });
 
-  test("hasStrings mówi, czy język w ogóle wszedł", () => {
+  test("hasStrings says whether a language came in at all", () => {
     const { LINGUAI } = swiezy();
-    assert.equal(LINGUAI.hasStrings("pl"), false, "przed wczytaniem plików nie ma nic");
+    assert.equal(LINGUAI.hasStrings("pl"), false, "before the files are loaded there is nothing");
     LINGUAI.addStrings("pl", { "lesson:x": { title: "x" } });
     assert.equal(LINGUAI.hasStrings("pl"), true);
     assert.equal(LINGUAI.hasStrings("de"), false);
   });
 });
 
-describe("rozmowy", () => {
+describe("conversations", () => {
   function rozmowa() {
     return {
       id: "c1", titleIt: "Al bar", icon: "☕",
@@ -247,7 +248,7 @@ describe("rozmowy", () => {
     return Object.assign(s, { c });
   }
 
-  test("repliki i polecenia przychodzą z nakładki", () => {
+  test("the lines and the prompts come from the overlay", () => {
     const { LINGUAI, c } = zRozmowa();
     LINGUAI.addStrings("pl", { "conv:c1": {
       title: "W barze", setting: "Poranek.", closing: "Dobra robota.",
@@ -261,7 +262,7 @@ describe("rozmowy", () => {
     assert.equal(c.turns[1].task, "Zamów kawę");
   });
 
-  test("każda gałąź rozwidlenia ma własne tłumaczenie", () => {
+  test("every branch of a fork has a translation of its own", () => {
     const { LINGUAI, c } = zRozmowa();
     LINGUAI.addStrings("pl", { "conv:c1": {
       turns: [{}, { opts: [{ tr: "Tylko kawa" }, { tr: "Kawa i deser" }] }, {}]
@@ -272,22 +273,22 @@ describe("rozmowy", () => {
     assert.equal(c.turns[1].opts[1].tr, "Kawa i deser");
   });
 
-  test("kierunek rozwidlenia i klucz odpowiedzi zostają neutralne", () => {
-    /* Gdyby `go` albo `accept` wjechały do nakładki, zmiana języka
-       wyjaśnień mogłaby przestawić przebieg dialogu. */
+  test("the direction of a fork and the answer key stay neutral", () => {
+    /* Were `go` or `accept` to enter the overlay, changing the explanation
+       language could rearrange the flow of the dialogue. */
     const { LINGUAI, c } = zRozmowa();
     LINGUAI.addStrings("pl", { "conv:c1": {
       turns: [{}, { opts: [{ tr: "Tylko kawa", go: "gdzieindziej", accept: ["cokolwiek"] }] }, {}]
     } });
     LINGUAI.applyStrings("pl");
 
-    assert.equal(c.turns[1].opts[0].go, "fine", "cel skoku nie pochodzi z nakładki");
+    assert.equal(c.turns[1].opts[0].go, "fine", "the jump target does not come from the overlay");
     assert.deepEqual(Array.from(c.turns[1].opts[0].accept), ["solo un caffè"]);
   });
 });
 
-describe("hasło gramatyczne", () => {
-  test("tytuły sekcji idą po indeksie, hasła po id", () => {
+describe("a grammar reference entry", () => {
+  test("section titles go by index, entries go by id", () => {
     const s = swiezy();
     const sekcja = { title: "", items: [{ id: "g-presente" }, { id: "g-passato" }] };
     s.box.sandbox.GRAMMAR_REF = [sekcja];
@@ -299,13 +300,13 @@ describe("hasło gramatyczne", () => {
 
     assert.equal(sekcja.title, "Czasownik");
     assert.equal(sekcja.items[0].title, "Czas teraźniejszy");
-    assert.equal(sekcja.items[1].title, undefined, "hasło bez nakładki zostaje bez tytułu, nie z cudzym");
-    assert.equal(sekcja.items[0].id, "g-presente", "id jest kluczem, nie napisem");
+    assert.equal(sekcja.items[1].title, undefined, "an entry with no overlay stays untitled rather than taking somebody else's title");
+    assert.equal(sekcja.items[0].id, "g-presente", "the id is a key, not copy");
   });
 });
 
-describe("pary minimalne, czytanki, pisanie", () => {
-  test("para minimalna dostaje glosy i uwagę kontrastywną", () => {
+describe("minimal pairs, readings, writing", () => {
+  test("a minimal pair gets its glosses and its contrastive note", () => {
     const s = swiezy();
     const zbior = { id: "ph1", pairs: [{ a: "nonno", b: "nono" }] };
     s.box.sandbox.PHONETICS = [zbior];
@@ -318,10 +319,10 @@ describe("pary minimalne, czytanki, pisanie", () => {
 
     assert.equal(zbior.contrast, "Polski nie ma długich spółgłosek.");
     assert.equal(zbior.pairs[0].glossA, "dziadek");
-    assert.equal(zbior.pairs[0].a, "nonno", "włoskie wyrazy pary zostają neutralne: mają nagrania");
+    assert.equal(zbior.pairs[0].a, "nonno", "the Italian words of the pair stay neutral: they have recordings");
   });
 
-  test("czytanka bierze tytuł, panel trudnych słów i słownik do dotknięcia", () => {
+  test("a reading takes its title, the hard-words panel and the tap dictionary", () => {
     const s = swiezy();
     const r = { id: "r1", titleIt: "Il mercato", sentences: ["Vado al mercato."] };
     s.box.sandbox.READINGS = [r];
@@ -336,7 +337,7 @@ describe("pary minimalne, czytanki, pisanie", () => {
     assert.deepEqual(Array.from(r.sentences), ["Vado al mercato."]);
   });
 
-  test("zadanie pisemne: polecenie z nakładki, przyjmowane formy włoskie z danych", () => {
+  test("a writing task: the prompt from the overlay, the accepted Italian forms from the data", () => {
     const s = swiezy();
     const w = { id: "w1", titleIt: "Una cartolina", items: [{ a: ["sono a"] }, { a: ["ti abbraccio"] }] };
     s.box.sandbox.WRITING = [w];
@@ -349,14 +350,14 @@ describe("pary minimalne, czytanki, pisanie", () => {
     assert.equal(w.title, "Pocztówka");
     assert.equal(w.items[0].q, "Powiedz, gdzie jesteś");
     assert.equal(w.items[1].q, "Pożegnaj się");
-    assert.deepEqual(Array.from(w.items[0].a), ["sono a"], "przyjmowana wersja włoska nie jest napisem do tłumaczenia");
+    assert.deepEqual(Array.from(w.items[0].a), ["sono a"], "the accepted Italian version is not copy to be translated");
   });
 });
 
-describe("fałszywi przyjaciele", () => {
-  /* JEDYNA kategoria, w której nakładka bywa krótsza od listy i ma prawo
-     taka być: pułapka istnieje tylko dla języków, które ją mają. */
-  test("wpis bez wyjaśnienia w nowym języku traci stare, zamiast je zachować", () => {
+describe("false friends", () => {
+  /* The ONLY category where the overlay can be shorter than the list and has
+     the right to be: the trap exists only for the languages that have it. */
+  test("an entry with no explanation in the new language loses the old one instead of keeping it", () => {
     const s = swiezy();
     const v = { id: "targa", it: "la targa" };
     s.box.sandbox.INTERFERENCE = [v];
@@ -367,9 +368,9 @@ describe("fałszywi przyjaciele", () => {
     assert.equal(v.mean, "tablica rejestracyjna");
 
     s.LINGUAI.applyStrings("es");
-    assert.equal(v.looks, "", "po hiszpańsku ta pułapka nie istnieje");
-    assert.equal(v.mean, "", "polskie wyjaśnienie zostałoby na ekranie, gdyby nie czyszczenie");
+    assert.equal(v.looks, "", "in Spanish this trap does not exist");
+    assert.equal(v.mean, "", "the Polish explanation would stay on screen were it not for the clearing");
     assert.equal(v.why, "");
-    assert.equal(v.it, "la targa", "włoski wpis zostaje: to on jest hasłem");
+    assert.equal(v.it, "la targa", "the Italian entry stays: it is the headword");
   });
 });

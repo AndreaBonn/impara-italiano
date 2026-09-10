@@ -1,21 +1,21 @@
 /* ============================================================
-   Ekran powitalny: kto go widzi i kiedy przestaje.
+   The welcome screen: who sees it and when it stops.
 
-   Pomyłka w którąkolwiek stronę jest cicha. Za wąsko: nowy uczeń ląduje
-   od razu w piętnastu zakładkach i zaczyna od A1, choć zna język — to
-   jest dokładnie ten stan, przez który ekran powstał. Za szeroko: ktoś
-   z czterdziestoma lekcjami dostaje na starcie pytanie „od czego
-   zacząć", jakby kurs go nie pamiętał.
+   A mistake in either direction is silent. Too narrow: a new student lands
+   straight in fifteen tabs and starts at A1 despite knowing the language —
+   that is exactly the state the screen was created for. Too wide: somebody
+   with forty lessons behind them is asked at startup "where do I start", as
+   if the course did not remember them.
 
-   Trzeci przypadek, najłatwiejszy do zepsucia: znacznik stawia WYBÓR,
-   a nie wyświetlenie. Postawiony za wcześnie sprawia, że przypadkowe
-   odświeżenie karty zabiera uczniowi tę jedną odpowiedź na zawsze.
+   The third case, the easiest to break: the marker is set by the CHOICE, not
+   by the screen being shown. Set too early, it means an accidental refresh
+   takes that one answer away from the student for good.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
 const KLUCZ = "linguai.italiano.v2";
 
-/** Wstawia profil DO localStorage, zanim silnik zdąży go wczytać. */
+/** Puts a profile INTO localStorage before the engine gets to read it. */
 async function zProfilem(page, profil) {
   await page.addInitScript(([k, p]) => {
     window.localStorage.setItem(k, JSON.stringify(p));
@@ -34,7 +34,7 @@ test("pusty profil trafia na powitanie", async ({ page }) => {
   await expect(page).toHaveURL(/#\/benvenuto/);
 });
 
-test("uczeń w połowie kursu nie dostaje powitania", async ({ page }) => {
+test("a student halfway through the course gets no welcome", async ({ page }) => {
   await zProfilem(page, { schema: 2, stats: { lessonsDone: 40, correct: 0, wrong: 0, days: {} } });
   await page.goto("/index.html");
   await gotowe(page);
@@ -49,24 +49,25 @@ test("adres z linku wygrywa nad powitaniem", async ({ page }) => {
   expect(await page.evaluate(() => window.Router.current.route)).toBe("grammatica");
 });
 
-test("wybór kończy powitanie, samo obejrzenie nie", async ({ page }) => {
+test("the choice ends the welcome, merely looking at it does not", async ({ page }) => {
   await page.goto("/index.html");
   await gotowe(page);
 
-  /* Odświeżenie bez wyboru: pytanie ma wrócić. */
+  /* A refresh with no choice: the question has to come back. */
   await page.goto("/index.html");
   await gotowe(page);
   await expect(page.locator(".js-zero")).toBeVisible();
 
-  /* „Od zera" idzie wprost do pierwszej lekcji: podpis przycisku obiecuje
-     lekcję, a nie spis poziomów. */
+  /* "From scratch" goes straight to the first lesson: the button's caption
+     promises a lesson, not a list of levels. */
   await page.locator(".js-zero").click();
   await expect(page).toHaveURL(/#\/lezione\?id=/);
   expect(await page.evaluate(() => window.Core.state.onboarded)).toBe(true);
 
-  /* Czekamy na ZAPIS, nie na upływ czasu: save() jest zdebouncowane na
-     180 ms, więc przeładowanie zaraz po kliknięciu wyprzedziłoby zapis
-     i test mierzyłby własny pośpiech zamiast zachowania kursu. */
+  /* We wait for the SAVE, not for time to pass: save() is debounced by
+     180 ms, so a reload right after the click would overtake the save and
+     the test would measure its own haste instead of the course's
+     behaviour. */
   await page.waitForFunction(k => {
     const zapis = window.localStorage.getItem(k);
     return zapis && JSON.parse(zapis).onboarded === true;
@@ -78,7 +79,7 @@ test("wybór kończy powitanie, samo obejrzenie nie", async ({ page }) => {
   expect(await page.evaluate(() => window.Router.current.route)).toBe("percorso");
 });
 
-test("droga przez test poziomujący prowadzi do testu", async ({ page }) => {
+test("the road through the placement test leads to the test", async ({ page }) => {
   await page.goto("/index.html");
   await gotowe(page);
   await page.locator(".js-test").click();
@@ -86,19 +87,21 @@ test("droga przez test poziomujący prowadzi do testu", async ({ page }) => {
   await expect(page.locator(".js-go")).toBeVisible();
 });
 
-test("ścieżka nauki po wyborze ma z czego się narysować", async ({ page }) => {
+test("after the choice the learning path has something to draw itself from", async ({ page }) => {
   await page.goto("/index.html");
   await gotowe(page);
   await page.locator(".js-look").click();
-  /* Poziom wczytuje się pod powitaniem, więc lekcje mają tu już być:
-     inaczej ekran zostaje na „wczytuję materiał" i nikt go nie odświeży. */
+  /* The level loads under the welcome screen, so the lessons have to be here
+     already: otherwise the screen stays on "loading material" and nobody
+     will refresh it. */
   await expect(page.locator("[data-lesson]").first()).toBeVisible({ timeout: 15000 });
 });
 
-/* Ta sama zależność od wczytania, ale ostrzej: „od zera" musi ZNAĆ id
-   pierwszej lekcji w chwili kliknięcia, inaczej po cichu spadnie na spis
-   poziomów — czyli zrobi to, czego ten przycisk ma nie robić. */
-test("od zera trafia w pierwszą lekcję kursu, nie w spis", async ({ page }) => {
+/* The same dependency on loading, but sharper: "from scratch" has to KNOW
+   the id of the first lesson at the moment of the click, otherwise it
+   quietly falls back to the list of levels — that is, it does the very thing
+   this button must not do. */
+test("from scratch lands on the first lesson of the course, not on the list", async ({ page }) => {
   await page.goto("/index.html");
   await gotowe(page);
   await page.locator(".js-zero").click();
@@ -109,7 +112,7 @@ test("od zera trafia w pierwszą lekcję kursu, nie w spis", async ({ page }) =>
   await expect(page.locator("#main h1")).toBeVisible();
 });
 
-test("napisy powitania istnieją w pięciu językach", async ({ page }) => {
+test("the welcome strings exist in five languages", async ({ page }) => {
   await page.goto("/index.html");
   await gotowe(page);
   const braki = await page.evaluate(async () => {

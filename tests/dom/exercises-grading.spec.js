@@ -1,29 +1,29 @@
 /* ============================================================
-   Ocena odpowiedzi: dobra jest uznawana za dobrą, zła za złą.
+   Grading an answer: a correct one counts as correct, a wrong one as wrong.
 
-   To jest obietnica, na której stoi cały kurs, i do tej pory nie
-   sprawdzał jej ani jeden test. exercises.spec.js pilnuje, że
-   onDone woła się raz — ale zawołane z `false` na poprawnej odpowiedzi
-   też jest „raz". Reszta suity buduje ćwiczenia i nigdy nie odpowiada
+   This is the promise the whole course rests on, and until now not one test
+   checked it. exercises.spec.js makes sure onDone is called once — but
+   called with `false` on a correct answer is "once" too. The rest of the
+   suite builds exercises and never answers
    na nie poprawnie.
 
-   Konsekwencja takiej dziury jest cicha: uczeń dostaje „źle" na dobrą
-   odpowiedź, wynik lekcji jest zaniżony, karta wraca do quaderno
-   błędów, a w kodzie nic się nie wywraca. Żaden lint tego nie widzi.
+   The consequence of such a hole is silent: the student gets "wrong" for a
+   correct answer, the lesson score is too low, the card returns to the
+   mistake notebook, and nothing falls over in the code. No linter sees it.
 
-   Każdy typ przechodzi tędy dwa razy: raz z odpowiedzią poprawną, raz
-   z błędną. Dwa przebiegi w jednym teście, bo sprawdzana jest RÓŻNICA
-   między nimi: test, który tylko potwierdza „zła odpowiedź jest zła",
-   przeszedłby też na builderze, który zawsze mówi „źle".
+   Every type goes through here twice: once with a correct answer, once with
+   a wrong one. Two runs in one test, because what is checked is the
+   DIFFERENCE between them: a test that only confirms "a wrong answer is
+   wrong" would also pass on a builder that always says "wrong".
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/* Ćwiczenia syntetyczne, nie z kursu: opis kontraktu silnika nie ma
-   przewracać się, gdy ktoś poprawi zdanie w lekcji.
+/* Synthetic exercises, not from the course: a description of the engine's
+   contract must not fall over when somebody fixes a sentence in a lesson.
 
-   `gender` ma celowo tę samą odpowiedź w obu pozycjach: opcje są
-   tasowane ziarnem, więc test, który zakładałby ich kolejność,
-   sprawdzałby tasowanie zamiast oceny. */
+   `gender` deliberately has the same answer in both positions: the options
+   are shuffled with a seed, so a test assuming their order would be checking
+   the shuffling instead of the grading. */
 const FIXTURES = {
   mcq: { t: "mcq", q: "Domanda", opts: ["giusto", "sbagliato"], a: 0 },
   truefalse: { t: "truefalse", q: "Vero o falso", a: 0 },
@@ -36,7 +36,7 @@ const FIXTURES = {
   conj: { t: "conj", verb: "parlare", tense: "pres", persons: [0, 1] },
   gender: { t: "gender", items: [{ it: "pane", a: "il" }, { it: "vino", a: "il" }], opts: ["il", "la"] },
   listen: { t: "listen", it: "Buongiorno a tutti", alt: [] },
-  speak: { t: "speak", it: "Buongiorno a tutti", tr: "dzień dobry" },
+  speak: { t: "speak", it: "Buongiorno a tutti", tr: "good morning" },
   dialogue: { t: "dialogue", lines: [{ sp: "A", it: "Ciao" }, { sp: "TY", choices: ["Ciao", "No"], a: 0 }] },
   minpair: { t: "minpair", a: "nonno", b: "nono", heard: "a" }
 };
@@ -44,9 +44,9 @@ const FIXTURES = {
 const TYPES = Object.keys(FIXTURES);
 
 /**
- * Buduje ćwiczenie, odpowiada na nie i oddaje werdykt silnika.
+ * Builds an exercise, answers it and returns the engine's verdict.
  *
- * @param {boolean} poprawnie czy odpowiedzieć dobrze
+ * @param {boolean} poprawnie whether to answer correctly
  * @returns {{ok: boolean, wywolan: number, klasa: string}}
  */
 async function odpowiedz(page, type, fixture, poprawnie) {
@@ -57,8 +57,8 @@ async function odpowiedz(page, type, fixture, poprawnie) {
     window.Audio2.speakSequence = () => ({ cancel() {} });
     window.Core.state.settings.autoplay = false;
     window.Core.state.settings.strictAccents = false;
-    /* Bez mikrofonu „speak" idzie gałęzią pisaną — jedyną, którą da się
-       ocenić bez prawdziwego głosu. */
+    /* Without a microphone "speak" takes the written branch — the only one
+       that can be graded without a real voice. */
     window.Audio2.sttSupported = false;
 
     const host = document.createElement("div");
@@ -84,8 +84,8 @@ async function odpowiedz(page, type, fixture, poprawnie) {
         break;
 
       case "multi":
-        /* Dobrze = dokładnie ten zbiór. Źle = podzbiór: to jest przypadek,
-           który naiwne porównanie „każdy zaznaczony jest poprawny" przepuszcza. */
+        /* Right = exactly that set. Wrong = a subset: that is the case a naive
+           "every ticked one is correct" comparison lets through. */
         (dobrze ? ex.a : [ex.a[0]]).forEach(i => { q(`input[value="${i}"]`).checked = true; });
         check();
         break;
@@ -104,8 +104,8 @@ async function odpowiedz(page, type, fixture, poprawnie) {
         break;
 
       case "order": {
-        /* Te same żetony w obu przebiegach, inna kolejność: przy błędnym
-           przebiegu zdanie ma być odwrócone, a nie niepełne. */
+        /* The same tokens in both runs, a different order: in the wrong run
+           the sentence has to be reversed, not incomplete. */
         const kolejnosc = dobrze ? ex.tokens : ex.tokens.slice().reverse();
         kolejnosc.forEach(slowo => {
           qq(".js-bank .tok").find(b => b.textContent === slowo).click();
@@ -115,9 +115,9 @@ async function odpowiedz(page, type, fixture, poprawnie) {
       }
 
       case "match":
-        /* Błędny przebieg: jedna zła para na starcie, potem komplet dobrych.
-           Ćwiczenie kończy się dopiero po dopasowaniu wszystkiego, więc
-           „źle" znaczy tu „z pomyłką po drodze", nie „nieukończone". */
+        /* The wrong run: one bad pair at the start, then the full set of good
+           ones. The exercise only finishes once everything is matched, so
+           "wrong" here means "with a mistake on the way", not "unfinished". */
         if (!dobrze) {
           root.querySelector('[data-side="l"][data-i="0"]').click();
           root.querySelector('[data-side="r"][data-i="1"]').click();
@@ -147,7 +147,7 @@ async function odpowiedz(page, type, fixture, poprawnie) {
       case "dialogue":
         await sleep(1200);
         if (!dobrze) {
-          root.querySelector('.js-ch[data-k="1"]').click();   // zła kwestia: liczy się jako pomyłka
+          root.querySelector('.js-ch[data-k="1"]').click();   // the wrong line: it counts as a mistake
           await sleep(200);
         }
         root.querySelector('.js-ch[data-k="0"]').click();
@@ -155,7 +155,7 @@ async function odpowiedz(page, type, fixture, poprawnie) {
         break;
 
       case "minpair":
-        root.querySelector(".js-play").click();               // bez odsłuchania odmawia sprawdzenia
+        root.querySelector(".js-play").click();               // without listening it refuses to check
         q(`input[value="${dobrze ? ex.heard : "b"}"]`).checked = true;
         check();
         break;
@@ -168,30 +168,30 @@ async function odpowiedz(page, type, fixture, poprawnie) {
   }, [type, fixture, poprawnie]);
 }
 
-test.describe("werdykt ćwiczenia", () => {
+test.describe("the exercise verdict", () => {
   for (const type of TYPES) {
-    test(`${type}: dobra odpowiedź przechodzi, zła nie`, async ({ page }) => {
+    test(`${type}: a correct answer passes, a wrong one does not`, async ({ page }) => {
       await page.goto("/index.html");
       await page.waitForFunction(() => window.Ex && window.Core && window.I18n && window.Verbs);
 
       const dobra = await odpowiedz(page, type, FIXTURES[type], true);
-      expect(dobra.wywolan, `${type}: dobra odpowiedź nie zakończyła ćwiczenia`).toBe(1);
-      expect(dobra.ok, `${type}: dobra odpowiedź uznana za złą`).toBe(true);
+      expect(dobra.wywolan, `${type}: the correct answer did not finish the exercise`).toBe(1);
+      expect(dobra.ok, `${type}: the correct answer was judged wrong`).toBe(true);
       expect(dobra.klasa, `${type}: brak zielonego oznaczenia na ekranie`).toContain("exq--ok");
 
       const zla = await odpowiedz(page, type, FIXTURES[type], false);
-      expect(zla.wywolan, `${type}: zła odpowiedź nie zakończyła ćwiczenia`).toBe(1);
-      expect(zla.ok, `${type}: zła odpowiedź uznana za dobrą`).toBe(false);
+      expect(zla.wywolan, `${type}: the wrong answer did not finish the exercise`).toBe(1);
+      expect(zla.ok, `${type}: the wrong answer was judged correct`).toBe(false);
       expect(zla.klasa, `${type}: brak czerwonego oznaczenia na ekranie`).toContain("exq--ko");
     });
   }
 });
 
-test("literówka dostaje drugą szansę, ale tylko jedną", async ({ page }) => {
-  /* Zachowanie widoczne tylko przy wpisywaniu: odpowiedź „prawie dobra"
-     (podobieństwo ≥ 0.85) nie kończy ćwiczenia od razu, żeby uczeń mógł
-     poprawić literówkę. Za drugim razem kończy — inaczej dałoby się
-     dobierać w nieskończoność. */
+test("a typo gets a second chance, but only one", async ({ page }) => {
+  /* Behaviour visible only when typing: an "almost correct" answer
+     (similarity >= 0.85) does not finish the exercise straight away, so the
+     student can fix a typo. The second time it does finish — otherwise you
+     could keep trying for ever. */
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Ex && window.Core);
 
@@ -212,14 +212,14 @@ test("literówka dostaje drugą szansę, ale tylko jedną", async ({ page }) => 
     await sleep(50);
     const poPierwszej = { wywolan, tekst: root.querySelector(".fb").textContent };
 
-    root.querySelector(".js-check").click();                 // ta sama literówka drugi raz
+    root.querySelector(".js-check").click();                 // the same typo a second time
     await sleep(50);
     host.remove();
     return { poPierwszej, wywolan, ok };
   });
 
-  expect(wynik.poPierwszej.wywolan, "pierwsza próba nie ma kończyć ćwiczenia").toBe(0);
-  expect(wynik.poPierwszej.tekst.length, "uczeń ma zobaczyć, że był blisko").toBeGreaterThan(0);
-  expect(wynik.wywolan, "druga próba ma zamknąć sprawę").toBe(1);
-  expect(wynik.ok, "literówka to nadal zła odpowiedź").toBe(false);
+  expect(wynik.poPierwszej.wywolan, "the first attempt must not finish the exercise").toBe(0);
+  expect(wynik.poPierwszej.tekst.length, "the student should see that they were close").toBeGreaterThan(0);
+  expect(wynik.wywolan, "the second attempt has to close the matter").toBe(1);
+  expect(wynik.ok, "a typo is still a wrong answer").toBe(false);
 });

@@ -1,25 +1,25 @@
 /* ============================================================
-   Każda trasa ma swój widok i ten widok coś rysuje.
+   Every route has its view and that view draws something.
 
-   Powód istnienia tego pliku siedzi w router.js, w render() —
+   The reason this file exists sits in router.js, in render() —
 
        var fn = Views[route];
        if (!fn) { Views[DOMYSLNA]({}); route = DOMYSLNA; }
 
-   Brakujący widok NIE wywraca aplikacji: pokazuje ścieżkę nauki. Odkąd
-   ekrany mieszkają w kilkunastu plikach wczytywanych osobnymi
-   <script>, zapomniany znacznik w index.html (albo literówka w nazwie
-   pliku) daje dokładnie to: kurs chodzi, a jedna pozycja menu po cichu
-   prowadzi gdzie indziej. Nie widać tego ani w konsoli, ani w żadnym
-   innym teście — każdy z nich wchodzi na SWÓJ ekran.
+   A missing view does NOT bring the application down: it shows the learning
+   path. Since the screens live in a dozen files loaded by separate
+   <script> tags, a forgotten tag in index.html (or a typo in a file name)
+   produces exactly that: the course runs and one menu entry quietly leads
+   somewhere else. It shows neither in the console nor in any other test —
+   each of those enters ITS OWN screen.
 
-   Stąd dwa sprawdzenia, w tej kolejności: czy widok w ogóle istnieje
-   (to łapie brakujący plik), a potem czy narysował cokolwiek (to łapie
-   plik wczytany, ale wywalający się przy pierwszym uruchomieniu).
+   Hence two checks, in this order: whether the view exists at all (that
+   catches a missing file), and then whether it drew anything (that catches
+   a file that loaded but blows up on its first run).
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/* Trasy z menu bocznego plus te osiągalne tylko z wnętrza kursu. */
+/* The routes from the side menu plus the ones reachable only from inside the course. */
 const TRASY = [
   "oggi", "percorso", "ripasso", "allenamento", "conversazione", "grammatica",
   "coniugatore", "lessico", "shadowing", "velocita", "esame", "falsi",
@@ -27,13 +27,13 @@ const TRASY = [
   "lezione", "piazzamento", "cerca", "lettura", "scrittura", "suoni"
 ];
 
-/** Czeka, aż silnik wstanie i wczyta spis kursu. */
+/** Waits until the engine comes up and loads the course index. */
 async function otworz(page) {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Views && window.Core && window.Core.registry.levels.length > 0);
 }
 
-test("każda trasa z menu ma zarejestrowany widok", async ({ page }) => {
+test("every route in the menu has a registered view", async ({ page }) => {
   await otworz(page);
   const brakujace = await page.evaluate(
     trasy => trasy.filter(r => typeof window.Views[r] !== "function"),
@@ -42,18 +42,18 @@ test("każda trasa z menu ma zarejestrowany widok", async ({ page }) => {
   expect(brakujace, "widok bez pliku albo plik bez <script> w index.html").toEqual([]);
 });
 
-test("pozycje menu bocznego wskazują istniejące widoki", async ({ page }) => {
+test("the side menu entries point at views that exist", async ({ page }) => {
   await otworz(page);
   const zle = await page.evaluate(() =>
     Array.from(document.querySelectorAll(".rail__item"))
       .map(b => b.getAttribute("data-route"))
       .filter(r => typeof window.Views[r] !== "function")
   );
-  expect(zle, "menu prowadzi na trasę bez widoku: router po cichu pokaże ścieżkę nauki").toEqual([]);
+  expect(zle, "the menu leads to a route with no view: the router will quietly show the learning path").toEqual([]);
 });
 
 for (const trasa of TRASY) {
-  test(`trasa ${trasa} rysuje ekran i nie zgłasza błędu`, async ({ page }) => {
+  test(`route ${trasa} draws a screen and reports no error`, async ({ page }) => {
     const bledy = [];
     page.on("pageerror", e => bledy.push(String(e)));
     page.on("console", m => { if (m.type() === "error") bledy.push(m.text()); });
@@ -61,10 +61,10 @@ for (const trasa of TRASY) {
     await otworz(page);
     await page.evaluate(r => window.App.go(r, {}), trasa);
 
-    /* Nie „jakikolwiek HTML": pusty ekran po zmianie trasy wyglądałby
-       jak poprawny render. Widok ma zostawić w #main przynajmniej jeden
-       element — nawet stan pusty jest elementem (klasa .empty). */
+    /* Not "any HTML at all": an empty screen after a route change would look
+       like a correct render. The view has to leave at least one element in
+       #main — even the empty state is an element (the .empty class). */
     await expect(page.locator("#main > *").first()).toBeVisible();
-    expect(bledy, `błędy na trasie ${trasa}: ${bledy.join(" | ")}`).toEqual([]);
+    expect(bledy, `errors on route ${trasa}: ${bledy.join(" | ")}`).toEqual([]);
   });
 }

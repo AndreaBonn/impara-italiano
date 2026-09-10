@@ -1,14 +1,14 @@
 /* ============================================================
-   Talia powtórek (assets/js/srs.js) — to, czego nie dotyka state.test.mjs.
+   The review deck (assets/js/srs.js) — what state.test.mjs does not touch.
 
-   Tamten plik opisuje arytmetykę harmonogramu (SM-2, FSRS, retencja,
-   dziennik) i tam zostaje. Tutaj są dwie rzeczy, których nikt nie
-   sprawdzał, a które uczeń widzi codziennie:
+   That file describes the schedule arithmetic (SM-2, FSRS, retention, the
+   journal) and stays there. Here are two things nobody was checking and
+   which the student sees every day:
 
-   - dueCards: KTÓRE karty i w jakiej kolejności trafiają do sesji;
-   - cardTr: skąd bierze się tłumaczenie, gdy fiszka nie ma glosy w
-     bieżącym języku — bo pusty wiersz w powtórkach to karta, której nie
-     da się odpowiedzieć.
+   - dueCards: WHICH cards reach the session and in what order;
+   - cardTr: where the translation comes from when a card has no gloss in
+     the current language — because an empty row in the reviews is a card
+     that cannot be answered.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -22,7 +22,7 @@ function swiezy() {
   return box;
 }
 
-/** Wstawia kartę wprost do stanu, z podanym terminem. */
+/** Inserts a card straight into the state, with a given due date. */
 function karta(box, it, due, over) {
   const k = box.Core.cardKey(it);
   box.Core.state.srs[k] = Object.assign({
@@ -32,8 +32,8 @@ function karta(box, it, due, over) {
   return k;
 }
 
-describe("dueCards: skład dzisiejszej sesji", () => {
-  test("karta z terminem w przyszłości nie wchodzi, ta z przeszłości tak", () => {
+describe("dueCards: the makeup of today's session", () => {
+  test("a card due in the future does not enter, one due in the past does", () => {
     const box = swiezy();
     karta(box, "domani", Date.now() + DZIEN);
     karta(box, "ieri", Date.now() - DZIEN);
@@ -42,13 +42,13 @@ describe("dueCards: skład dzisiejszej sesji", () => {
     assert.equal(due[0].it, "ieri");
   });
 
-  test("karta z terminem dokładnie teraz jest już wymagalna", () => {
+  test("a card due exactly now is already due", () => {
     const box = swiezy();
     karta(box, "adesso", Date.now());
-    assert.equal(box.Core.dueCards().length, 1, "termin „teraz” znaczy teraz, nie za chwilę");
+    assert.equal(box.Core.dueCards().length, 1, "a due date of \"now\" means now, not in a moment");
   });
 
-  test("najpilniejsze idą pierwsze", () => {
+  test("the most urgent go first", () => {
     const box = swiezy();
     karta(box, "sredni", Date.now() - 2 * DZIEN);
     karta(box, "najstarszy", Date.now() - 9 * DZIEN);
@@ -56,7 +56,7 @@ describe("dueCards: skład dzisiejszej sesji", () => {
     assert.deepEqual(Array.from(box.Core.dueCards(), c => c.it), ["najstarszy", "sredni", "swiezy"]);
   });
 
-  test("limit ucina po posortowaniu, więc bierze najpilniejsze, a nie przypadkowe", () => {
+  test("the limit cuts after sorting, so it takes the most urgent rather than random ones", () => {
     const box = swiezy();
     karta(box, "trzeci", Date.now() - 1000);
     karta(box, "pierwszy", Date.now() - 9 * DZIEN);
@@ -64,7 +64,7 @@ describe("dueCards: skład dzisiejszej sesji", () => {
     assert.deepEqual(Array.from(box.Core.dueCards(2), c => c.it), ["pierwszy", "drugi"]);
   });
 
-  test("każda karta niesie swój klucz: bez niego nie ma jak jej ocenić", () => {
+  test("every card carries its key: without it there is no way to grade it", () => {
     const box = swiezy();
     const k = karta(box, "L'autore", Date.now() - 1000);
     const c = box.Core.dueCards()[0];
@@ -72,16 +72,16 @@ describe("dueCards: skład dzisiejszej sesji", () => {
     assert.equal(c.key, "l'autore");
   });
 
-  test("kopia, nie oryginał: sesja nie może po cichu przestawić terminu w talii", () => {
+  test("a copy, not the original: a session must not quietly move a due date in the deck", () => {
     const box = swiezy();
     const k = karta(box, "cane", Date.now() - 1000);
     const c = box.Core.dueCards()[0];
     c.due = Date.now() + 999 * DZIEN;
-    assert.notEqual(box.Core.state.srs[k].due, c.due, "talia została nietknięta");
-    assert.equal(box.Core.dueCards().length, 1, "i karta nadal jest do powtórki");
+    assert.notEqual(box.Core.state.srs[k].due, c.due, "the deck was left untouched");
+    assert.equal(box.Core.dueCards().length, 1, "and the card is still due for review");
   });
 
-  test("pusta talia daje pustą sesję i zero, a nie wyjątek", () => {
+  test("an empty deck gives an empty session and zero, not an exception", () => {
     const box = swiezy();
     assert.equal(box.Core.dueCards().length, 0);
     assert.equal(box.Core.dueCount(), 0);
@@ -97,26 +97,26 @@ describe("dueCards: skład dzisiejszej sesji", () => {
   });
 });
 
-describe("cardTr: skąd bierze się tłumaczenie", () => {
-  test("glosa w bieżącym języku wygrywa", () => {
+describe("cardTr: where the translation comes from", () => {
+  test("the gloss in the current language wins", () => {
     const box = swiezy();
     box.Core.state.settings.lang = "en";
     assert.equal(box.Core.cardTr({ it: "cane", tr: { pl: "pies", en: "dog" } }), "dog");
   });
 
-  test("gdy w bieżącym języku glosy nie ma, zostaje jakakolwiek: pusty wiersz jest gorszy", () => {
+  test("when there is no gloss in the current language, any one will do: an empty row is worse", () => {
     const box = swiezy();
     box.Core.state.settings.lang = "en";
     assert.equal(box.Core.cardTr({ it: "cane", tr: { pl: "pies" } }), "pies");
   });
 
-  test("pusta glosa w bieżącym języku nie liczy się jako glosa", () => {
+  test("an empty gloss in the current language does not count as a gloss", () => {
     const box = swiezy();
     box.Core.state.settings.lang = "en";
     assert.equal(box.Core.cardTr({ it: "cane", tr: { en: "", pl: "pies" } }), "pies");
   });
 
-  test("karta bez tłumaczeń daje pusty napis, a nie undefined", () => {
+  test("a card with no translations gives an empty string, not undefined", () => {
     const box = swiezy();
     assert.equal(box.Core.cardTr({ it: "cane", tr: {} }), "");
     assert.equal(box.Core.cardTr({ it: "cane" }), "");
@@ -124,8 +124,8 @@ describe("cardTr: skąd bierze się tłumaczenie", () => {
   });
 });
 
-describe("addCard: dokładanie glosy nie rusza harmonogramu", () => {
-  test("ta sama fiszka w drugim języku zyskuje glosę, a nie nowy termin", () => {
+describe("addCard: adding a gloss does not touch the schedule", () => {
+  test("the same card in a second language gains a gloss, not a new due date", () => {
     const box = swiezy();
     const k = karta(box, "cane", Date.now() + 5 * DZIEN, { reps: 4, interval: 5 });
 
@@ -133,13 +133,13 @@ describe("addCard: dokładanie glosy nie rusza harmonogramu", () => {
     const zwrocony = box.Core.addCard("cane", "dog", "a1-u01-l1");
 
     assert.equal(zwrocony, k, "to ta sama karta, nie druga");
-    assert.equal(box.Core.state.srs[k].reps, 4, "seria powtórek nietknięta");
+    assert.equal(box.Core.state.srs[k].reps, 4, "the review streak untouched");
     assert.equal(box.Core.state.srs[k].interval, 5);
     assert.equal(box.Core.state.srs[k].tr.en, "dog");
     assert.equal(box.Core.state.srs[k].tr.pl, "cane-pl", "stara glosa zostaje");
   });
 
-  test("nowa fiszka startuje wymagalna od razu: uczeń ma ją zobaczyć dziś", () => {
+  test("a new card starts due immediately: the student should see it today", () => {
     const box = swiezy();
     const k = box.Core.addCard("gatto", "kot", "a1-u01-l1");
     assert.equal(box.Core.state.srs[k].reps, 0);
@@ -147,7 +147,7 @@ describe("addCard: dokładanie glosy nie rusza harmonogramu", () => {
     assert.equal(box.Core.dueCount(), 1);
   });
 
-  test("pusta treść nie zakłada fiszki", () => {
+  test("empty content creates no card", () => {
     const box = swiezy();
     assert.equal(box.Core.addCard("", "nic"), null);
     assert.equal(box.Core.addCard("   ", "nic"), null);
@@ -156,7 +156,7 @@ describe("addCard: dokładanie glosy nie rusza harmonogramu", () => {
 });
 
 describe("wystawienie w Core", () => {
-  test("Core oddaje funkcje talii, nie własne kopie", () => {
+  test("Core returns the deck functions, not copies of its own", () => {
     const box = swiezy();
     ["addCard", "cardTr", "schedule", "gradeCard", "dueCards", "dueCount"].forEach(nazwa => {
       assert.equal(box.Core[nazwa], box.sandbox.Srs[nazwa], `Core.${nazwa} to inna funkcja`);
@@ -164,11 +164,11 @@ describe("wystawienie w Core", () => {
   });
 });
 
-describe("dziennik powtórek: sufit", () => {
-  /* Dziennik jest wejściem do PRZYSZŁEGO strojenia parametrów FSRS na
-     własnej historii, więc rośnie przy każdej powtórce i jest jedynym
-     kontenerem, który sam z siebie nie ma końca. Sufit tnie od najstarszej:
-     świeża historia opisuje pamięć taką, jaka jest teraz. */
+describe("the review journal: the ceiling", () => {
+  /* The journal is input for the FUTURE tuning of the FSRS parameters on the
+     learner's own history, so it grows with every review and is the only
+     container with no end of its own. The ceiling cuts from the oldest:
+     recent history describes memory as it is now. */
   test("po przekroczeniu sufitu wypada najstarsza pozycja, nie najnowsza", () => {
     const box = swiezy();
     const max = box.sandbox.Srs.MAX_REVIEWS;
@@ -179,7 +179,7 @@ describe("dziennik powtórek: sufit", () => {
     box.Core.gradeCard(k, 5);
 
     assert.equal(st.reviews.length, max, "sufit trzyma");
-    assert.equal(st.reviews[0].t, 1, "zeszła najstarsza, nie najnowsza");
-    assert.equal(st.reviews[st.reviews.length - 1].k, k, "świeża powtórka jest w środku");
+    assert.equal(st.reviews[0].t, 1, "the oldest went, not the newest");
+    assert.equal(st.reviews[st.reviews.length - 1].k, k, "the fresh review is in there");
   });
 });

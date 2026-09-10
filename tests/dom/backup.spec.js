@@ -1,18 +1,17 @@
 /* ============================================================
-   Przypomnienie o kopii zapasowej w prawdziwej przeglądarce.
+   The backup reminder in a real browser.
 
-   Testy jednostkowe mówią, KIEDY próg zostaje przekroczony. Tutaj
-   chodzi o to, czego one nie widzą: czy komunikat naprawdę stoi na
-   ekranie, czy przycisk naprawdę pobiera plik i czy po pobraniu
-   licznik naprawdę rusza od zera. Przypomnienie, którego przycisk
-   nic nie robi, przechodzi każdy test logiki i nie ratuje nikomu
-   postępów.
+   The unit tests say WHEN the threshold is crossed. What matters here is
+   what they cannot see: whether the message really stands on the screen,
+   whether the button really downloads a file and whether after the download
+   the counter really starts from zero. A reminder whose button does nothing
+   passes every logic test and saves nobody's progress.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
 const PROG = 10;
 
-/** Zdaje PROG różnych lekcji tak, jak robi to koniec lekcji w widoku. */
+/** Passes PROG different lessons the way the end of a lesson does in the view. */
 async function zdajProgLekcji(page) {
   await page.evaluate((ile) => {
     for (let i = 0; i < ile; i++) window.Core.recordLesson("test-l" + i, 10, 10, 60);
@@ -24,7 +23,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => window.Core && window.I18n);
 });
 
-test("po dziesiątej ukończonej lekcji komunikat stoi na ekranie", async ({ page }) => {
+test("after the tenth finished lesson the message stands on the screen", async ({ page }) => {
   await expect(page.locator(".toast--stuck"), "przed progiem nic nie wisi").toHaveCount(0);
 
   await zdajProgLekcji(page);
@@ -38,20 +37,21 @@ test("po dziesiątej ukończonej lekcji komunikat stoi na ekranie", async ({ pag
   expect(tekst, "liczba lekcji dociera do napisu").toContain(String(PROG));
 });
 
-test("przycisk w komunikacie pobiera plik i przesuwa próg", async ({ page }) => {
+test("the button in the message downloads a file and moves the threshold", async ({ page }) => {
   await zdajProgLekcji(page);
 
   const przycisk = page.locator(".toast__act");
   await expect(przycisk).toBeVisible();
 
-  /* Cel dotykowy, nie ikonka: przy btn--sm wychodziło 36 px. */
+  /* A touch target, not an icon: with btn--sm it came out at 36 px. */
   const pole = await przycisk.boundingBox();
   expect(pole.height, "cel dotykowy na telefonie").toBeGreaterThanOrEqual(44);
 
-  /* Przycisk stał w linii tekstu i wchodził na ostatni wiersz komunikatu:
-     kontrast i cel dotykowy były w porządku, a napisu nie dało się
-     doczytać. Mierzone zakresem na węźle tekstowym, bo tekst jest
-     bezpośrednim dzieckiem komunikatu i nie ma własnego prostokąta. */
+  /* The button sat in the line of text and climbed onto the last line of the
+     message: the contrast and the touch target were fine, and the text could
+     not be read to the end. Measured with a range over the text node,
+     because the text is a direct child of the message and has no rectangle
+     of its own. */
   const nachodzi = await page.evaluate(() => {
     const box = document.querySelector(".toast--stuck");
     const zakres = document.createRange();
@@ -59,7 +59,7 @@ test("przycisk w komunikacie pobiera plik i przesuwa próg", async ({ page }) =>
     return zakres.getBoundingClientRect().bottom >
       document.querySelector(".toast__act").getBoundingClientRect().top;
   });
-  expect(nachodzi, "przycisk nie zasłania ostatniego wiersza").toBe(false);
+  expect(nachodzi, "the button does not cover the last line").toBe(false);
 
   const [plik] = await Promise.all([
     page.waitForEvent("download"),
@@ -68,26 +68,26 @@ test("przycisk w komunikacie pobiera plik i przesuwa próg", async ({ page }) =>
   expect(plik.suggestedFilename()).toMatch(/^impara-italiano-.+\.json$/);
 
   await expect(page.locator(".toast--stuck"), "komunikat znika po akcji").toHaveCount(0);
-  expect(await page.evaluate(() => window.Core.backupDue()), "próg policzony od nowa").toBe(false);
+  expect(await page.evaluate(() => window.Core.backupDue()), "the threshold counted afresh").toBe(false);
 });
 
-test("zamknięty komunikat nie wraca po kolejnej lekcji tej samej sesji", async ({ page }) => {
+test("a dismissed message does not come back after another lesson in the same session", async ({ page }) => {
   await zdajProgLekcji(page);
   await page.locator(".toast--stuck .toast__x").click();
   await expect(page.locator(".toast--stuck")).toHaveCount(0);
 
   await page.evaluate(() => window.Core.recordLesson("test-l99", 10, 10, 60));
-  await expect(page.locator(".toast--stuck"), "bez nagabywania po każdej lekcji").toHaveCount(0);
+  await expect(page.locator(".toast--stuck"), "no pestering after every lesson").toHaveCount(0);
 
-  /* Para do powyższego: gdyby przypomnienie po zamknięciu nie wracało
-     NIGDY, tamta asercja też byłaby zielona i nie znaczyłaby nic. */
+  /* The pair to the one above: if the reminder never came back after being
+     dismissed, that assertion would be green too and would mean nothing. */
   await page.evaluate((ile) => {
     for (let i = 0; i < ile; i++) window.Core.recordLesson("test-p" + i, 10, 10, 60);
   }, PROG);
-  await expect(page.locator(".toast--stuck"), "wraca po kolejnych dziesięciu").toBeVisible();
+  await expect(page.locator(".toast--stuck"), "it comes back after another ten").toBeVisible();
 });
 
-test("na 375 px komunikat mieści się w oknie", async ({ page }) => {
+test("at 375 px the message fits in the window", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 720 });
   await zdajProgLekcji(page);
   await expect(page.locator(".toast--stuck")).toBeVisible();
@@ -97,6 +97,6 @@ test("na 375 px komunikat mieści się w oknie", async ({ page }) => {
   expect(przelewa, "brak poziomego przewijania strony").toBe(false);
 
   const pole = await page.locator(".toast--stuck").boundingBox();
-  expect(pole.x, "lewa krawędź w oknie").toBeGreaterThanOrEqual(0);
-  expect(pole.x + pole.width, "prawa krawędź w oknie").toBeLessThanOrEqual(375);
+  expect(pole.x, "the left edge inside the window").toBeGreaterThanOrEqual(0);
+  expect(pole.x + pole.width, "the right edge inside the window").toBeLessThanOrEqual(375);
 });

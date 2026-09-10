@@ -1,13 +1,13 @@
 /* ============================================================
-   Czasowniki z przedrostkiem dziedziczą nieregularność rdzenia.
+   Prefixed verbs inherit the irregularity of their root.
 
-   Znalezione przez bramkę lookupu: „promesso" nie było rozpoznawane,
-   bo koniugator produkował „promettuto". To nie była usterka lookupu —
-   widok odmiany pokazywał uczniowi tę samą nieistniejącą formę.
+   Found by the lookup gate: "promesso" was not recognised, because the
+   conjugator produced "promettuto". That was not a fault of the lookup —
+   the conjugation view showed the student the same non-existent form.
 
-   Druga połowa testu jest ważniejsza od pierwszej: „mandare" NIE jest
-   krewnym „andare", choć się na nie kończy. Bez zamkniętej listy
-   przedrostków dziedziczenie wyprodukowałoby „mando → vado".
+   The second half of this test matters more than the first: "mandare" is NOT
+   a relative of "andare", even though it ends in it. Without a closed list of
+   prefixes, inheritance would produce "mando -> vado".
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -31,7 +31,7 @@ describe("verbs: dziedziczenie po przedrostku", () => {
     });
   }
 
-  test("formy osobowe też idą za rdzeniem", () => {
+  test("the personal forms follow the root too", () => {
     const V = silnik();
     assert.deepEqual(Array.from(V.conjugate("promettere", "pres")),
       ["prometto", "prometti", "promette", "promettiamo", "promettete", "promettono"]);
@@ -39,9 +39,9 @@ describe("verbs: dziedziczenie po przedrostku", () => {
   });
 });
 
-describe("verbs: podobieństwo końcówki to nie pokrewieństwo", () => {
+describe("verbs: a similar ending is not a relationship", () => {
   const obce = [
-    ["mandare", "mandato"],   // kończy się na „andare", ale „m" nie jest przedrostkiem
+    ["mandare", "mandato"],   // it ends in "andare", but "m" is not a prefix
     ["credere", "creduto"],
     ["cadere", "caduto"],
     ["vendere", "venduto"],
@@ -53,25 +53,26 @@ describe("verbs: podobieństwo końcówki to nie pokrewieństwo", () => {
     });
   }
 
-  test("mandare odmienia się regularnie, a nie jak andare", () => {
+  test("mandare conjugates regularly, not like andare", () => {
     const formy = Array.from(silnik().conjugate("mandare", "pres"));
     assert.deepEqual(formy, ["mando", "mandi", "manda", "mandiamo", "mandate", "mandano"]);
-    assert.ok(!formy.join(" ").includes("vad"), "żadnego tematu od andare");
+    assert.ok(!formy.join(" ").includes("vad"), "no stem from andare at all");
   });
 });
 
 /* ============================================================
-   Imiesłowy nieregularne.
+   Irregular participles.
 
-   Zmierzone przed poprawką: z 45 pospolitych czasowników o nieregularnym
-   imiesłowie koniugator produkował 25 form NIEISTNIEJĄCYCH. Imiesłów
-   wchodzi w sześć z czternastu czasów, więc jeden brak psuł sześć wierszy
-   tabeli odmiany i każde ćwiczenie na czasie złożonym.
+   Measured before the fix: out of 45 common verbs with an irregular
+   participle the conjugator produced 25 NON-EXISTENT forms. The participle
+   enters six of the fourteen tenses, so a single gap broke six rows of the
+   conjugation table and every exercise on a compound tense.
 
-   Ten test jest listą, bo tak wygląda ten defekt: nie jedna reguła, tylko
-   brakujące wpisy, i każdy kolejny brak ma się tu zgłosić po nazwie.
+   This test is a list, because that is what this defect looks like: not one
+   rule but missing entries, and every further gap has to report itself here
+   by name.
    ============================================================ */
-describe("verbs: imiesłowy nieregularne", () => {
+describe("verbs: irregular participles", () => {
   const PARY = [
     ["ridere", "riso"], ["succedere", "successo"], ["accendere", "acceso"],
     ["dividere", "diviso"], ["coprire", "coperto"], ["scoprire", "scoperto"],
@@ -89,19 +90,19 @@ describe("verbs: imiesłowy nieregularne", () => {
     });
   }
 
-  test("imiesłów wchodzi w czas złożony, nie stoi obok niego", () => {
+  test("the participle enters the compound tense, it does not stand next to it", () => {
     const V = silnik();
     assert.deepEqual(Array.from(V.conjugate("rompere", "passPross")),
       ["ho rotto", "hai rotto", "ha rotto", "abbiamo rotto", "avete rotto", "hanno rotto"]);
   });
 
-  test("przedrostek dziedziczy nowy imiesłów bez osobnego wpisu", () => {
+  test("a prefix inherits a new participle with no entry of its own", () => {
     const V = silnik();
     assert.equal(V.participle("sorridere"), "sorriso");
     assert.equal(V.participle("riscoprire"), "riscoperto");
   });
 
-  test("regularne zostają regularne", () => {
+  test("the regular ones stay regular", () => {
     const V = silnik();
     assert.equal(V.participle("parlare"), "parlato");
     assert.equal(V.participle("credere"), "creduto");
@@ -109,13 +110,13 @@ describe("verbs: imiesłowy nieregularne", () => {
   });
 });
 
-describe("rozbiór na przedrostek to pisownia, nie etymologia", () => {
-  /* Bramka pokrycia lookupu nie umiała rozpoznać „restano" z czytanki.
-     Powód: „restare" wyglądało jak re + stare, więc dostawało odmianę
-     „stare" i produkowało „restanno", słowo, którego nie ma. Ten test
-     pilnuje obu stron: że wyjątek jest wyjątkiem, i że dziedziczenie
-     dla prawdziwych par prefiksowych dalej działa. */
-  test("restare odmienia się regularnie, nie jak stare", () => {
+describe("splitting off a prefix is spelling, not etymology", () => {
+  /* The lookup coverage gate could not recognise "restano" from a reading.
+     The reason: "restare" looked like re + stare, so it got the "stare"
+     conjugation and produced "restanno", a word that does not exist. This
+     test guards both sides: that the exception is an exception, and that
+     inheritance still works for the real prefixed pairs. */
+  test("restare conjugates regularly, not like stare", () => {
     const V = silnik();
     assert.deepEqual(Array.from(V.conjugate("restare", "pres")),
       ["resto", "resti", "resta", "restiamo", "restate", "restano"]);

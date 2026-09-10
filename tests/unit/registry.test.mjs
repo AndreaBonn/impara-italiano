@@ -1,19 +1,19 @@
 /* ============================================================
-   Struktura kursu i dociąganie danych (assets/js/registry.js).
+   The course structure and data fetching (assets/js/registry.js).
 
-   Ten moduł nie miał do tej pory ani jednego testu jednostkowego, choć
-   decyduje o tym, czy uczeń w ogóle zobaczy lekcje. Powód był techniczny:
-   pliki wchodzą przez <script>, a atrapa DOM nie miała head ani sposobu
-   na rozstrzygnięcie onload/onerror. Ma je teraz (box.settleScripts).
+   This module had not a single unit test until now, even though it decides
+   whether the student sees any lessons at all. The reason was technical:
+   files come in through <script>, and the DOM stub had neither a head nor a
+   way to settle onload/onerror. It has them now (box.settleScripts).
 
-   Trzy zachowania, które widać tylko stąd:
-   - kolejność: warstwa neutralna PRZED nakładką z tekstami, inaczej
-     applyStrings nakłada tłumaczenia na obiekty, których jeszcze nie ma;
-   - częściowe niepowodzenie: poziom, z którego wczytała się część, jest
-     używalny, a nie zablokowany — ale nieudane pliki mają być ponowione
-     przy następnym podejściu, nie zapamiętane jako wczytane;
-   - całkowite niepowodzenie: poziom idzie w stan „error", bo widok ma
-     pokazać powód, a nie kręcić się w nieskończoność na „ładuję".
+   Three behaviours visible only from here:
+   - order: the neutral layer BEFORE the text overlay, otherwise applyStrings
+     lays translations onto objects that do not exist yet;
+   - partial failure: a level of which part loaded is usable rather than
+     blocked - but the files that failed must be retried on the next attempt,
+     not remembered as loaded;
+   - total failure: the level goes into the "error" state, because the view
+     has to show a reason rather than spin forever on "loading".
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -22,7 +22,7 @@ import { loadEngine, CORE } from "./_harness.mjs";
 function swiezy() {
   const box = loadEngine();
   box.Core.load();
-  /* applyStrings daje i18n.js, którego tu nie ma: rejestr tylko go woła. */
+  /* applyStrings comes from i18n.js, which is not here: the registry only calls it. */
   box.sandbox.LINGUAI.applyStrings = () => {};
   return box;
 }
@@ -43,25 +43,25 @@ function jednostka(idPrefix, vocab) {
   };
 }
 
-describe("rejestracja poziomów", () => {
-  test("nowy poziom trafia na listę i pod swój kod", () => {
+describe("registering levels", () => {
+  test("a new level lands on the list and under its own code", () => {
     const box = swiezy();
     R(box).registerLevel(poziom());
     assert.equal(R(box).registry.levels.length, 1);
     assert.equal(R(box).registry.byCode.A1.name, "Podstawy");
   });
 
-  test("ponowne wczytanie tego samego kodu podmienia jednostki, nie dubluje poziomu", () => {
+  test("reloading the same code replaces the units, it does not duplicate the level", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ units: [jednostka("a1-u01")] }));
     R(box).registerLevel(poziom({ units: [jednostka("a1-u02")] }));
-    assert.equal(R(box).registry.levels.length, 1, "jeden poziom, nie dwa");
+    assert.equal(R(box).registry.levels.length, 1, "one level, not two");
     assert.equal(R(box).registry.byCode.A1.units.length, 1);
-    assert.ok(R(box).getLesson("a1-u02-l1"), "widoczne są nowe jednostki");
-    assert.equal(R(box).getLesson("a1-u01-l1"), null, "stare zniknęły razem z podmianą");
+    assert.ok(R(box).getLesson("a1-u02-l1"), "the new units are visible");
+    assert.equal(R(box).getLesson("a1-u01-l1"), null, "the old ones went away with the replacement");
   });
 
-  test("addUnits dokłada, a nie podmienia: dane poziomu bywają w kilku plikach", () => {
+  test("addUnits appends rather than replaces: a level's data can span several files", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ units: [jednostka("a1-u01")] }));
     R(box).addUnits("A1", [jednostka("a1-u02")]);
@@ -70,7 +70,7 @@ describe("rejestracja poziomów", () => {
     assert.ok(R(box).getLesson("a1-u02-l1"));
   });
 
-  test("addUnits na nieznany poziom nie zakłada go po cichu", () => {
+  test("addUnits on an unknown level does not create it quietly", () => {
     const box = swiezy();
     R(box).addUnits("C2", [jednostka("c2-u01")]);
     assert.equal(R(box).registry.levels.length, 0);
@@ -78,44 +78,44 @@ describe("rejestracja poziomów", () => {
   });
 });
 
-describe("indeksy", () => {
-  test("test jednostki jest w indeksie lekcji tak samo jak zwykła lekcja", () => {
+describe("the indexes", () => {
+  test("a unit test is in the lesson index just like an ordinary lesson", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ units: [jednostka("a1-u01")] }));
     const znaleziona = R(box).getLesson("a1-u01-test");
-    assert.ok(znaleziona, "test jednostki musi dać się otworzyć z adresu");
+    assert.ok(znaleziona, "a unit test has to be openable from the address");
     assert.equal(znaleziona.level.code, "A1");
     assert.equal(znaleziona.unit.title, "Jednostka");
   });
 
-  test("nieznane id daje null, a nie undefined ani wyjątek", () => {
+  test("an unknown id gives null, not undefined and not an exception", () => {
     const box = swiezy();
-    assert.equal(R(box).getLesson("nie-ma-takiej"), null);
+    assert.equal(R(box).getLesson("no-such-lesson"), null);
   });
 
-  test("słownik indeksuje się po znormalizowanym włoskim", () => {
+  test("the dictionary is indexed by normalised Italian", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ units: [jednostka("a1-u01", [{ it: "L'Autore", tr: "autor" }])] }));
     assert.equal(R(box).registry.vocabIndex["l'autore"], "autor");
   });
 
-  test("pozycja bez tłumaczenia nie trafia do słownika", () => {
+  test("an entry with no translation does not enter the dictionary", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ units: [jednostka("a1-u01", [{ it: "casa" }, { it: "cane", tr: "pies" }])] }));
-    assert.equal(R(box).registry.vocabIndex["casa"], undefined, "bez glosy nie ma czego pokazać");
+    assert.equal(R(box).registry.vocabIndex["casa"], undefined, "with no gloss there is nothing to show");
     assert.equal(R(box).registry.vocabIndex["cane"], "pies");
   });
 
-  test("cardTr sięga po glosę z kursu, gdy fiszka jej nie ma w tym języku", () => {
+  test("cardTr reaches for the course gloss when the card has none in this language", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ units: [jednostka("a1-u01", [{ it: "cane", tr: "pies" }])] }));
     assert.equal(box.Core.cardTr({ it: "cane", tr: {} }), "pies",
-      "Core.cardTr czyta TEN SAM indeks, który zbudował rejestr");
+      "Core.cardTr reads THE SAME index the registry built");
   });
 });
 
-describe("dociąganie danych poziomu", () => {
-  test("warstwa neutralna idzie przed nakładką z tekstami", () => {
+describe("fetching a level's data", () => {
+  test("the neutral layer goes before the text overlay", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ dataFiles: ["a1-01.js", "a1-02.js"] }));
     R(box).loadLevelData("A1", () => {});
@@ -126,7 +126,7 @@ describe("dociąganie danych poziomu", () => {
     ]);
   });
 
-  test("nakładka idzie w języku ucznia, nie w domyślnym", () => {
+  test("the overlay comes in the student's language, not the default one", () => {
     const box = swiezy();
     box.Core.state.settings.lang = "en";
     R(box).registerLevel(poziom());
@@ -135,12 +135,12 @@ describe("dociąganie danych poziomu", () => {
     assert.ok(box.scripts.indexOf("data/i18n/en/a1-01.js") >= 0);
   });
 
-  test("wczytany poziom melduje sukces i nie dociąga się drugi raz", () => {
+  test("a loaded level reports success and is not fetched a second time", () => {
     const box = swiezy();
     R(box).registerLevel(poziom());
     let wynik = null;
     R(box).loadLevelData("A1", ok => { wynik = ok; });
-    /* Plik danych zwykle woła addUnits; tutaj robi to test. */
+    /* A data file normally calls addUnits; here the test does it. */
     R(box).addUnits("A1", [jednostka("a1-u01")]);
     box.settleScripts();
 
@@ -149,28 +149,28 @@ describe("dociąganie danych poziomu", () => {
 
     const ile = box.scripts.length;
     R(box).loadLevelData("A1", ok => { wynik = ok; });
-    assert.equal(box.scripts.length, ile, "drugie wejście nie wstrzykuje niczego");
+    assert.equal(box.scripts.length, ile, "the second call injects nothing");
     assert.equal(wynik, true);
   });
 
-  test("nieznany kod poziomu kończy się odmową, nie ładowaniem w próżnię", () => {
+  test("an unknown level code ends in a refusal, not in loading into the void", () => {
     const box = swiezy();
-    let wynik = "nietknięte";
+    let wynik = "untouched";
     R(box).loadLevelData("C2", ok => { wynik = ok; });
     assert.equal(wynik, false);
     assert.equal(box.scripts.length, 0);
   });
 
-  test("poziom bez plików danych melduje sukces bez wstrzykiwania", () => {
+  test("a level with no data files reports success without injecting anything", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ dataFiles: [] }));
     let wynik = null;
     R(box).loadLevelData("A1", ok => { wynik = ok; });
-    assert.equal(wynik, true, "poziom istnieje, choć nie ma czego dociągać");
+    assert.equal(wynik, true, "the level exists even though there is nothing to fetch");
     assert.equal(box.scripts.length, 0);
   });
 
-  test("częściowe niepowodzenie zostawia poziom używalnym i zgłasza to w konsoli", () => {
+  test("a partial failure leaves the level usable and reports it in the console", () => {
     const box = swiezy();
     R(box).registerLevel(poziom({ dataFiles: ["a1-01.js", "a1-02.js"] }));
     let wynik = null;
@@ -178,12 +178,12 @@ describe("dociąganie danych poziomu", () => {
     R(box).addUnits("A1", [jednostka("a1-u01")]);
     box.settleScripts(["data/core/a1-02.js"]);
 
-    assert.equal(wynik, true, "to, co się wczytało, ma być do przerobienia");
+    assert.equal(wynik, true, "whatever did load must be workable");
     assert.equal(R(box).registry.loaded.A1, true);
-    assert.match(box.warnings.join(" "), /a1-02\.js/, "nazwa brakującego pliku musi być do znalezienia");
+    assert.match(box.warnings.join(" "), /a1-02\.js/, "the name of the missing file has to be findable");
   });
 
-  test("gdy nie wczytało się nic, poziom idzie w stan error zamiast wisieć na „ładuję”", () => {
+  test("when nothing loaded the level goes into the error state instead of hanging on \"loading\"", () => {
     const box = swiezy();
     R(box).registerLevel(poziom());
     let wynik = null;
@@ -195,42 +195,42 @@ describe("dociąganie danych poziomu", () => {
   });
 });
 
-describe("pamięć wczytanych nakładek", () => {
-  test("plik wczytany raz nie jest dociągany drugi raz dla tego samego języka", () => {
+describe("the memory of loaded overlays", () => {
+  test("a file loaded once is not fetched again for the same language", () => {
     const box = swiezy();
     const sciezki = R(box).i18nPaths("pl", ["conversations.js"]);
     assert.deepEqual(sciezki, ["data/i18n/pl/conversations.js"]);
 
     R(box).markI18n(sciezki, []);
-    assert.deepEqual(R(box).i18nPaths("pl", ["conversations.js"]), [], "drugi raz nie ma czego brać");
+    assert.deepEqual(R(box).i18nPaths("pl", ["conversations.js"]), [], "the second time there is nothing to take");
   });
 
-  test("ten sam plik w innym języku to inny plik", () => {
+  test("the same file in another language is a different file", () => {
     const box = swiezy();
     R(box).markI18n(R(box).i18nPaths("pl", ["conversations.js"]), []);
     assert.deepEqual(R(box).i18nPaths("en", ["conversations.js"]), ["data/i18n/en/conversations.js"]);
   });
 
-  /* To jest cały powód istnienia markI18n: zapamiętanie nieudanego pliku
-     zostawiłoby ucznia z dziurą w kursie do końca sesji, bez sposobu na
-     ponowienie inaczej niż przeładowaniem strony. */
-  test("plik, który się NIE wczytał, ma zostać ponowiony", () => {
+  /* This is the whole reason markI18n exists: remembering a failed file would
+     leave the student with a hole in the course for the rest of the session,
+     with no way to retry short of reloading the page. */
+  test("a file that did NOT load has to be retried", () => {
     const box = swiezy();
     const sciezki = R(box).i18nPaths("pl", ["conversations.js", "readings.js"]);
     R(box).markI18n(sciezki, ["data/i18n/pl/readings.js"]);
     assert.deepEqual(R(box).i18nPaths("pl", ["conversations.js", "readings.js"]),
-      ["data/i18n/pl/readings.js"], "wraca tylko ten nieudany");
+      ["data/i18n/pl/readings.js"], "only the failed one comes back");
   });
 
-  test("ścieżka spoza katalogu nakładek nie zaśmieca tej pamięci", () => {
+  test("a path outside the overlay directory does not pollute that memory", () => {
     const box = swiezy();
     R(box).markI18n(["data/core/a1-01.js"], []);
     assert.deepEqual(R(box).i18nPaths("pl", ["a1-01.js"]), ["data/i18n/pl/a1-01.js"]);
   });
 });
 
-describe("zmiana języka wyjaśnień", () => {
-  test("zapisuje wybór i dociąga nakładki wczytanych już poziomów", () => {
+describe("changing the explanation language", () => {
+  test("it saves the choice and fetches the overlays of the levels already loaded", () => {
     const box = swiezy();
     R(box).registerLevel(poziom());
     R(box).loadLevelData("A1", () => {});
@@ -244,16 +244,16 @@ describe("zmiana języka wyjaśnień", () => {
 
     assert.equal(box.Core.state.settings.lang, "en");
     box.flush();
-    assert.equal(box.stored().settings.lang, "en", "wybór przeżywa zamknięcie karty");
-    assert.deepEqual(Array.from(brakujace), [], "nic nie zginęło po drodze");
+    assert.equal(box.stored().settings.lang, "en", "the choice survives closing the tab");
+    assert.deepEqual(Array.from(brakujace), [], "nothing was lost on the way");
     const nowe = box.scripts.slice(przed);
-    assert.ok(nowe.indexOf("data/i18n/en/a1-01.js") >= 0, "nakładka poziomu");
-    assert.ok(nowe.indexOf("data/i18n/en/conversations.js") >= 0, "i pliki wczytywane od razu");
+    assert.ok(nowe.indexOf("data/i18n/en/a1-01.js") >= 0, "the level overlay");
+    assert.ok(nowe.indexOf("data/i18n/en/conversations.js") >= 0, "and the files loaded up front");
     assert.equal(nowe.filter(p => p.indexOf("data/core/") === 0).length, 0,
-      "warstwa neutralna zostaje w pamięci, nie jest wczytywana ponownie");
+      "the neutral layer stays in memory, it is not loaded again");
   });
 
-  test("poziom, którego uczeń nie otworzył, nie ciągnie za sobą swojej nakładki", () => {
+  test("a level the student never opened does not drag its overlay along", () => {
     const box = swiezy();
     R(box).registerLevel(poziom());
     R(box).setLanguage("en", () => {});
@@ -261,7 +261,7 @@ describe("zmiana języka wyjaśnień", () => {
     assert.equal(box.scripts.indexOf("data/i18n/en/a1-01.js"), -1);
   });
 
-  test("nieudane pliki wracają do wywołującego, żeby miał co pokazać", () => {
+  test("the files that failed come back to the caller, so it has something to show", () => {
     const box = swiezy();
     let brakujace = null;
     R(box).setLanguage("de", failed => { brakujace = failed; });
@@ -270,16 +270,16 @@ describe("zmiana języka wyjaśnień", () => {
   });
 });
 
-describe("wystawienie w Core", () => {
-  test("Core oddaje ten sam rejestr i te same funkcje, nie kopie", () => {
+describe("what Core exposes", () => {
+  test("Core hands out the same registry and the same functions, not copies", () => {
     const box = loadEngine({ files: CORE });
     assert.equal(box.Core.registry, box.sandbox.Registry.registry);
     ["registerLevel", "addUnits", "getLesson", "loadLevelData", "setLanguage"].forEach(nazwa => {
-      assert.equal(box.Core[nazwa], box.sandbox.Registry[nazwa], `Core.${nazwa} to inna funkcja`);
+      assert.equal(box.Core[nazwa], box.sandbox.Registry[nazwa], `Core.${nazwa} is a different function`);
     });
   });
 
-  test("pliki danych kursu wołają LINGUAI.registerLevel i to działa", () => {
+  test("the course data files call LINGUAI.registerLevel and it works", () => {
     const box = swiezy();
     box.sandbox.LINGUAI.registerLevel(poziom({ units: [jednostka("a1-u01")] }));
     assert.ok(box.Core.getLesson("a1-u01-l1"));

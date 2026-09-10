@@ -1,18 +1,18 @@
 /* ============================================================
-   Nazwy nagrań (assets/js/recordings.js).
+   Recording file names (assets/js/recordings.js).
 
-   Nazwa pliku nagrania to skrót FNV-1a 64-bit treści zdania, liczony
-   DWA RAZY, w dwóch językach: `hash()` tutaj i `audio_hash()` w
-   scripts/build_audio.py. Rozjazd między nimi nie wywraca niczego —
-   po prostu każde nagranie staje się nieosiągalne, kurs cicho schodzi
-   na syntezę systemową i brzmi jak espeak, a w konsoli nie ma ani
-   jednego błędu. To jest dokładnie ten rodzaj awarii, którego nie widać
-   w code review.
+   The name of a recording file is an FNV-1a 64-bit hash of the sentence,
+   computed TWICE, in two languages: `hash()` here and `audio_hash()` in
+   scripts/build_audio.py. A drift between them brings nothing down — every
+   recording simply becomes unreachable, the course quietly falls back to
+   system synthesis and sounds like espeak, and the console shows not a
+   single error. This is exactly the kind of failure a code review does not
+   catch.
 
-   Dlatego główny test nie sprawdza skrótu wobec drugiej implementacji
-   napisanej tutaj (to potwierdzałoby samo siebie), tylko wobec PLIKÓW
-   NA DYSKU, które wyprodukował Python: dla każdego zdania z
-   scripts/audio-strings.json musi istnieć audio/<xx>/<skrót>.mp3.
+   That is why the main test does not check the hash against a second
+   implementation written here (that would only confirm itself) but against
+   the FILES ON DISK that Python produced: for every sentence in
+   scripts/audio-strings.json there must be an audio/<xx>/<hash>.mp3.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -20,60 +20,60 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { loadEngine, AUDIO, ROOT } from "./_harness.mjs";
 
-/* Sam indeks, bez audio.js: nazwy plików nie zależą od tego, czy w
-   przeglądarce jest syntezator, mikrofon czy cokolwiek innego. */
+/* The index alone, without audio.js: file names do not depend on whether
+   the browser has a synthesiser, a microphone or anything else. */
 const PLIKI = AUDIO.slice(0, 2);
 const R = loadEngine({ files: PLIKI }).sandbox.Recordings;
 
-/** Lista zdań do nagrania, tak jak ją widzi scripts/extract_strings.mjs. */
+/** The list of sentences to record, as scripts/extract_strings.mjs sees it. */
 const NAPISY = JSON.parse(readFileSync(join(ROOT, "scripts", "audio-strings.json"), "utf8"));
 const WSZYSTKIE = NAPISY.primary.concat(NAPISY.other);
 
-/** Ścieżka pliku nagrania, ta sama, którą buduje Recordings.url(). */
+/** The recording file path, the same one Recordings.url() builds. */
 function plik(skrot) {
   return join(ROOT, "audio", skrot.slice(0, 2), skrot + ".mp3");
 }
 
-describe("skrót treści zdania", () => {
-  test("ma szesnaście znaków szesnastkowych, zawsze", () => {
+describe("the hash of a sentence", () => {
+  test("it always has sixteen hexadecimal characters", () => {
     ["Ciao", "a", "Buongiorno a tutti, come state oggi?"].forEach(s => {
-      assert.match(R.hash(s), /^[0-9a-f]{16}$/, `zły kształt skrótu dla „${s}”`);
+      assert.match(R.hash(s), /^[0-9a-f]{16}$/, `wrong hash shape for "${s}"`);
     });
   });
 
-  test("jest deterministyczny", () => {
+  test("it is deterministic", () => {
     assert.equal(R.hash("Buongiorno"), R.hash("Buongiorno"));
   });
 
-  test("różne zdania dostają różne skróty, także przy różnicy jednej litery", () => {
+  test("different sentences get different hashes, even one letter apart", () => {
     assert.notEqual(R.hash("nonno"), R.hash("nono"));
     assert.notEqual(R.hash("pesca"), R.hash("pèsca"));
   });
 
-  test("wielkość liter i akcent zmieniają plik: to są różne wypowiedzi", () => {
+  test("letter case and accent change the file: these are different utterances", () => {
     assert.notEqual(R.hash("Ciao"), R.hash("ciao"));
     assert.notEqual(R.hash("e"), R.hash("è"));
   });
 });
 
-describe("adres pliku", () => {
-  /* Katalog z dwóch pierwszych znaków skrótu: 256 katalogów zamiast
-     jednego z trzema i pół tysiąca plików w środku. */
-  test("wchodzi do katalogu nazwanego dwoma pierwszymi znakami skrótu", () => {
+describe("the file address", () => {
+  /* A directory named after the first two characters of the hash: 256
+     directories instead of one with three and a half thousand files in it. */
+  test("it goes into a directory named after the first two characters of the hash", () => {
     assert.equal(R.url("abcdef0123456789"), "audio/ab/abcdef0123456789.mp3");
   });
 
-  test("adres zdania z kursu wskazuje plik, który istnieje", () => {
+  test("the address of a course sentence points at a file that exists", () => {
     const skrot = R.hash(R.norm(WSZYSTKIE[0]));
     assert.equal(R.url(skrot), "audio/" + skrot.slice(0, 2) + "/" + skrot + ".mp3");
-    assert.ok(existsSync(join(ROOT, R.url(skrot))), "adres z Recordings.url() nie trafia w plik na dysku");
+    assert.ok(existsSync(join(ROOT, R.url(skrot))), "the address from Recordings.url() does not hit a file on disk");
   });
 });
 
-describe("zgodność z Pythonem, który nagrał pliki", () => {
-  /* Jeden test na cały zbiór, nie 3493 testy: interesuje nas, czy dwie
-     implementacje skrótu się zgadzają, a to jest jedno pytanie. */
-  test("każde zdanie do nagrania wskazuje istniejący plik mp3", () => {
+describe("agreement with the Python that recorded the files", () => {
+  /* One test for the whole set, not 3493 tests: what matters is whether the
+     two hash implementations agree, and that is a single question. */
+  test("every sentence to be recorded points at an existing mp3 file", () => {
     const brakuje = [];
     for (const s of WSZYSTKIE) {
       const skrot = R.hash(s);
@@ -81,63 +81,64 @@ describe("zgodność z Pythonem, który nagrał pliki", () => {
       if (brakuje.length >= 5) break;
     }
     assert.deepEqual(brakuje, [],
-      "skrót z JS nie trafia w plik zrobiony przez Pythona — patrz hash() i audio_hash()");
+      "the JS hash does not hit the file Python made - see hash() and audio_hash()");
   });
 
-  test("indeks w przeglądarce zna te same zdania co pliki na dysku", () => {
+  test("the in-browser index knows the same sentences as the files on disk", () => {
     const nieznane = [];
     for (const s of WSZYSTKIE) {
       if (!R.has(s)) nieznane.push(s.slice(0, 60));
       if (nieznane.length >= 5) break;
     }
     assert.deepEqual(nieznane, [],
-      "data/audio-index.js rozjechał się z katalogiem audio/ — przebuduj indeks");
+      "data/audio-index.js has drifted from the audio/ directory - rebuild the index");
   });
 
-  test("liczba nagrań zgłoszona w ustawieniach zgadza się z listą do nagrania", () => {
+  test("the number of recordings reported in settings matches the list to record", () => {
     assert.equal(R.count, WSZYSTKIE.length);
     assert.equal(R.available, true);
   });
 });
 
-describe("normalizacja przed policzeniem skrótu", () => {
-  /* Ta sama, co w extract_strings.mjs: zwężenie białych znaków i trim.
-     Rozjazd znaczy, że zdanie z lekcji dostaje inny skrót niż plik,
-     który dla niego nagrano. */
-  test("nadmiarowe spacje i złamania wiersza nie zmieniają nagrania", () => {
+describe("normalisation before hashing", () => {
+  /* The same as in extract_strings.mjs: whitespace collapsing and trim. A
+     drift means a sentence from a lesson gets a different hash than the file
+     recorded for it. */
+  test("extra spaces and line breaks do not change the recording", () => {
     const zdanie = WSZYSTKIE[0];
-    assert.equal(R.has("  " + zdanie + "  "), true, "obcięcie brzegów");
-    assert.equal(R.has(zdanie.replace(/ /, "   ")), true, "zwężenie wielokrotnej spacji");
-    assert.equal(R.has("\n" + zdanie), true, "złamanie wiersza to biały znak");
+    assert.equal(R.has("  " + zdanie + "  "), true, "edges trimmed");
+    assert.equal(R.has(zdanie.replace(/ /, "   ")), true, "multiple spaces collapsed");
+    assert.equal(R.has("\n" + zdanie), true, "a line break is whitespace");
   });
 
-  test("norm() zwęża i przycina, a z niczego robi pusty napis", () => {
+  test("norm() collapses and trims, and turns nothing into an empty string", () => {
     assert.equal(R.norm("  Ciao   a\ntutti "), "Ciao a tutti");
     assert.equal(R.norm(null), "");
     assert.equal(R.norm(undefined), "");
   });
 
-  test("zdanie spoza kursu nagrania nie ma: indeks nie zgaduje", () => {
+  test("a sentence from outside the course has no recording: the index does not guess", () => {
     assert.equal(R.has("questa frase non esiste in nessuna lezione del corso"), false);
   });
 
-  test("puste wejście nie udaje, że ma nagranie", () => {
+  test("empty input does not pretend to have a recording", () => {
     assert.equal(R.has(""), false);
     assert.equal(R.has("   "), false);
     assert.equal(R.has(null), false);
   });
 });
 
-describe("wyszukiwanie binarne po indeksie", () => {
-  /* Rekordy mają stałą długość, więc wyszukiwanie idzie po skoku, nie po
-     indexOf: `indexOf` trafiłby w skrót zaczynający się w środku innego. */
-  test("skrót nie z granicy rekordu nie jest trafieniem", () => {
+describe("binary search over the index", () => {
+  /* Records have a fixed length, so the search moves in strides rather than
+     using indexOf: `indexOf` would hit a hash starting in the middle of
+     another one. */
+  test("a hash not on a record boundary is not a hit", () => {
     const pierwszy = R.hash(R.norm(WSZYSTKIE[0]));
-    assert.equal(R.inIndex(pierwszy), true, "skrót istniejącego zdania");
-    assert.equal(R.inIndex(pierwszy.slice(1) + "0"), false, "ten sam ciąg przesunięty o znak");
+    assert.equal(R.inIndex(pierwszy), true, "the hash of an existing sentence");
+    assert.equal(R.inIndex(pierwszy.slice(1) + "0"), false, "the same string shifted by one character");
   });
 
-  test("pusty skrót nie jest trafieniem", () => {
+  test("an empty hash is not a hit", () => {
     assert.equal(R.inIndex(""), false);
     assert.equal(R.inIndex(null), false);
   });

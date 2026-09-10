@@ -1,12 +1,13 @@
 /* ============================================================
-   Przebieg rozmowy (assets/js/talk-run.js).
+   The flow of a conversation (assets/js/talk-run.js).
 
-   Scena z rozwidleniem ma cztery rzeczy, które psują się bez śladu na
-   ekranie: wybór gałęzi, wynik, powrót na ostatni wybór i liczenie pomyłek.
-   Zła gałąź wygląda jak inna scena, zgubiony punkt jak surowsza ocena,
-   powrót na złe miejsce jak dialog napisany od nowa. Żadnej z nich nie
-   widać bez przejścia całej sceny — a dopóki ta logika siedziała w środku
-   funkcji rysującej dymki, jedynym sposobem przejścia był Playwright.
+   A branching scene has four things that break without leaving a trace on
+   screen: the choice of branch, the score, the rewind to the last choice and
+   the counting of mistakes. The wrong branch looks like a different scene, a
+   lost point like stricter marking, a rewind to the wrong place like a dialogue
+   rewritten from scratch. None of them shows without playing the whole scene
+   through - and as long as this logic sat inside the function drawing the
+   bubbles, the only way through was Playwright.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -18,7 +19,7 @@ function Talk() {
   return loadEngine({ files: PLIKI }).sandbox.Talk;
 }
 
-/** Scena prosta: rozmówca, replika ucznia, rozmówca. */
+/** A simple scene: the other speaker, the student's line, the other speaker. */
 function prosta() {
   return {
     id: "c1",
@@ -30,7 +31,7 @@ function prosta() {
   };
 }
 
-/** Scena z rozwidleniem: dwie repliki, jedna skacze na koniec. */
+/** A branching scene: two lines, one of which jumps to the end. */
 function zRozwidleniem() {
   return {
     id: "c2",
@@ -46,34 +47,34 @@ function zRozwidleniem() {
   };
 }
 
-describe("przechodzenie przez scenę", () => {
-  test("replika rozmówcy nie jest turą ucznia i nie liczy się do wyniku", () => {
+describe("walking through a scene", () => {
+  test("the other speaker's line is not the student's turn and does not count towards the score", () => {
     const run = Talk().create(prosta());
     assert.equal(run.mine(), false);
     assert.equal(run.current().it, "Cosa prende?");
 
     run.advance();
-    assert.equal(run.mine(), true, "druga tura należy do ucznia");
-    assert.equal(run.turns, 0, "sama zmiana tury niczego nie liczy");
+    assert.equal(run.mine(), true, "the second turn belongs to the student");
+    assert.equal(run.turns, 0, "changing turn on its own counts nothing");
   });
 
-  test("scena kończy się po ostatniej turze, nie na niej", () => {
+  test("the scene ends after the last turn, not on it", () => {
     const run = Talk().create(prosta());
     run.advance(); run.beginTurn(0);
     run.answer("un caffè");
-    assert.equal(run.done, false, "została jeszcze replika rozmówcy");
+    assert.equal(run.done, false, "the other speaker still has a line left");
     run.advance();
     assert.equal(run.done, true);
   });
 
-  test("pusta rozmowa jest od razu skończona, zamiast czekać na turę", () => {
+  test("an empty conversation is finished immediately instead of waiting for a turn", () => {
     const run = Talk().create({ id: "x", turns: [] });
     assert.equal(run.done, true);
     assert.equal(run.current(), null);
   });
 });
 
-describe("odpowiedź ucznia", () => {
+describe("the student's answer", () => {
   function naTurzeUcznia(conv) {
     const run = Talk().create(conv || prosta());
     run.advance();
@@ -81,54 +82,54 @@ describe("odpowiedź ucznia", () => {
     return run;
   }
 
-  test("trafiona odpowiedź daje punkt i przesuwa scenę", () => {
+  test("a correct answer gives a point and moves the scene on", () => {
     const run = naTurzeUcznia();
     const w = run.answer("un caffè");
 
     assert.equal(w.ok, true);
     assert.equal(w.punkt, true);
-    assert.equal(w.tekst, "un caffè", "w dymku staje to, co powiedział uczeń");
+    assert.equal(w.tekst, "un caffè", "the bubble shows what the student said");
     assert.equal(w.tr, "Poproszę kawę");
     assert.equal(run.score, 1);
     assert.equal(run.index, 2);
   });
 
-  test("drobna pomyłka nadal przechodzi: to rozmowa, nie dyktando", () => {
+  test("a small slip still passes: this is a conversation, not a dictation", () => {
     const run = naTurzeUcznia();
-    assert.equal(run.answer("un cafe").ok, true, "brak akcentu nie ma zatrzymywać sceny");
+    assert.equal(run.answer("un cafe").ok, true, "a missing accent must not stop the scene");
   });
 
-  test("zła odpowiedź ZATRZYMUJE scenę zamiast wpisać wzór do dymka", () => {
+  test("a wrong answer STOPS the scene instead of putting the model line in the bubble", () => {
     const run = naTurzeUcznia();
     const w = run.answer("completamente diverso");
 
     assert.equal(w.ok, false);
-    assert.equal(run.index, 1, "stoimy na tej samej turze");
+    assert.equal(run.index, 1, "we are still on the same turn");
     assert.equal(run.score, 0);
   });
 
-  test("pomyłka liczy się raz na turę, nie raz na próbę", () => {
-    /* Dziesięć podejść do jednego zdania to jedna pomyłka w quaderno
-       błędów, a nie dziesięć: inaczej jedno trudne zdanie zalewa talię. */
+  test("a mistake counts once per turn, not once per attempt", () => {
+    /* Ten attempts at one sentence make one mistake in the notebook, not
+       ten: otherwise a single hard sentence floods the deck. */
     const run = naTurzeUcznia();
     assert.equal(run.answer("nie to").pierwszaPomylka, true);
     assert.equal(run.answer("też nie").pierwszaPomylka, false);
     assert.equal(run.answer("dalej nie").pierwszaPomylka, false);
   });
 
-  test("poprawka po pomyłce przechodzi, ale bez punktu", () => {
+  test("a correction after a mistake passes, but without a point", () => {
     const run = naTurzeUcznia();
     run.answer("completamente diverso");
     const w = run.answer("un caffè");
 
     assert.equal(w.ok, true);
-    assert.equal(w.punkt, false, "punkt należy się za odpowiedź od razu");
+    assert.equal(w.punkt, false, "the point is for answering right away");
     assert.equal(run.score, 0);
-    assert.equal(run.turns, 1, "tura policzona mimo pomyłki");
+    assert.equal(run.turns, 1, "the turn is counted despite the mistake");
   });
 });
 
-describe("rozwidlenia", () => {
+describe("branches", () => {
   function naWyborze() {
     const run = Talk().create(zRozwidleniem());
     run.advance();
@@ -136,36 +137,38 @@ describe("rozwidlenia", () => {
     return run;
   }
 
-  test("wygrywa gałąź NAJBLIŻSZA wypowiedzi, nie pierwsza pasująca", () => {
-    /* „tylko kawa" i „kawa i deser" są do siebie podobne; pierwsza z brzegu
-       wysyłałaby ucznia w scenę, o którą nie prosił. */
+  test("the branch CLOSEST to the utterance wins, not the first that matches", () => {
+    /* "just a coffee" and "a coffee and a dessert" are similar to each other;
+       taking the first one at hand would send the student into a scene they
+       did not ask for. */
     const run = naWyborze();
     const w = run.answer("un caffè e un dolce");
 
     assert.equal(w.ok, true);
     assert.equal(w.tr, "Kawa i deser");
-    assert.equal(run.current().it, "Ecco il dolce.", "druga gałąź idzie o jeden dalej");
+    assert.equal(run.current().it, "Ecco il dolce.", "the second branch moves on by one");
   });
 
-  test("gałąź z `go` skacze na turę o tym id, nie o jeden dalej", () => {
+  test("a branch with `go` jumps to the turn with that id, not one further on", () => {
     const run = naWyborze();
     run.answer("solo un caffè");
-    assert.equal(run.current().it, "Ecco.", "skok po id, nie po numerze");
+    assert.equal(run.current().it, "Ecco.", "a jump by id, not by index");
   });
 
-  test("klik w gałąź nie przechodzi przez próg podobieństwa", () => {
-    /* Uczeń wybrał replikę z listy: nie ma czego oceniać. Gdyby klik szedł
-       przez porównywanie, wybór mógłby się zablokować na własnej podpowiedzi. */
+  test("clicking a branch does not go through the similarity threshold", () => {
+    /* The student picked a line from a list: there is nothing to grade. Were
+       the click to go through the comparison, the choice could get stuck on
+       its own hint. */
     const run = naWyborze();
     const w = run.choose(1);
 
     assert.equal(w.ok, true);
-    assert.equal(w.tekst, "Un caffè e un dolce", "do dymka idzie podpowiedź, nie klucz odpowiedzi");
+    assert.equal(w.tekst, "Un caffè e un dolce", "the bubble gets the hint, not the answer key");
     assert.equal(w.punkt, true);
     assert.equal(run.current().it, "Ecco il dolce.");
   });
 
-  test("nieznany cel skoku kończy scenę zamiast wywracać przebieg", () => {
+  test("an unknown jump target ends the scene instead of breaking the run", () => {
     const conv = zRozwidleniem();
     conv.turns[1].opts[0].go = "tejturyniema";
     const run = Talk().create(conv);
@@ -177,35 +180,35 @@ describe("rozwidlenia", () => {
   });
 });
 
-describe("pokaż odpowiedź", () => {
-  test("wzór wchodzi do transkryptu, scena idzie dalej, punktu nie ma", () => {
+describe("show the answer", () => {
+  test("the model line enters the transcript, the scene moves on, there is no point", () => {
     const run = Talk().create(prosta());
     run.advance(); run.beginTurn(0);
     const w = run.reveal();
 
-    assert.equal(w.tekst, "Vorrei un caffè", "wzór z podpowiedzi, nie klucz do porównywania");
+    assert.equal(w.tekst, "Vorrei un caffè", "the model line comes from the hint, not from the matching key");
     assert.equal(w.pierwszaPomylka, true);
     assert.equal(run.score, 0);
     assert.equal(run.index, 2);
   });
 
-  test("po wcześniejszej pomyłce nie dokłada drugiej", () => {
+  test("after an earlier mistake it does not add a second one", () => {
     const run = Talk().create(prosta());
     run.advance(); run.beginTurn(0);
     run.answer("zupełnie nie to");
     assert.equal(run.reveal().pierwszaPomylka, false);
   });
 
-  test("przy rozwidleniu bierze pierwszą gałąź: kierunku nie da się zgadnąć", () => {
+  test("at a branch it takes the first one: the direction cannot be guessed", () => {
     const run = Talk().create(zRozwidleniem());
     run.advance(); run.beginTurn(0);
     const w = run.reveal();
 
     assert.equal(w.tekst, "Solo un caffè");
-    assert.equal(run.current().it, "Ecco.", "pierwsza gałąź ma `go`, więc skacze");
+    assert.equal(run.current().it, "Ecco.", "the first branch has `go`, so it jumps");
   });
 
-  test("bez podpowiedzi wzorem zostaje przyjmowana wersja włoska", () => {
+  test("with no hint the accepted Italian version becomes the model line", () => {
     const conv = prosta();
     delete conv.turns[1].hintIt;
     const run = Talk().create(conv);
@@ -215,22 +218,22 @@ describe("pokaż odpowiedź", () => {
   });
 });
 
-describe("powrót na ostatni wybór", () => {
-  test("wraca na rozwidlenie ze stanem sprzed wyboru", () => {
+describe("rewinding to the last choice", () => {
+  test("it returns to the branch with the state from before the choice", () => {
     const run = Talk().create(zRozwidleniem());
     run.advance();
-    run.beginTurn(7);            // 7 = długość transkryptu w chwili wyboru
+    run.beginTurn(7);            // 7 = the transcript length at the moment of the choice
     run.answer("solo un caffè");
     assert.equal(run.score, 1);
 
     const w = run.rewind();
-    assert.equal(w.znak, 7, "widok ucina dymki dokładnie tam, gdzie uczeń wybierał");
-    assert.equal(run.index, 1, "stoimy znowu na turze z wyborem");
-    assert.equal(run.score, 0, "punkt za tamtą gałąź nie zostaje");
-    assert.equal(run.turns, 0, "ani policzona tura");
+    assert.equal(w.znak, 7, "the view cuts the bubbles exactly where the student was choosing");
+    assert.equal(run.index, 1, "we are back on the turn with the choice");
+    assert.equal(run.score, 0, "the point for that branch does not stay");
+    assert.equal(run.turns, 0, "nor does the counted turn");
   });
 
-  test("druga gałąź daje własny punkt, nie dokłada do poprzedniego", () => {
+  test("the second branch gives its own point, it does not add to the previous one", () => {
     const run = Talk().create(zRozwidleniem());
     run.advance(); run.beginTurn(0);
     run.answer("solo un caffè");
@@ -242,26 +245,26 @@ describe("powrót na ostatni wybór", () => {
     assert.equal(run.turns, 1);
   });
 
-  test("scena bez rozwidlenia nie ma dokąd wracać", () => {
+  test("a scene with no branch has nowhere to rewind to", () => {
     const run = Talk().create(prosta());
     run.advance(); run.beginTurn(0);
     run.answer("un caffè");
 
-    assert.equal(run.canRewind, false, "przycisk „inna gałąź” nie ma się pokazać");
+    assert.equal(run.canRewind, false, "the \"other branch\" button must not appear");
     assert.equal(run.rewind(), null);
   });
 
-  test("po powrocie punkt wyboru jest zużyty", () => {
+  test("after a rewind the choice point is spent", () => {
     const run = Talk().create(zRozwidleniem());
     run.advance(); run.beginTurn(0);
     run.answer("solo un caffè");
 
     assert.equal(run.canRewind, true);
     run.rewind();
-    assert.equal(run.canRewind, false, "wracamy raz na wybór, nie w kółko na ten sam");
+    assert.equal(run.canRewind, false, "we go back to a choice once, not round and round to the same one");
   });
 
-  test("pomyłka sprzed powrotu nie ciągnie się za nową gałęzią", () => {
+  test("a mistake from before the rewind does not follow the new branch", () => {
     const run = Talk().create(zRozwidleniem());
     run.advance(); run.beginTurn(0);
     run.answer("zupełnie nie to");
@@ -269,6 +272,6 @@ describe("powrót na ostatni wybór", () => {
     run.beginTurn(0);
 
     assert.equal(run.answer("solo un caffè").punkt, true,
-      "nowe przejście gałęzi zaczyna się bez cudzej pomyłki");
+      "a fresh pass through the branch starts without somebody else's mistake");
   });
 });

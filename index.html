@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Co ta reguła NAPRAWDĘ zamyka: `script-src 'self'` — wykonanie kodu, którego
-     nie podał ten katalog. Kurs nie ma ani jednego skryptu w treści strony i ani
-     jednego atrybutu on*=, więc stać przy 'self' nic nie kosztuje.
-     Czego NIE zamyka: stylu. `style-src` musi mieć 'unsafe-inline', bo 166 miejsc
-     w assets/js buduje atrybut style="..." doklejając wyliczone wartości; ani nonce,
-     ani hash nie mają jak powstać w pliku bez serwera i bez kroku budowania.
-     Ile to warte: bez serwera i bez logowania XSS nie ma tu skąd wejść. Zostaje
-     obrona przed cudzym kodem doklejonym z zewnątrz — rozszerzeniem przeglądarki
-     albo zależnością, która kiedyś przyjdzie z sieci.
-     `frame-ancestors` celowo NIE ma: w <meta> przeglądarki ją ignorują, a reguła,
-     która nie działa, wygląda w spisie dokładnie jak ta, która działa. -->
+<!-- What this policy REALLY closes: `script-src 'self'` - the execution of code
+     this directory did not provide. The course has not a single inline script and
+     not a single on*= attribute, so standing at 'self' costs nothing.
+     What it does NOT close: style. `style-src` must have 'unsafe-inline', because
+     166 places in assets/js build a style="..." attribute out of computed values;
+     neither a nonce nor a hash can come into being in a file with no server and no
+     build step.
+     What it is worth: with no server and no login there is nowhere for XSS to come
+     from. What remains is a defence against foreign code attached from outside - a
+     browser extension, or a dependency that some day arrives over the network.
+     `frame-ancestors` is deliberately absent: browsers ignore it in <meta>, and a
+     rule that does nothing looks in the list exactly like one that works. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title data-i18n="app.title">Impara l'Italiano 🇮🇹 — kurs włoskiego od A1 do C2</title>
 <meta name="description" data-i18n-content="app.description" content="Kompletny kurs języka włoskiego po polsku: gramatyka, teoria, ćwiczenia, słuchanie i mówienie. Od A1 do poziomu native.">
@@ -36,10 +37,10 @@
   <!-- ══════════ RAIL ══════════ -->
   <nav class="rail" id="rail" data-i18n-label="app.mainNav" aria-label="Nawigacja główna">
     <div class="rail__head">
-      <!-- nazwa kursu zostaje po włosku we wszystkich językach -->
+      <!-- the course name stays Italian in every language -->
       <p class="rail__brand"><span class="rail__flag" aria-hidden="true">🇮🇹</span>Impara l'Italiano</p>
       <p class="rail__tag" data-i18n="app.tagline">Włoski po polsku · A1 → C2</p>
-      <!-- wypełniane przez app.js z I18n.LANGS: nowy język nie wymaga zmiany w HTML -->
+      <!-- filled by app.js from I18n.LANGS: a new language needs no change in the HTML -->
       <div class="rail__lang" id="langPicker" role="group"></div>
       <button class="rail__search" id="railSearch" data-i18n-label="search.open" aria-label="Szukaj w kursie">
         <span aria-hidden="true">🔍</span><span data-i18n="search.open">Szukaj w kursie</span>
@@ -80,12 +81,12 @@
 
 <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
 
-<!-- ══════════ SILNIK ══════════ -->
-<!-- indeks nagrań musi być wczytany przed recordings.js: ten czyta go przy starcie -->
+<!-- ══════════ ENGINE ══════════ -->
+<!-- the recording index has to be loaded before recordings.js: that one reads it at startup -->
 <script src="data/audio-index.js"></script>
 <script src="assets/js/recordings.js"></script>
 <script src="assets/js/fsrs.js"></script>
-<!-- przed core.js: core wystawia te funkcje dalej pod swoimi nazwami -->
+<!-- before core.js: core re-exposes these functions under its own names -->
 <script src="assets/js/text.js"></script>
 <script src="assets/js/notice.js"></script>
 <script src="assets/js/store.js"></script>
@@ -93,26 +94,26 @@
 <script src="assets/js/srs.js"></script>
 <script src="assets/js/core.js"></script>
 <script src="assets/js/i18n.js"></script>
-<!-- doklejanie tekstów ucznia do treści kursu: osobno od napisów interfejsu -->
+<!-- attaching the student's texts to the course content: separate from the interface strings -->
 <script src="assets/js/i18n-merge.js"></script>
 <script src="assets/js/consent.js"></script>
 <script src="assets/js/audio.js"></script>
-<!-- tabele włoskiego przed silnikiem odmiany: verbs.js czyta je przy starcie -->
+<!-- the Italian tables before the conjugation engine: verbs.js reads them at startup -->
 <script src="assets/js/verbs-data.js"></script>
 <script src="assets/js/verbs.js"></script>
 <script src="assets/js/exercises.js"></script>
-<!-- rodziny typów ćwiczeń: wołają Ex.register, muszą wejść przed pierwszą lekcją -->
+<!-- the families of exercise types: they call Ex.register and must come in before the first lesson -->
 <script src="assets/js/exercises-choice.js"></script>
 <script src="assets/js/exercises-text.js"></script>
 <script src="assets/js/exercises-voice.js"></script>
-<!-- tożsamość karty przed talią; po exercises.js, bo talia owija Ex.build -->
+<!-- card identity before the deck; after exercises.js, because the deck wraps Ex.build -->
 <script src="assets/js/errors-key.js"></script>
 <script src="assets/js/errors.js"></script>
-<!-- leksykon przed generatorami, generatory przed widokiem treningu -->
+<!-- the lexicon before the generators, the generators before the practice view -->
 <script src="assets/js/drills-lex.js"></script>
 <script src="assets/js/drills.js"></script>
 <script src="assets/js/views.js"></script>
-<!-- ekrany wydzielone z views.js: konsumują Views.shell, kolejność między nimi obojętna -->
+<!-- screens split out of views.js: they consume Views.shell, their order among themselves does not matter -->
 <script src="assets/js/views-path.js"></script>
 <script src="assets/js/views-lesson.js"></script>
 <script src="assets/js/views-review.js"></script>
@@ -121,12 +122,12 @@
 <script src="assets/js/views-lexicon.js"></script>
 <script src="assets/js/views-progress.js"></script>
 <script src="assets/js/views-settings.js"></script>
-<!-- po views.js: konsumuje Views.shell, definiowane na końcu tamtego pliku -->
+<!-- after views.js: consumes Views.shell, defined at the end of that file -->
 <script src="assets/js/talk-run.js"></script>
 <script src="assets/js/views-talk.js"></script>
-<!-- po views.js: dokłada zakładki treningu do już zdefiniowanych widoków -->
+<!-- after views.js: adds the practice tabs to the already defined views -->
 <script src="assets/js/views-train.js"></script>
-<!-- po views-train.js: sesja dnia korzysta z Train.topicLabel -->
+<!-- after views-train.js: the daily session uses Train.topicLabel -->
 <script src="assets/js/views-today.js"></script>
 <script src="assets/js/placement.js"></script>
 <script src="assets/js/views-phonetics.js"></script>
@@ -135,10 +136,10 @@
 <script src="assets/js/views-guide.js"></script>
 <script src="assets/js/writing.js"></script>
 <script src="assets/js/cils.js"></script>
-<!-- reguły formy przed rozstrzyganiem: lemma.js czyta LemmaMorf przy wykonaniu modułu -->
+<!-- the rules of form before the verdict: lemma.js reads LemmaMorf at module execution -->
 <script src="assets/js/lemma-morf.js"></script>
 <script src="assets/js/lemma.js"></script>
-<!-- po lemma.js: karta słowa go konsumuje; przed views-reading.js, który ją wywołuje -->
+<!-- after lemma.js: the word card consumes it; before views-reading.js, which calls that card -->
 <script src="assets/js/views-lookup.js"></script>
 <script src="assets/js/anki.js"></script>
 <script src="assets/js/frequency.js"></script>
@@ -147,25 +148,26 @@
 <script src="assets/js/views-shadow.js"></script>
 <script src="assets/js/views-speed.js"></script>
 <script src="assets/js/cils-run.js"></script>
-<!-- markup przed widokiem: views-cils.js czyta CilsHtml przy wykonaniu modułu -->
+<!-- the markup before the view: views-cils.js reads CilsHtml at module execution -->
 <script src="assets/js/cils-html.js"></script>
 <script src="assets/js/views-cils.js"></script>
 <script src="assets/js/views-falsi.js"></script>
 <script src="assets/js/views-reading.js"></script>
 <script src="assets/js/views-writing.js"></script>
 <script src="assets/js/search.js"></script>
-<!-- pasek znaków i skróty: doczepiają się do gotowego DOM, kolejność obojętna -->
+<!-- the character bar and the shortcuts: they attach to a finished DOM, order does not matter -->
 <script src="assets/js/keys.js"></script>
 
-<!-- ══════════ DANE ══════════ -->
-<!-- słowniki interfejsu: wszystkie języki naraz, bo przełączenie ma być natychmiastowe.
-     To są same napisy interfejsu, nie kurs: pięć plików waży tyle, co jedna lekcja. -->
+<!-- ══════════ DATA ══════════ -->
+<!-- the interface dictionaries: every language at once, because switching has to be
+     instant. These are interface strings only, not the course: five files weigh as
+     much as one lesson. -->
 <script src="data/i18n/ui-pl.js"></script>
 <script src="data/i18n/ui-en.js"></script>
 <script src="data/i18n/ui-es.js"></script>
 <script src="data/i18n/ui-fr.js"></script>
 <script src="data/i18n/ui-de.js"></script>
-<!-- warstwa neutralna językowo: struktura, włoski, klucze odpowiedzi -->
+<!-- the language-neutral layer: structure, Italian, answer keys -->
 <script src="data/core/curriculum-index.js"></script>
 <script src="data/core/grammar-reference.js"></script>
 <script src="data/core/conversations.js"></script>
@@ -173,18 +175,19 @@
 <script src="data/core/cils.js"></script>
 <script src="data/core/readings.js"></script>
 <script src="data/core/interference.js"></script>
-<!-- lista częstości: 44 KB, czytana tylko przez widok Pokrycie -->
+<!-- the frequency list: 44 KB, read only by the Coverage view -->
 <script src="data/core/frequenza.js"></script>
 <script src="data/core/writing.js"></script>
-<!-- Nakładek NIE ma tutaj celowo: wpisany tu język byłby wyróżniony,
-     a uczeń z innym zapisanym w ustawieniach zobaczyłby puste pola.
-     app.js dociąga je na starcie, według Core.state.settings.lang. -->
+<!-- The overlays are deliberately NOT here: a language written in would be
+     privileged, and a student with a different one saved in their settings would
+     see empty fields. app.js fetches them at startup, following
+     Core.state.settings.lang. -->
 
 <!-- ══════════ START ══════════ -->
-<!-- router przed app.js: app podpina się do Router.onRender przy wykonaniu modułu -->
+<!-- the router before app.js: app hooks into Router.onRender at module execution -->
 <script src="assets/js/router.js"></script>
 <script src="assets/js/app.js"></script>
-<!-- reguły przed rejestracją: pwa.js pyta PwaRules o każdą decyzję -->
+<!-- the rules before the registration: pwa.js asks PwaRules for every decision -->
 <script src="assets/js/pwa-rules.js"></script>
 <script src="assets/js/pwa.js"></script>
 </body>

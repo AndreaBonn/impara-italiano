@@ -1,10 +1,10 @@
 /* ============================================================
-   Test poziomujący w przeglądarce.
+   The placement test in a browser.
 
-   Logikę wyszukiwania pokrywają testy jednostkowe. Tutaj chodzi o to,
-   czego one nie widzą: czy zadania w ogóle się pojawiają, czy wynik
-   NIE zapisuje się bez zgody ucznia, i czy liczba lekcji do oznaczenia
-   jest pokazana PRZED decyzją, a nie po niej.
+   The search logic is covered by the unit tests. What matters here is what
+   they cannot see: whether the tasks appear at all, whether the result is
+   NOT saved without the student's consent, and whether the number of lessons
+   to be marked is shown BEFORE the decision rather than after it.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
@@ -14,7 +14,7 @@ async function wejscie(page) {
   await page.waitForSelector(".js-go");
 }
 
-/** Przechodzi cały test, odpowiadając byle jak; zwraca ekran wyniku. */
+/** Walks the whole test, answering at random; returns the result screen. */
 async function przejdzCaly(page) {
   await page.locator(".js-go").click();
   await page.waitForSelector(".exq", { timeout: 20000 });
@@ -36,14 +36,14 @@ async function przejdzCaly(page) {
   await expect(page.locator(".summary")).toBeVisible();
 }
 
-test("wejście tłumaczy, po co to jest, i ile potrwa", async ({ page }) => {
+test("the entry explains what this is for and how long it takes", async ({ page }) => {
   await wejscie(page);
   const tekst = await page.locator("#main").innerText();
-  expect(tekst).toMatch(/\d/);            // liczba zadań
+  expect(tekst).toMatch(/\d/);            // the number of tasks
   await expect(page.locator(".js-go")).toBeVisible();
 });
 
-test("test zadaje pytania i kończy się propozycją poziomu", async ({ page }) => {
+test("the test asks questions and ends with a proposed level", async ({ page }) => {
   await wejscie(page);
   await przejdzCaly(page);
 
@@ -51,9 +51,9 @@ test("test zadaje pytania i kończy się propozycją poziomu", async ({ page }) 
   expect(poziom, "wynik to kod poziomu").toMatch(/^(A1|A2|B1|B2|C1|C2)$/);
 });
 
-/* Oznaczenie stu lekcji jako zaliczonych to zmiana, której uczeń nie
-   cofnie jednym kliknięciem. Test proponuje, decyduje uczeń. */
-test("wynik nie zapisuje się sam", async ({ page }) => {
+/* Marking a hundred lessons as passed is a change the student cannot undo
+   with one click. The test proposes, the student decides. */
+test("the result does not save itself", async ({ page }) => {
   await wejscie(page);
   await przejdzCaly(page);
 
@@ -61,21 +61,21 @@ test("wynik nie zapisuje się sam", async ({ page }) => {
     placement: window.Core.state.placement,
     lekcje: Object.keys(window.Core.state.lessons).length
   }));
-  expect(stan.placement, "nic nie zapisane przed decyzją").toBe(null);
+  expect(stan.placement, "nothing saved before the decision").toBe(null);
   expect(stan.lekcje).toBe(0);
 
   await expect(page.locator(".js-accept")).toBeVisible();
   await expect(page.locator(".js-scratch")).toBeVisible();
 });
 
-test("liczba lekcji do oznaczenia jest widoczna przed decyzją", async ({ page }) => {
+test("the number of lessons to be marked is visible before the decision", async ({ page }) => {
   await wejscie(page);
   await przejdzCaly(page);
   const tekst = await page.locator(".summary").innerText();
-  expect(tekst, "podsumowanie mówi, ile lekcji zniknie ze ścieżki").toMatch(/\d/);
+  expect(tekst, "the summary says how many lessons will disappear from the path").toMatch(/\d/);
 });
 
-test("odmowa zostawia stan nietknięty", async ({ page }) => {
+test("a refusal leaves the state untouched", async ({ page }) => {
   await wejscie(page);
   await przejdzCaly(page);
   await page.locator(".js-scratch").click();
@@ -89,12 +89,12 @@ test("odmowa zostawia stan nietknięty", async ({ page }) => {
   expect(stan.lekcje).toBe(0);
 });
 
-test("przyjęcie zapisuje poziom i nie dopisuje punktów", async ({ page }) => {
+test("accepting saves the level and adds no points", async ({ page }) => {
   await wejscie(page);
   await przejdzCaly(page);
-  /* XP rośnie od samego ODPOWIADANIA na zadania testu (recordAnswer robi to
-     wszędzie tak samo) — mierzymy więc, czy PRZYJĘCIE wyniku dokłada coś
-     ponad to, bo właśnie tego dokładać nie wolno. */
+  /* XP grows from ANSWERING the test tasks alone (recordAnswer does that the
+     same way everywhere) — so we measure whether ACCEPTING the result adds
+     anything on top, because that is exactly what must not be added. */
   const przed = await page.evaluate(() => ({
     xp: window.Core.state.xp,
     zrobione: window.Core.state.stats.lessonsDone
@@ -111,25 +111,25 @@ test("przyjęcie zapisuje poziom i nie dopisuje punktów", async ({ page }) => {
   }));
 
   expect(stan.poziom).toMatch(/^(A1|A2|B1|B2|C1|C2)$/);
-  expect(stan.xp, "przyjęcie wyniku nie dokłada punktów").toBe(przed.xp);
-  expect(stan.zrobione, "licznik ukończonych mówi prawdę").toBe(przed.zrobione);
-  expect(stan.zrobione, "oznaczone lekcje nie liczą się jako ukończone").toBe(0);
-  /* Przy wyniku A1 nie ma czego oznaczać i to też jest poprawne. */
+  expect(stan.xp, "accepting the result adds no points").toBe(przed.xp);
+  expect(stan.zrobione, "the finished counter tells the truth").toBe(przed.zrobione);
+  expect(stan.zrobione, "marked lessons do not count as finished").toBe(0);
+  /* With an A1 result there is nothing to mark, and that is correct too. */
   expect(stan.oznaczone).toBeGreaterThanOrEqual(0);
 });
 
-test("wejście jest dostępne z ustawień", async ({ page }) => {
+test("the entry is reachable from the settings", async ({ page }) => {
   await page.goto("/index.html#/impostazioni");
   await page.waitForSelector(".js-place");
   await page.locator(".js-place").click();
   await expect(page).toHaveURL(/#\/piazzamento/);
 });
 
-/* Ustawienia to jedyne wejście, jakie test miał przez długi czas, i jest to
-   zakładka, której nikt nowy nie otwiera. Ścieżka nauki jest tym ekranem,
-   na którym pada pytanie „od którego poziomu", więc podpowiedź stoi tam —
-   ale tylko dopóki wybór jeszcze przed uczniem. */
-test("ścieżka nauki prowadzi do testu, dopóki poziom nie jest wybrany", async ({ page }) => {
+/* Settings was the only entry the test had for a long time, and it is a tab
+   no newcomer opens. The learning path is the screen where the question
+   "from which level" arises, so the hint stands there — but only as long as
+   the choice is still ahead of the student. */
+test("the learning path leads to the test until a level is chosen", async ({ page }) => {
   await page.goto("/index.html#/percorso");
   await page.waitForFunction(() => window.App && window.Core.registry.levels.length);
   await expect(page.locator(".js-place")).toBeVisible();
@@ -148,7 +148,7 @@ test("ścieżka nauki prowadzi do testu, dopóki poziom nie jest wybrany", async
   await expect(page).toHaveURL(/#\/piazzamento/);
 });
 
-test("napisy testu istnieją w pięciu językach", async ({ page }) => {
+test("the test strings exist in five languages", async ({ page }) => {
   await wejscie(page);
   const braki = await page.evaluate(async () => {
     const out = {};

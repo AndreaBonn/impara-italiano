@@ -1,16 +1,16 @@
 /* ============================================================
-   Shadowing i zgoda na wysyłanie głosu.
+   Shadowing and consent for sending the voice.
 
-   Playwright dostaje sztuczne urządzenie (`--use-fake-device-for-media-stream`
-   w playwright.config.js), więc nagrywanie da się przejść od początku do
-   końca. Czego NIE da się tu odtworzyć: prawdziwej odmowy uprawnienia —
-   headless Chromium zwraca wtedy inny błąd niż przeglądarka użytkownika.
-   Ta ścieżka jest zmapowana w recorder.js i zadeklarowana jako niesprawdzona.
+   Playwright gets a fake device (`--use-fake-device-for-media-stream` in
+   playwright.config.js), so the recording can be played through from start
+   to finish. What CANNOT be reproduced here: a real permission denial —
+   headless Chromium then returns a different error than the user's browser.
+   That path is mapped in recorder.js and declared unverified.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
 test.describe("shadowing", () => {
-  test("cykl nagrania: stan przycisku i odsłuch pojawiają się dopiero po nagraniu", async ({ page }) => {
+  test("the recording cycle: the button state and the playback appear only after a recording", async ({ page }) => {
     await page.goto("/index.html#/shadowing");
     await page.waitForSelector(".sh-it");
 
@@ -37,12 +37,13 @@ test.describe("shadowing", () => {
     await expect(page.locator(".js-mine")).toBeVisible();
 
     await page.click(".js-next");
-    /* Nagranie poprzedniego zdania nie ma prawa zostać na ekranie: byłoby
-       porównaniem własnego głosu z CUDZYM zdaniem. */
+    /* The recording of the previous sentence has no right to stay on screen:
+       it would be a comparison of your own voice against SOMEBODY ELSE'S
+       sentence. */
     await expect(page.locator(".js-mine")).toBeHidden();
   });
 
-  test("stan jest ogłaszany, nie tylko pokazany kolorem", async ({ page }) => {
+  test("the state is announced, not only shown by colour", async ({ page }) => {
     await page.goto("/index.html#/shadowing");
     await page.waitForSelector(".sh-it");
     await expect(page.locator(".js-state")).toHaveAttribute("role", "status");
@@ -51,13 +52,13 @@ test.describe("shadowing", () => {
 });
 
 test.describe("zgoda na rozpoznawanie mowy", () => {
-  test("pierwsze wywołanie listen() pyta, zamiast wysłać głos", async ({ page }) => {
+  test("the first call to listen() asks instead of sending the voice", async ({ page }) => {
     await page.goto("/index.html#/shadowing");
     await page.waitForSelector(".sh-it");
     expect(await page.evaluate(() => Core.state.settings.sttConsent)).toBe(false);
 
     const esito = await page.evaluate(() => new Promise(res => {
-      Audio2.listen({ onstart: () => res("wysłano bez pytania") });
+      Audio2.listen({ onstart: () => res("sent without asking") });
       setTimeout(() => res(document.getElementById("sttConsent") ? "zapytano" : "nic"), 800);
     }));
     expect(esito).toBe("zapytano");
@@ -74,7 +75,7 @@ test.describe("zgoda na rozpoznawanie mowy", () => {
     expect(await page.evaluate(() => Core.state.settings.sttConsent)).toBe(false);
   });
 
-  test("zgoda jest zapamiętana i drugi raz się nie pyta", async ({ page }) => {
+  test("the consent is remembered and it does not ask a second time", async ({ page }) => {
     await page.goto("/index.html#/shadowing");
     await page.waitForSelector(".sh-it");
     await page.evaluate(() => { Audio2.listen({}); });

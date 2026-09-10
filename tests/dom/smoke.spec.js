@@ -1,10 +1,10 @@
 /* ============================================================
-   Sprawdzenie samej instalacji testów DOM.
-   Jeśli to pada, żaden inny wynik w tym katalogu nic nie znaczy.
+   A check on the DOM test setup itself.
+   If this fails, no other result in this directory means anything.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-test("strona wstaje bez błędów w konsoli", async ({ page }) => {
+test("the page comes up with no console errors", async ({ page }) => {
   const errors = [];
   page.on("console", m => { if (m.type() === "error") errors.push(m.text()); });
   page.on("pageerror", e => errors.push(String(e)));
@@ -13,10 +13,10 @@ test("strona wstaje bez błędów w konsoli", async ({ page }) => {
   await expect(page.locator("#main")).toBeVisible();
   await page.waitForFunction(() => window.Core && window.Core.registry.levels.length > 0);
 
-  expect(errors, `błędy w konsoli: ${errors.join(" | ")}`).toEqual([]);
+  expect(errors, `console errors: ${errors.join(" | ")}`).toEqual([]);
 });
 
-test("silnik jest wczytany w komplecie", async ({ page }) => {
+test("the engine is loaded in full", async ({ page }) => {
   await page.goto("/index.html");
   const present = await page.evaluate(() => ({
     core: typeof window.Core,
@@ -33,8 +33,8 @@ test("silnik jest wczytany w komplecie", async ({ page }) => {
   });
 });
 
-/* Powód istnienia własnego serwera: bez tego test czyta skrypt sprzed zmiany. */
-test("serwer testowy nie pozwala cache'ować", async ({ page }) => {
+/* Why we have a server of our own: without it a test reads the script from before the change. */
+test("the test server does not allow caching", async ({ page }) => {
   const res = await page.goto("/assets/js/core.js");
   expect(res.headers()["cache-control"]).toBe("no-store");
 });

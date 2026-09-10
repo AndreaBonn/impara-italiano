@@ -1,5 +1,5 @@
 /* ============================================================
-   Pisanie: co kurs mierzy, czego nie mierzy i czego nie wykona.
+   Writing: what the course measures, what it does not, and what it will not do.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
@@ -15,20 +15,20 @@ async function zadanie(page, id) {
   await page.waitForSelector("#writeBox");
 }
 
-test("lista pokazuje zadania z rodzajem", async ({ page }) => {
+test("the list shows the tasks with their kind", async ({ page }) => {
   await lista(page);
   const n = await page.evaluate(() => window.WRITING.length);
   await expect(page.locator(".js-open")).toHaveCount(n);
 });
 
-test("wypracowanie mówi z góry, jakich konstrukcji wymaga", async ({ page }) => {
+test("a composition says up front which constructions it requires", async ({ page }) => {
   await zadanie(page, "w-a2-giornata");
   const ile = await page.evaluate(() => window.WRITING[0].requires.length);
   await expect(page.locator("#writeBox .card .list-row")).toHaveCount(ile);
   await expect(page.locator("#writeText")).toBeVisible();
 });
 
-test("sprawdzenie odczytuje, czego uczeń użył, a czego nie", async ({ page }) => {
+test("the check reads what the student used and what they did not", async ({ page }) => {
   await zadanie(page, "w-a2-giornata");
   await page.locator("#writeText").fill(
     "Di solito mi sveglio alle sette. Faccio colazione, poi esco di casa e vado in ufficio.");
@@ -38,7 +38,7 @@ test("sprawdzenie odczytuje, czego uczeń użył, a czego nie", async ({ page })
     const zapis = window.Core.state.writing["w-a2-giornata"];
     return { found: zapis.found, total: zapis.total, words: zapis.words };
   });
-  /* „mi sveglio", „di solito" i „poi" są w tekście; „lavorare" nie. */
+  /* "mi sveglio", "di solito" and "poi" are in the text; "lavorare" is not. */
   expect(wynik.found).toBe(3);
   expect(wynik.total).toBe(4);
   expect(wynik.words).toBeGreaterThan(10);
@@ -47,8 +47,8 @@ test("sprawdzenie odczytuje, czego uczeń użył, a czego nie", async ({ page })
   expect(chipy.length).toBe(4);
 });
 
-/* Kurs nie ma oceniającego i nie ma prawa udawać, że ma. */
-test("wynik nazywa wprost to, czego nie sprawdzono", async ({ page }) => {
+/* The course has no marker and has no right to pretend it has one. */
+test("the result says plainly what was not checked", async ({ page }) => {
   await zadanie(page, "w-a2-giornata");
   await page.locator("#writeText").fill("Mi sveglio presto.");
   await page.locator(".js-check").click();
@@ -62,7 +62,7 @@ test("wynik nazywa wprost to, czego nie sprawdzono", async ({ page }) => {
   await expect(nota.locator(".list-row")).toHaveCount(ileZListy);
 });
 
-test("model pokazuje się dopiero po sprawdzeniu", async ({ page }) => {
+test("the model appears only after the check", async ({ page }) => {
   await zadanie(page, "w-a2-giornata");
   await expect(page.locator(".js-model")).toBeHidden();
 
@@ -74,7 +74,7 @@ test("model pokazuje się dopiero po sprawdzeniu", async ({ page }) => {
   await expect(page.locator(".js-model-box")).toBeVisible();
 });
 
-test("tekst wraca po ponownym wejściu", async ({ page }) => {
+test("the text comes back on re-entry", async ({ page }) => {
   await zadanie(page, "w-a2-giornata");
   await page.locator("#writeText").fill("Un testo che deve tornare.");
   await page.locator(".js-check").click();
@@ -85,18 +85,19 @@ test("tekst wraca po ponownym wejściu", async ({ page }) => {
   await expect(page.locator("#writeText")).toHaveValue("Un testo che deve tornare.");
 });
 
-/* Tekst ucznia wychodzi z aplikacji przez eksport i może wejść do cudzej
-   przeglądarki przez import: jest treścią niezaufaną, choć napisał ją
-   właściciel profilu. Nigdy nie może trafić do DOM jako HTML. */
-test("tekst ucznia nie staje się znacznikami", async ({ page }) => {
+/* The student's text leaves the application through the export and may enter
+   somebody else's browser through an import: it is untrusted content, even
+   though the owner of the profile wrote it. It must never reach the DOM as
+   HTML. */
+test("the student's text does not become markup", async ({ page }) => {
   await zadanie(page, "w-a2-giornata");
   const zlosliwy = '<img src=x onerror="window.__wstrzykniete=1"> ciao';
   await page.locator("#writeText").fill(zlosliwy);
   await page.locator(".js-check").click();
   await page.waitForTimeout(300);
 
-  expect(await page.evaluate(() => !!window.__wstrzykniete), "kod z tekstu się nie wykonał").toBe(false);
-  expect(await page.locator("#writeBox img").count(), "tekst nie tworzy elementów").toBe(0);
+  expect(await page.evaluate(() => !!window.__wstrzykniete), "the code in the text did not execute").toBe(false);
+  expect(await page.locator("#writeBox img").count(), "the text creates no elements").toBe(0);
 
   await page.reload();
   await page.waitForSelector("#writeText");
@@ -104,12 +105,12 @@ test("tekst ucznia nie staje się znacznikami", async ({ page }) => {
   await expect(page.locator("#writeText")).toHaveValue(zlosliwy);
 });
 
-test("tłumaczenie jedzie zwykłymi ćwiczeniami i liczy wynik", async ({ page }) => {
+test("the translation runs on ordinary exercises and counts the result", async ({ page }) => {
   await zadanie(page, "w-a2-ieri");
   const ile = await page.evaluate(() => window.WRITING.filter(w => w.id === "w-a2-ieri")[0].items.length);
   await expect(page.locator("#writeBox .exq")).toHaveCount(ile);
 
-  /* Pierwsze zdanie poprawnie, reszta byle jak: liczy się dojście do końca. */
+  /* The first sentence correct, the rest at random: what counts is reaching the end. */
   const poprawna = await page.evaluate(() => window.WRITING.filter(w => w.id === "w-a2-ieri")[0].items[0].a[0]);
   const pola = page.locator("#writeBox .exq .js-in");
   await pola.nth(0).fill(poprawna);
@@ -122,7 +123,7 @@ test("tłumaczenie jedzie zwykłymi ćwiczeniami i liczy wynik", async ({ page }
   await expect(page.locator("#writeSum .summary")).toBeVisible();
 });
 
-test("polecenie i lista kontrolna istnieją w pięciu językach", async ({ page }) => {
+test("the brief and the checklist exist in five languages", async ({ page }) => {
   await lista(page);
   const braki = await page.evaluate(async () => {
     const out = {};
@@ -173,13 +174,13 @@ test("errore di import dice il motivo, nella lingua giusta", async ({ page }) =>
     for (const m of wyniki[lang]) {
       expect(m).not.toBe("BRAK BLEDU");
       expect(m).not.toBe("BEZ KLUCZA");
-      expect(m, "komunikat nie może być samym kluczem").not.toMatch(/^set\./);
+      expect(m, "the message must not be the key alone").not.toMatch(/^set\./);
       expect(m.length).toBeGreaterThan(15);
     }
-    /* Cztery różne przyczyny, cztery różne komunikaty. */
+    /* Four different causes, four different messages. */
     expect(new Set(wyniki[lang]).size).toBeGreaterThanOrEqual(3);
   }
-  /* I naprawdę różne między językami: nie zostają po polsku. */
+  /* And really different across languages: they do not stay in Polish. */
   expect(wyniki.pl[0]).not.toBe(wyniki.en[0]);
   expect(wyniki.de[0]).not.toBe(wyniki.en[0]);
 });

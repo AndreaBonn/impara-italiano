@@ -1,18 +1,18 @@
 /* ============================================================
-   Napisy interfejsu (assets/js/i18n.js).
+   Interface strings (assets/js/i18n.js).
 
-   Doklejanie tekstów do treści kursu ma swój plik obok
-   (i18n-merge.test.mjs) — tak jak od podziału ma go silnik.
+   Attaching texts to the course content has a file of its own next door
+   (i18n-merge.test.mjs) — as the engine has had since the split.
 
-   `t()` decyduje o czymś, czego nie widać w żadnym pliku danych: o formie
-   liczby mnogiej. „1 dni" i „5 dzień" to nie literówki, tylko zła
-   kategoria, i wychodzą dopiero na oczach ucznia, przy konkretnej liczbie.
+   `t()` decides something no data file shows: the plural form. "1 dni" and
+   "5 dzień" are not typos but the wrong category, and they only surface in
+   front of the student, at one specific number.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { loadEngine, CORE } from "./_harness.mjs";
 
-/** i18n.js wczytujemy PO silniku, żeby nadpisał atrapę I18n z piaskownicy. */
+/** We load i18n.js AFTER the engine, so that it overrides the sandbox's I18n double. */
 function swiezy() {
   const box = loadEngine({ files: [...CORE, "assets/js/i18n.js"] });
   box.Core.load();
@@ -27,24 +27,24 @@ function zNapisami(dict, lang) {
 }
 
 describe("napisy interfejsu", () => {
-  test("brakujący klucz wraca jako klucz i ląduje na liście braków", () => {
+  test("a missing key comes back as the key and lands on the missing list", () => {
     const I18n = zNapisami({ "a.b": "jest" });
     assert.equal(I18n.t("nie.ma"), "nie.ma");
     assert.ok(I18n.missing().indexOf("nie.ma") >= 0);
-    assert.equal(I18n.missing().indexOf("a.b"), -1, "obecny klucz nie trafia na listę braków");
+    assert.equal(I18n.missing().indexOf("a.b"), -1, "a key that exists does not land on the missing list");
   });
 
-  test("zmienne wchodzą w miejsce nawiasów", () => {
+  test("the variables go in where the braces are", () => {
     const I18n = zNapisami({ "x": "masz {n} punktów i {ile} dni" });
     assert.equal(I18n.t("x", { n: 5, ile: 2 }), "masz 5 punktów i 2 dni");
   });
 
-  test("nieznana zmienna zostaje w tekście zamiast zniknąć", () => {
+  test("an unknown variable stays in the text instead of disappearing", () => {
     const I18n = zNapisami({ "x": "masz {n} i {czego}" });
     assert.equal(I18n.t("x", { n: 1 }), "masz 1 i {czego}");
   });
 
-  test("polski wybiera formę wg kategorii, nie wg n === 1", () => {
+  test("Polish picks the form by category, not by n === 1", () => {
     const I18n = zNapisami({ "d": { one: "{n} dzień", few: "{n} dni", many: "{n} dni", other: "{n} dnia" } });
     assert.equal(I18n.t("d", { n: 1 }), "1 dzień");
     assert.equal(I18n.t("d", { n: 3 }), "3 dni");
@@ -57,26 +57,27 @@ describe("napisy interfejsu", () => {
     assert.equal(I18n.t("l", { n: 2 }), "2 lessons");
   });
 
-  test("brak liczby liczy się jak zero, a nie jak brak formy", () => {
+  test("a missing number counts as zero, not as a missing form", () => {
     const I18n = zNapisami({ "l": { one: "{n} lekcja", few: "{n} lekcje", many: "{n} lekcji", other: "{n} lekcji" } });
-    assert.equal(I18n.t("l"), "{n} lekcji", "kategoria dla zera, zmienna bez wartości zostaje");
+    assert.equal(I18n.t("l"), "{n} lekcji", "the category for zero; a variable with no value stays");
   });
 
-  test("locale idzie za wybranym językiem", () => {
+  test("the locale follows the chosen language", () => {
     const I18n = zNapisami({ "a": "a" }, "en");
     assert.equal(I18n.lang, "en");
-    assert.equal(I18n.locale(), "en-US", "angielski w tym kursie to odmiana amerykańska");
+    assert.equal(I18n.locale(), "en-US", "English in this course is the American variety");
   });
 
-  test("brak napisu w bieżącym języku spada na angielski, nie na klucz", () => {
-    /* Kurs mówi pięcioma językami i nakładka bywa niepełna: uczeń ma
-       zobaczyć zdanie po angielsku, a nie „set.errNoVersion" na ekranie. */
+  test("a string missing in the current language falls back to English, not to the key", () => {
+    /* The course speaks five languages and an overlay is sometimes
+       incomplete: the student should see a sentence in English rather than
+       "set.errNoVersion" on the screen. */
     const { I18n, LINGUAI } = swiezy();
     LINGUAI.addUI("en", { "x": "Fallback text" });
     LINGUAI.addUI("de", {});
     I18n.set("de");
 
     assert.equal(I18n.t("x"), "Fallback text");
-    assert.ok(I18n.missing().indexOf("x") >= 0, "brak nadal jest widoczny na liście");
+    assert.ok(I18n.missing().indexOf("x") >= 0, "the gap is still visible on the list");
   });
 });

@@ -54,7 +54,7 @@ describe("fold", () => {
     assert.equal(T.fold("Perché È Così"), "perche e cosi");
   });
 
-  test("ujednolica apostrof, tak jak detypo", () => {
+  test("it unifies the apostrophe, just like detypo", () => {
     assert.equal(T.fold("L’Autore"), "l'autore");
   });
 
@@ -64,7 +64,7 @@ describe("fold", () => {
 
   test("the length of the result equals the length of the input for every accent", () => {
     ["caffè", "città", "perché", "così", "più", "à á è é ì í ò ó ù ú"].forEach(s => {
-      assert.equal(T.fold(s).length, s.length, `zmiana długości na „${s}”`);
+      assert.equal(T.fold(s).length, s.length, `length changed on "${s}"`);
     });
   });
 
@@ -92,7 +92,7 @@ describe("norm", () => {
     assert.equal(T.norm("Perché"), "perche");
   });
 
-  test("keepAccents zostawia je na miejscu", () => {
+  test("keepAccents leaves them in place", () => {
     assert.equal(T.norm("Perché sì", { keepAccents: true }), "perché sì");
   });
 
@@ -108,7 +108,7 @@ describe("levenshtein", () => {
     assert.equal(T.levenshtein("parlare", "parlare"), 0);
   });
 
-  test("klasyczny przypadek kitten → sitting to trzy operacje", () => {
+  test("the classic kitten -> sitting case is three operations", () => {
     assert.equal(T.levenshtein("kitten", "sitting"), 3);
   });
 
@@ -118,7 +118,7 @@ describe("levenshtein", () => {
     assert.equal(T.levenshtein("", ""), 0);
   });
 
-  test("jest symetryczna", () => {
+  test("it is symmetric", () => {
     assert.equal(T.levenshtein("mangio", "mangi"), T.levenshtein("mangi", "mangio"));
   });
 
@@ -143,7 +143,7 @@ describe("similarity", () => {
 
   test("a typo gives a high result, but not equal to 1", () => {
     const s = T.similarity("parlare", "parlere");
-    assert.ok(s > 0.8 && s < 1, `oczekiwane 0.8 < s < 1, było ${s}`);
+    assert.ok(s > 0.8 && s < 1, `expected 0.8 < s < 1, got ${s}`);
   });
 
   test("a difference on the accent alone disappears, because the comparison goes through norm()", () => {
@@ -153,7 +153,7 @@ describe("similarity", () => {
   test("the result never leaves the 0..1 range", () => {
     [["", "a"], ["a", ""], ["abc", "xyz"], ["ciao", "ciao ciao ciao"]].forEach(([a, b]) => {
       const s = T.similarity(a, b);
-      assert.ok(s >= 0 && s <= 1, `poza przedziałem: ${a}/${b} = ${s}`);
+      assert.ok(s >= 0 && s <= 1, `out of range: ${a}/${b} = ${s}`);
     });
   });
 });
@@ -247,8 +247,8 @@ describe("wystawienie w Core", () => {
     const Core = loadEngine({ files: CORE }).sandbox.Core;
     ["norm", "fold", "stripAccents", "levenshtein", "similarity", "checkOpen", "esc"]
       .forEach(nazwa => {
-        assert.equal(typeof Core[nazwa], "function", `Core.${nazwa} zniknęło`);
-        assert.equal(Core[nazwa].toString(), T[nazwa].toString(), `Core.${nazwa} to inna funkcja niż Txt.${nazwa}`);
+        assert.equal(typeof Core[nazwa], "function", `Core.${nazwa} disappeared`);
+        assert.equal(Core[nazwa].toString(), T[nazwa].toString(), `Core.${nazwa} is a different function from Txt.${nazwa}`);
       });
   });
 });

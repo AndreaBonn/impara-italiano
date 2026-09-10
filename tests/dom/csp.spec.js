@@ -1,15 +1,15 @@
 /* ============================================================
-   csp.spec.js — reguła bezpieczeństwa ze strony nie może po cichu
-   zabrać kursowi czegoś, co działało.
+   csp.spec.js — the page's security policy must not quietly take away
+   something the course used to do.
 
-   Dlaczego osobna suita, skoro DOM-owych testów jest już 158: naruszenie
-   CSP nie wywraca ŻADNEGO z nich. Przeglądarka blokuje zasób i pisze o tym
-   w konsoli, a test, który akurat nie dotyka tego przycisku, przechodzi na
-   zielono. Tu konsola JEST asercją.
+   Why a separate suite, given there are already 158 DOM tests: a CSP
+   violation brings down NONE of them. The browser blocks the resource and
+   writes about it in the console, and a test that happens not to touch that
+   button passes green. Here the console IS the assertion.
 
-   Trasy chodzą po kolei w jednej karcie, tak jak chodzi po nich uczeń:
-   każda zmiana hasza dokłada widok do tego samego dokumentu, więc jedno
-   naruszenie w którymkolwiek z nich zgłosi się tutaj.
+   The routes are walked one after another in a single tab, the way a student
+   walks them: every hash change adds a view to the same document, so one
+   violation in any of them will report itself here.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
@@ -19,7 +19,7 @@ const TRASY = [
   "copertura", "progressi", "impostazioni"
 ];
 
-/** Wyłapuje wszystko, co przeglądarka mówi o Content Security Policy. */
+/** Catches everything the browser says about the Content Security Policy. */
 function nasluchNaruszen(page) {
   const naruszenia = [];
   const zbierz = (tekst) => {
@@ -32,7 +32,7 @@ function nasluchNaruszen(page) {
   return naruszenia;
 }
 
-test("żadna trasa nie łamie reguły bezpieczeństwa", async ({ page }) => {
+test("no route breaks the security policy", async ({ page }) => {
   const naruszenia = nasluchNaruszen(page);
 
   await page.goto("/index.html");
@@ -47,14 +47,15 @@ test("żadna trasa nie łamie reguły bezpieczeństwa", async ({ page }) => {
   expect(naruszenia, naruszenia.join("\n")).toEqual([]);
 });
 
-test("zasoby, które reguła mogła odciąć, nadal się wczytują", async ({ page }) => {
+test("the resources the policy could have cut off still load", async ({ page }) => {
   const naruszenia = nasluchNaruszen(page);
   await page.goto("/index.html");
 
-  /* Cztery rzeczy, które padłyby jako pierwsze przy zbyt ciasnej regule,
-     każda pod inną dyrektywą: kroje pisma (font-src), favicon jako data:
-     (img-src), styl budowany w JS (style-src 'unsafe-inline'), guska
-     (worker-src). Sprawdzamy je po SKUTKU, nie po deklaracji. */
+  /* Four things that would fall first under a policy that is too tight, each
+     under a different directive: the fonts (font-src), the favicon as a
+     data: URI (img-src), a style built in JS (style-src 'unsafe-inline'),
+     the service worker (worker-src). We check them by their EFFECT, not by
+     the declaration. */
   const stan = await page.evaluate(async () => {
     await document.fonts.ready;
     const wczytane = [...document.fonts].filter((f) => f.status === "loaded").map((f) => f.family);
@@ -76,9 +77,9 @@ test("zasoby, które reguła mogła odciąć, nadal się wczytują", async ({ pa
     };
   });
 
-  expect(stan.kroje.length, "kroje z assets/fonts nie wczytały się").toBeGreaterThan(0);
-  expect(stan.stylZAtrybutu, "atrybut style= został zablokowany").toBe("42px");
+  expect(stan.kroje.length, "the fonts from assets/fonts did not load").toBeGreaterThan(0);
+  expect(stan.stylZAtrybutu, "the style= attribute was blocked").toBe("42px");
   expect(stan.faviconData, "favicon jako data: URI").toBe(true);
-  expect(stan.guskaZarejestrowana, "service worker nie wstał").toBe(true);
+  expect(stan.guskaZarejestrowana, "the service worker did not come up").toBe(true);
   expect(naruszenia, naruszenia.join("\n")).toEqual([]);
 });

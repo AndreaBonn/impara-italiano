@@ -1,10 +1,10 @@
 /* ============================================================
-   Wykrywanie konstrukcji w tekście ucznia.
+   Detecting constructions in the student's text.
 
-   To jest cała różnica między ćwiczeniem, które coś mierzy, a listą
-   pytań do samooceny. Jeśli wykrywanie kłamie w którąkolwiek stronę,
-   uczeń albo dostaje pochwałę za to, czego nie napisał, albo jest
-   poprawiany za to, co napisał dobrze.
+   This is the whole difference between an exercise that measures something
+   and a self-assessment checklist. If the detection lies in either
+   direction, the student is either praised for what they did not write or
+   corrected for what they wrote correctly.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -23,7 +23,7 @@ function znajdz(box, tekst, wymagania) {
 }
 
 describe("czasowniki przez koniugator", () => {
-  test("znajduje formę prostą we właściwym czasie", () => {
+  test("it finds a simple form in the right tense", () => {
     const box = silnik();
     const r = znajdz(box, "Da bambino parlavo poco.", [{ verb: "parlare", tense: "imperf" }]);
     assert.equal(r[0].found, true);
@@ -33,19 +33,20 @@ describe("czasowniki przez koniugator", () => {
   test("nie uznaje innego czasu tego samego czasownika", () => {
     const box = silnik();
     const r = znajdz(box, "Parlo italiano.", [{ verb: "parlare", tense: "imperf" }]);
-    assert.equal(r[0].found, false, "parlo to teraźniejszy, nie imperfetto");
+    assert.equal(r[0].found, false, "parlo is the present, not the imperfetto");
   });
 
-  test("znajduje czas złożony razem z posiłkowym", () => {
+  test("it finds a compound tense together with its auxiliary", () => {
     const box = silnik();
     const r = znajdz(box, "Ieri ho mangiato una pizza.", [{ verb: "mangiare", tense: "passPross" }]);
     assert.equal(r[0].found, true);
     assert.equal(r[0].hit, "ho mangiato");
   });
 
-  /* Koniugator daje tylko rodzaj męski. Uczennica pisząca o sobie ma rację
-     i nie może przez to zostać uznana za kogoś, kto nie użył czasu. */
-  test("uzgodnienie żeńskie i mnogie imiesłowu jest przyjmowane", () => {
+  /* The conjugator produces the masculine only. A student writing about
+     herself is right and must not be counted because of it as somebody who
+     did not use the tense. */
+  test("feminine and plural participle agreement is accepted", () => {
     const box = silnik();
     const wym = [{ verb: "andare", tense: "passPross" }];
     ["Ieri sono andata al mare.", "Siamo andate insieme.", "Sono andati via."].forEach(zd => {
@@ -53,58 +54,58 @@ describe("czasowniki przez koniugator", () => {
     });
   });
 
-  test("czasownik zwrotny łapie się razem z zaimkiem", () => {
+  test("a reflexive verb is caught together with its pronoun", () => {
     const box = silnik();
     const r = znajdz(box, "Mi sono alzata alle sei.", [{ verb: "alzarsi", tense: "passPross" }]);
     assert.equal(r[0].found, true);
   });
 
-  /* Formy proste niosą osobę w końcówce: podmiana ostatniej samogłoski
-     byłaby zgodą na „parlava" tam, gdzie miało być „parlavo". */
-  test("w formie prostej końcówka NIE jest dowolna", () => {
+  /* Simple forms carry the person in their ending: swapping the last vowel
+     would be consenting to "parlava" where "parlavo" was meant. */
+  test("in a simple form the ending is NOT arbitrary", () => {
     const box = silnik();
     const formy = box.sandbox.Writing.formyDla({ verb: "parlare", tense: "imperf" });
     assert.ok(formy.indexOf("parlavo") >= 0);
-    /* „parlavu" nie jest żadną formą i nie ma prawa przejść */
+    /* "parlavu" is no form at all and has no right to pass */
     assert.equal(znajdz(box, "Da bambino parlavu poco.", [{ verb: "parlare", tense: "imperf" }])[0].found, false);
   });
 });
 
-describe("słowa i alternatywy", () => {
-  test("szuka konkretnego słowa", () => {
+describe("words and alternatives", () => {
+  test("it looks for a specific word", () => {
     const box = silnik();
     assert.equal(znajdz(box, "Prima studio, poi esco.", [{ word: "poi" }])[0].found, true);
     assert.equal(znajdz(box, "Prima studio e esco.", [{ word: "poi" }])[0].found, false);
   });
 
-  test("nie łapie słowa schowanego w innym słowie", () => {
+  test("it does not catch a word hidden inside another word", () => {
     const box = silnik();
     assert.equal(znajdz(box, "Il poeta scrive.", [{ word: "poe" }])[0].found, false);
     assert.equal(znajdz(box, "Vado a casa.", [{ word: "a" }])[0].found, true);
   });
 
-  test("akcenty nie są wymagane po stronie ucznia", () => {
+  test("accents are not required on the student's side", () => {
     const box = silnik();
     assert.equal(znajdz(box, "Perche non vieni?", [{ word: "perché" }])[0].found, true);
     assert.equal(znajdz(box, "Perché non vieni?", [{ word: "perche" }])[0].found, true);
   });
 
-  test("wystarczy jedna z podanych alternatyw", () => {
+  test("one of the given alternatives is enough", () => {
     const box = silnik();
     const wym = [{ any: ["di solito", "spesso", "qualche volta"] }];
     assert.equal(znajdz(box, "Spesso vado a piedi.", wym)[0].found, true);
     assert.equal(znajdz(box, "Vado a piedi.", wym)[0].found, false);
   });
 
-  test("interpunkcja nie przeszkadza", () => {
+  test("punctuation does not get in the way", () => {
     const box = silnik();
     assert.equal(znajdz(box, "Poi, finalmente, esco.", [{ word: "poi" }])[0].found, true);
     assert.equal(znajdz(box, "Che cosa fai? Studio.", [{ word: "studio" }])[0].found, true);
   });
 });
 
-describe("wynik jako odczyt, nie ocena", () => {
-  test("zwraca wpis na każde wymaganie, także niespełnione", () => {
+describe("the result as a reading, not a grade", () => {
+  test("it returns an entry for every requirement, including the unmet ones", () => {
     const box = silnik();
     const r = znajdz(box, "Mangio una mela.", [
       { verb: "mangiare", tense: "pres" },
@@ -115,24 +116,24 @@ describe("wynik jako odczyt, nie ocena", () => {
     assert.equal(r[0].found, true);
     assert.equal(r[1].found, false);
     assert.equal(r[2].found, false);
-    assert.equal(r[1].hit, null, "niespełnione wymaganie nie udaje trafienia");
+    assert.equal(r[1].hit, null, "an unmet requirement does not pretend to be a hit");
   });
 
-  test("pusty tekst nie spełnia niczego i nie wywraca się", () => {
+  test("an empty text meets nothing and does not fall over", () => {
     const box = silnik();
     const r = znajdz(box, "", [{ verb: "essere", tense: "pres" }]);
     assert.equal(r[0].found, false);
     assert.equal(box.sandbox.Writing.wordCount(""), 0);
   });
 
-  test("liczy słowa", () => {
+  test("it counts the words", () => {
     const box = silnik();
     assert.equal(box.sandbox.Writing.wordCount("  Vado   a casa oggi "), 4);
   });
 });
 
 describe("zapis wypracowania", () => {
-  test("tekst i wynik trafiają do stanu i przeżywają zapis", () => {
+  test("the text and the result reach the state and survive a save", () => {
     const box = silnik();
     const wynik = znajdz(box, "Ieri ho mangiato.", [{ verb: "mangiare", tense: "passPross" }, { word: "domani" }]);
     box.sandbox.Writing.save("w-test", "Ieri ho mangiato.", wynik);
@@ -145,9 +146,10 @@ describe("zapis wypracowania", () => {
     assert.equal(zapis.words, 3);
   });
 
-  /* Wypracowanie to jedyna treść w stanie, której uczeń nie odtworzy
-     dalszą nauką — potarcie przy pełnej pamięci nie ma prawa jej ruszyć. */
-  test("potarcie przy pełnej pamięci nie kasuje wypracowań", () => {
+  /* A composition is the only content in the state the student cannot
+     reconstruct by studying further — pruning on full storage has no right
+     to touch it. */
+  test("pruning on full storage does not erase the compositions", () => {
     const box = silnik();
     box.sandbox.Writing.save("w-1", "Un testo lungo del corso.", []);
     for (let i = 0; i < 40; i++) {
@@ -162,24 +164,24 @@ describe("zapis wypracowania", () => {
   });
 });
 
-/* Znalezione w przeglądzie kodu, nie przez test — i tu, żeby nie wróciło. */
-describe("regresje z przeglądu", () => {
+/* Found in a code review, not by a test — and here so that it does not come back. */
+describe("regressions from the review", () => {
   test("apostrof typograficzny z telefonu trafia w wymaganie", () => {
     const box = silnik();
     const wym = [{ any: ["secondo l'autore", "l'autore sostiene"] }];
-    /* U+2019, ten, który wstawia iOS i każdy edytor tekstu. */
+    /* U+2019, the one iOS and every word processor inserts. */
     assert.equal(znajdz(box, "Secondo l’autore la lingua evita.", wym)[0].found, true);
     assert.equal(znajdz(box, "Secondo l'autore la lingua evita.", wym)[0].found, true);
   });
 
-  test("apostrof działa też w drugą stronę: wymaganie krzywe, tekst prosty", () => {
+  test("the apostrophe works the other way round too: a curly requirement, a straight text", () => {
     const box = silnik();
     assert.equal(znajdz(box, "Vado all'una.", [{ word: "all’una" }])[0].found, true);
   });
 
-  /* Luz na końcówce miał obsłużyć „sono andata" wobec „sono andato".
-     Zastosowany do zwrotów stałych przepuszczał formy niepoprawne. */
-  test("zwrot stały nie przyjmuje przekręconej końcówki", () => {
+  /* The slack on the ending was meant to handle "sono andata" against "sono
+     andato". Applied to fixed phrases it let incorrect forms through. */
+  test("a fixed phrase does not accept a mangled ending", () => {
     const box = silnik();
     const wym = [{ any: ["cordiali saluti"] }];
     assert.equal(znajdz(box, "Cordiali saluti, Marco.", wym)[0].found, true);
@@ -194,23 +196,23 @@ describe("regresje z przeglądu", () => {
     assert.equal(znajdz(box, "Di solita mi alzo presto.", wym)[0].found, false);
   });
 
-  test("a uzgodnienie imiesłowu nadal przechodzi", () => {
+  test("while participle agreement still passes", () => {
     const box = silnik();
     assert.equal(znajdz(box, "Sono andata via.", [{ verb: "andare", tense: "passPross" }])[0].found, true);
   });
 });
 
 describe("odczyt wypracowania", () => {
-  test("zapisany tekst wraca po ponownym wejściu", () => {
-    /* Wypracowanie jest jedyną treścią w stanie, której uczeń nie odtworzy
-       dalszą nauką: potarcie przy pełnej pamięci go nie rusza, a widok musi
-       je znaleźć po powrocie na ekran. */
+  test("a saved text comes back on re-entry", () => {
+    /* A composition is the only content in the state the student cannot
+       reconstruct by studying further: pruning on full storage leaves it
+       alone, and the view has to find it again on returning to the screen. */
     const box = silnik();
     box.sandbox.Writing.save("w1", "Ciao, sono a Roma.", []);
     assert.equal(box.sandbox.Writing.load("w1").text, "Ciao, sono a Roma.");
   });
 
-  test("zadanie nietknięte nie ma wypracowania i nie udaje pustego", () => {
+  test("an untouched task has no composition and does not pretend to be empty", () => {
     const box = silnik();
     assert.equal(box.sandbox.Writing.load("w2"), null);
   });

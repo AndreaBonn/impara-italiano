@@ -1,16 +1,16 @@
 /* ============================================================
-   _harness.mjs — ładowanie silnika do testów jednostkowych.
+   _harness.mjs - loading the engine for the unit tests.
 
-   Skrypty w assets/js/ są klasyczne: nie da się ich zaimportować,
-   bo nie eksportują niczego, tylko przypisują do globala. Ten sam
-   problem rozwiązują już scripts/validate.mjs i scripts/parity.mjs
-   przez node:vm — tutaj jest ten sam wzorzec, nie drugi.
+   The scripts in assets/js/ are classic ones: they cannot be imported,
+   because they export nothing and only assign to a global. The same problem
+   is already solved by scripts/validate.mjs and scripts/parity.mjs through
+   node:vm - this is that same pattern, not a second one.
 
-   Różnica wobec tamtych dwóch: te testy dotykają stanu, więc
-   piaskownica musi dawać sterowalne localStorage i sterowalny czas.
-   save() jest zdebouncowane setTimeoutem na 180 ms (core.js:99),
-   a test, który czeka realne 180 ms, jest testem o zegarze, nie
-   o zapisie: dlatego czas jest tu podstawiony, a nie odmierzany.
+   The difference from those two: these tests touch state, so the sandbox has
+   to provide a controllable localStorage and controllable time. save() is
+   debounced with a 180 ms setTimeout (core.js:99), and a test that waits a
+   real 180 ms is a test about the clock, not about saving: hence time is
+   supplied here rather than measured.
    ============================================================ */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -20,27 +20,27 @@ import vm from "node:vm";
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 /**
- * Podstawienie pliku silnika na czas jednego przebiegu testów.
+ * Substituting an engine file for the duration of one test run.
  *
- * Istnieje dla `scripts/mutations.mjs`. Bramka mutacyjna musi wykonać
- * ZEPSUTĄ wersję pliku, a nie wolno jej psuć pliku w drzewie roboczym:
- * przerwany przebieg zostawiłby tam mutację, która w diffie wygląda jak
- * zwykła zmiana i da się ją zacommitować bez mrugnięcia okiem. Handler na
- * SIGINT tego nie załatwia — bramka jest w całości synchroniczna, więc
- * pętla zdarzeń nie dochodzi do głosu przed jej końcem i uchwyt sygnału
- * nigdy by się nie wykonał.
+ * It exists for `scripts/mutations.mjs`. The mutation gate has to execute a
+ * BROKEN version of a file, and it must not break the file in the working
+ * tree: an interrupted run would leave a mutation there that looks like an
+ * ordinary change in the diff and could be committed without blinking. A
+ * SIGINT handler does not solve that - the gate is entirely synchronous, so
+ * the event loop never gets a turn before it ends and the signal handler
+ * would never run.
  *
- * Zamiast tego mutacja leży w katalogu tymczasowym, a tutaj podmieniana
- * jest sama ścieżka do ODCZYTU. Bez zmiennej środowiskowej ten kod jest
- * bezczynny, więc zwykły `npm test` nic o nim nie wie.
+ * Instead the mutation lives in a temporary directory and what is swapped
+ * here is only the path to READ from. Without the environment variable this
+ * code is idle, so a plain `npm test` knows nothing about it.
  */
 const PODMIANY = process.env.LINGUAI_PODMIANA ? JSON.parse(process.env.LINGUAI_PODMIANA) : {};
 
 /**
- * Silnik stanu w kolejności ładowania, tej samej co w index.html.
- * Stała, a nie lista przepisywana w każdym pliku testu: rozbicie core.js
- * na moduły ma kosztować jedną zmianę tutaj, a nie dziesięć poprawek
- * w miejscach, które nikogo nie obchodzą.
+ * The state engine in load order, the same as in index.html. A constant
+ * rather than a list rewritten in every test file: splitting core.js into
+ * modules must cost one change here, not ten edits in places nobody cares
+ * about.
  */
 export const CORE = [
   "assets/js/fsrs.js",
@@ -53,34 +53,35 @@ export const CORE = [
 ];
 
 /**
- * Silnik odmiany: tabele włoskiego przed algorytmem, ta sama kolejność
- * co w index.html. verbs.js czyta VERB_TABLES przy wykonaniu modułu.
+ * The conjugation engine: the Italian tables before the algorithm, the same
+ * order as in index.html. verbs.js reads VERB_TABLES at module execution.
  */
 export const VERBS = ["assets/js/verbs-data.js", "assets/js/verbs.js"];
 
 /**
- * Lematyzacja: reguły formy przed rozstrzyganiem, ta sama kolejność co
- * w index.html. lemma.js czyta LemmaMorf przy wykonaniu modułu.
+ * Lemmatisation: the rules of form before the verdict, the same order as in
+ * index.html. lemma.js reads LemmaMorf at module execution.
  */
 export const LEMMA = ["assets/js/lemma-morf.js", "assets/js/lemma.js"];
 
 /**
- * Dźwięk: indeks nagrań przed recordings.js, recordings.js przed audio.js.
- * Oba czytają swojego poprzednika przy wykonaniu modułu, nie w funkcji.
+ * Audio: the recording index before recordings.js, recordings.js before
+ * audio.js. Both read their predecessor at module execution, not inside a
+ * function.
  */
 export const AUDIO = ["data/audio-index.js", "assets/js/recordings.js", "assets/js/audio.js"];
 
 /**
- * Zapowiedź nowej wersji: reguły przed skutkami, ta sama kolejność co
- * w index.html. pwa.js pyta PwaRules o każdą decyzję.
- * Notice na początku, bo komunikat idzie przez niego.
+ * The new-version announcement: the rules before the effects, the same order
+ * as in index.html. pwa.js asks PwaRules for every decision. Notice comes
+ * first, because the message goes through it.
  */
 export const PWA = ["assets/js/notice.js", "assets/js/pwa-rules.js", "assets/js/pwa.js"];
 
 /**
- * localStorage z kontrolowanym limitem.
- * Prawdziwa przeglądarka rzuca QuotaExceededError przy przepełnieniu;
- * bez tego nie da się przetestować zachowania save() na pełnym dysku.
+ * localStorage with a controllable limit.
+ * A real browser throws QuotaExceededError when it overflows; without that
+ * there is no way to test how save() behaves on a full disk.
  */
 export function makeStorage(options) {
   const opts = options || {};
@@ -105,7 +106,7 @@ export function makeStorage(options) {
     key(i) { return Array.from(data.keys())[i] ?? null; },
     get length() { return data.size; },
 
-    /* poza API przeglądarki — sterowanie z testu */
+    /* outside the browser API - control from the test */
     _setLimit(n) { limit = n; },
     _raw: data
   };
@@ -113,8 +114,8 @@ export function makeStorage(options) {
 }
 
 /**
- * Zegar bez czekania. Kolejkuje wywołania i odpala je na żądanie,
- * dzięki czemu test na zapisie stanu trwa mikrosekundy i nie ma wyścigu.
+ * A clock with no waiting. It queues the calls and fires them on demand, so
+ * a test about saving state takes microseconds and has no race.
  */
 function makeClock() {
   let seq = 0;
@@ -122,11 +123,11 @@ function makeClock() {
   return {
     setTimeout(fn, _ms) { const id = ++seq; pending.set(id, fn); return id; },
     clearTimeout(id) { pending.delete(id); },
-    /** Odpala wszystko, co czeka, łącznie z tym, co dołoży się w trakcie. */
+    /** Fires everything pending, including what gets added along the way. */
     flush() {
       let guard = 0;
       while (pending.size) {
-        if (++guard > 1000) throw new Error("flush: pętla timerów bez końca");
+        if (++guard > 1000) throw new Error("flush: endless timer loop");
         const entries = Array.from(pending.entries());
         pending.clear();
         for (const [, fn] of entries) fn();
@@ -137,61 +138,63 @@ function makeClock() {
 }
 
 /**
- * Otoczenie dźwiękowe przeglądarki: syntezator, wypowiedź i odtwarzacz.
+ * The browser's audio surroundings: the synthesiser, an utterance and a
+ * player.
  *
- * audio.js wybiera źródło głosu w kaskadzie (nagranie → synteza → cisza),
- * a każda jej gałąź jest decyzją podjętą świadomie i opisaną w komentarzu:
- * blokada autoodtwarzania NIE schodzi na syntezę, brakujący plik owszem,
- * a ostrzeżenie leci raz na sesję, nie przy każdym słówku. Bez tych trzech
- * atrap żadnej z nich nie da się sprawdzić inaczej niż ręcznie w przeglądarce.
+ * audio.js picks the voice source in a cascade (recording -> synthesis ->
+ * silence), and every branch of it is a deliberate decision described in a
+ * comment: an autoplay block does NOT fall back to synthesis, a missing file
+ * does, and the warning fires once per session rather than on every word.
+ * Without these three stubs none of them can be checked any way other than by
+ * hand in a browser.
  *
- * `zachowaniePlay` steruje tym, czym kończy się `play()`:
- *   "ok"          — obietnica spełniona (nagranie gra),
- *   "not-allowed" — odrzucona NotAllowedError (brak gestu użytkownika),
- *   "blad"        — odrzucona zwykłym błędem (plik nie do wczytania).
+ * `zachowaniePlay` controls how `play()` ends:
+ *   "ok"          - the promise resolves (the recording plays),
+ *   "not-allowed" - rejected with NotAllowedError (no user gesture),
+ *   "blad"        - rejected with an ordinary error (the file will not load).
  */
 function makeAudioEnv(opts) {
   const log = {
     voices: opts.voices || [],
-    wypowiedzi: [],        // SpeechSynthesisUtterance oddane do speak()
+    wypowiedzi: [],        // the SpeechSynthesisUtterance objects handed to speak()
     anulowania: 0,
-    odtwarzacze: [],       // instancje Audio, w kolejności powstania
-    rozpoznania: [],       // instancje SpeechRecognition, w kolejności powstania
+    odtwarzacze: [],       // the Audio instances, in creation order
+    rozpoznania: [],       // the SpeechRecognition instances, in creation order
     zachowaniePlay: opts.zachowaniePlay || "ok"
   };
 
   function Utterance(text) { this.text = text; }
 
   const speechSynthesis = opts.brakSyntezy ? null : {
-    /* Kopia, nie ta sama tablica: przeglądarka też oddaje nową listę przy
-       każdym wywołaniu. Bez tego dopisanie głosu w teście byłoby widoczne
-       w silniku BEZ odświeżenia listy, więc test na `onvoiceschanged`
-       przechodziłby także wtedy, gdyby tej gałęzi w ogóle nie było. */
+    /* A copy, not the same array: the browser also returns a new list on
+       every call. Without that, adding a voice in a test would be visible to
+       the engine WITHOUT refreshing the list, so the `onvoiceschanged` test
+       would pass even if that branch did not exist at all. */
     getVoices() { return log.voices.slice(); },
     speak(u) {
-      /* Część WebView na Androidzie rzuca stąd wyjątkiem zamiast milczeć. */
-      if (opts.mowaRzuca) throw new Error("speak niedostępne");
+      /* Some Android WebViews throw from here instead of staying silent. */
+      if (opts.mowaRzuca) throw new Error("speak unavailable");
       log.wypowiedzi.push(u);
     },
     cancel() { log.anulowania++; },
-    /* Przeglądarki sprzed 2018 nie mają addEventListener na syntezatorze,
-       tylko `onvoiceschanged`. Ta gałąź istnieje właśnie dla nich. */
+    /* Browsers from before 2018 have no addEventListener on the synthesiser,
+       only `onvoiceschanged`. That branch exists for them. */
     addEventListener: opts.starySyntezator ? undefined : function () {}
   };
 
   /**
-   * Rozpoznawanie mowy. To jedyne miejsce w kursie, z którego coś opuszcza
-   * przeglądarkę ucznia (przeglądarki wysyłają nagranie na serwer dostawcy),
-   * więc bramka zgody przed pierwszym uruchomieniem jest tu treścią, nie
-   * ozdobą — a bez tej atrapy nie dawała się przejść ani w jedną, ani
-   * w drugą stronę.
+   * Speech recognition. This is the only place in the course from which
+   * anything leaves the student's browser (browsers send the recording to the
+   * vendor's server), so the consent gate before the first run is content
+   * here, not decoration - and without this stub it could not be walked in
+   * either direction.
    */
   function Recognition() {
     const rec = {
       lang: "", interimResults: false, maxAlternatives: 0, continuous: true,
       onstart: null, onresult: null, onerror: null, onend: null,
       starty: 0, przerwania: 0,
-      start() { rec.starty++; if (opts.startRzuca) throw new Error("nie da się"); },
+      start() { rec.starty++; if (opts.startRzuca) throw new Error("cannot start"); },
       abort() { rec.przerwania++; }
     };
     log.rozpoznania.push(rec);
@@ -210,9 +213,9 @@ function makeAudioEnv(opts) {
           const e = new Error("play() failed"); e.name = "NotAllowedError";
           return Promise.reject(e);
         }
-        if (log.zachowaniePlay === "blad") return Promise.reject(new Error("nie wczytano"));
-        /* Przed 2016 play() nie oddawał obietnicy: kod ma wtedy zgłosić
-           start od razu, zamiast czekać na then(), który nie przyjdzie. */
+        if (log.zachowaniePlay === "blad") return Promise.reject(new Error("failed to load"));
+        /* Before 2016 play() returned no promise: the code then has to report
+           the start at once instead of waiting for a then() that never comes. */
         if (log.zachowaniePlay === "bez-obietnicy") return undefined;
         return Promise.resolve();
       },
@@ -228,29 +231,30 @@ function makeAudioEnv(opts) {
   };
 }
 
-/** Głos systemowy do listy `voices`: tyle pól, ile czyta pickVoice(). */
+/** A system voice for the `voices` list: as many fields as pickVoice() reads. */
 export function glos(name, lang) {
   return { name: name, lang: lang || "it-IT" };
 }
 
 /**
- * Zegar kalendarzowy piaskownicy.
+ * The sandbox's calendar clock.
  *
- * Passa liczy się po DNIACH, nie po milisekundach: `touchDay()` porównuje
- * dzisiejszą datę z ostatnią zapisaną i od tego zależy, czy seria rośnie,
- * czy zaczyna się od nowa. Test, który wpisuje wczorajszą datę wyliczoną z
- * prawdziwego zegara, przechodzi zawsze poza jedną minutą na dobę — o
- * północy data zmienia się w połowie testu i wychodzi „usterka passy".
+ * A streak counts in DAYS, not milliseconds: `touchDay()` compares today's
+ * date with the last one saved, and whether the streak grows or starts over
+ * depends on that. A test that writes yesterday's date computed from the real
+ * clock passes every minute but one per day - at midnight the date changes
+ * halfway through the test and a "streak fault" appears.
  *
- * Podstawiamy więc CAŁĄ datę, nie samo `Date.now()`: `new Date()` bez
- * argumentów oddaje ustalony moment, a `new Date("2026-03-01T00:00:00")`
- * dalej parsuje napis, bo tego używa liczenie odstępu między dniami.
+ * So we substitute the WHOLE date, not just `Date.now()`: `new Date()` with
+ * no arguments returns the fixed moment, while `new Date("2026-03-01T00:00:00")`
+ * still parses the string, because the day-gap computation uses that.
  *
- * Moment siedzi w pudełku, a nie w domknięciu, bo bywa PRZESUWANY w trakcie
- * testu: próg między dwoma pytaniami o nową wersję (pwa-rules.js) mierzy
- * odstęp, więc test na nim potrzebuje dwóch różnych chwil, a nie jednej.
+ * The moment lives in a box rather than in a closure because it is sometimes
+ * MOVED during a test: the threshold between two checks for a new version
+ * (pwa-rules.js) measures a gap, so a test on it needs two different moments,
+ * not one.
  *
- * @param {{teraz: number|undefined}} zegar pudełko z momentem w ms
+ * @param {{teraz: number|undefined}} zegar a box holding the moment in ms
  */
 function makeDate(zegar) {
   if (zegar.teraz === undefined) return Date;
@@ -264,20 +268,20 @@ function makeDate(zegar) {
 }
 
 /**
- * Adres strony i zdarzenia okna.
+ * The page address and the window events.
  *
- * Router pisze do `location.hash` i czeka, aż przeglądarka odda mu
- * `hashchange`; sam się nie woła. Atrapa, która tylko zapamiętuje napis,
- * pokazywałaby przejście na trasę jako martwe przypisanie — dlatego
- * przypisanie hasha odpala tu uchwyty, dokładnie jak w przeglądarce,
- * i dokładnie tak samo NIE odpala ich, gdy adres się nie zmienia.
+ * The router writes to `location.hash` and waits for the browser to hand it a
+ * `hashchange`; it does not call itself. A stub that merely remembers the
+ * string would make a route change look like a dead assignment - which is why
+ * assigning the hash fires the handlers here, exactly as in a browser, and
+ * just as surely does NOT fire them when the address does not change.
  */
 function makeWindowEvents(opts) {
   const uchwyty = {};
   let hash = "";
-  /** Ile razy strona się przeładowała. Przeglądarka po tym wraca do
-      pierwszej linijki; tu liczy się samo wywołanie, bo sprawdzana jest
-      różnica między jednym przeładowaniem a pętlą przeładowań. */
+  /** How many times the page reloaded. A browser would go back to the first
+      line after that; here the call itself is what counts, because what is
+      checked is the difference between one reload and a reload loop. */
   const przeladowania = { ile: 0 };
 
   const location = {
@@ -296,40 +300,41 @@ function makeWindowEvents(opts) {
     location: location,
     przeladowania: przeladowania,
     addEventListener(type, fn) { (uchwyty[type] = uchwyty[type] || []).push(fn); },
-    /** Poza API przeglądarki: wejście „z zewnątrz", np. z zakładki. */
+    /** Outside the browser API: arriving "from outside", e.g. from a bookmark. */
     idzNa(nowy) { location.hash = nowy; },
-    /** Poza API przeglądarki: zdarzenie okna, np. „load". */
+    /** Outside the browser API: a window event, e.g. "load". */
     odpal(type) { (uchwyty[type] || []).slice().forEach((fn) => fn({ type: type })); },
     uchwyty: uchwyty
   };
 }
 
 /**
- * Service worker widziany od strony STRONY, nie workera.
+ * The service worker as seen from the PAGE, not from the worker.
  *
- * Cała zapowiedź nowej wersji (assets/js/pwa.js) mieszka w stanach, które
- * przeglądarka wystawia w określonej kolejności, i to ta kolejność jest
- * tu treścią. `updatefound` przychodzi, gdy worker jest dopiero w
- * „installing", a `registration.waiting` jest jeszcze puste — atrapa,
- * która od razu podaje gotowego workera, przepuszcza kod czytający
- * `waiting` w uchwycie `updatefound`, czyli dokładnie tę usterkę, przez
- * którą komunikat nie pojawia się przy pierwszym wczytaniu po wydaniu.
+ * The whole new-version announcement (assets/js/pwa.js) lives in states the
+ * browser exposes in a particular order, and that order is the content here.
+ * `updatefound` arrives while the worker is still "installing" and
+ * `registration.waiting` is still empty - a stub that hands over a ready
+ * worker straight away lets through code that reads `waiting` in the
+ * `updatefound` handler, which is exactly the defect that keeps the message
+ * from appearing on the first load after a release.
  *
- * Dlatego stany przestawia test, po jednym: `znaleziono()` daje
- * „installing", `zainstalowany()` przesuwa na „installed" i wysyła
- * `statechange`, `przejmuje()` wysyła `controllerchange`.
+ * So the test moves the states one at a time: `znaleziono()` gives
+ * "installing", `zainstalowany()` moves to "installed" and sends
+ * `statechange`, `przejmuje()` sends `controllerchange`.
  */
 function makeServiceWorker(opts) {
   const o = opts || {};
-  const uchwyty = {};                 // zdarzenia na navigator.serviceWorker
+  const uchwyty = {};                 // events on navigator.serviceWorker
   const log = {
-    rejestracje: [],                  // adresy przekazane do register()
-    wiadomosci: [],                   // ładunki wysłane do czekającego workera
-    /* Numery workerów, które ładunki dostały. Osobno od treści, bo przy
-       dwóch wydaniach pod rząd „co wysłano" jest identyczne, a „do kogo"
-       jest całą różnicą między działającym przyciskiem a martwym. */
+    rejestracje: [],                  // the addresses passed to register()
+    wiadomosci: [],                   // the payloads sent to the waiting worker
+    /* The numbers of the workers that received the payloads. Separate from the
+       content, because across two successive releases "what was sent" is
+       identical while "to whom" is the whole difference between a working
+       button and a dead one. */
     odbiorcy: [],
-    sprawdzenia: 0,                   // wywołania registration.update()
+    sprawdzenia: 0,                   // calls to registration.update()
     kontroler: o.kontroler === undefined ? null : o.kontroler
   };
 
@@ -353,7 +358,7 @@ function makeServiceWorker(opts) {
     waiting: o.waiting ? worker("installed") : null,
     active: worker("activated"),
     addEventListener(type, fn) { (rUchwyty[type] = rUchwyty[type] || []).push(fn); },
-    update() { log.sprawdzenia++; return o.updateOdrzuca ? Promise.reject(new Error("brak sieci")) : Promise.resolve(); }
+    update() { log.sprawdzenia++; return o.updateOdrzuca ? Promise.reject(new Error("no network")) : Promise.resolve(); }
   };
 
   const api = {
@@ -361,19 +366,19 @@ function makeServiceWorker(opts) {
     addEventListener(type, fn) { (uchwyty[type] = uchwyty[type] || []).push(fn); },
     register(url) {
       log.rejestracje.push(url);
-      return o.rejestracjaOdrzuca ? Promise.reject(new Error("odmowa")) : Promise.resolve(rejestracja);
+      return o.rejestracjaOdrzuca ? Promise.reject(new Error("refused")) : Promise.resolve(rejestracja);
     }
   };
 
   return {
     api, log, rejestracja,
-    /** Przeglądarka znalazła nową wersję: worker jest w „installing". */
+    /** The browser found a new version: the worker is "installing". */
     znaleziono() {
       rejestracja.installing = worker("installing");
       (rUchwyty.updatefound || []).slice().forEach((fn) => fn({ type: "updatefound" }));
       return rejestracja.installing;
     },
-    /** Instalacja dobiegła końca: „installed" plus statechange na workerze. */
+    /** The installation finished: "installed" plus a statechange on the worker. */
     zainstalowany() {
       const w = rejestracja.installing;
       w.state = "installed";
@@ -382,7 +387,7 @@ function makeServiceWorker(opts) {
       w._odpal("statechange");
       return w;
     },
-    /** Nowy worker przejął stronę. */
+    /** The new worker has taken over the page. */
     przejmuje() {
       log.kontroler = rejestracja.waiting || rejestracja.active;
       (uchwyty.controllerchange || []).slice().forEach((fn) => fn({ type: "controllerchange" }));
@@ -391,12 +396,12 @@ function makeServiceWorker(opts) {
 }
 
 /**
- * Minimalny DOM: tyle, ile dotyka core.js (toast i komunikat trwały).
+ * A minimal DOM: as much as core.js touches (a toast and a sticky message).
  *
- * `toasts` zbiera same napisy — do prostych sprawdzeń. `notices` trzyma
- * elementy z klasą i atrybutami, bo przy pełnej pamięci różnica między
- * komunikatem znikającym po trzech sekundach a takim, który zostaje,
- * JEST tym, co się testuje.
+ * `toasts` collects the strings alone - for simple checks. `notices` keeps the
+ * elements with their class and attributes, because on a full storage the
+ * difference between a message that disappears after three seconds and one
+ * that stays IS what is being tested.
  */
 function makeDocument(toasts, notices, opcje) {
   function makeEl() {
@@ -416,20 +421,20 @@ function makeDocument(toasts, notices, opcje) {
       addEventListener(type, fn) { (handlers[type] = handlers[type] || []).push(fn); },
       querySelector() { return null; }, querySelectorAll() { return []; },
 
-      /* Pobranie kopii zapasowej idzie przez kliknięcie w <a download>,
-         którego nikt nie widzi. Bez tej metody cała ta gałąź kończyła się
-         wyjątkiem w atrapie i nie dawała się przejść. */
+      /* Downloading a backup goes through a click on an <a download> nobody
+         sees. Without this method that whole branch ended in an exception in
+         the stub and could not be walked. */
       click() { el.klikniecia++; el.fire("click"); },
       klikniecia: 0,
 
       /**
-       * Poza API przeglądarki — kliknięcie z testu.
+       * Outside the browser API - a click from the test.
        *
-       * Uchwyty były do niedawna wyrzucane do kosza, więc przycisk
-       * „zapisz kopię" i krzyżyk zamykający istniały w teście jako dwa
-       * elementy bez zachowania: dało się sprawdzić, że są, i nic poza
-       * tym. Cała gałąź po kliknięciu (odblokowanie klucza, odłożenie
-       * przypomnienia) chodziła wyłącznie w przeglądarce.
+       * Until recently the handlers were thrown away, so the "save a backup"
+       * button and the closing cross existed in the tests as two elements with
+       * no behaviour: it was possible to check that they were there and
+       * nothing more. The whole post-click branch (unblocking the key,
+       * deferring the reminder) ran in the browser only.
        */
       fire(type) { (handlers[type] || []).slice().forEach(fn => fn({ type: type })); }
     };
@@ -445,13 +450,14 @@ function makeDocument(toasts, notices, opcje) {
   };
 
   /**
-   * Kolejka wstrzykiwanych skryptów.
+   * The queue of injected scripts.
    *
-   * registry.js dociąga dane poziomu przez <script>, nie przez fetch (kurs
-   * ma działać z file://), i cała jego logika wisi na onload/onerror. Bez
-   * tej kolejki nie da się sprawdzić ani kolejności plików, ani tego, co
-   * się dzieje, gdy jeden z nich nie wejdzie — a to jest różnica między
-   * „poziom wczytany częściowo" a „poziom w stanie error".
+   * registry.js fetches a level's data through <script>, not through fetch
+   * (the course has to work from file://), and all its logic hangs on
+   * onload/onerror. Without this queue there is no way to check either the
+   * order of the files or what happens when one of them does not come in -
+   * and that is the difference between "a level partially loaded" and "a level
+   * in the error state".
    */
   const wstrzykniete = [];
   const czekajace = [];
@@ -460,22 +466,22 @@ function makeDocument(toasts, notices, opcje) {
   };
 
   /**
-   * Elementy strony zamawiane przez test (`box.el("main")`).
+   * Page elements ordered by the test (`box.el("main")`).
    *
-   * Domyślnie `getElementById` oddaje null dla wszystkiego poza stosem
-   * toastów, bo tyle wystarczało silnikowi stanu. Router sięga po
-   * `#main`, żeby przestawić na nie fokus po zmianie trasy: bez tego
-   * jedynym sposobem sprawdzenia routera byłaby przeglądarka. Nieznane
-   * id nadal oddaje null — atrapa, która oddaje element na każde
-   * pytanie, przepuszcza literówkę w id.
+   * By default `getElementById` returns null for everything but the toast
+   * stack, because that was enough for the state engine. The router reaches
+   * for `#main` to move the focus there after a route change: without it the
+   * only way to check the router would be a browser. An unknown id still
+   * returns null - a stub that returns an element for every question lets a
+   * typo in an id through.
    */
   const naZamowienie = new Map();
   const utworzone = [];
 
-  /* Uchwyty na samym dokumencie. Do niedawna szły do kosza: `visibilitychange`
-     jest jedynym miejscem, w którym kurs pyta o nową wersję po starcie, więc
-     atrapa wyrzucająca uchwyt sprawdzałaby wyłącznie, że rejestracja nie
-     wybucha. */
+  /* Handlers on the document itself. Until recently they were thrown away:
+     `visibilitychange` is the only place where the course asks for a new
+     version after startup, so a stub discarding the handler would only be
+     checking that the registration does not blow up. */
   const docUchwyty = {};
 
   const document = {
@@ -487,16 +493,16 @@ function makeDocument(toasts, notices, opcje) {
       if (id === "toastStack") return stack;
       return naZamowienie.has(id) ? naZamowienie.get(id) : null;
     },
-    /* Utworzone elementy zostają na liście: pobranie kopii dzieje się
-       przez <a download>, którego nigdzie nie ma w drzewie strony, więc
-       bez tej listy nie da się sprawdzić ani nazwy pliku, ani adresu. */
+    /* Created elements stay on a list: downloading a backup happens through an
+       <a download> that is nowhere in the page tree, so without this list
+       neither the file name nor the address can be checked. */
     createElement() { const el = makeEl(); utworzone.push(el); return el; },
     querySelectorAll() { return []; },
     querySelector() { return null; },
     addEventListener(type, fn) { (docUchwyty[type] = docUchwyty[type] || []).push(fn); }
   };
 
-  /** Poza API przeglądarki: zdarzenie dokumentu odpalone z testu. */
+  /** Outside the browser API: a document event fired from the test. */
   function odpal(type) { (docUchwyty[type] || []).slice().forEach((fn) => fn({ type: type })); }
 
   function el(id) {
@@ -516,16 +522,16 @@ function makeDocument(toasts, notices, opcje) {
 }
 
 /**
- * Buduje piaskownicę i wykonuje w niej wskazane pliki silnika.
+ * Builds the sandbox and executes the given engine files inside it.
  *
  * @param {object} [options]
- * @param {string[]} [options.files]   pliki do wykonania, domyślnie sam core.js
- * @param {object}   [options.storage] gotowe localStorage (np. z limitem)
- * @param {object}   [options.seed]    wpisy do localStorage przed wczytaniem
- * @param {number}   [options.now]     ustalony moment dla `new Date()` i `Date.now()`
- * @param {Array}    [options.voices]  głosy systemowe widziane przez audio.js
- * @param {string}   [options.zachowaniePlay] czym kończy się play(): ok | not-allowed | blad
- * @returns {object} piaskownica: Core, storage, clock, toasts, run()
+ * @param {string[]} [options.files]   files to execute, core.js alone by default
+ * @param {object}   [options.storage] a ready localStorage (e.g. with a limit)
+ * @param {object}   [options.seed]    entries to put in localStorage before loading
+ * @param {number}   [options.now]     the fixed moment for `new Date()` and `Date.now()`
+ * @param {Array}    [options.voices]  the system voices audio.js sees
+ * @param {string}   [options.zachowaniePlay] how play() ends: ok | not-allowed | blad
+ * @returns {object} the sandbox: Core, storage, clock, toasts, run()
  */
 export function loadEngine(options) {
   const opts = options || {};
@@ -539,7 +545,7 @@ export function loadEngine(options) {
   const okno = makeWindowEvents(opts);
   const guska = makeServiceWorker(opts);
   const zegar = { teraz: opts.now };
-  /** Co poszło na dysk ucznia: treść pobranych plików i zwolnione uchwyty. */
+  /** What went to the student's disk: the content of downloaded files and the released handles. */
   const pobrania = { blobs: [], zwolnione: [] };
 
   if (opts.seed) {
@@ -558,16 +564,17 @@ export function loadEngine(options) {
     RegExp, Error, TypeError, Map, Set, BigInt, TextEncoder,
     isNaN, parseInt, parseFloat, encodeURIComponent, decodeURIComponent,
     localStorage: storage,
-    /* Tyle nawigatora, ile dotyka pwa.js: obecność klucza „serviceWorker"
-       jest u niego pierwszym strażnikiem, więc `brakGuski` musi dawać
-       obiekt BEZ tego pola, a nie pole z wartością null. */
+    /* As much navigator as pwa.js touches: the presence of the "serviceWorker"
+       key is its first guard, so `brakGuski` has to give an object WITHOUT
+       that field rather than a field set to null. */
     navigator: opts.brakGuski ? {} : { serviceWorker: guska.api },
     setTimeout: clock.setTimeout,
     clearTimeout: clock.clearTimeout,
     /**
-     * Napisy interfejsu. Test nie sprawdza tłumaczeń, ale ZMIENNE muszą
-     * dotrzeć do wyniku: stub, który je gubi, sklejał 38 różnych zadań
-     * w cztery identyczne napisy i wyglądało to na usterkę generatora.
+     * Interface strings. The tests do not check translations, but the
+     * VARIABLES have to reach the result: a stub that loses them collapsed 38
+     * different tasks into four identical strings, and that looked like a
+     * fault in the generator.
      */
     I18n: {
       t(k, v) {
@@ -585,11 +592,11 @@ export function loadEngine(options) {
     SpeechRecognition: audio.Recognition,
     Audio: audio.Player,
 
-    /* Pobranie pliku z kopią zapasową. Blob trzyma treść w polu, zamiast ją
-       zamykać jak przeglądarka: sensem tej gałęzi jest to, CO wyszło na dysk
-       (czy znacznik kopii był już przestawiony w chwili serializacji), więc
-       atrapa, która oddaje nieczytelny uchwyt, sprawdzałaby tylko, że nie
-       rzuciło wyjątkiem. */
+    /* Downloading the backup file. The Blob keeps its content in a field
+       instead of sealing it away like a browser: the point of this branch is
+       WHAT went to disk (whether the backup marker had already been moved at
+       the moment of serialisation), so a stub returning an opaque handle would
+       only be checking that nothing threw. */
     Blob: function (czesci, opcje) {
       this.tresc = (czesci || []).join("");
       this.type = (opcje || {}).type || "";
@@ -610,61 +617,61 @@ export function loadEngine(options) {
 
   const box = {
     sandbox, storage, clock, toasts, notices, warnings,
-    /** Co przeglądarka „usłyszała": wypowiedzi, anulowania, odtwarzacze. */
+    /** What the browser "heard": utterances, cancellations, players. */
     audio: audio.log,
-    /** Zamawia element o danym id, żeby getElementById go znalazł. */
+    /** Orders an element with the given id so that getElementById finds it. */
     el(id) { return dom.el(id); },
-    /** Pliki, które kurs wypuścił na dysk ucznia. */
+    /** The files the course sent to the student's disk. */
     pobrania: pobrania,
-    /** Elementy zbudowane przez document.createElement, w kolejności. */
+    /** The elements built by document.createElement, in order. */
     get utworzone() { return dom.utworzone; },
-    /** Adres strony; przypisanie hasha odpala hashchange jak w przeglądarce. */
+    /** The page address; assigning the hash fires hashchange as in a browser. */
     okno: okno,
-    /** Service worker od strony strony: rejestracja, stany, przejęcie kontroli. */
+    /** The service worker from the page's side: registration, states, takeover. */
     guska: guska,
-    /** Zdarzenie dokumentu z testu, np. `box.wDokumencie("visibilitychange")`. */
+    /** A document event from the test, e.g. `box.wDokumencie("visibilitychange")`. */
     wDokumencie(type) { dom.odpal(type); return box; },
-    /** Co nadal wisi na ekranie po upływie czasu — bez znikających toastów. */
+    /** What is still on screen once time has passed - without the toasts that vanish. */
     visible() { return dom.stack.children.map(c => c.textContent); },
-    /** Wykonuje kolejny plik silnika w tej samej piaskownicy. */
+    /** Executes another engine file in the same sandbox. */
     run(rel) {
-      /* `filename` zostaje oryginalny także przy podmianie: po nim
-         coverage.mjs rozpoznaje plik w zrzucie V8. */
+      /* `filename` stays the original one even when substituted: coverage.mjs
+         recognises the file in the V8 dump by it. */
       vm.runInContext(readFileSync(PODMIANY[rel] || join(ROOT, rel), "utf8"),
         sandbox, { filename: rel });
       return box;
     },
-    /** Zapis jest zdebouncowany: bez tego nic nie trafia do localStorage. */
+    /** Saving is debounced: without this nothing reaches localStorage. */
     flush() { clock.flush(); return box; },
-    /** Przesuwa ustalony moment. Wymaga `now` przy tworzeniu piaskownicy. */
+    /** Moves the fixed moment. Requires `now` when the sandbox is created. */
     przesunZegar(ms) {
-      if (zegar.teraz === undefined) throw new Error("przesunZegar: piaskownica bez `now`");
+      if (zegar.teraz === undefined) throw new Error("przesunZegar: sandbox without `now`");
       zegar.teraz += ms;
       return box;
     },
-    /** Stan tak, jak leży w localStorage — nie w pamięci. */
+    /** The state as it lies in localStorage - not in memory. */
     stored(key) {
       const raw = storage.getItem(key || "linguai.italiano.v2");
       return raw === null ? null : JSON.parse(raw);
     },
 
-    /** Adresy wstrzykniętych skryptów, w kolejności wstrzyknięcia. */
+    /** The addresses of the injected scripts, in injection order. */
     get scripts() { return dom.wstrzykniete; },
 
     /**
-     * Rozstrzyga wszystkie oczekujące skrypty: udane albo nie.
+     * Settles every pending script: successfully or not.
      *
-     * Pętla, a nie jedno przejście: loadScripts wstrzykuje NASTĘPNY plik
-     * dopiero z uchwytu poprzedniego, więc rozstrzygnięcie jednego dokłada
-     * kolejnego do kolejki.
+     * A loop rather than a single pass: loadScripts injects the NEXT file only
+     * from the previous one's handler, so settling one adds another to the
+     * queue.
      *
-     * @param {string[]} [failing] adresy, które mają zgłosić błąd
+     * @param {string[]} [failing] the addresses that must report an error
      */
     settleScripts(failing) {
       const zle = failing || [];
       let guard = 0;
       while (dom.czekajace.length) {
-        if (++guard > 500) throw new Error("settleScripts: skrypty bez końca");
+        if (++guard > 500) throw new Error("settleScripts: endless scripts");
         const el = dom.czekajace.shift();
         if (zle.indexOf(el.src) >= 0) el.onerror();
         else el.onload();
@@ -680,9 +687,9 @@ export function loadEngine(options) {
 }
 
 /**
- * Czy prototyp Obiektu został zanieczyszczony.
- * Sprawdzane na obiekcie z testu, nie z piaskownicy: vm ma własne
- * realm, więc zanieczyszczenie w środku nie widać z zewnątrz i odwrotnie.
+ * Whether Object's prototype has been polluted.
+ * Checked on an object from the test, not from the sandbox: the vm has a realm
+ * of its own, so pollution inside is invisible from outside and vice versa.
  */
 export function probePrototype(box, prop) {
   return vm.runInContext(`({}).${prop}`, box.sandbox);

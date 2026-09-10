@@ -1,15 +1,15 @@
 /* ============================================================
    Tempo mowy.
 
-   Sprawdzamy jedną rzecz, której nie widać z kodu: czy wybrane tempo
-   naprawdę dociera do elementu audio. `playbackRate` ustawiony na
-   niewłaściwym obiekcie nie rzuca błędem — nagranie po prostu leci tak
-   samo, a ćwiczenie o tempie przestaje o czymkolwiek być.
+   We check one thing the code does not show: whether the chosen speed
+   really reaches the audio element. `playbackRate` set on the wrong object
+   throws no error — the recording simply plays the same way, and an
+   exercise about tempo stops being about anything.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
 test.describe("tempo mowy", () => {
-  test("zdanie jest zakryte, dopóki uczeń go nie odkryje", async ({ page }) => {
+  test("the sentence stays covered until the student reveals it", async ({ page }) => {
     await page.goto("/index.html#/velocita");
     await page.waitForSelector(".sp-num");
     await expect(page.locator(".js-it")).toBeHidden();
@@ -43,13 +43,13 @@ test.describe("tempo mowy", () => {
   test("normalne tempo jest pierwsze, nie wolne", async ({ page }) => {
     await page.goto("/index.html#/velocita");
     await page.waitForSelector(".sp-num");
-    /* Kolejność jest treścią, nie układem: zaczynanie od wolnego uczy
-       słuchać włoskiego, którym nikt nie mówi. */
+    /* The order is content, not layout: starting from slow teaches listening
+       to an Italian nobody speaks. */
     const pierwszy = page.locator(".js-play").first();
     await expect(pierwszy).toHaveAttribute("data-rate", "1");
   });
 
-  test("następne zdanie zakrywa tekst i przesuwa licznik", async ({ page }) => {
+  test("the next sentence covers the text and advances the counter", async ({ page }) => {
     await page.goto("/index.html#/velocita");
     await page.waitForSelector(".sp-num");
     await page.click(".js-reveal");
@@ -64,7 +64,7 @@ test.describe("tempo mowy", () => {
     expect(await page.textContent(".js-it")).not.toBe(pierwsze);
   });
 
-  test("stan jest ogłaszany czytnikowi ekranu", async ({ page }) => {
+  test("the state is announced to a screen reader", async ({ page }) => {
     await page.goto("/index.html#/velocita");
     await page.waitForSelector(".sp-num");
     await expect(page.locator(".js-state")).toHaveAttribute("aria-live", "polite");

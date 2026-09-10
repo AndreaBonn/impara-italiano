@@ -1,17 +1,17 @@
 /* ============================================================
-   Pełna pamięć w prawdziwej przeglądarce.
+   Full storage in a real browser.
 
-   Testy jednostkowe sprawdzają to na podstawionym DOM, więc mówią
-   o logice, nie o tym, co uczeń zobaczy. Tu chodzi o drugie: czy
-   komunikat naprawdę pojawia się na stronie i czy naprawdę zostaje,
-   podczas gdy zwykły toast znika.
+   The unit tests check this against a substituted DOM, so they speak about
+   the logic and not about what the student sees. Here it is the second that
+   matters: whether the message really appears on the page and really stays,
+   while an ordinary toast disappears.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/** Dłużej niż 3,2 s, po których znika toast — inaczej test niczego nie rozróżnia. */
+/** Longer than the 3.2 s after which a toast disappears — otherwise the test tells nothing apart. */
 const DŁUŻEJ_NIŻ_TOAST = 4200;
 
-test("przy pełnej pamięci komunikat zostaje na ekranie", async ({ page }) => {
+test("with storage full the message stays on the screen", async ({ page }) => {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Core && window.I18n);
 
@@ -30,24 +30,24 @@ test("przy pełnej pamięci komunikat zostaje na ekranie", async ({ page }) => {
   await expect(stuck).toHaveAttribute("role", "alert");
 
   const tekst = await stuck.innerText();
-  expect(tekst.length, "komunikat nie może być pustym kluczem").toBeGreaterThan(10);
+  expect(tekst.length, "the message must not be an empty key").toBeGreaterThan(10);
 
   await page.waitForTimeout(DŁUŻEJ_NIŻ_TOAST);
-  await expect(stuck, "po czasie życia toasta nadal widoczny").toBeVisible();
+  await expect(stuck, "still visible after a toast's lifetime").toBeVisible();
 });
 
-test("zwykły toast w tym samym miejscu znika sam", async ({ page }) => {
+test("an ordinary toast in the same place disappears on its own", async ({ page }) => {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Core && window.I18n);
 
-  await page.evaluate(() => window.Core.toast("wiadomość testowa"));
+  await page.evaluate(() => window.Core.toast("a test message"));
   await expect(page.locator(".toast").first()).toBeVisible();
 
   await page.waitForTimeout(DŁUŻEJ_NIŻ_TOAST);
   await expect(page.locator("#toastStack .toast")).toHaveCount(0);
 });
 
-test("komunikat da się zamknąć i nie wraca sam", async ({ page }) => {
+test("the message can be dismissed and does not come back by itself", async ({ page }) => {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Core && window.I18n);
 
@@ -64,15 +64,15 @@ test("komunikat da się zamknąć i nie wraca sam", async ({ page }) => {
   await expect(stuck).toBeVisible();
 
   const x = stuck.locator(".toast__x");
-  await expect(x, "przycisk zamykania musi mieć nazwę dla czytnika ekranu")
+  await expect(x, "the close button must have a name for a screen reader")
     .toHaveAttribute("aria-label", /.{3,}/);
   await x.click();
   await expect(stuck).toHaveCount(0);
 });
 
-/* Zmierzone, nie oszacowane: pierwsza wersja miała 28 px i wyglądała
-   dobrze na zrzucie ekranu. Na telefonie 28 px to cel dla paznokcia. */
-test("na wąskim ekranie komunikat ma margines, a zamknięcie 44 px", async ({ page }) => {
+/* Measured, not estimated: the first version was 28 px and looked fine in a
+   screenshot. On a phone 28 px is a target for a fingernail. */
+test("on a narrow screen the message has a margin and the close button 44 px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Core && window.I18n);
@@ -99,18 +99,18 @@ test("na wąskim ekranie komunikat ma margines, a zamknięcie 44 px", async ({ p
   });
 
   expect(m.przelew, "brak przewijania w poziomie").toBe(0);
-  expect(m.lewa, "komunikat nie dotyka krawędzi ekranu").toBeGreaterThanOrEqual(8);
+  expect(m.lewa, "the message does not touch the edge of the screen").toBeGreaterThanOrEqual(8);
   expect(m.w).toBeGreaterThanOrEqual(44);
   expect(m.h).toBeGreaterThanOrEqual(44);
 });
 
-test("postępy lekcji przeżywają brak miejsca, karty błędów ustępują", async ({ page }) => {
+test("lesson progress survives a lack of space, the mistake cards give way", async ({ page }) => {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Core && window.I18n);
 
   const wynik = await page.evaluate(async () => {
-    /* Magazyn, który przyjmuje tylko małe zapisy: duży stan odpada,
-       przycięty przechodzi. To jest dokładnie sytuacja z R6. */
+    /* Storage that accepts small writes only: a large state is rejected, a
+       pruned one goes through. That is exactly the R6 situation. */
     const LIMIT = 3000;
     let ostatni = null;
     localStorage.setItem = function (k, v) {
@@ -141,7 +141,7 @@ test("postępy lekcji przeżywają brak miejsca, karty błędów ustępują", as
     };
   });
 
-  expect(wynik.zapisano, "zapis doszedł do skutku po przycięciu").toBe(true);
-  expect(wynik.lekcjaDone, "postęp lekcji przetrwał").toBe(true);
-  expect(wynik.ileBledow, "część kart błędów ustąpiła miejsca").toBeLessThan(60);
+  expect(wynik.zapisano, "the save went through after pruning").toBe(true);
+  expect(wynik.lekcjaDone, "the lesson progress survived").toBe(true);
+  expect(wynik.ileBledow, "some of the mistake cards gave way").toBeLessThan(60);
 });

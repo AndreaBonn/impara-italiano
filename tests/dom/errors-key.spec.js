@@ -1,15 +1,15 @@
 /* ============================================================
-   Tożsamość karty na PRAWDZIWYCH danych kursu.
+   Card identity on the REAL course data.
 
-   Testy jednostkowe pracują na ćwiczeniach zmyślonych na potrzeby
-   testu. Tutaj chodzi o to, czego one nie widzą: czy w 1514
-   ćwiczeniach kursu klucze naprawdę się nie zderzają i czy naprawdę
-   przeżywają przełączenie języka wyjaśnień, które podmienia treść
-   w tych samych obiektach.
+   The unit tests work on exercises invented for the test. What matters here
+   is what they cannot see: whether across the 1514 exercises of the course
+   the keys really do not collide, and whether they really survive a switch
+   of the explanation language, which replaces the content inside the same
+   objects.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/** Wczytuje wszystkie poziomy, nie tylko A1, który wchodzi na starcie. */
+/** Loads every level, not only the A1 that comes in at startup. */
 async function wczytajWszystko(page) {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Core && window.Core.registry.levels.length > 0);
@@ -21,7 +21,7 @@ async function wczytajWszystko(page) {
   });
 }
 
-test("klucze wszystkich ćwiczeń kursu są różne", async ({ page }) => {
+test("the keys of every exercise in the course are different", async ({ page }) => {
   await wczytajWszystko(page);
 
   const wynik = await page.evaluate(() => {
@@ -46,7 +46,7 @@ test("klucze wszystkich ćwiczeń kursu są różne", async ({ page }) => {
   expect(wynik.ile).toBe(1514);
 });
 
-test("każdy klucz odnajduje z powrotem swoje ćwiczenie", async ({ page }) => {
+test("every key finds its own exercise again", async ({ page }) => {
   await wczytajWszystko(page);
 
   const zgubione = await page.evaluate(() => {
@@ -62,14 +62,14 @@ test("każdy klucz odnajduje z powrotem swoje ćwiczenie", async ({ page }) => {
     return złe.slice(0, 5);
   });
 
-  expect(zgubione, `klucze, które nie wracają do swojego ćwiczenia: ${zgubione.join(", ")}`).toEqual([]);
+  expect(zgubione, `keys that do not lead back to their exercise: ${zgubione.join(", ")}`).toEqual([]);
 });
 
-/* Sedno sprawy: nakładka podmienia treść W TYCH SAMYCH obiektach
-   (i18n.js scala po indeksie, idempotentnie). Gdyby firma czytała
-   cokolwiek z nakładki, cały quaderno osierociłby się przy zmianie
-   języka — i to bez żadnego błędu w konsoli. */
-test("klucze przeżywają zmianę języka wyjaśnień", async ({ page }) => {
+/* The heart of the matter: the overlay replaces content INSIDE THE SAME
+   objects (i18n.js merges by index, idempotently). If the signature read
+   anything from the overlay, the whole notebook would be orphaned on a
+   language change — and with no error in the console. */
+test("the keys survive a change of the explanation language", async ({ page }) => {
   await wczytajWszystko(page);
 
   const przed = await page.evaluate(() => {
@@ -84,6 +84,6 @@ test("klucze przeżywają zmianę języka wyjaśnień", async ({ page }) => {
     return { klucze: window.Errors.keysIn(l), pytanie: (l.exercises[0] || {}).q || "" };
   });
 
-  expect(po.pytanie, "nakładka naprawdę się zmieniła").not.toBe(przed.pytanie);
+  expect(po.pytanie, "the overlay really changed").not.toBe(przed.pytanie);
   expect(po.klucze, "a klucze nie").toEqual(przed.klucze);
 });

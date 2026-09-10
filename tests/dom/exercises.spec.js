@@ -1,20 +1,20 @@
 /* ============================================================
-   Kontrakt ćwiczeń: onDone(ok) woła się DOKŁADNIE RAZ.
+   The exercise contract: onDone(ok) is called EXACTLY ONCE.
 
-   Na tym opiera się licznik postępu lekcji (views.js:316) i na tym
-   oprze się przechwytywanie błędów w F1 (T019), które owinie wire().
-   Podwójne wywołanie zawyża postęp po cichu — nic się nie wywraca,
-   tylko liczby przestają być prawdziwe.
+   The lesson progress counter rests on it (views.js:316) and so will the
+   mistake capture in F1 (T019), which wraps wire(). A double call inflates
+   the progress silently — nothing falls over, the numbers simply stop being
+   true.
 
-   Ćwiczenia są tu syntetyczne, nie brane z kursu: test ma opisywać
-   kontrakt silnika, a nie przewracać się, gdy ktoś poprawi zdanie
-   w lekcji. Osobny test niżej sprawdza, że każdy typ obecny w
-   prawdziwych danych daje się zbudować.
+   The exercises here are synthetic rather than taken from the course: the
+   test is meant to describe the engine's contract, not to fall over when
+   somebody fixes a sentence in a lesson. A separate test below checks that
+   every type present in the real data can be built.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/* Po jednym na builder. `truefalse` jedzie przez buildMcq, ale ma
-   własną ścieżkę w Ex.build (dokłada opcje), więc siedzi osobno. */
+/* One per builder. `truefalse` runs through buildMcq but has a path of its
+   own in Ex.build (it adds the options), so it sits separately. */
 const FIXTURES = {
   mcq: { t: "mcq", q: "Domanda", opts: ["giusto", "sbagliato"], a: 0 },
   truefalse: { t: "truefalse", q: "Vero o falso", a: 0 },
@@ -27,7 +27,7 @@ const FIXTURES = {
   conj: { t: "conj", verb: "parlare", tense: "pres", persons: [0, 1] },
   gender: { t: "gender", items: [{ it: "pane", a: "il" }, { it: "acqua", a: "l'" }], opts: ["il", "la", "l'"] },
   listen: { t: "listen", it: "Buongiorno a tutti", alt: [] },
-  speak: { t: "speak", it: "Buongiorno a tutti", tr: "dzień dobry" },
+  speak: { t: "speak", it: "Buongiorno a tutti", tr: "good morning" },
   dialogue: { t: "dialogue", lines: [{ sp: "A", it: "Ciao" }, { sp: "TY", choices: ["Ciao", "No"], a: 0 }] },
   minpair: { t: "minpair", a: "nonno", b: "nono", heard: "a" }
 };
@@ -35,22 +35,23 @@ const FIXTURES = {
 const TYPES = Object.keys(FIXTURES);
 
 /**
- * Doprowadza ćwiczenie do końca w kontekście strony i zwraca,
- * ile razy zawołano onDone. Każdy typ ma inną drogę do mety:
- * match kończy się ostatnią parą i nie ma przycisku sprawdzania,
- * dialogue przesuwa się na setTimeout, a order odmawia na pustym polu.
+ * Drives an exercise to the end in the page context and returns how many
+ * times onDone was called. Every type has a different road to the finish:
+ * match ends with the last pair and has no check button, dialogue advances
+ * on a setTimeout, and order refuses on an empty field.
  */
 async function runExercise(page, type, fixture) {
   return page.evaluate(async ([type, ex]) => {
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-    /* Dźwięk nie ma tu nic do zbadania, a próba odtwarzania w headless
-       zaśmieca konsolę i spowalnia. Autoplay wyłączamy z tego samego powodu. */
+    /* There is nothing to examine about the audio here, and attempting
+       playback in headless litters the console and slows things down. We
+       switch autoplay off for the same reason. */
     window.Audio2.speak = () => {};
     window.Audio2.speakSequence = () => ({ cancel() {} });
     window.Core.state.settings.autoplay = false;
-    /* Bez mikrofonu ćwiczenie „speak" żąda nagrania przed sprawdzeniem
-       i nigdy nie kończy — w headless wybieramy gałąź pisaną. */
+    /* Without a microphone a "speak" exercise demands a recording before
+       checking and never finishes — in headless we take the written branch. */
     window.Audio2.sttSupported = false;
 
     const host = document.createElement("div");
@@ -83,7 +84,7 @@ async function runExercise(page, type, fixture) {
       }
       case "fill":
       case "trans":
-        q(".js-in").value = "casa";        // dokładna odpowiedź: bez „prawie" na pierwszej próbie
+        q(".js-in").value = "casa";        // the exact answer: no "almost" on the first attempt
         check();
         break;
       case "cloze":
@@ -91,7 +92,7 @@ async function runExercise(page, type, fixture) {
         check();
         break;
       case "order":
-        q(".js-bank .tok").click();        // puste pole daje toast, nie zakończenie
+        q(".js-bank .tok").click();        // an empty field gives a toast, not a finish
         check();
         break;
       case "match":
@@ -104,11 +105,11 @@ async function runExercise(page, type, fixture) {
       case "gender":
       case "listen":
       case "speak":
-        check();                            // puste pola liczą się jako zła odpowiedź, ale kończą
+        check();                            // empty fields count as a wrong answer, but they do finish
         break;
       case "minpair": {
-        /* Bez odsłuchania ćwiczenie odmawia sprawdzenia: to nie jest
-           przeoczenie, tylko zabezpieczenie przed rzutem monetą. */
+        /* Without listening the exercise refuses to check: that is not an
+           oversight but a guard against a coin toss. */
         root.querySelector(".js-play").click();
         root.querySelector('input[type="radio"]').checked = true;
         check();
@@ -124,8 +125,8 @@ async function runExercise(page, type, fixture) {
     await sleep(80);
     const afterFirst = calls;
 
-    /* Druga próba: przycisk jest wyłączony, a dopasowane pary wracają
-       wcześnie. Kliknięcie jeszcze raz nie ma prawa dołożyć wywołania. */
+    /* A second attempt: the button is disabled and matched pairs return
+       early. Clicking again has no right to add a call. */
     check();
     root.querySelectorAll(".match-btn, .js-ch, .opt").forEach(b => b.click && b.click());
     await sleep(80);
@@ -137,23 +138,23 @@ async function runExercise(page, type, fixture) {
 
 test.describe("kontrakt onDone", () => {
   for (const type of TYPES) {
-    test(`${type}: onDone woła się raz i tylko raz`, async ({ page }) => {
+    test(`${type}: onDone is called once and only once`, async ({ page }) => {
       await page.goto("/index.html");
       await page.waitForFunction(() => window.Ex && window.Core && window.I18n);
 
       const r = await runExercise(page, type, FIXTURES[type]);
-      expect(r.afterFirst, `${type}: po ukończeniu`).toBe(1);
-      expect(r.afterSecond, `${type}: po ponownym kliknięciu`).toBe(1);
+      expect(r.afterFirst, `${type}: after finishing`).toBe(1);
+      expect(r.afterSecond, `${type}: after clicking again`).toBe(1);
     });
   }
 });
 
-test("każdy typ obecny w danych kursu daje się zbudować", async ({ page }) => {
+test("every type present in the course data can be built", async ({ page }) => {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.Core && window.Core.registry.levels.length > 0);
 
-  /* Poziom A1 jest wczytany na starcie; reszta dociąga się leniwie,
-     więc pytamy o to, co naprawdę jest w pamięci. */
+  /* The A1 level is loaded at startup; the rest is pulled lazily, so we ask
+     about what is really in memory. */
   const result = await page.evaluate(() => {
     const seen = {}, broken = [];
     window.Core.registry.levels.forEach(lv => (lv.units || []).forEach(u => {
@@ -163,12 +164,13 @@ test("każdy typ obecny w danych kursu daje się zbudować", async ({ page }) =>
         try {
           const b = window.Ex.build(ex, i, l.id);
           if (!b || typeof b.html !== "string" || typeof b.wire !== "function") {
-            broken.push(`${l.id}#${i} (${ex.t}): zły kształt`);
+            broken.push(`${l.id}#${i} (${ex.t}): wrong shape`);
           } else if (!/class="exq"[^>]*data-idx=/.test(b.html)) {
-            /* Nieznany typ TEŻ oddaje poprawny kształt {html, wire} — dyspozytor
-               nie wywraca lekcji przez jedno ćwiczenie. Bez tego sprawdzenia
-               brakujący <script> rodziny (exercises-choice/text/voice) przechodzi
-               ten test, bo kształt się zgadza, a na ekranie stoi „nieznany typ". */
+            /* An unknown type ALSO returns the correct {html, wire} shape — the
+               dispatcher does not bring a lesson down over one exercise.
+               Without this check a missing family <script>
+               (exercises-choice/text/voice) passes this test, because the
+               shape matches, while "unknown type" stands on the screen. */
             broken.push(`${l.id}#${i} (${ex.t}): dyspozytor nie zna tego typu`);
           }
         } catch (e) {

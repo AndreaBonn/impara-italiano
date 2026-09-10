@@ -1,5 +1,5 @@
 /* ============================================================
-   Szukanie w kursie i pasek znaków.
+   Searching the course, and the character bar.
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
@@ -9,7 +9,7 @@ async function szukaj(page, q) {
   await page.waitForSelector("#searchQ");
 }
 
-test("wejście do wyszukiwarki jest w główce panelu", async ({ page }) => {
+test("the way into the search sits in the panel header", async ({ page }) => {
   await page.goto("/index.html");
   await page.waitForFunction(() => window.App);
   await page.locator("#railSearch").click();
@@ -17,14 +17,14 @@ test("wejście do wyszukiwarki jest w główce panelu", async ({ page }) => {
   await expect(page.locator("#searchQ")).toBeFocused();
 });
 
-test("znajduje słowo w słownictwie i prowadzi do lekcji", async ({ page }) => {
+test("it finds a word in the vocabulary and leads to the lesson", async ({ page }) => {
   await szukaj(page, "caffè");
   await expect(page.locator(".js-hit").first()).toBeVisible();
   await page.locator(".js-hit").first().click();
   await expect(page).toHaveURL(/#\/(lezione|grammatica|conversazione)/);
 });
 
-test("akcenty nie są wymagane, ani po jednej, ani po drugiej stronie", async ({ page }) => {
+test("accents are not required, on either side", async ({ page }) => {
   await szukaj(page, "caffe");
   const bez = await page.locator(".js-hit").count();
   await szukaj(page, "caffè");
@@ -33,27 +33,27 @@ test("akcenty nie są wymagane, ani po jednej, ani po drugiej stronie", async ({
   expect(bez).toBe(z);
 });
 
-test("brak wyników mówi to wprost", async ({ page }) => {
+test("no results says so plainly", async ({ page }) => {
   await szukaj(page, "xyzqwerty");
   await expect(page.locator(".empty")).toBeVisible();
 });
 
-/* Zapytanie ucznia trafia do wyniku jako podświetlenie. To jest dokładnie
-   ten punkt, w którym reflected XSS wchodzi do dokumentu, jeśli podmienia
-   się tekst w gotowym już HTML-u. */
-test("zapytanie ze znacznikami nie staje się znacznikami", async ({ page }) => {
+/* The student's query reaches the result as a highlight. That is exactly the
+   point where a reflected XSS enters the document, if the text is replaced
+   inside already assembled HTML. */
+test("a query with markup does not become markup", async ({ page }) => {
   const zlosliwe = '<img src=x onerror="window.__wstrzykniete=1">';
   await szukaj(page, zlosliwe);
   await page.waitForTimeout(200);
 
   const wstrzykniete = await page.evaluate(() => !!window.__wstrzykniete);
-  expect(wstrzykniete, "kod z zapytania nie ma prawa się wykonać").toBe(false);
+  expect(wstrzykniete, "the code in the query has no right to execute").toBe(false);
 
   const obcyObraz = await page.locator("#searchBody img").count();
-  expect(obcyObraz, "zapytanie nie tworzy elementów").toBe(0);
+  expect(obcyObraz, "the query creates no elements").toBe(0);
 });
 
-test("podświetlenie zwraca tekst, nie znaczniki, także dla groźnej treści", async ({ page }) => {
+test("the highlight returns text, not markup, for dangerous content too", async ({ page }) => {
   await szukaj(page, "a");
   const wynik = await page.evaluate(() =>
     window.Search.highlight('<b>ciao</b> & "cose"', "ciao"));
@@ -62,9 +62,9 @@ test("podświetlenie zwraca tekst, nie znaczniki, także dla groźnej treści", 
   expect(wynik).toContain("<mark>");
 });
 
-/* ---------------- Pasek znaków ---------------- */
+/* ---------------- The character bar ---------------- */
 
-test("pasek znaków pojawia się przy polu tekstowym i wstawia akcent", async ({ page }) => {
+test("the character bar appears next to a text field and inserts an accent", async ({ page }) => {
   await page.goto("/index.html#/cerca");
   await page.waitForSelector("#searchQ");
   await page.locator("#searchQ").click();
@@ -77,7 +77,7 @@ test("pasek znaków pojawia się przy polu tekstowym i wstawia akcent", async ({
   await expect(page.locator("#searchQ")).toHaveValue("perché");
 });
 
-test("znak wchodzi w miejscu kursora, nie na końcu", async ({ page }) => {
+test("the character goes in at the caret, not at the end", async ({ page }) => {
   await page.goto("/index.html#/cerca");
   await page.waitForSelector("#searchQ");
   await page.locator("#searchQ").fill("cit");
@@ -91,7 +91,7 @@ test("znak wchodzi w miejscu kursora, nie na końcu", async ({ page }) => {
   await expect(page.locator("#searchQ")).toHaveValue("càit");
 });
 
-test("przyciski paska mają rozmiar celu dotykowego", async ({ page }) => {
+test("the bar buttons have the size of a touch target", async ({ page }) => {
   await page.goto("/index.html#/cerca");
   await page.waitForSelector("#searchQ");
   await page.locator("#searchQ").click();
@@ -105,18 +105,19 @@ test("przyciski paska mają rozmiar celu dotykowego", async ({ page }) => {
     });
     return zle;
   });
-  expect(male, `za małe przyciski: ${male.join(", ")}`).toEqual([]);
+  expect(male, `buttons that are too small: ${male.join(", ")}`).toEqual([]);
 });
 
-/* Zadanie „ausiliare" wypada raz jako jedna odpowiedź (radio), raz jako
-   kilka (checkbox). Sprawdzamy oba kształty wprost, zamiast czekać, aż
-   generator wylosuje ten drugi — pierwsza wersja tego testu przechodziła
-   losowo i przez to przez chwilę ukrywała prawdziwą usterkę. */
+/* The "ausiliare" task comes out sometimes as one answer (radio) and
+   sometimes as several (checkbox). We check both shapes explicitly rather
+   than waiting for the generator to draw the second — the first version of
+   this test passed at random and for a while hid a real defect because of
+   it. */
 for (const ksztalt of [
   { t: "mcq", q: "Pytanie", opts: ["pierwsza", "druga"], a: 0 },
   { t: "multi", q: "Pytanie", opts: ["pierwsza", "druga", "trzecia"], a: [0, 1] }
 ]) {
-  test(`cyfra wybiera odpowiedź w zadaniu typu ${ksztalt.t}`, async ({ page }) => {
+  test(`a digit picks an answer in a task of type ${ksztalt.t}`, async ({ page }) => {
     await page.goto("/index.html");
     await page.waitForFunction(() => window.Ex && window.Keys);
 
@@ -133,18 +134,18 @@ for (const ksztalt of [
   });
 }
 
-test("cyfra nie działa, gdy uczeń pisze w polu tekstowym", async ({ page }) => {
+test("a digit does nothing while the student types in a text field", async ({ page }) => {
   await page.goto("/index.html#/cerca");
   await page.waitForSelector("#searchQ");
   await page.locator("#searchQ").click();
   await page.locator("#searchQ").type("1");
-  await expect(page.locator("#searchQ"), "cyfra ma wejść do pola, nie wybrać opcji").toHaveValue("1");
+  await expect(page.locator("#searchQ"), "the digit must go into the field, not pick an option").toHaveValue("1");
 });
 
-/* Pasek unosi się nad treścią, więc może przykryć to, co jest pod polem —
-   a pod polem stoi zwykle przycisk „sprawdź". Pierwsza wersja tak właśnie
-   robiła i uczeń nie mógł zatwierdzić dyktanda. */
-test("pasek znaków nie zasłania przycisku sprawdzania", async ({ page }) => {
+/* The bar floats above the content, so it can cover what is under the field
+   — and under the field there is usually the "check" button. The first
+   version did exactly that and the student could not submit a dictation. */
+test("the character bar does not cover the check button", async ({ page }) => {
   await page.goto("/index.html#/lettura?id=r-a1-mattina&mode=dictation");
   await page.waitForSelector(".exq .js-in");
   await page.locator(".exq .js-in").click();
@@ -159,14 +160,14 @@ test("pasek znaków nie zasłania przycisku sprawdzania", async ({ page }) => {
   });
   expect(kolizja.nachodzi, `pasek (${kolizja.bar}) na przycisku (${kolizja.btn})`).toBe(false);
 
-  /* I naprawdę da się kliknąć: to jest właściwy dowód, nie geometria. */
+  /* And it really can be clicked: that is the actual proof, not the geometry. */
   await page.locator(".exq .js-check").click({ timeout: 5000 });
 });
 
-test("zapytanie jednoznakowe mówi, że jest za krótkie", async ({ page }) => {
+test("a one-character query says that it is too short", async ({ page }) => {
   await szukaj(page, "a");
   const naglowek = await page.locator(".empty h3").innerText();
   await szukaj(page, "xyzqwerty");
   const brak = await page.locator(".empty h3").innerText();
-  expect(naglowek, "za krótkie i brak wyników to dwie różne odpowiedzi").not.toBe(brak);
+  expect(naglowek, "too short and no results are two different answers").not.toBe(brak);
 });

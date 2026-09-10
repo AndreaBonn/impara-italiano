@@ -1,10 +1,10 @@
 /* ============================================================
-   Wejście przez plik: import stanu.
+   The way in through a file: importing the state.
 
-   To jedyne miejsce, w którym do aplikacji trafia treść, której
-   nie napisał autor kursu. Plik z postępami wędruje między
-   urządzeniami i między ludźmi — więc trzeba go traktować jak
-   dane obce, nie jak własny zapis.
+   This is the only place where content the course author did not write
+   reaches the application. A progress file travels between devices and
+   between people — so it has to be treated as foreign data, not as our own
+   save.
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
@@ -18,13 +18,13 @@ describe("zanieczyszczenie prototypu", () => {
     box.Core.load();
 
     const wrogi = '{"schema":2,"__proto__":{"polluted":"yes"}}';
-    try { box.Core.importState(wrogi); } catch { /* odrzucenie też jest w porządku */ }
+    try { box.Core.importState(wrogi); } catch { /* a rejection is fine too */ }
 
     assert.equal(probePrototype(box, "polluted"), undefined,
-      "Object.prototype w piaskownicy został zapisany przez plik z zewnątrz");
+      "Object.prototype in the sandbox was written by an outside file");
   });
 
-  test("zagnieżdżony __proto__ też nie przechodzi", () => {
+  test("a nested __proto__ does not get through either", () => {
     const box = loadEngine();
     box.Core.load();
 
@@ -37,7 +37,7 @@ describe("zanieczyszczenie prototypu", () => {
     assert.equal(probePrototype(box, "zagniezdzone"), undefined);
   });
 
-  test("constructor.prototype nie jest drogą naokoło", () => {
+  test("constructor.prototype is not a way around", () => {
     const box = loadEngine();
     box.Core.load();
 
@@ -47,7 +47,7 @@ describe("zanieczyszczenie prototypu", () => {
     assert.equal(probePrototype(box, "obejscie"), undefined);
   });
 
-  test("zwykły import nadal działa po uszczelnieniu", () => {
+  test("an ordinary import still works after the sealing", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.recordLesson("a1-u01-l1", 9, 10, 40);

@@ -67,6 +67,7 @@ function course(options) {
     const id = idOf(req.url);
     calls.push(id);
     const scripted = (opts.answers || {})[id];
+    if (scripted === "hang") return new Promise(() => {});
     if (scripted === "throw") return Promise.reject(new Error("network down"));
     if (scripted === "no") return Promise.resolve(answer(id, "NO", "Zły czas."));
     return Promise.resolve(scripted || answer(id, "SI", "Dobrze."));
@@ -267,5 +268,92 @@ describe("trying a key from the settings page", () => {
     c.box.sandbox.Llm.useTransport(() => Promise.resolve(answer("gemini", "SI")));
     const out = await new Promise((r) => c.Llm.test("gemini", "new-key", r));
     assert.equal(out.ok, true);
+  });
+});
+
+describe("the budget", () => {
+  /**
+   * A provider that never answers.
+   *
+   * The sandbox clock does not tick by itself — `box.flush()` fires what is
+   * pending — so the wait costs microseconds instead of three seconds, and
+   * the test measures the decision rather than the delay.
+   */
+  test("a provider that hangs is abandoned, and the chain moves on", async () => {
+    const c = course({
+      order: ["gemini", "openai"],
+      answers: { gemini: "hang" }
+    });
+
+    const verdict = judge(c.Llm);
+    /* Let the request go out, then let the clock reach the deadline. */
+    await Promise.resolve();
+    c.box.flush();
+
+    assert.equal((await verdict).promote, true, "the chain waited for a provider that never answered");
+    assert.deepEqual(Array.from(c.calls), ["gemini", "openai"]);
+  });
+
+  test("hanging is transient: the provider is asked again next time", async () => {
+    const c = course({ order: ["gemini", "openai"], answers: { gemini: "hang" } });
+
+    const first = judge(c.Llm);
+    await Promise.resolve();
+    c.box.flush();
+    await first;
+
+    const second = judge(c.Llm, { ...TASK, given: "un caffè per favore" });
+    await Promise.resolve();
+    c.box.flush();
+    await second;
+
+    assert.deepEqual(Array.from(c.calls), ["gemini", "openai", "gemini", "openai"],
+      "a provider that was merely slow was retired for the session");
+  });
+});
+
+/* ============================================================
+   The transport itself.
+
+   Everywhere above it is replaced, which is what makes the cascade
+   testable at all — but that leaves the real one, the piece that actually
+   speaks HTTP, walked by nothing. It needs no network: what it does is
+   read the body, try to parse it, and hand back a status either way. A
+   `fetch` in the sandbox is enough to check that, and the branch that
+   matters is the one where the body is not JSON at all — a proxy error
+   page, an HTML 502 — which must arrive as a status rather than as an
+   exception in the middle of a lesson.
+   ============================================================ */
+describe("the real transport", () => {
+  function zFetchem(odpowiedz) {
+    const b = loadEngine({ files: FILES });
+    b.Core.load();
+    b.sandbox.LlmKeys.set("openai", "key-openai-2");
+    b.sandbox.Consent.ustawLlm(true);
+    b.Core.state.settings.llmOrder = ["openai"];
+
+    const zapytania = [];
+    b.sandbox.fetch = (url, opcje) => {
+      zapytania.push({ url, opcje });
+      return Promise.resolve({ status: odpowiedz.status, text: () => Promise.resolve(odpowiedz.body) });
+    };
+    return { box: b, Llm: b.sandbox.Llm, zapytania };
+  }
+
+  test("a JSON answer becomes a verdict, and the request carries the key", async () => {
+    const c = zFetchem({ status: 200, body: JSON.stringify(answer("openai", "SI", "Dobrze.").json) });
+    const out = await judge(c.Llm);
+    assert.equal(out.promote, true);
+    assert.equal(out.comment, "Dobrze.");
+
+    const req = c.zapytania[0];
+    assert.equal(req.opcje.method, "POST");
+    assert.equal(req.opcje.headers.authorization, "Bearer key-openai-2");
+    assert.ok(req.opcje.body.indexOf("prendo un caff") > 0, "the sentence never went out");
+  });
+
+  test("a body that is not JSON is a failure, not an exception", async () => {
+    const c = zFetchem({ status: 502, body: "<html><body>Bad Gateway</body></html>" });
+    assert.equal(await judge(c.Llm), null);
   });
 });

@@ -123,11 +123,12 @@
    * cascade above reads one shape instead of branching on two.
    */
   function askOne(id, key, prompt) {
+    /* No guard on an unknown id: `next` only ever returns names that came
+       from `LlmKeys.all()`, which filters them through the provider table
+       first. A branch here would be one for a case that cannot arise, and
+       an unreachable branch is a claim about the code that nothing checks. */
     var provider = global.LlmProviders.get(id);
     var req = global.LlmProviders.request(id, key, prompt, {});
-    if (!provider || !req) {
-      return global.Promise.resolve({ error: "unknown provider", kind: "permanent" });
-    }
 
     var controller = global.AbortController ? new global.AbortController() : null;
     req.signal = controller ? controller.signal : undefined;
@@ -275,20 +276,11 @@
     });
   }
 
-  /** For the tests: the session's counters, back to zero. */
-  function reset() {
-    cache = {};
-    dead = {};
-    spent = 0;
-    announced = false;
-  }
-
   global.Llm = {
     judge: judge,
     test: test,
     available: available,
     useTransport: useTransport,
-    reset: reset,
     PER_PROVIDER_MS: PER_PROVIDER_MS,
     TOTAL_MS: TOTAL_MS,
     MAX_PER_SESSION: MAX_PER_SESSION

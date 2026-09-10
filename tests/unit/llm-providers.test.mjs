@@ -211,8 +211,15 @@ describe("reading a failure", () => {
 
   test("a withheld Gemini answer is permanent: sending it again changes nothing", () => {
     const P = providers();
-    const held = P.get("gemini").read(200, { candidates: [{ finishReason: "SAFETY" }] });
-    assert.equal(held.kind, "permanent");
+    /* Both shapes of "withheld", because they are two branches in the
+       reader and only one of them was covered: a candidate with no text,
+       and no candidate at all. A safety filter produces either depending on
+       where it fires, and reading one of them as transient would keep the
+       chain asking a provider that has already made up its mind. */
+    const bezTekstu = P.get("gemini").read(200, { candidates: [{ finishReason: "SAFETY" }] });
+    assert.equal(bezTekstu.kind, "permanent");
+    const bezKandydata = P.get("gemini").read(200, { candidates: [] });
+    assert.equal(bezKandydata.kind, "permanent");
   });
 
   test("an Anthropic refusal is transient: it says nothing about the key", () => {

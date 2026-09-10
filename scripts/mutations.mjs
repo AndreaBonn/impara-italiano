@@ -64,6 +64,10 @@ const T_HTML = "tests/unit/cils-html.test.mjs";
 const T_MORF = "tests/unit/lemma-morf.test.mjs";
 const T_REG = "tests/unit/pwa-rules.test.mjs";
 const T_PWA = "tests/unit/pwa.test.mjs";
+const RULES = "assets/js/llm-rules.js";
+const PROV = "assets/js/llm-providers.js";
+const T_RULES = "tests/unit/llm-rules.test.mjs";
+const T_PROV = "tests/unit/llm-providers.test.mjs";
 
 /**
  * The mutations. `z` must occur in the file EXACTLY ONCE — with two
@@ -161,7 +165,37 @@ const MUTACJE = [
     z: 'if (global.document.readyState === "complete") register();', na: "if (false) register();" },
   { plik: PWA, test: T_PWA, opis: "the question to the server without a threshold",
     z: "if (!global.PwaRules.sprawdzac(ostatnieSprawdzenie, teraz)) return false;",
-    na: "if (false) return false;" }
+    na: "if (false) return false;" },
+  /* ---- llm-rules.js: what the model is allowed to change ---- */
+  { plik: RULES, test: T_RULES, opis: "clamp: an accepted answer can be rejected",
+    z: "    if (localOk) return { ok: true, promoted: false, comment: \"\" };",
+    na: "    if (false) return { ok: true, promoted: false, comment: \"\" };" },
+  { plik: RULES, test: T_RULES, opis: "verdict: any truthy value promotes",
+    z: "      promote: esito.replace(\"Ì\", \"I\") === \"SI\",",
+    na: "      promote: !!esito," },
+  { plik: RULES, test: T_RULES, opis: "verdict: the accented word is rejected",
+    z: "esito.replace(\"Ì\", \"I\") === \"SI\"", na: "esito === \"SI\"" },
+  { plik: RULES, test: T_RULES, opis: "cascade: a provider with no key is asked anyway",
+    z: "      if (own(have, id) && !own(out, id)) return id;",
+    na: "      if (!own(out, id)) return id;" },
+  { plik: RULES, test: T_RULES, opis: "cascade: a timeout is reported as a rejected key",
+    z: "    if (permanent.length !== list.length) return null;", na: "" },
+  { plik: RULES, test: T_RULES, opis: "comment: the cap on length removed",
+    z: "      .slice(0, MAX_COMMENT);", na: "      .slice(0);" },
+
+  /* ---- llm-providers.js: reading four different answers ---- */
+  { plik: PROV, test: T_PROV, opis: "anthropic: the first block read as the answer",
+    z: "        var text = blocks\n          .filter(function (b) { return b && b.type === \"text\"; })\n          .map(function (b) { return b.text || \"\"; })\n          .join(\"\");",
+    na: "        var text = (blocks[0] && blocks[0].text) || \"\";" },
+  { plik: PROV, test: T_PROV, opis: "errors: a rate limit retires the provider",
+    z: "    if (status === 401 || status === 403 || status === 404) return \"permanent\";",
+    na: "    if (status !== 200) return \"permanent\";" },
+  { plik: PROV, test: T_PROV, opis: "lookup: an inherited name passes for a provider",
+    z: "    return Object.prototype.hasOwnProperty.call(PROVIDERS, id) ? PROVIDERS[id] : null;",
+    na: "    return PROVIDERS[id] || null;" },
+  { plik: PROV, test: T_PROV, opis: "gemini: a withheld answer read as transient",
+    z: "        if (!c) return { error: \"answer withheld\", kind: \"permanent\" };",
+    na: "        if (!c) return { error: \"answer withheld\", kind: \"transient\" };" },
 ];
 
 /* ---------------- Running ---------------- */

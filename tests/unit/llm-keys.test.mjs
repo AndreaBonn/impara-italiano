@@ -84,6 +84,17 @@ describe("what the container holds", () => {
     assert.equal(K.get("openai"), "");
     assert.equal(K.any(), false);
   });
+
+  test("removing one key leaves the others alone", () => {
+    const b = box();
+    const K = b.sandbox.LlmKeys;
+    K.set("openai", KEY);
+    K.set("groq", "gsk-another-key-1");
+    K.remove("openai");
+    assert.equal(K.get("openai"), "");
+    assert.equal(K.get("groq"), "gsk-another-key-1",
+      "deleting one provider took the others with it");
+  });
 });
 
 describe("the keys must not leave in the backup", () => {
@@ -172,6 +183,9 @@ describe("a browser that refuses to store anything", () => {
     assert.equal(K.get("openai"), "");
     assert.equal(K.any(), false);
     assert.equal(K.redact("Rate limit reached."), "Rate limit reached.");
+    /* Even wiping them reports honestly rather than claiming success on a
+       write the browser refused. */
+    assert.equal(K.clear(), false);
   });
 });
 

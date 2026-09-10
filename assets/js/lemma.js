@@ -288,6 +288,11 @@
     uzyjSlownika: uzyjSlownika,
     dodajCzasowniki: dodajCzasowniki,
     zbudujSlownik: zbudujSlownik,
+    /* Exposed for the coverage screen, which builds a second dictionary - the
+       student's deck - and has to write it the same way as the course one.
+       Its own splitter would be a second answer to "what does an entry
+       contribute", and the two would drift apart word by word. */
+    dodajHaslo: dodajDoSlownika,
     odswiez: odswiez,
     funkcyjne: M.funkcyjny,
     /** For measurement only: how many forms the index knows and how long it took to build. */

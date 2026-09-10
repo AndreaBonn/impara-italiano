@@ -77,11 +77,27 @@
     return {};
   }
 
-  /** The set of entries the student has in their deck. A card key is the Italian alone. */
+  /**
+   * The set of entries the student has in their deck.
+   *
+   * Built from `card.it` and not from the deck KEY, and through the same
+   * splitter as the course dictionary. The key is normalised for identity -
+   * lower case, accents stripped - so "il caffè" is filed under "il caffe",
+   * and the frequency list holds neither of those: it is a list of bare
+   * forms that keep their accents. A set of raw keys therefore met the list
+   * almost nowhere and the screen reported near-zero coverage for a deck
+   * that was full, which reads as a result of studying rather than as a
+   * fault.
+   */
   function slownikUcznia() {
     var out = {};
+    var L = global.Lemma;
     var srs = (global.Core && global.Core.state && global.Core.state.srs) || {};
-    Object.keys(srs).forEach(function (k) { out[k] = true; });
+    Object.keys(srs).forEach(function (k) {
+      var haslo = (srs[k] && srs[k].it) || k;
+      if (L && L.dodajHaslo) L.dodajHaslo(out, haslo);
+      else out[k] = true;
+    });
     return out;
   }
 

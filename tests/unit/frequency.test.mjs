@@ -133,17 +133,23 @@ describe("frequency: where the two sets come from", () => {
     return box;
   }
 
-  test("the student's set is the deck keys, that is Italian alone", () => {
+  test("the student's set carries the bare word, because that is what the list holds", () => {
     const box = zSilnikiem();
     box.Core.addCard("il caffè", "kawa", "a1-u01-l1");
     const uczen = box.sandbox.Frequency.slownikUcznia();
 
-    /* The key is normalised (no accents, no capitals) because the frequency
-       list gives its forms in the same shape: were the two sets written
-       differently, the student would see gaps exactly where they know the
-       word. */
-    assert.deepEqual(Object.keys(uczen), ["il caffe"],
-      "the card key is normalised Italian with no translation: that is its identity");
+    /* The frequency list is a list of bare forms: "caffè", never "il caffè",
+       and it keeps its accents. A set built out of the card KEYS meets
+       neither - the key is "il caffe" - so the counter used to report zero
+       coverage for a deck that was not empty, which reads as a result of
+       studying rather than as a fault. The entry goes through the same
+       splitter as the course dictionary, so both sets are written the same
+       way. */
+    assert.ok(uczen["caffè"], "the bare word goes in: the article dropped, the accent kept");
+    assert.equal(box.sandbox.Frequency.pokrycie([["caffè", 10]], uczen, 10).znane, 1,
+      "and the list finds it");
+    assert.equal(box.sandbox.Frequency.pokrycie([["xyzzy", 10]], uczen, 10).znane, 0,
+      "while a word nobody has still counts for nothing");
   });
 
   test("an empty deck gives an empty set, not an exception", () => {

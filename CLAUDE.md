@@ -320,6 +320,7 @@ node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
+npm run test:mutations              # czy testy widzą czerwone (27 mutacji, 2 pliki)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
@@ -374,6 +375,30 @@ w `i18n.js` (przepisywanie napisów w gotowym HTML — sprawdzają je testy DOM 
 ekranie), gałąź obiektowa w serializatorze `errors-key.js` (żadne pole ćwiczenia nie
 niesie dziś obiektu) i awaryjny imperfekt w `verbs.js` dla wpisu `IRR` bez własnej
 tabeli. Trzy deklaracje, nie trzy przeoczenia.
+
+`mutations.mjs` odpowiada na pytanie, na które pokrycie nie odpowiada: **czy ktoś tę linię
+sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
+`assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
+generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
+decyzji w silniku (27 mutacji w `cils-html.js` i `lemma-morf.js`) i wymaga, żeby wskazany
+plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
+puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
+`cils-hint`, `cils.limit` łapiące `cils.limitLabel`.
+
+Trzy rzeczy, które trzeba o niej wiedzieć:
+
+- **Zasięg jest wąski i zadeklarowany.** Dwa pliki z sześćdziesięciu. „27/27" nie znaczy
+  „silnik sprawdzony", znaczy „te 27 decyzji sprawdzone". Nowy plik z czystymi funkcjami
+  to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
+- **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po
+  refaktorze) i wiele wystąpień kończą się błędem, nie ostrzeżeniem: mutacja, która po
+  cichu trafia w pierwsze z trzech miejsc, mierzy co innego, niż mówi jej opis.
+- **Nie dotyka plików w drzewie roboczym.** Zmutowana kopia leży w katalogu tymczasowym,
+  a piaskownica czyta ją przez `LINGUAI_PODMIANA` (`_harness.mjs`). Pierwsza wersja
+  mutowała plik w miejscu i przywracała go w `finally` z uchwytem na SIGINT — uchwyt był
+  bezużyteczny, bo bramka jest w całości synchroniczna i pętla zdarzeń nie dochodzi do
+  głosu przed jej końcem, a samo jego zarejestrowanie wyłączyło domyślne ubicie procesu,
+  więc Ctrl+C przestawał ją zatrzymywać.
 
 `parity.mjs` jest bramką dla nowego języka. Nakładki łączą się z warstwą neutralną **po indeksie**,
 więc tablica krótsza o jeden element niczego nie wywraca: jedno ćwiczenie po cichu zostaje w

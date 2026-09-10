@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test \"tests/unit/**/*.test.mjs\"",
     "test:dom": "playwright test",
-    "test:all": "npm test && npm run test:dom",
+    "test:mutations": "node scripts/mutations.mjs",
+    "test:all": "npm test && npm run test:mutations && npm run test:dom",
     "coverage": "node scripts/coverage.mjs",
     "validate": "node scripts/validate.mjs",
     "parity": "node scripts/parity.mjs",

@@ -49,6 +49,13 @@ jobs:
       - name: Testy jednostkowe
         run: npm test
 
+      # Pokrycie mówi, że linia się wykonała; to mówi, że ktoś ją sprawdza.
+      # Asercja, która przechodzi także nad pustym wynikiem, ma 100% pokrycia
+      # i zero treści — różnicę widać wyłącznie tutaj. Stoi przed pokryciem,
+      # bo uruchamia dwa pliki testów, a nie całą suitę: ~4 s wobec ~20 s.
+      - name: Czy testy widzą czerwone
+        run: npm run test:mutations
+
       # Próg, nie ozdoba: refaktor, który po cichu wypina przetestowaną
       # gałąź z suity, przechodzi „npm test" na zielono i zatrzymuje się tutaj.
       - name: Pokrycie silnika

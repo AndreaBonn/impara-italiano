@@ -20,6 +20,23 @@ import vm from "node:vm";
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 /**
+ * Podstawienie pliku silnika na czas jednego przebiegu testów.
+ *
+ * Istnieje dla `scripts/mutations.mjs`. Bramka mutacyjna musi wykonać
+ * ZEPSUTĄ wersję pliku, a nie wolno jej psuć pliku w drzewie roboczym:
+ * przerwany przebieg zostawiłby tam mutację, która w diffie wygląda jak
+ * zwykła zmiana i da się ją zacommitować bez mrugnięcia okiem. Handler na
+ * SIGINT tego nie załatwia — bramka jest w całości synchroniczna, więc
+ * pętla zdarzeń nie dochodzi do głosu przed jej końcem i uchwyt sygnału
+ * nigdy by się nie wykonał.
+ *
+ * Zamiast tego mutacja leży w katalogu tymczasowym, a tutaj podmieniana
+ * jest sama ścieżka do ODCZYTU. Bez zmiennej środowiskowej ten kod jest
+ * bezczynny, więc zwykły `npm test` nic o nim nie wie.
+ */
+const PODMIANY = process.env.LINGUAI_PODMIANA ? JSON.parse(process.env.LINGUAI_PODMIANA) : {};
+
+/**
  * Silnik stanu w kolejności ładowania, tej samej co w index.html.
  * Stała, a nie lista przepisywana w każdym pliku testu: rozbicie core.js
  * na moduły ma kosztować jedną zmianę tutaj, a nie dziesięć poprawek
@@ -484,7 +501,10 @@ export function loadEngine(options) {
     visible() { return dom.stack.children.map(c => c.textContent); },
     /** Wykonuje kolejny plik silnika w tej samej piaskownicy. */
     run(rel) {
-      vm.runInContext(readFileSync(join(ROOT, rel), "utf8"), sandbox, { filename: rel });
+      /* `filename` zostaje oryginalny także przy podmianie: po nim
+         coverage.mjs rozpoznaje plik w zrzucie V8. */
+      vm.runInContext(readFileSync(PODMIANY[rel] || join(ROOT, rel), "utf8"),
+        sandbox, { filename: rel });
       return box;
     },
     /** Zapis jest zdebouncowany: bez tego nic nie trafia do localStorage. */

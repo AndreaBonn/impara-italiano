@@ -13,8 +13,14 @@
    trzy kopie tych samych czterech funkcji rozjechałyby się przy
    pierwszej zmianie nagłówka.
 
-   Skrypt klasyczny. Wymaga core.js, audio.js, exercises.js, views.js
-   (po nim, bo konsumuje Views.shell) oraz danych z
+   Sam PRZEBIEG sceny (gdzie jesteśmy, wynik, rozwidlenia, powrót na
+   ostatni wybór) siedzi w talk-run.js. Tutaj zostało to, co widać:
+   dymki, pole odpowiedzi, mikrofon i podsumowanie. Podział idzie po
+   testowalności, nie po długości — tamta połowa daje się przejść w
+   node:test do końca, ta wymaga przeglądarki.
+
+   Skrypt klasyczny. Wymaga core.js, audio.js, exercises.js, talk-run.js,
+   views.js (po nim, bo konsumuje Views.shell) oraz danych z
    data/core/conversations.js.
    ============================================================ */
 (function (global) {
@@ -59,26 +65,11 @@
 
     var dlg = el().querySelector(".js-dlg");
     var turn = el().querySelector(".js-turn");
-    var i = 0, score = 0, turns = 0;
 
-    /* Rozwidlenia: graf zamiast listy, ale DOKŁADANY. Tura z polem `go`
-       mówi, dokąd iść dalej; bez niego idziemy o jeden do przodu, więc
-       dziesięć dialogów napisanych wcześniej chodzi tak samo jak przedtem
-       i nie trzeba było ich tknąć. Cel jest podawany po `id` tury, nie po
-       numerze: numer przesunąłby się przy pierwszej wstawce w środku. */
-    var PROG = 0.72;
-
-    function indeksTury(id) {
-      for (var n = 0; n < conv.turns.length; n++) if (conv.turns[n].id === id) return n;
-      return conv.turns.length; /* nieznany cel = koniec; validate.mjs tego nie przepuści */
-    }
-
-    function dalej(skad, teraz) { return skad && skad.go ? indeksTury(skad.go) : teraz + 1; }
-
-    /* Punkty wyboru odwiedzone w tym przejściu — do powrotu na rozwidlenie
-       bez powtarzania całego dialogu (`bąbelki` to długość transkryptu w
-       chwili wyboru, żeby dało się go uciąć dokładnie tam). */
-    var wybory = [];
+    /* Przebieg (gdzie jesteśmy, wynik, rozwidlenia, powrót) siedzi w
+       talk-run.js: nie dotyka DOM-u i daje się przejść w teście do końca,
+       czego z tym plikiem nie da się zrobić inaczej niż przeglądarką. */
+    var run = Talk.create(conv);
 
     /* Bez rozpoznawania mowy nota o tym stoi TUTAJ, w scenie, a nie tylko na
        liście rozmów: uczeń wchodzi w scenę i widzi samo pole tekstowe, więc
@@ -100,11 +91,11 @@
     }
 
     function step() {
-      if (i >= conv.turns.length) return finishConv();
-      var turnData = conv.turns[i];
-      if (turnData.sp !== "TY") {
+      if (run.done) return finishConv();
+      var turnData = run.current();
+      if (!run.mine()) {
         bubble(turnData.it, turnData.tr, false);
-        i = dalej(turnData, i);
+        run.advance();
         Audio2.speak(turnData.it, { onend: function () { setTimeout(step, 260); } });
         return;
       }
@@ -131,10 +122,10 @@
 
     // parametr nazywa się turnData, nie t: `t` to helper tłumaczeń w tym pliku
     function renderTurn(turnData) {
-      turns++;
+      /* Znakiem punktu powrotu jest długość transkryptu: po powrocie na
+         rozwidlenie ucinamy dymki dokładnie tam, gdzie uczeń wybierał. */
+      run.beginTurn(dlg.children.length);
       var opcje = turnData.opts || null;
-      var accepted = opcje ? (opcje[0].accept || []) : (turnData.accept || [turnData.it]);
-      if (opcje) wybory.push({ i: i, bakelki: dlg.children.length, score: score, turns: turns - 1 });
       turn.innerHTML =
         '<div class="voice-box">' +
         '<p style="font-weight:600;margin:0 0 4px">' + esc(t("talk.yourTurn", { task: turnData.task })) + "</p>" +
@@ -166,38 +157,21 @@
       var input = turn.querySelector(".js-in");
       var fb = turn.querySelector(".js-fb");
 
-      /* Przy rozwidleniu wygrywa opcja NAJBLIŻSZA temu, co uczeń powiedział,
-         a nie pierwsza pasująca: dwie odpowiedzi w tej samej scenie bywają
-         podobne („tylko kawa" / „kawa i deser") i pierwsza z brzegu
-         wysyłałaby go w gałąź, o którą nie prosił. */
-      function wybierz(text) {
-        var naj = { w: -1, o: null };
-        (opcje || [{ accept: accepted }]).forEach(function (o) {
-          var b = 0;
-          (o.accept || []).forEach(function (a) { b = Math.max(b, Core.similarity(text, a)); });
-          if (b > naj.w) naj = { w: b, o: o };
-        });
-        return naj;
-      }
-
       /* Zła odpowiedź ZATRZYMUJE scenę. Przedtem rozmowa szła dalej, tyle że
          w dymku stawał wzór zamiast tego, co uczeń powiedział: z ekranu
          wyglądało to jak zaliczone, więc błąd nie miał żadnej konsekwencji,
          a przy mikrofonie nie było nawet wiadomo, że coś poszło nie tak.
-         Wyjście z pętli jest jedno i świadome: „Pokaż odpowiedź". */
-      var bledny = false;
+         Wyjście z pętli jest jedno i świadome: „Pokaż odpowiedź".
 
-      /* `zPola` mówi, czy odpowiedź przyszła z klawiatury, czy z mikrofonu.
+         `zPola` mówi, czy odpowiedź przyszła z klawiatury, czy z mikrofonu.
          Fokus wraca do pola TYLKO w pierwszym wypadku: po mówieniu wepchnąłby
          na telefonie klawiaturę systemową i pasek akcentów pod scenę, której
          uczeń wcale nie chciał pisać (ten sam wniosek co w views-lookup.js).
          Kursor idzie na koniec, nie zaznacza całości: po pomyłce zwykle
          poprawia się jedno słowo, a zaznaczone wszystko ginie od pierwszego
          klawisza. */
-      function odrzuc(zPola) {
-        /* Do zeszytu błędów raz na turę, nie raz na próbę: dziesięć podejść
-           do jednego zdania to jedna pomyłka, a nie dziesięć. */
-        if (!bledny) { bledny = true; Core.recordAnswer(false); }
+      function odrzuc(wynik, zPola) {
+        if (wynik.pierwszaPomylka) Core.recordAnswer(false);
         fb.className = "fb js-fb fb--ko is-on";
         fb.textContent = t("talk.tryAgain");
         if (zPola) {
@@ -206,33 +180,26 @@
         }
       }
 
-      /** Przejście dalej: `text` trafia do dymka, `gal` wyznacza gałąź. */
-      function idzDalej(text, gal, tr) {
-        bubble(text, tr || "", true);
+      /** Przejście dalej: tekst z przebiegu trafia do dymka, scena rusza. */
+      function idzDalej(wynik) {
+        bubble(wynik.tekst, wynik.tr, true);
         turn.innerHTML = "";
-        i = dalej(opcje ? gal : turnData, i);
         setTimeout(step, 420);
       }
 
       function accept(text, zPola) {
-        var naj = wybierz(text);
-        if (naj.w < PROG) return odrzuc(zPola);
-        if (!bledny) score++;
+        var wynik = run.answer(text);
+        if (!wynik.ok) return odrzuc(wynik, zPola);
         Core.recordAnswer(true);
-        idzDalej(text, naj.o, (naj.o && naj.o.tr) || turnData.tr);
+        idzDalej(wynik);
       }
 
-      /* Rezygnacja: wzór wchodzi do transkryptu i scena idzie dalej, bez
-         punktu. Przy rozwidleniu bierzemy pierwszą gałąź — kierunku nie da
-         się zgadnąć, skoro uczeń nic nie wybrał. Wzór bierzemy z podpowiedzi,
-         nie z `accept[0]`: klucze są pisane pod porównywanie, małą literą i
-         bez interpunkcji, i w dymku wyglądałyby jak zdanie napisane byle jak. */
+      /* Rezygnacja: wzór wchodzi do transkryptu i scena idzie dalej, bez punktu. */
       function ujawnij() {
-        var gal = opcje ? opcje[0] : null;
-        var wzor = (gal ? (gal.hintIt || (gal.accept || [])[0]) : turnData.hintIt) || accepted[0];
-        if (!bledny) { bledny = true; Core.recordAnswer(false); }
-        Audio2.speak(wzor);
-        idzDalej(wzor, gal, (gal && gal.tr) || turnData.tr);
+        var wynik = run.reveal();
+        if (wynik.pierwszaPomylka) Core.recordAnswer(false);
+        Audio2.speak(wynik.tekst);
+        idzDalej(wynik);
       }
 
       /* Kliknięcie w gałąź NIE przechodzi przez próg podobieństwa: uczeń
@@ -241,9 +208,9 @@
          porównywanie mogłoby zablokować wybór na własnej podpowiedzi. */
       if (opcje) turn.querySelectorAll(".js-opt").forEach(function (b, n) {
         b.addEventListener("click", function () {
-          if (!bledny) score++;
+          var wynik = run.choose(n);
           Core.recordAnswer(true);
-          idzDalej(b.getAttribute("data-opt"), opcje[n], opcje[n].tr);
+          idzDalej(wynik);
         });
       });
 
@@ -276,21 +243,22 @@
        wybrało, jest tym, po co w ogóle są rozwidlenia; kazać przechodzić od
        nowa cały dialog, żeby ją zobaczyć, znaczy nie pokazać jej nikomu. */
     function wrocDoWyboru() {
-      var w = wybory.pop();
-      while (dlg.children.length > w.bakelki) dlg.removeChild(dlg.lastChild);
-      i = w.i; score = w.score; turns = w.turns;
+      var w = run.rewind();
+      if (!w) return;
+      while (dlg.children.length > w.znak) dlg.removeChild(dlg.lastChild);
       turn.innerHTML = "";
       step();
     }
 
     function finishConv() {
+      var score = run.score, turns = run.turns, maGalezie = run.canRewind;
       Core.recordLesson("conv-" + conv.id, score, Math.max(turns, 1), 0);
       App.refreshRail();
       turn.innerHTML = '<div class="summary"><div class="summary__score">' + score + "/" + turns + "</div>" +
         '<p class="summary__msg">' + esc(conv.closing || t("talk.defaultClosing")) + "</p>" +
         '<div class="summary__acts">' +
-        (wybory.length ? '<button class="btn btn--primary js-branch">' + t("talk.otherBranch") + "</button>" : "") +
-        '<button class="btn ' + (wybory.length ? "btn--ghost" : "btn--primary") + ' js-again">' + t("talk.again") + "</button>" +
+        (maGalezie ? '<button class="btn btn--primary js-branch">' + t("talk.otherBranch") + "</button>" : "") +
+        '<button class="btn ' + (maGalezie ? "btn--ghost" : "btn--primary") + ' js-again">' + t("talk.again") + "</button>" +
         '<button class="btn btn--ghost js-list">' + t("talk.others") + "</button></div></div>";
       var gal = turn.querySelector(".js-branch");
       if (gal) gal.addEventListener("click", wrocDoWyboru);

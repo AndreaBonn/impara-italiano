@@ -79,6 +79,17 @@
        information. */
     var notaSttPokazana = false;
 
+    /* Whether this scene is still on screen.
+       The second opinion answers seconds after it was asked, and by then the
+       student may be somewhere else entirely — the exam, the settings, a
+       different conversation. A verdict that draws into a view that has been
+       replaced writes into a detached node at best; at worst it commits a
+       turn in a run nobody is playing any more and the score of the NEXT
+       scene starts wrong. The router calls `Views.onLeave` on the way out,
+       which is where this is turned off. */
+    var zywy = true;
+    Views.onLeave = function () { zywy = false; };
+
     function bubble(it, pl, mine) {
       var d = document.createElement("div");
       d.className = "dlg__line" + (mine ? " dlg__line--b" : "");
@@ -177,10 +188,15 @@
          the end and does not select everything: after a mistake you usually
          correct one word, and a full selection is lost at the first
          keystroke. */
-      function odrzuc(wynik, zPola) {
+      function odrzuc(wynik, zPola, komentarz) {
         if (wynik.pierwszaPomylka) Core.recordAnswer(false);
         fb.className = "fb js-fb fb--ko is-on";
-        fb.textContent = t("talk.tryAgain");
+        /* textContent, not innerHTML: `komentarz` is written by a model
+           that has just read a sentence the student typed. It is the one
+           string on this screen the course did not write, and the box it
+           lands in is the same one the course fills with its own markup
+           elsewhere — which is exactly how this would become an XSS. */
+        fb.textContent = komentarz || t("talk.tryAgain");
         if (zPola) {
           input.focus();
           input.setSelectionRange(input.value.length, input.value.length);
@@ -194,11 +210,67 @@
         setTimeout(step, 420);
       }
 
+      /* True while a second opinion is on its way. It blocks a second send:
+         the field stays live during the wait, and two answers in flight
+         would each commit a turn — the scene would jump two lines and score
+         twice for one sentence. */
+      var czekaNaSad = false;
+
+      /**
+       * The student's answer.
+       *
+       * The local comparison decides first and, when it accepts, decides
+       * alone: nothing leaves the browser for an answer the course already
+       * counted as right. Only a rejection is worth a question, and only
+       * when the student has set the judge up at all — otherwise this is
+       * the course exactly as it was.
+       */
       function accept(text, zPola) {
-        var wynik = run.answer(text);
-        if (!wynik.ok) return odrzuc(wynik, zPola);
-        Core.recordAnswer(true);
-        idzDalej(wynik);
+        if (czekaNaSad) return;
+        var wynik = run.judge(text);
+        if (wynik.ok) {
+          Core.recordAnswer(true);
+          return idzDalej(run.commit(text, wynik.opcja));
+        }
+        if (!Llm.available()) return odrzuc(run.reject(), zPola);
+        zapytajSedziego(text, wynik, zPola);
+      }
+
+      /**
+       * Asks the model about an answer the course rejected.
+       *
+       * Two things are checked before the verdict is allowed to do
+       * anything, because it arrives seconds later and the student has not
+       * been sitting still: the view may have been left (`zywy`), and the
+       * scene may have moved on by another road — "show the answer", a
+       * branch, a rewind. Both are compared against the turn we asked
+       * about, not against the clock: acting on a verdict for a line that
+       * scrolled past would move the scene somewhere nobody chose.
+       */
+      function zapytajSedziego(text, wynik, zPola) {
+        var pytanyIndeks = run.index;
+        czekaNaSad = true;
+        fb.className = "fb js-fb is-on";
+        fb.textContent = t("talk.checking");
+
+        Llm.judge({
+          question: turnData.task || "",
+          accepted: run.accepted(),
+          given: text
+        }, function (verdict) {
+          czekaNaSad = false;
+          if (!zywy || run.index !== pytanyIndeks) return;
+          if (verdict && verdict.promote) {
+            Core.recordAnswer(true);
+            /* The comment goes through the toast, which writes with
+               textContent. It is the only string on this screen that comes
+               from outside the course, and the feedback box next to it is
+               filled with innerHTML for the course's own markup. */
+            if (verdict.comment) Core.toast(verdict.comment);
+            return idzDalej(run.commit(text, wynik.opcja));
+          }
+          odrzuc(run.reject(), zPola, verdict && verdict.comment);
+        });
       }
 
       /* Giving up: the model line enters the transcript and the scene moves on, with no point. */

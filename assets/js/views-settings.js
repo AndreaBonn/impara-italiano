@@ -113,6 +113,41 @@
       '<p style="color:var(--ink-soft);font-size:.9rem;margin:0">' + esc(t("set.retentionHint")) + "</p>" +
       "</div></div>" +
 
+      /* The second judge: a card of its own, because it is the only place in
+         the course where the student hands over a credential.
+
+         Everything about it is opt-in and reversible from here. The keys are
+         theirs and are billed to them, so the page shows what each one costs
+         them rather than what it does for us, and it never shows a key back:
+         only its last four characters, enough to tell which of four was
+         pasted where and useless in a screenshot.
+
+         The switch below the fields is the consent. It exists for the same
+         reason the speech one does: the privacy notice promises it can be
+         withdrawn, and a promise no view can keep is a false sentence. */
+      '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("llm.title") + "</h3>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem">' + esc(t("llm.hint")) + "</p>" +
+      '<div class="stack" style="margin-top:12px">' +
+      LlmProviders.list().map(function (p) {
+        var zapisany = LlmKeys.get(p.id);
+        return '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' +
+          esc(p.label) + (zapisany ? ' <span style="font-weight:400;color:var(--ink-soft)">' +
+            esc(LlmKeys.fingerprint(zapisany)) + "</span>" : "") + "</span>" +
+          '<span style="display:flex;gap:8px;flex-wrap:wrap">' +
+          '<input type="password" class="field js-llm-key" data-id="' + esc(p.id) + '" style="max-width:340px"' +
+          ' autocomplete="off" spellcheck="false" placeholder="' + esc(t(zapisany ? "llm.keySaved" : "llm.keyEmpty")) + '">' +
+          '<button class="btn btn--quiet btn--sm js-llm-test" data-id="' + esc(p.id) + '">' + t("llm.test") + "</button>" +
+          "</span></label>";
+      }).join("") +
+      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-llm-consent"' +
+      (Consent.udzielonaLlm() ? " checked" : "") +
+      ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("llm.consent") + "</span></label>" +
+      '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
+      esc(t("llm.consentHint")) + "</span>" +
+      '<div class="fb js-llm-fb" role="status"></div>' +
+      '<div><button class="btn btn--ghost btn--sm js-llm-clear">' + t("llm.forget") + "</button></div>" +
+      "</div></div>" +
+
       /* The deck for other programs. A separate card from the progress
          backup, because it is a different promise: the backup comes back
          HERE with its due dates, this one goes out FROM HERE without them.
@@ -182,6 +217,69 @@
         Core.toast(t(e.target.checked ? "set.sttConsentOn" : "set.sttConsentOff"));
       });
     }
+    /* ---------------- The second judge ---------------- */
+
+    var llmFb = el().querySelector(".js-llm-fb");
+
+    /** A message under the fields. `textContent`: providers quote the key
+        back inside their errors, and `LlmKeys.redact` has already taken it
+        out — but the text is still theirs, not ours. */
+    function llmPowiedz(tekst, ok) {
+      llmFb.className = "fb js-llm-fb is-on" + (ok ? " fb--ok" : " fb--ko");
+      llmFb.textContent = tekst;
+    }
+
+    /* Saving happens on `change`, so on leaving the field — not on every
+       keystroke, which would write a dozen half-keys to storage on the way
+       to one whole one. An emptied field deletes the key: that is the way
+       back for a student who wants one provider gone without erasing the
+       rest. */
+    el().querySelectorAll(".js-llm-key").forEach(function (pole) {
+      pole.addEventListener("change", function () {
+        var id = pole.getAttribute("data-id");
+        if (!pole.value.trim()) {
+          LlmKeys.remove(id);
+          return llmPowiedz(t("llm.removed"), true);
+        }
+        if (!LlmKeys.set(id, pole.value)) return llmPowiedz(t("llm.tooShort"), false);
+        /* The field is emptied at once. It holds a secret in a DOM node on
+           a page the student may leave open, and the value is in storage by
+           now: the placeholder below the label says it is saved. */
+        pole.value = "";
+        llmPowiedz(t("llm.saved"), true);
+      });
+    });
+
+    /* Trying a key BEFORE it is saved, using what is in the field, falling
+       back to what is stored. A student who has just pasted a key wants to
+       know it works; making them save first and then discover it in the
+       middle of an exercise is the whole failure this button prevents. */
+    el().querySelectorAll(".js-llm-test").forEach(function (przycisk) {
+      przycisk.addEventListener("click", function () {
+        var id = przycisk.getAttribute("data-id");
+        var pole = el().querySelector('.js-llm-key[data-id="' + id + '"]');
+        var klucz = (pole && pole.value.trim()) || LlmKeys.get(id);
+        if (!klucz) return llmPowiedz(t("llm.noKey"), false);
+        llmPowiedz(t("llm.testing"), true);
+        Llm.test(id, klucz, function (out) {
+          if (out.ok) return llmPowiedz(t("llm.testOk"), true);
+          llmPowiedz(t("llm.testFailed") + " " + (out.error || ""), false);
+        });
+      });
+    });
+
+    el().querySelector(".js-llm-consent").addEventListener("change", function (e) {
+      Consent.ustawLlm(e.target.checked);
+      Core.toast(t(e.target.checked ? "llm.consentOn" : "llm.consentOff"));
+    });
+
+    el().querySelector(".js-llm-clear").addEventListener("click", function () {
+      LlmKeys.clear();
+      Consent.ustawLlm(false);
+      Core.toast(t("llm.forgotten"));
+      App.go("impostazioni");
+    });
+
     /* The change takes effect from the NEXT answer: the due dates already
        set are left alone. Recomputing the whole deck would shift cards the
        student does not see today, and they changed a setting rather than

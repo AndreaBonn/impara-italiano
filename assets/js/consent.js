@@ -70,10 +70,53 @@
     });
   }
 
+  /* ============================================================
+     The second thing that leaves the browser: the student's sentences.
+
+     A separate consent rather than a wider reading of the first one, for
+     two reasons. It is a different fact — the voice goes to the browser
+     vendor, the sentences go to whichever of four companies the student
+     picked — and it is a different decision: somebody who accepts speech
+     recognition has not thereby accepted sending their written answers to
+     an American company, and revoking one must not revoke the other.
+
+     Same shape as above, and for the same reason: the gate lives in one
+     place (llm.js), not in the views that will come to call it.
+     ============================================================ */
+
+  var pytajLlm = null;
+
+  /** Whether the student agreed to send their answers to a model provider. */
+  function udzielonaLlm() { return ustawienia().llmConsent === true; }
+
+  /** Stores the decision. `false` revokes consent given earlier. */
+  function ustawLlm(wartosc) {
+    var s = ustawienia();
+    s.llmConsent = !!wartosc;
+    if (global.Core && global.Core.save) global.Core.save();
+  }
+
+  function uzyjPytaniaLlm(fn) { pytajLlm = fn; }
+
+  /** Runs `akcja()` only if consent exists or is granted. */
+  function zZgodaLlm(akcja, odmowa) {
+    if (udzielonaLlm()) { akcja(); return; }
+    if (!pytajLlm) { odmowa && odmowa(); return; }
+    pytajLlm(function (tak) {
+      if (!tak) { odmowa && odmowa(); return; }
+      ustawLlm(true);
+      akcja();
+    });
+  }
+
   Consent.udzielona = udzielona;
   Consent.ustaw = ustaw;
   Consent.uzyjPytania = uzyjPytania;
   Consent.zZgoda = zZgoda;
+  Consent.udzielonaLlm = udzielonaLlm;
+  Consent.ustawLlm = ustawLlm;
+  Consent.uzyjPytaniaLlm = uzyjPytaniaLlm;
+  Consent.zZgodaLlm = zZgodaLlm;
   global.Consent = Consent;
 
 })(window);

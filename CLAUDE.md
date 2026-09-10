@@ -353,6 +353,34 @@ zadeklarowana w komentarzu nad CSP, nie preferencja. Nagłówek stoi po włosku,
 język, który mają wspólny wszyscy uczniowie. Te pięć wierszy jest poza `parity.mjs`
 i nic nie powie, że rozjechały się z kursem - poza przeczytaniem ich.
 
+## Informacja o prywatności
+
+Trasa `#/privacy` (`assets/js/views-privacy.js`), nie okienko i nie sekcja w przewodniku:
+dokument bez adresu nie da się podlinkować, a ten musi być osiągalny ze stopki każdego
+ekranu, z Ustawień i z wklejonego komuś linku.
+
+**Zdanie bez pokrycia nie wchodzi do tekstu.** Tekst źródłowy to `docs/PRIVACY.it.md`
+(po włosku, bo w tym języku administrator podpisuje to, co dokument twierdzi), a każde
+jego twierdzenie ma swój wiersz w `specs/004-lancio-pubblico/riscontri.md` razem
+z poleceniem, które sprawdziło je na kodzie. Twierdzenia bez wiersza się nie łagodzi
+i nie pisze w trybie przypuszczającym - się je usuwa. Działa to też w drugą stronę:
+tam, gdzie pokrycie mówi rzecz niewygodną, informacja ją mówi. Trzy takie są: głos
+wychodzący do producenta przeglądarki, kopie w pamięci guski i adres IP widziany przez
+hosting.
+
+**Adres i nazwisko stoją w jednym miejscu**, w `views-privacy.js`, i wchodzą do zdań jako
+`{mail}` i `{name}`. Gdyby siedziały w słownikach, jeden z pięciu języków prędzej czy
+później zostałby z nieaktualnym adresem i nikt by tego nie zobaczył. Tą samą drogą idą
+nazwy przycisków (`{export}`, `{import}`, `{reset}`): pochodzą z kluczy `set.*`, więc nie
+mogą rozjechać się z tym, co uczeń widzi w Ustawieniach.
+
+**Wycofanie zgody na rozpoznawanie mowy jest częścią tej informacji, nie dodatkiem.**
+`Consent.ustaw(false)` istniało w `consent.js` od początku i żaden widok go nie wołał:
+jedynym sposobem na wycofanie było skasowanie całego profilu. Zdanie „możesz wycofać, kiedy
+zechcesz" byłoby fałszywe w dniu, w którym je napisano, więc przełącznik w Ustawieniach
+powstał razem z tekstem. Stoi przy pozostałych ustawieniach głosu, a nie na stronie
+z informacją: informacja tłumaczy, Ustawienia działają.
+
 ## Silnik adaptacyjny
 
 Dopisany w całości po pierwszym wydaniu kursu. Sedno: kurs zapamiętuje, co uczeń
@@ -451,10 +479,10 @@ z poprzedniej wersji tego pliku.
 | Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
-| Klucze interfejsu na język | 740 × 5 języków |
-| Pliki silnika | 63 w `assets/js/`, 11 695 linii |
-| Testy jednostkowe | 825 przebiegów w 34 plikach, zielone |
-| Testy DOM | 232 przebiegi w 30 plikach, zielone |
+| Klucze interfejsu na język | 782 × 5 języków |
+| Pliki silnika | 64 w `assets/js/`, 12 087 linii |
+| Testy jednostkowe | 826 przebiegów w 34 plikach, zielone |
+| Testy DOM | 241 przebiegów w 32 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,8% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz

@@ -9,7 +9,7 @@ LINGUAI.registerLevel({ code: "A2", cefrLabel: "Sopravvivenza", dataFiles: ["a2-
 
 LINGUAI.registerLevel({ code: "B1", cefrLabel: "Soglia", dataFiles: ["b1-01.js", "library-b1.js"] });
 
-LINGUAI.registerLevel({ code: "B2", cefrLabel: "Progresso", dataFiles: ["b2-01.js", "b2-02.js", "library-b2.js"] });
+LINGUAI.registerLevel({ code: "B2", cefrLabel: "Progresso", dataFiles: ["b2-01.js", "b2-02.js", "b2-03.js", "library-b2.js"] });
 
 LINGUAI.registerLevel({ code: "C1", cefrLabel: "Efficacia", dataFiles: ["c1-01.js", "library-c1.js"] });
 

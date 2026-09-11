@@ -61,9 +61,20 @@
          read by anyone; the only thing touching it was a test that filled
          it in by hand to check persistence. An empty container in SHAPE is
          a contract nobody honours, and FSRS does not need it: it schedules
-         cards, not topics. Removing it is safe both ways, because merge()
-         skips keys outside the defaults, so an older save carrying that
-         field still loads. */
+         cards, not topics.
+
+         Removing it is safe both ways, but not for the reason this comment
+         used to give. merge() does NOT skip keys outside the defaults: it
+         walks the keys of the SAVE, so an unknown one is copied across
+         verbatim and then re-serialised on every write. An older save
+         carrying `gsrs` still loads, and quietly keeps carrying it, which is
+         harmless only because nothing reads it.
+
+         The same mechanism is load-bearing elsewhere, so it is worth naming
+         rather than half-remembering: `llmConsent` and `llmOrder` are
+         written into settings by consent.js and by the settings screen, are
+         absent from defaultState(), and survive a reload for exactly this
+         reason. */
       drills: {},         // generator id -> attempt counter
       session: {},        // composition and progress of today's session
       writing: {},        // task id -> the student's composition

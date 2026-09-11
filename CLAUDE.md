@@ -463,6 +463,7 @@ node scripts/check_swversion.mjs [--napraw]   # czy nowe wydanie ma jak się og�
 node scripts/check_ogtags.mjs       # czy wysłany komuś link pokaże podgląd
 node scripts/build_og.mjs           # przerysowuje obrazek podglądu (Chromium z testów DOM)
 node scripts/check_404.mjs          # czy strona 404 działa tam, gdzie jest serwowana
+node scripts/baseline.mjs           # liczby tego repozytorium, do tabeli Baseline niżej
 node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
@@ -507,28 +508,38 @@ wtedy `./node_modules/.bin/eslint .`.
 `index.html` nie wczytuje z niego niczego, aplikacja nadal startuje z `file://`
 bez żadnego pakietu. `npm install` jest potrzebny do uruchomienia testów, nie kursu.
 
-Baseline (do porównania, gdy coś zacznie znikać). Zmierzona, nie zapamiętana: liczby niżej
-pochodzą z uruchomienia `node scripts/validate.mjs`, `npm test` i `npm run test:dom`, a nie
-z poprzedniej wersji tego pliku.
+Baseline (do porównania, gdy coś zacznie znikać). **Pierwsze osiem wierszy wypisuje
+`node scripts/baseline.mjs`**: przepisanie tej sekcji to skopiowanie jego wyniku, a
+zauważenie, że zwietrzała, to `diff`. Cztery ostatnie wiersze liczy się przez
+uruchomienie suity, bo przebieg testu to nie to samo co wywołanie `test(` policzone
+w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 
-| Co | Ile |
-|---|---|
-| Jednostki / lekcje / ćwiczenia | 32 / 150 / 1514 |
-| Pozycje słownika / rozmowy / hasła gramatyczne | 1412 / 14 / 42 |
-| Czytanki / zadania pisane / zbiory par minimalnych | 12 / 6 / 5 |
-| Kroje pisma | 4 pliki woff2 w `assets/fonts/`, 254 KB, OFL |
-| Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
-| Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
-| Klucze interfejsu na język | 818 × 5 języków |
-| Pliki silnika | 70 w `assets/js/`, 13 979 linii |
-| Testy jednostkowe | 944 przebiegi w 40 plikach, zielone |
-| Testy DOM | 263 przebiegi w 34 plikach, zielone |
-| Pokrycie silnika testami jednostkowymi | 99,3% (`node scripts/coverage.mjs`), próg w CI: 99 |
+| Co | Ile | Polecenie |
+|---|---|---|
+| Jednostki / lekcje / ćwiczenia | 32 / 150 / 1514 | `node scripts/baseline.mjs` |
+| Pozycje słownika / rozmowy / hasła gramatyczne | 1412 / 14 / 42 | `node scripts/baseline.mjs` |
+| Czytanki / zadania pisane / zbiory par minimalnych | 24 / 6 / 5 | `node scripts/baseline.mjs` |
+| Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
+| Nagrania | 3494 plików mp3, 37 MiB bajtów; 3493 skrótów w indeksie | `node scripts/baseline.mjs` |
+| Klucze interfejsu na język | 819 × 5 języków | `node scripts/baseline.mjs` |
+| Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
+| Pliki silnika | 70 w assets/js/, 13990 linii | `node scripts/baseline.mjs` |
+| Testy jednostkowe | 944 przebiegi w 40 plikach, zielone | `npm test` |
+| Testy DOM | 263 przebiegi w 34 plikach, zielone | `npm run test:dom` |
+| Mutacje | 53 w 7 plikach silnika | `npm run test:mutations` |
+| Pokrycie silnika testami jednostkowymi | 99,3%, próg w CI: 99 | `node scripts/coverage.mjs` |
+
+Trzy rzeczy, których tabela nie mieści, a które trzeba przeczytać razem z nią.
+Wszystkie trzynaście typów ćwiczeń stoi w danych, ale `truefalse` (27 wystąpień) wyłącznie
+w `readings.js`. Kroje są na licencji OFL. **Nagrania liczą się w BAJTACH, nie w zajętości
+dysku**: `du` mówi 45 MB, bo pliki mają średnio 11 KB przy blokach po 4 KB, a progi
+ADR-010 są postawione na bajtach i tak trzeba je czytać.
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
-„29 testów jednostkowych, 17 DOM". Były prawdziwe w dniu wprowadzenia suity i przestały być
-prawdziwe bez niczyjej decyzji — dlatego liczby stoją teraz w tabeli z podanym poleceniem,
-które je odtwarza.
+„29 testów jednostkowych, 17 DOM". Potem, już po poprawce, mówiła „12 czytanek", kiedy
+było ich 24. Za każdym razem zdanie było prawdziwe w dniu, w którym je napisano, i
+przestawało być bez niczyjej decyzji. Ręczna poprawka tego nie leczy, bo następna wersja
+zwietrzeje tak samo — dlatego liczby wypisuje teraz skrypt, a nie pamięć.
 
 `coverage.mjs` mierzy, ile silnika naprawdę wykonują testy jednostkowe — wbudowane
 `--experimental-test-coverage` pokazuje tu 100% i jest to liczba bez treści, bo pliki

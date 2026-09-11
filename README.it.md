@@ -117,8 +117,8 @@ data/
 audio/<xx>/<hash>.mp3   registrazioni, generate
 scripts/                validazione, parità, copertura, mutazioni e strumenti di build
 tests/
-  unit/                 826 asserzioni in node:vm, senza browser
-  dom/                  232 asserzioni Playwright in Chromium
+  unit/                 944 asserzioni in node:vm, senza browser
+  dom/                  263 asserzioni Playwright in Chromium
 docs/                   manuale utente, inglese e italiano
 ```
 
@@ -181,15 +181,17 @@ Tutti i controlli qui sotto girano a ogni `push` e a ogni `pull_request`, dal pi
 | `node scripts/parity.mjs` | che ogni strato di lingua abbia la stessa forma di quello polacco |
 | `node scripts/check_precache.mjs` | che il service worker metta in cache tutto ciò che `index.html` carica |
 | `node scripts/check_swversion.mjs [--napraw]` | che una versione nuova abbia un'impronta con cui annunciarsi |
-| `npm test` | 826 asserzioni in 34 file, logica del motore dentro `node:vm` |
-| `npm run test:mutations` | 34 mutazioni deliberate; ciascuna deve far diventare rosso un file di test dichiarato |
-| `node scripts/coverage.mjs --min 99` | copertura del motore, oggi al 99,8% |
-| `npm run test:dom` | 232 asserzioni in Chromium, compreso il contrasto misurato dal browser |
+| `npm test` | 944 asserzioni in 40 file, logica del motore dentro `node:vm` |
+| `npm run test:mutations` | 53 mutazioni deliberate; ciascuna deve far diventare rosso un file di test dichiarato |
+| `node scripts/coverage.mjs --min 99` | copertura del motore, oggi al 99,3% |
+| `npm run test:dom` | 263 asserzioni in Chromium, compreso il contrasto misurato dal browser |
 | `npm run test:all` | unitari, mutazioni e DOM in un colpo solo |
 
 Il test di mutazione risponde alla domanda a cui la copertura non risponde. La copertura dice che una riga è stata eseguita, ed eseguire non è verificare. Un'asserzione come `assert.ok(!out.includes("js-play"))` passa anche su un risultato vuoto, con copertura piena e contenuto zero, e tre asserzioni scritte il giorno in cui quel controllo è nato erano esattamente così.
 
 Il test sul contrasto misura il colore attraverso il browser e non attraverso un parser. La palette è in OKLCH, e gli strumenti di accessibilità esterni leggono `oklch(0.31 0.035 350)` come una terna RGB e riportano un canale a 350: il loro numero è un artefatto, non una misura. Qui il colore passa per un canvas 1×1 e torna in sRGB, così la conversione la fa il motore e la soglia è vera.
+
+I conteggi qui sopra sono gli stessi che portano i badge. Dopo i controlli, `node scripts/badges.mjs` legge i report di quelle stesse esecuzioni e scrive `badges/test-badge.json` e `badges/coverage-badge.json`, che il README del profilo legge come endpoint shields.io e che la CI riscrive a ogni push su `main`. Le cifre di questa tabella restano scritte a mano e continuano a invecchiare tra una versione e l'altra; quelle sui badge no.
 
 Se `npm run lint` riporta ESLint 6.4.0, ha risposto l'eslint di sistema al posto di quello del progetto. Lancia `./node_modules/.bin/eslint .`.
 

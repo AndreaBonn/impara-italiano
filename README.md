@@ -117,8 +117,8 @@ data/
 audio/<xx>/<hash>.mp3   recorded narration, generated
 scripts/                validation, parity, coverage, mutation and build tooling
 tests/
-  unit/                 826 assertions in node:vm, no browser
-  dom/                  232 Playwright assertions in Chromium
+  unit/                 944 assertions in node:vm, no browser
+  dom/                  263 Playwright assertions in Chromium
 docs/                   user manual, English and Italian
 ```
 
@@ -181,15 +181,17 @@ Every gate below runs on `push` and on `pull_request`, cheapest first, so a data
 | `node scripts/parity.mjs` | that every language overlay has the same shape as Polish |
 | `node scripts/check_precache.mjs` | that the service worker caches everything `index.html` loads |
 | `node scripts/check_swversion.mjs [--napraw]` | that a new release has a fingerprint to announce itself with |
-| `npm test` | 826 assertions, 34 files, engine logic in `node:vm` |
-| `npm run test:mutations` | 34 deliberate mutations; each must turn a named test file red |
-| `node scripts/coverage.mjs --min 99` | engine coverage, currently 99.8% |
-| `npm run test:dom` | 232 assertions in Chromium, including contrast measured by the browser |
+| `npm test` | 944 assertions, 40 files, engine logic in `node:vm` |
+| `npm run test:mutations` | 53 deliberate mutations; each must turn a named test file red |
+| `node scripts/coverage.mjs --min 99` | engine coverage, currently 99.3% |
+| `npm run test:dom` | 263 assertions in Chromium, including contrast measured by the browser |
 | `npm run test:all` | unit, mutations and DOM in one run |
 
 Mutation testing answers the question coverage cannot. Coverage says a line executed; executing is not checking. An assertion like `assert.ok(!out.includes("js-play"))` passes over an empty result with full coverage and zero content, and three assertions written the day that gate was added turned out to be exactly that.
 
 The contrast test measures color through the browser rather than a parser. The palette is OKLCH, and external accessibility tools read `oklch(0.31 0.035 350)` as an RGB triple and report a channel of 350: their number is an artifact, not a measurement. Here the color goes onto a 1x1 canvas and comes back as sRGB, so the engine does the conversion and the threshold is real.
+
+The counts above are the ones the badges carry. After the gates, `node scripts/badges.mjs` reads the reports of those same runs and writes `badges/test-badge.json` and `badges/coverage-badge.json`, which the profile README reads as shields.io endpoints and CI refreshes on every push to `main`. The figures in this table are still typed by hand and still go stale between releases; the two on the badges cannot.
 
 If `npm run lint` reports ESLint 6.4.0, a system-wide ESLint answered instead of the project one. Run `./node_modules/.bin/eslint .`.
 

@@ -467,15 +467,27 @@ node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
-npm run test:mutations              # czy testy widzą czerwone (34 mutacje, 4 pliki)
+npm run test:mutations              # czy testy widzą czerwone (53 mutacje, 7 plików)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
+node scripts/badges.mjs --unit … --dom … --coverage …   # odznaki dla strony profilu
 ```
 
 Wszystkie te bramki chodzą też same, przy każdym `push`, z
 `.github/workflows/ci.yml` — od najtańszej do najdroższej, żeby błąd w danych
 zgłosił się w sekundach, a nie po minucie testów w przeglądarce.
+
+`badges.mjs` bramką nie jest i niczego nie sprawdza: czyta raporty trzech
+przebiegów powyżej (`reports/`, poza repozytorium) i zapisuje z nich
+`badges/test-badge.json` oraz `badges/coverage-badge.json`, które strona
+profilu (github.com/AndreaBonn) czyta jako endpointy shields.io. W CI stoi
+po testach, a commit z odznakami idzie wyłącznie przy `push` na `main`.
+Liczba na odznace to testy jednostkowe RAZEM z DOM, bo dwie suity
+odpowiadają za dwie połowy jednego silnika; pokrycie zostaje tym, co mierzy
+`coverage.mjs`, czyli pokryciem jednostkowym. Raport, którego nie da się
+sparsować, kończy się kodem 1: szara odznaka „N/A" na zielonym buildzie to
+awaria, po którą nikt nie sięgnie.
 
 **`npm run lint` nie pilnuje stylu, tylko poprawności.** Reguł kosmetycznych nie
 ma i nie należy ich dodawać: formatowanie tego repozytorium jest spójne bez
@@ -508,9 +520,9 @@ z poprzedniej wersji tego pliku.
 | Typy ćwiczeń obecnych w danych | **13** (`truefalse` 27 wystąpień, wszystkie w `readings.js`) |
 | Nagrania | 3494 pliki mp3, 45 MB; 3493 skróty w indeksie |
 | Klucze interfejsu na język | 818 × 5 języków |
-| Pliki silnika | 70 w `assets/js/`, 13 785 linii |
-| Testy jednostkowe | 931 przebiegów w 39 plikach, zielone |
-| Testy DOM | 260 przebiegów w 33 plikach, zielone |
+| Pliki silnika | 70 w `assets/js/`, 13 979 linii |
+| Testy jednostkowe | 944 przebiegi w 40 plikach, zielone |
+| Testy DOM | 263 przebiegi w 34 plikach, zielone |
 | Pokrycie silnika testami jednostkowymi | 99,3% (`node scripts/coverage.mjs`), próg w CI: 99 |
 
 Poprzednia wersja tej sekcji mówiła „12 typów, `truefalse` nie występuje w kursie" oraz
@@ -540,8 +552,8 @@ puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` ł
 
 Trzy rzeczy, które trzeba o niej wiedzieć:
 
-- **Zasięg jest wąski i zadeklarowany.** Sześć plików z sześćdziesięciu ośmiu. „27/27" nie znaczy
-  „silnik sprawdzony", znaczy „te 27 decyzji sprawdzone". Nowy plik z czystymi funkcjami
+- **Zasięg jest wąski i zadeklarowany.** Siedem plików z siedemdziesięciu. „53/53" nie znaczy
+  „silnik sprawdzony", znaczy „te 53 decyzje sprawdzone". Nowy plik z czystymi funkcjami
   to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
 - **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po
   refaktorze) i wiele wystąpień kończą się błędem, nie ostrzeżeniem: mutacja, która po

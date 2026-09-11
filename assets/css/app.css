@@ -1073,6 +1073,13 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .cils-gap{color:var(--rosa-deep);}
 .cils-audio{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
 .cils-hint{font-size:.86rem;color:var(--ink-soft);margin:6px 0 0;}
+/* The model's reading of a production. Set apart from the course's own text
+   by an indent rather than by a colour: it is somebody else's sentence, not
+   a state, and colouring it would read as a verdict. Empty by default, so a
+   report without it has no gap where it would have been. */
+.cils-lettura:empty{display:none;}
+.cils-lettura{margin-top:14px;padding-left:12px;border-left:3px solid var(--line);font-size:.92rem;line-height:1.6;}
+.cils-lettura.is-waiting{color:var(--ink-soft);font-style:italic;}
 .cils-items{margin:14px 0 0;padding-left:22px;}
 .cils-items li{margin-bottom:12px;line-height:1.5;}
 .cils-q{display:block;margin-bottom:4px;}

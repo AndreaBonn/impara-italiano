@@ -91,7 +91,28 @@
       odpowiedzi: function (id) { return run.risposte[id]; },
       czyScadla: function (id) { return !!run.scaduta[id]; },
       zapiszScritta: function (traccia, testo) { run.scritta = { traccia: traccia, testo: testo }; },
-      zapiszOrale: function (argomento, spuntate) { run.orale = { argomento: argomento, spuntate: spuntate }; },
+      /**
+       * The oral part arrives in TWO steps, and that is the shape of the
+       * decision rather than an accident of the code.
+       *
+       * During the timed section all we can have is the topic and a
+       * recording: the microphone is taken by `MediaRecorder`, and
+       * `Audio2.listen` closes at the first pause anyway, so a live
+       * transcript of a one-minute presentation does not exist. The text
+       * arrives afterwards, in a review with no clock on it, where the
+       * student listens to themselves and writes down what they said.
+       *
+       * It is therefore THEIR TEXT, never a transcript, and the report says
+       * so in those words. What it buys is real: ADR-009 point 5 asked for
+       * the oral part to go through the same `Writing.analyse` as the
+       * written one, and until now there was nothing to pass it.
+       */
+      zapiszOrale: function (argomento) { run.orale = { argomento: argomento, testo: "" }; },
+      zapiszTrascrizione: function (testo) {
+        if (!run.orale) return false;
+        run.orale.testo = String(testo == null ? "" : testo);
+        return true;
+      },
       esito: function () { return global.Cils.esito(run.punti); },
       get krok() { return run.i + 1; },
       get ile() { return ORDINE.length; },

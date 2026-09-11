@@ -437,3 +437,96 @@ describe("reading a composition", () => {
     assert.equal(await opinia(c.Llm), null, "the ceiling counts judgements but not readings");
   });
 });
+
+/* ============================================================
+   The fourth way in: a reading of an exam production.
+
+   It shares the plumbing with `judge` and with `review`, so what is checked
+   here is only what is different — and what is different is the thing ADR-009
+   decided before any model existed: this exam is not marked by a machine. The
+   guard is in `CilsReport.pulisci`, and these tests are about llm.js putting
+   the answer through it rather than around it.
+   ============================================================ */
+function czytaj(Llm, task) {
+  return new Promise((resolve) => Llm.reportProduction(task, resolve));
+}
+
+const PRODUKCJA = {
+  sezione: "scritta",
+  traccia: { it: "Scrivi una mail all'ufficio." },
+  testo: "Gentile ufficio, non posso venire giovedì perché lavoro.",
+  cefr: "B1"
+};
+
+/** A provider answering with plain prose instead of a verdict object. */
+function proza(id, tekst) {
+  if (id === "gemini") return { status: 200, json: { candidates: [{ content: { parts: [{ text: tekst }] } }] } };
+  if (id === "anthropic") return { status: 200, json: { content: [{ type: "text", text: tekst }] } };
+  return { status: 200, json: { choices: [{ message: { content: tekst } }] } };
+}
+
+describe("reading an exam production", () => {
+  test("ordinary feedback comes back as it was written", async () => {
+    const c = course({ answers: { gemini: proza("gemini", "Hai scritto «non posso venire»: va bene così.") } });
+    const out = await czytaj(c.Llm, PRODUKCJA);
+    assert.match(out, /non posso venire/);
+  });
+
+  test("a mark does not reach the caller, even when the model insists", async () => {
+    /* The whole point of the fourth entrance. The instruction forbids marks;
+       this is what happens when the model ignores the instruction. */
+    const c = course({ answers: { gemini: proza("gemini", "La struttura è chiara. Voto: 9/12, saresti promosso.") } });
+    const out = await czytaj(c.Llm, PRODUKCJA);
+    assert.match(out, /struttura/, "the useful sentence survives");
+    assert.ok(!/9\s*\/\s*12/.test(out), out);
+    assert.ok(!/promoss/i.test(out), out);
+  });
+
+  test("an answer that is nothing but a mark arrives as no answer at all", async () => {
+    /* Not an empty string: the caller draws nothing, which is the report
+       this course has always produced without a key. */
+    const c = course({ answers: { gemini: proza("gemini", "8/12. Promosso.") } });
+    assert.equal(await czytaj(c.Llm, PRODUKCJA), null);
+  });
+
+  test("an empty production is not sent anywhere", async () => {
+    /* A student who skipped the review has nothing to read, and asking a
+       model about an empty string spends their money on it. */
+    const c = course({ answers: { gemini: proza("gemini", "Bravo.") } });
+    assert.equal(await czytaj(c.Llm, { ...PRODUKCJA, testo: "   " }), null);
+    assert.deepEqual(c.calls, []);
+  });
+
+  test("without consent nothing leaves, and the caller is told nothing came", async () => {
+    const c = course({ consent: false });
+    assert.equal(await czytaj(c.Llm, PRODUKCJA), null);
+    assert.deepEqual(c.calls, []);
+  });
+
+  test("from a disk the reading does not exist", async () => {
+    const b = loadEngine({ files: FILES, protocol: "file:" });
+    b.Core.load();
+    b.sandbox.LlmKeys.set("openai", "key-openai-2");
+    b.sandbox.Consent.ustawLlm(true);
+    let poszlo = false;
+    b.sandbox.Llm.useTransport(() => { poszlo = true; return Promise.resolve(proza("openai", "Bene.")); });
+    assert.equal(await czytaj(b.sandbox.Llm, PRODUKCJA), null);
+    assert.equal(poszlo, false);
+  });
+
+  test("the spoken section is told it is reading speech, not writing", async () => {
+    /* The difference is load-bearing: the text was typed from memory after
+       listening back, so remarks about spelling would be remarks about the
+       typing. The instruction carries that, and this is where it is checked
+       to actually reach the provider. */
+    let wyslany = null;
+    const c = course({ answers: { gemini: proza("gemini", "Bene.") } });
+    c.Llm.useTransport((req) => {
+      wyslany = JSON.stringify(req.body);
+      return Promise.resolve(proza("gemini", "Bene."));
+    });
+    await czytaj(c.Llm, { ...PRODUKCJA, sezione: "orale" });
+    assert.match(wyslany, /SAID in a spoken exam task/);
+    assert.match(wyslany, /typed this from memory|typed it out from memory/);
+  });
+});

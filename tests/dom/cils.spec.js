@@ -50,6 +50,17 @@ test.describe("simulazione d'esame", () => {
       await page.waitForTimeout(250);
     }
     expect(visti.length).toBe(4);
+
+    /* Dopo l'orale c'è la revisione, che non è una quinta sezione d'esame:
+       niente orologio e niente barra dei passi. Lo studente riascolta sé
+       stesso e scrive cosa ha detto, ed è l'unica cosa che il corso può
+       leggere di una risposta parlata. */
+    await expect(page.locator(".js-said")).toBeVisible();
+    await expect(page.locator(".cils-clock")).toHaveCount(0);
+    await expect(page.locator(".cils-step")).toHaveCount(0);
+    await page.click(".js-next");
+    await page.waitForTimeout(250);
+
     /* Arrivati al riepilogo non c'è alcun controllo che riapra una sezione. */
     await expect(page.locator(".cils-tab")).toBeVisible();
     await expect(page.locator(".cils-clock")).toHaveCount(0);
@@ -72,6 +83,9 @@ test.describe("simulazione d'esame", () => {
       await page.click(".js-next");
       await page.waitForTimeout(250);
     }
+    /* La revisione dopo l'orale, saltata qui: è facoltativa per costruzione. */
+    await page.click(".js-next");
+    await page.waitForTimeout(250);
     const righe = await page.locator(".cils-tab tr").allTextContents();
     expect(righe.length).toBe(4);
     /* Scritta e orale compaiono, ma senza punteggio. */

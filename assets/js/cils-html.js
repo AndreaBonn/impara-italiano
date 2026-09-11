@@ -166,17 +166,48 @@
       "<h3 class=\"cils-h\">" + esc(t("cils.oralTopic")) + "</h3>" +
       '<div class="cils-tracce">' + (sez.argomenti || []).map(function (a, i) {
         return '<label class="cils-traccia"><input type="radio" name="arg" value="' + i + '"' +
-          (i === 0 ? " checked" : "") + "> " + esc(a) + "</label>";
+          (i === 0 ? " checked" : "") + "> " + esc(a.it) + "</label>";
       }).join("") + "</div>" +
       (powod ? '<p class="cils-hint">' + esc(t(powod)) + "</p>" :
         '<div class="cils-acts"><button class="btn btn--primary js-rec" aria-pressed="false">' +
         esc(t("cils.record")) + '</button><button class="btn btn--ghost btn--sm js-play-mine" hidden>' +
         esc(t("cils.playMine")) + "</button></div>") +
       '<p class="cils-state js-state" role="status" aria-live="polite"></p>' +
-      "<h3 class=\"cils-h\">" + esc(t("cils.selfCheck")) + "</h3><ul class=\"cils-check\">" +
-      (sez.controllo || []).map(function (c, i) {
-        return '<li><label><input type="checkbox" data-c="' + i + '"> ' + esc(c) + "</label></li>";
-      }).join("") + "</ul></div></div>";
+      "</div></div>";
+  }
+
+  /**
+   * The review after the oral part: listen to yourself, write what you said.
+   *
+   * Deliberately OUTSIDE the exam: no clock, and the button says so. Under a
+   * countdown this would be a second written task measuring typing speed.
+   *
+   * The field is optional, and that is not softness. What the student writes
+   * here is the only thing the course can read of a spoken answer, and a
+   * required field would push whoever does not feel like writing into typing
+   * anything at all — which would then be analysed and reported as if it
+   * were their speech.
+   */
+  function rewizja(ustna, powod) {
+    var arg = (ustna && ustna.argomento) || {};
+    return '<div class="js-body"><div class="card">' +
+      '<p class="callout callout--trap"><b>' + esc(t("cils.reviewLabel")) + "</b> " +
+      esc(t("cils.reviewIntro")) + "</p>" +
+      /* Its own key, not the one from the exam section. There the heading
+         says "choose a topic" and there is something to choose; here the
+         topic is already behind the student, and telling them to pick one
+         on a screen with no choice is an instruction that cannot be
+         followed. */
+      "<h3 class=\"cils-h\">" + esc(t("cils.reviewTopic")) + "</h3>" +
+      "<p>" + esc(arg.it || "") + "</p>" +
+      (powod ? "" :
+        '<div class="cils-acts"><button class="btn btn--ghost btn--sm js-play-mine">' +
+        esc(t("cils.playMine")) + "</button></div>") +
+      '<label style="display:block;margin-top:14px"><span style="font-weight:600;display:block;margin-bottom:5px">' +
+      esc(t("cils.reviewWrite")) + "</span>" +
+      '<textarea class="field js-said" rows="6" spellcheck="false"></textarea></label>' +
+      '<p class="cils-hint">' + esc(t("cils.reviewHint")) + "</p>" +
+      "</div></div>";
   }
 
   /* ═══════════════════ Summary ═══════════════════ */
@@ -216,16 +247,51 @@
       '<ul class="cils-check">' + wynik.map(function (r, i) {
         var wym = ((pisemna.traccia || {}).richiede || [])[i] || {};
         return "<li>" + (r.found ? "✓" : "✗") + " " + esc(wym.etichetta || r.key) + "</li>";
-      }).join("") + "</ul></div>";
+      }).join("") + "</ul>" +
+      /* Where the model's reading lands, when there is one. Empty in the
+         markup and filled by the view: the answer arrives seconds later, and
+         drawing the card only after it would mean the summary waits on an
+         optional feature that most students never switch on. */
+      '<div class="js-lettura-scritta cils-lettura"></div></div>';
   }
 
-  /** The oral production card; "" when the student never reached that section. */
+  /**
+   * The oral production card; "" when the student never reached that section.
+   *
+   * Same detection as the written card, on the text the student wrote after
+   * listening to themselves. The label under it is not decoration: it says
+   * the words were TYPED FROM MEMORY, not transcribed, because a report that
+   * called this a transcript would be claiming to have heard something.
+   *
+   * With no text there is nothing to detect, and the card says that instead
+   * of showing five crosses — a row of crosses reads as "you did none of
+   * this", which is a verdict, and a wrong one.
+   */
   function orale(ustna) {
     if (!ustna) return "";
-    return '<div class="card"><h2 class="cils-h">' + esc(t("cils.sec.orale")) + "</h2>" +
-      '<p class="cils-hint">' + esc(t("cils.oralNotScored")) + "</p>" +
-      "<p>" + esc(ustna.argomento || "") + "</p>" +
-      '<p class="cils-count">' + esc(t("cils.selfChecked", { n: ustna.spuntate })) + "</p></div>";
+    var arg = ustna.argomento || {};
+    var testo = ustna.testo || "";
+    /* Its own sentence, not the one from the exam section: that one tells
+       the student to record themselves and speak for three minutes, which on
+       the report is an instruction for something already behind them. The
+       written card has had a summary sentence of its own all along. */
+    var glowa = '<div class="card"><h2 class="cils-h">' + esc(t("cils.sec.orale")) + "</h2>" +
+      '<p class="cils-hint">' + esc(t("cils.oralSummary")) + "</p>" +
+      "<p>" + esc(arg.it || "") + "</p>";
+
+    if (!testo.trim()) {
+      return glowa + '<p class="cils-hint">' + esc(t("cils.oralNoText")) + "</p></div>";
+    }
+
+    var wynik = global.Writing.analyse(testo, arg.richiede || []);
+    return glowa +
+      '<p class="cils-count">' + esc(t("cils.oralWords", { n: global.Writing.wordCount(testo) })) + "</p>" +
+      '<ul class="cils-check">' + wynik.map(function (r, i) {
+        var wym = (arg.richiede || [])[i] || {};
+        return "<li>" + (r.found ? "✓" : "✗") + " " + esc(wym.etichetta || r.key) + "</li>";
+      }).join("") + "</ul>" +
+      '<p class="cils-hint">' + esc(t("cils.oralOwnWords")) + "</p>" +
+      '<div class="js-lettura-orale cils-lettura"></div></div>';
   }
 
   /**
@@ -258,6 +324,7 @@
     item: item,
     corpoScritto: corpoScritto,
     corpoOrale: corpoOrale,
+    rewizja: rewizja,
     abilita: abilita,
     scritta: scritta,
     orale: orale,

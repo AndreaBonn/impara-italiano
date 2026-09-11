@@ -66,7 +66,7 @@ Tą samą granicą idzie drugi sędzia odpowiedzi otwartych: `llm-providers.js` 
 czterech dostawców, cztery czyste funkcje na każdego), `llm-prompts.js` (o co pytamy model)
 i `llm-rules.js` (kolejka, odczyt werdyktu, **clamp**) przed `llm-net.js` (żądanie, zegar
 na nim i przechodzenie do następnego dostawcy) i `llm.js` (trzy wejścia: `judge`, `review`,
-`test`, oraz bramki, które ich pilnują) —
+`test`, `reportProduction`, oraz bramki, które ich pilnują) —
 plus `llm-keys.js`, który trzyma klucze API w **osobnym** pojemniku `linguai.llm.v1`, poza
 stanem: `Store.exportState()` serializuje cały stan do pliku kopii zapasowej, a poświadczenie
 płatne przez ucznia nie ma prawa tam trafić. Nazwa `Keys` jest zajęta przez `keys.js`.
@@ -102,6 +102,34 @@ Tam siedzi siatka odpowiedzi: `name` radia wspólny dla jednego pytania i różn
 `data-p`/`data-i` zgodne z siatką `cils-run.js`, numerowanie luk w cloze, brak przycisku
 nagrywania bez mikrofonu. Każda z tych rzeczy psuje się cicho (uczeń widzi skutek na
 wyniku, nie na ekranie) i każda sprawdza się jednym assertem w `node:test`.
+
+### Produkcje egzaminacyjne: model czyta, ale nie ocenia
+
+ADR-009 postanowił, że dwie prowy produkcyjne dostają **wykrycie, nigdy oceny**: słuchanie
+i czytanie mają wagę za pozycję w oficjalnych kryteriach, a pisanie i mówienie na prawdziwym
+egzaminie oceniają ludzie według siatki. Symulator, który mówi „9/12, zdałbyś", obiecuje
+coś, czego nie sprawdził, a ten egzamin decyduje o prawie pobytu.
+
+Kiedy model zaczął te dwie prowy czytać (ADR-009-bis), decyzja przestała dotyczyć naszej
+arytmetyki i zaczęła dotyczyć cudzej prozy. Dlatego reguła siedzi w **kodzie**:
+`cils-report.js` (globalna `CilsReport`, czysta funkcja napisu) wycina całe zdania, w
+których stoi ułamek, procent, liczba obok słowa „punkty" albo słowo werdyktu w którymś z
+sześciu języków. `llm.js` przepuszcza przez nią odpowiedź, zanim ktokolwiek ją zobaczy —
+to ten sam układ co `clamp`: własność programu, nie prośba w instrukcji, więc przeżywa
+model, który zignoruje polecenie, i podmianę dostawcy.
+
+**Czego to nie łapie, i jest to napisane w pliku:** werdykt bez liczb i bez tych słów
+(„sei pronto per l'esame") przechodzi. Filtr zwęża szczelinę i jej nie zamyka, dlatego
+zdanie o tym, że symulator nie ocenia produkcji, stoi przy referacie na stałe.
+
+**Prowa ustna przychodzi w dwóch krokach**, i to jest kształt decyzji, nie przypadek.
+W czasie prowy mamy tylko temat i nagranie: mikrofon trzyma `MediaRecorder`, a
+`Audio2.listen` i tak zamyka się przy pierwszej pauzie (`audio.js:258`), więc transkrypcja
+minutowej wypowiedzi na żywo nie istnieje. Tekst powstaje **po egzaminie**, w rewizji bez
+zegara, gdzie uczeń odsłuchuje siebie i spisuje, co powiedział. To są **jego słowa**, nigdy
+transkrypcja, i referat mówi to tymi słowami: napisać „transkrypcja" znaczyłoby twierdzić,
+że coś usłyszeliśmy. Dopiero ten tekst wchodzi do tego samego `Writing.analyse`, co prowa
+pisemna — czyli punkt 5 z ADR-009, wreszcie dotrzymany, inną drogą niż zakładał.
 
 Tą samą granicą przechodzi lematyzacja: `lemma-morf.js` (globalna `LemmaMorf`: rozcięcie
 formy złożonej, liczba mnoga, rodzaj, stopień najwyższy, akcent toniczny, enklityki,
@@ -506,7 +534,7 @@ node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
-npm run test:mutations              # czy testy widzą czerwone (66 mutacji, 9 plików)
+npm run test:mutations              # czy testy widzą czerwone (74 mutacje, 10 plików)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
@@ -559,12 +587,12 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 | Czytanki / zadania pisane / zbiory par minimalnych | 24 / 6 / 5 | `node scripts/baseline.mjs` |
 | Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
 | Nagrania | 3494 plików mp3, 37 MiB bajtów; 3493 skrótów w indeksie | `node scripts/baseline.mjs` |
-| Klucze interfejsu na język | 842 × 5 języków | `node scripts/baseline.mjs` |
+| Klucze interfejsu na język | 856 × 5 języków | `node scripts/baseline.mjs` |
 | Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
-| Pliki silnika | 73 w assets/js/, 14674 linii | `node scripts/baseline.mjs` |
-| Testy jednostkowe | 979 przebiegów w 42 plikach, zielone | `npm test` |
-| Testy DOM | 271 przebiegów w 36 plikach, zielone | `npm run test:dom` |
-| Mutacje | 66 w 9 plikach silnika | `npm run test:mutations` |
+| Pliki silnika | 74 w assets/js/, 15172 linii | `node scripts/baseline.mjs` |
+| Testy jednostkowe | 1090 przebiegów w 44 plikach, zielone | `npm test` |
+| Testy DOM | 275 przebiegów w 37 plikach, zielone | `npm run test:dom` |
+| Mutacje | 74 w 10 plikach silnika | `npm run test:mutations` |
 | Pokrycie silnika testami jednostkowymi | 99,3%, próg w CI: 99 | `node scripts/coverage.mjs` |
 
 Trzy rzeczy, których tabela nie mieści, a które trzeba przeczytać razem z nią.
@@ -593,8 +621,9 @@ tabeli. Trzy deklaracje, nie trzy przeoczenia.
 sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
 `assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
-decyzji w silniku (66 mutacji w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
-`llm-rules.js`, `llm-providers.js`, `llm-prompts.js`, `retention-rules.js` i `ics.js`)
+decyzji w silniku (74 mutacje w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
+`llm-rules.js`, `llm-providers.js`, `llm-prompts.js`, `retention-rules.js`, `ics.js`
+i `cils-report.js`)
 i wymaga, żeby wskazany
 plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
 puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
@@ -602,8 +631,8 @@ puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` ł
 
 Trzy rzeczy, które trzeba o niej wiedzieć:
 
-- **Zasięg jest wąski i zadeklarowany.** Dziewięć plików z siedemdziesięciu trzech. „66/66"
-  nie znaczy „silnik sprawdzony", znaczy „te 66 decyzji sprawdzone". Nowy plik z czystymi funkcjami
+- **Zasięg jest wąski i zadeklarowany.** Dziesięć plików z siedemdziesięciu czterech. „74/74"
+  nie znaczy „silnik sprawdzony", znaczy „te 74 decyzje sprawdzone". Nowy plik z czystymi funkcjami
   to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
 - **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po
   refaktorze) i wiele wystąpień kończą się błędem, nie ostrzeżeniem: mutacja, która po

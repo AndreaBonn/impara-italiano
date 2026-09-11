@@ -74,6 +74,8 @@ const RET = "assets/js/retention-rules.js";
 const T_RET = "tests/unit/retention-rules.test.mjs";
 const ICS = "assets/js/ics.js";
 const T_ICS = "tests/unit/ics.test.mjs";
+const RAPORT = "assets/js/cils-report.js";
+const T_RAPORT = "tests/unit/cils-report.test.mjs";
 
 /**
  * The mutations. `z` must occur in the file EXACTLY ONCE — with two
@@ -95,7 +97,7 @@ const MUTACJE = [
     z: "(powod ? '<p class=\"cils-hint\">' + esc(t(powod)) + \"</p>\" :",
     na: "(false ? '<p class=\"cils-hint\">' + esc(t(powod)) + \"</p>\" :" },
   { plik: HTML, test: T_HTML, opis: "orale: no topic selected up front",
-    z: '(i === 0 ? " checked" : "") + "> " + esc(a)', na: '"> " + esc(a)' },
+    z: '(i === 0 ? " checked" : "") + "> " + esc(a.it)', na: '"> " + esc(a.it)' },
 
   /* ---- cils-html.js: the list and the summary ---- */
   { plik: HTML, test: T_HTML, opis: "list: the warning about the limit removed",
@@ -123,8 +125,16 @@ const MUTACJE = [
     z: 'class="btn btn--ghost js-list"', na: 'class="btn btn--ghost js-brak"' },
   { plik: HTML, test: T_HTML, opis: "written: a card for an untouched section",
     z: 'if (!pisemna) return "";', na: 'if (false) return "";' },
+  /* The same expression now sits in both production cards, so each mutation
+     carries enough of its own line to be unambiguous: with two occurrences
+     the substitution would hit the first and measure the other card. */
   { plik: HTML, test: T_HTML, opis: "written: the requirement label replaced by the key",
-    z: "esc(wym.etichetta || r.key)", na: "esc(r.key)" },
+    z: 'var wym = ((pisemna.traccia || {}).richiede || [])[i] || {};',
+    na: 'var wym = {};' },
+  { plik: HTML, test: T_HTML, opis: "oral: the requirement label replaced by the key",
+    z: "var wym = (arg.richiede || [])[i] || {};", na: "var wym = {};" },
+  { plik: HTML, test: T_HTML, opis: "oral: an empty account analysed as if it were an answer",
+    z: '    if (!testo.trim()) {', na: "    if (false) {" },
 
   /* ---- lemma-morf.js: the form rules ---- */
   { plik: MORF, test: T_MORF, opis: "slowa: a lone auxiliary is dropped too",
@@ -257,7 +267,24 @@ const MUTACJE = [
     z: "        limit = MAX_OKTETOW - 1;   /* the leading space of a continuation */",
     na: "        limit = MAX_OKTETOW;" },
   { plik: ICS, test: T_ICS, opis: "start: written in UTC, so the hour moves with the timezone",
-    z: "      \"DTSTART:\" + poczatek,", na: "      \"DTSTART:\" + stempel(p.teraz)," }
+    z: "      \"DTSTART:\" + poczatek,", na: "      \"DTSTART:\" + stempel(p.teraz)," },
+
+  /* ---- cils-report.js: the decision that a machine does not mark this exam ---- */
+  { plik: RAPORT, test: T_RAPORT, opis: "report: a fraction passes, so 9/12 reaches the student",
+    z: "    if (UŁAMEK.test(zdanie) || PROCENT.test(zdanie) || PUNKTY.test(zdanie)) return true;",
+    na: "    if (PROCENT.test(zdanie) || PUNKTY.test(zdanie)) return true;" },
+  { plik: RAPORT, test: T_RAPORT, opis: "report: the verdict words stop being checked",
+    z: "      if (male.indexOf(WERDYKT[i]) >= 0) return true;", na: "" },
+  { plik: RAPORT, test: T_RAPORT, opis: "report: the ceiling on length dropped",
+    z: "  var MAX_CHARS = 700;", na: "  var MAX_CHARS = 700000;" },
+  { plik: RAPORT, test: T_RAPORT, opis: "report: a sentence with a verdict kept instead of dropped",
+    z: "      if (werdykt(z)) continue;", na: "" },
+  { plik: RAPORT, test: T_RAPORT, opis: "report: the full stop between digits ends a sentence again",
+    z: "    var zdania = s.match(/(?:[^.!?]|\\.(?=\\d))+[.!?]*/g) || [s];",
+    na: "    var zdania = s.match(/[^.!?]+[.!?]*/g) || [s];" },
+  { plik: RAPORT, test: T_RAPORT, opis: "report: a mark said in words passes (9 su 12, otto punti su dodici)",
+    z: "    if (NA_ILE.test(zdanie) || NA_SLOWNIE.test(zdanie) || OCENA.test(zdanie)) return true;",
+    na: "" }
 ];
 
 /* ---------------- Running ---------------- */

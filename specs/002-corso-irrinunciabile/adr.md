@@ -990,3 +990,72 @@ appoggiano l'una all'altra. Nessuno è bloccante.
    quindi degrada per riga, e questa è la prima funzione del progetto in cui l'apertura da
    disco non è equivalente all'apertura da rete. Va detto all'utente in quel punto, non
    nella documentazione.
+
+---
+
+## ADR-009-bis — Un modello legge le produzioni d'esame, e continua a non valutarle
+
+**Stato**: Accettato · **Data**: 2026-09-11
+**Modifica**: ADR-009, che resta valido in tutto il resto.
+
+### Contesto
+
+ADR-009 è stato deciso quando nel progetto non c'era nessun modello. Da allora ne è
+arrivato uno (spec 005): giudica risposte già respinte localmente e legge i temi liberi.
+Il referto d'esame è rimasto quello di prima, cioè un rilevamento presente/mancante sulla
+prova scritta e, sull'orale, niente: il punto 5 di ADR-009 chiedeva la trascrizione via
+`Writing.analyse` e non è mai stata implementata, mentre nel codice viveva una griglia di
+autovalutazione che quello stesso documento aveva scartato come opzione G.
+
+La domanda che questo addendum chiude: il modello può dire qualcosa sulle due produzioni?
+
+### Decisione
+
+**Sì, in prosa, e la decisione di non valutare passa dal prompt al codice.**
+
+1. Il modello riceve la traccia e il testo, e risponde con due o tre cose da sistemare,
+   citando le parole del candidato. Non riceve la griglia ufficiale: mandargliela
+   sarebbe chiedere un punteggio nel vocabolario degli esaminatori veri.
+2. La risposta passa da `CilsReport.pulisci` **prima** di arrivare a chi la mostra.
+   Cadono le frasi che portano una frazione, una percentuale, un numero accanto alla
+   parola «punti», o una delle parole di verdetto nelle sei lingue del corso. Se non
+   resta niente, non si mostra niente, e il referto è quello di sempre.
+3. Nessun numero attraversa la sezione delle produzioni, e non esiste un aggregato.
+   I punti 2 e 3 di ADR-009 restano intatti.
+4. Il punto 5 di ADR-009 viene onorato per una strada diversa da quella che prevedeva,
+   perché quella non è percorribile: `Audio2.listen` chiude al primo silenzio
+   (`assets/js/audio.js:258`) e `Recorder` dichiara già che due flussi sul microfono non
+   convivono (`assets/js/recorder.js:71`), quindi la trascrizione dal vivo di una
+   presentazione da un minuto non esiste. Al suo posto: **la registrazione durante la
+   prova, il testo dopo**, in una revisione senza cronometro dove lo studente si
+   riascolta e scrive cosa ha detto. Quel testo entra nello stesso `Writing.analyse`.
+5. Il referto chiama quel testo **parole dello studente**, mai trascrizione. La differenza
+   non è di stile: dire «trascrizione» sarebbe affermare di aver sentito qualcosa.
+6. La griglia di autovalutazione sparisce dai dati, dal markup e dalle chiavi. Era
+   l'opzione G, già scartata con la sua ragione.
+
+### Conseguenze
+
+Diventa facile: dire a chi si prepara qualcosa di concreto sulle due abilità su cui il
+simulatore taceva, senza toccare il verdetto.
+
+Diventa più difficile: la revisione dopo l'esame è un passo in più che qualcuno salterà,
+ed è facoltativa per costruzione. Chi la salta ha il referto di prima sulla riga orale.
+
+**Rischio residuo, dichiarato:** `pulisci` lavora su numeri e su una lista chiusa di
+parole. Un verdetto che non usa né gli uni né le altre («sei pronto per l'esame») passa.
+Il filtro stringe l'apertura, non la chiude, e per questo la frase che dice che il
+simulatore non valuta le produzioni resta accanto al referto invece di essere sostituita
+da questa funzione.
+
+### Cosa la renderebbe sbagliata
+
+Se qualcuno mostra una lettura del modello che afferma o suggerisce un esito d'esame, la
+lista chiusa di `pulisci` va estesa con quella formulazione, e va aggiunta lì una riga di
+test. Se le formulazioni che passano diventano molte, allora il filtro per frase è la
+struttura sbagliata e va ripensata la forma della risposta, non allungata la lista.
+
+Se invece la revisione post-prova risulta saltata dalla maggioranza, il testo dell'orale
+non arriva quasi mai e il punto 4 va riaperto: la via successiva è la trascrizione a
+pagamento dalla catena del modello, che però richiede un terzo consenso, perché la voce
+è un dato biometrico e `llmConsent` copre il testo.

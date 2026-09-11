@@ -86,8 +86,15 @@ const SCRITTA = {
 const ORALE = {
   id: "orale", minuti: 15,
   presentazione: ["Come ti chiami?"],
-  argomenti: ["Il lavoro", "La famiglia"],
-  controllo: ["Ho parlato due minuti", "Ho usato il passato"]
+  /* Same shape as the written `tracce`, because after the exam the student
+     writes down what they said and that text goes through the same
+     `Writing.analyse`. Without `richiede` the oral row of the report would
+     have nothing to detect — which is how it was until ADR-009 point 5 was
+     finally honoured. */
+  argomenti: [
+    { it: "Il lavoro", richiede: [{ key: "orario", any: ["orario", "turni"], etichetta: "gli orari" }] },
+    { it: "La famiglia", richiede: [{ key: "chi", any: ["moglie", "figli"], etichetta: "con chi vivi" }] }
+  ]
 };
 
 describe("the list of simulations", () => {
@@ -281,17 +288,44 @@ describe("oral production", () => {
     assert.ok(out.includes("rec.errNoMic"), "the reason for its absence is on screen");
   });
 
-  test("argomenti as radios with the first selected; the self-check as checkboxes", () => {
+  test("argomenti as radios with the first selected", () => {
     const out = html().corpoOrale(ORALE, "");
     assert.equal(ile(out, 'name="arg"'), 2);
     assert.match(out, /name="arg" value="0" checked/);
-    assert.equal(ile(out, 'type="checkbox"'), 2);
-    assert.match(out, /data-c="0"/);
+    assert.ok(out.includes("Il lavoro"), "the topic itself, not the object around it");
+  });
+
+  test("no self-assessment checklist: ADR-009 rejected it and it lived on anyway", () => {
+    /* Option G in that document, rejected with its reason: under exam
+       conditions the incentive to tick every box is at its highest. It was
+       in the markup all the same, so this assertion is the one that keeps it
+       out. The positive half stands above: the section still draws its
+       radios, so an empty return would not pass both. */
+    const out = html().corpoOrale(ORALE, "");
+    assert.equal(ile(out, 'type="checkbox"'), 0, out);
+    assert.ok(!out.includes("cils.selfCheck"), out);
   });
 
   test("the section is marked as not scored", () => {
     const out = html().corpoOrale(ORALE, "");
     assert.ok(out.includes("cils.oralNotScored"));
+  });
+
+  test("the review after the exam: a field to write in and the topic above it", () => {
+    const out = html().rewizja({ argomento: ORALE.argomenti[0], testo: "" }, false);
+    assert.ok(out.includes("js-said"), "the field the student writes in");
+    assert.ok(out.includes("Il lavoro"), "the topic they spoke about");
+    assert.ok(out.includes("js-play-mine"), "and their own recording to listen back to");
+    assert.ok(!out.includes("cils-clock"), "no clock: this is not a fifth exam section");
+  });
+
+  test("with no recording there is no play button, and the field stays", () => {
+    /* The recording lives in memory and is gone after a reload. Writing down
+       what you said is still worth doing then — from memory rather than from
+       the tape — so only the button disappears. */
+    const out = html().rewizja({ argomento: ORALE.argomenti[0], testo: "" }, true);
+    assert.ok(!out.includes("js-play-mine"), out);
+    assert.ok(out.includes("js-said"), out);
   });
 });
 
@@ -363,10 +397,25 @@ describe("the production cards in the summary", () => {
     assert.ok(out.includes("✗"), `the closing formula is missing: ${out}`);
   });
 
-  test("the oral card shows the chosen topic and the number of ticked points", () => {
-    const out = html().orale({ argomento: "Il lavoro", spuntate: 2 });
-    assert.ok(out.includes("Il lavoro"));
-    assert.match(out, /cils\.selfChecked\(n=2\)/);
+  test("the oral card runs the student's own account through the same detection", () => {
+    const out = html().orale({ argomento: ORALE.argomenti[0], testo: "Faccio i turni di notte in fabbrica." });
+    assert.ok(out.includes("Il lavoro"), out);
+    assert.ok(out.includes("✓"), "the requirement it met");
+    /* The LABEL, not the key. "orario" is what the data calls that entry
+       internally; "gli orari" is what a person reads. The written card lost
+       this distinction once already, which is why it has a mutation of its
+       own, and the oral card is a second copy of the same line. */
+    assert.ok(out.includes("gli orari"), out);
+    assert.ok(!out.includes(">orario<"), out);
+    assert.ok(out.includes("cils.oralOwnWords"), "said to be their words, not a transcript");
+  });
+
+  test("with nothing written down the card says so instead of showing crosses", () => {
+    /* A row of crosses reads as "you did none of this", which is a verdict,
+       and a wrong one: nobody checked anything. */
+    const out = html().orale({ argomento: ORALE.argomenti[0], testo: "" });
+    assert.ok(out.includes("cils.oralNoText"), out);
+    assert.ok(!out.includes("✗"), out);
   });
 });
 
@@ -413,7 +462,7 @@ describe("the whole summary", () => {
     const box = silnik();
     const H = box.sandbox.CilsHtml;
     const e = box.sandbox.Cils.esito({ ascolto: 9, lettura: 9 });
-    const zProdukcja = H.podsumowanie(e, () => false, PISEMNA, { argomento: "Il lavoro", spuntate: 2 });
+    const zProdukcja = H.podsumowanie(e, () => false, PISEMNA, { argomento: { it: "Il lavoro", richiede: [] }, testo: "Lavoro in fabbrica." });
     const bez = H.podsumowanie(e, () => false, null, null);
     assert.ok(zProdukcja.includes("formula di chiusura"), "the requirement of the written part");
     assert.ok(zProdukcja.includes("Il lavoro"), "the topic of the oral part");

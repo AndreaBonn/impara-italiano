@@ -92,6 +92,21 @@ intero insieme alla consegna dell'esercizio. Non accade mai da solo: c'è un pul
 tu, e finché non lo premi il tuo tema resta dov'è. Quel parere non è un voto e non tocca né i
 tuoi progressi né le tue schede di ripetizione.
 
+E c'è un terzo posto, la simulazione d'esame, dove esce ancora di più e senza che tu prema
+niente. Alla fine di una simulazione, **se hai già acceso il controllo con un modello**, il
+corso manda al fornitore due cose: il testo che hai scritto nella prova scritta, con la sua
+traccia, e quello che hai scritto nella revisione dopo la prova orale, cioè il resoconto di
+quello che avevi detto. Vale la pena sapere che cosa sono questi due testi: le tracce
+d'esame chiedono del tuo quartiere, del tuo lavoro, di come sei arrivato in Italia, quindi
+è probabile che tu ci abbia messo dove abiti e che lavoro fai. **Se preferisci che non
+escano, spegni il controllo con un modello in Impostazioni prima di cominciare**: la
+simulazione funziona esattamente come prima, il punteggio di ascolto e lettura è lo stesso
+e le due produzioni restano con il rilevamento che il corso fa da solo, sul tuo dispositivo.
+
+La tua **voce** non esce mai da qui per questa strada: la registrazione della prova orale
+resta nella memoria della pagina e sparisce quando la chiudi. Quello che esce è solo ciò che
+hai scritto tu.
+
 Tre cose che è giusto tu sappia prima:
 
 - **la chiave resta su questo dispositivo.** Non passa da noi in nessun momento: viaggia dal

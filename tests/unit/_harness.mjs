@@ -76,7 +76,12 @@ export const LLM = [
   "assets/js/llm-rules.js",
   "assets/js/llm-keys.js",
   "assets/js/llm-net.js",
-  "assets/js/llm.js"
+  "assets/js/llm.js",
+  /* Last, and not part of the chain: llm.js reads it at CALL time, when the
+     exam report asks for a reading of a production. In index.html it sits
+     further down, next to the other cils-* files; here it has to be present
+     or `reportProduction` would hand back everything the model said. */
+  "assets/js/cils-report.js"
 ];
 
 /**

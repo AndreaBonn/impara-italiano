@@ -230,20 +230,48 @@ window.CILS = [
           "Dove abiti e con chi?",
           "Che cosa fai: studi o lavori?"
         ],
+        /* Argomenty mają ten sam kształt co `tracce` prowy pisemnej, i to nie
+           jest symetria dla symetrii: po prowie uczeń spisuje, co powiedział,
+           a ten tekst przechodzi przez TEN SAM `Writing.analyse`. Bez
+           `richiede` referat z prowy ustnej nie miałby czego wykryć — i tak
+           właśnie było, choć ADR-009 punkt 5 wymagał inaczej. */
         argomenti: [
-          "Il quartiere dove vivi: che cosa funziona e che cosa cambieresti?",
-          "Un servizio pubblico italiano che hai usato: com'è andata?",
-          "Il lavoro nel tuo Paese e in Italia: quali differenze hai notato?",
-          "Che cosa consiglieresti a una persona appena arrivata in Italia?"
-        ],
-        /* Griglia autocontrollu. Nie jest to ocena: uczeń słucha własnego
-           nagrania i sam mówi, czy zrobił to, czego zadanie wymagało. */
-        controllo: [
-          "Ho risposto alla domanda, non a un'altra.",
-          "Ho parlato per almeno due minuti senza fermarmi a lungo.",
-          "Ho dato almeno un esempio concreto.",
-          "Ho usato i tempi del passato dove servivano.",
-          "Mi sono corretto quando ho sentito un errore."
+          {
+            it: "Il quartiere dove vivi: che cosa funziona e che cosa cambieresti?",
+            richiede: [
+              { key: "dove", any: ["abito", "vivo", "quartiere", "zona", "periferia", "centro"], etichetta: "dove vivi" },
+              { key: "funziona", any: ["funziona", "comodo", "vicino", "tranquillo", "mi piace"], etichetta: "che cosa funziona" },
+              { key: "cambieresti", any: ["cambierei", "vorrei", "servirebbe", "manca", "bisognerebbe"], etichetta: "che cosa cambieresti" },
+              { key: "esempio", any: ["per esempio", "ad esempio", "una volta", "l'anno scorso", "il mese scorso"], etichetta: "un esempio concreto" }
+            ]
+          },
+          {
+            it: "Un servizio pubblico italiano che hai usato: com'è andata?",
+            richiede: [
+              { key: "quale", any: ["comune", "anagrafe", "questura", "ospedale", "asl", "poste", "scuola", "ufficio"], etichetta: "quale servizio" },
+              { key: "motivo", any: ["perché", "dovevo", "avevo bisogno", "mi serviva"], etichetta: "perché ci sei andato" },
+              { key: "passato", verb: "andare", tense: "passPross", etichetta: "com'è andata, al passato" },
+              { key: "giudizio", any: ["bene", "male", "lento", "veloce", "difficile", "semplice", "gentile"], etichetta: "come è andata davvero" }
+            ]
+          },
+          {
+            it: "Il lavoro nel tuo Paese e in Italia: quali differenze hai notato?",
+            richiede: [
+              { key: "paese", any: ["nel mio paese", "da noi", "in italia"], etichetta: "il confronto fra i due Paesi" },
+              { key: "orario", any: ["orario", "ore", "turni", "contratto", "stipendio", "ferie"], etichetta: "un aspetto concreto del lavoro" },
+              { key: "differenza", any: ["differenza", "diverso", "diversa", "invece", "mentre", "più", "meno"], etichetta: "la differenza" },
+              { key: "opinione", any: ["secondo me", "penso", "credo", "preferisco", "mi sembra"], etichetta: "la tua opinione" }
+            ]
+          },
+          {
+            it: "Che cosa consiglieresti a una persona appena arrivata in Italia?",
+            richiede: [
+              { key: "consiglio", any: ["consiglio", "consiglierei", "direi", "dovrebbe", "deve"], etichetta: "il consiglio" },
+              { key: "documenti", any: ["documenti", "permesso", "residenza", "codice fiscale", "lingua", "italiano", "lavoro", "casa"], etichetta: "di che cosa occuparsi per prima cosa" },
+              { key: "motivo", any: ["perché", "così", "altrimenti", "serve", "aiuta"], etichetta: "perché" },
+              { key: "esperienza", any: ["quando sono arrivato", "quando sono arrivata", "all'inizio", "i primi mesi", "anch'io"], etichetta: "la tua esperienza" }
+            ]
+          }
         ]
       }
     ]
@@ -447,17 +475,42 @@ window.CILS = [
           "Che lavoro fai o che cosa studi?"
         ],
         argomenti: [
-          "Come hai imparato l'italiano fino a oggi?",
-          "Una difficoltà che hai avuto in Italia e come l'hai risolta.",
-          "La scuola nel tuo Paese e in Italia: che cosa cambia?",
-          "Che cosa ti manca del posto da cui vieni?"
-        ],
-        controllo: [
-          "Ho risposto alla domanda, non a un'altra.",
-          "Ho parlato per almeno due minuti senza fermarmi a lungo.",
-          "Ho dato almeno un esempio concreto.",
-          "Ho usato i tempi del passato dove servivano.",
-          "Mi sono corretto quando ho sentito un errore."
+          {
+            it: "Come hai imparato l'italiano fino a oggi?",
+            richiede: [
+              { key: "come", any: ["scuola", "corso", "cpia", "da solo", "da sola", "libri", "televisione", "lavoro", "amici"], etichetta: "come lo hai imparato" },
+              { key: "quando", any: ["anni", "mesi", "da quando", "all'inizio", "adesso", "oggi"], etichetta: "da quanto tempo" },
+              { key: "passato", verb: "imparare", tense: "passPross", etichetta: "il passato prossimo" },
+              { key: "difficile", any: ["difficile", "facile", "fatica", "problema", "sbaglio", "sbagliavo"], etichetta: "che cosa è stato difficile" }
+            ]
+          },
+          {
+            it: "Una difficoltà che hai avuto in Italia e come l'hai risolta.",
+            richiede: [
+              { key: "quale", any: ["difficoltà", "problema", "non riuscivo", "non capivo", "non sapevo"], etichetta: "quale difficoltà" },
+              { key: "quando", any: ["quando", "appena arrivato", "appena arrivata", "l'anno scorso", "all'inizio"], etichetta: "quando è successo" },
+              { key: "risolta", verb: "risolvere", tense: "passPross", etichetta: "come l'hai risolta, al passato" },
+              { key: "aiuto", any: ["aiuto", "mi ha aiutato", "ho chiesto", "da solo", "da sola"], etichetta: "chi ti ha aiutato, o se hai fatto da solo" }
+            ]
+          },
+          {
+            it: "La scuola nel tuo Paese e in Italia: che cosa cambia?",
+            richiede: [
+              { key: "paese", any: ["nel mio paese", "da noi", "in italia"], etichetta: "il confronto fra i due Paesi" },
+              { key: "aspetto", any: ["orario", "materie", "esami", "voti", "maestri", "professori", "classe"], etichetta: "un aspetto concreto della scuola" },
+              { key: "differenza", any: ["differenza", "diverso", "diversa", "invece", "mentre", "più", "meno"], etichetta: "che cosa cambia" },
+              { key: "opinione", any: ["secondo me", "penso", "credo", "preferisco", "mi sembra"], etichetta: "la tua opinione" }
+            ]
+          },
+          {
+            it: "Che cosa ti manca del posto da cui vieni?",
+            richiede: [
+              { key: "cosa", any: ["mi manca", "mi mancano", "manca"], etichetta: "che cosa ti manca" },
+              { key: "dettaglio", any: ["famiglia", "amici", "cibo", "mare", "casa", "festa", "sole", "lingua"], etichetta: "una cosa concreta" },
+              { key: "motivo", any: ["perché", "quando", "mi ricordo", "ricordo"], etichetta: "perché proprio quello" },
+              { key: "qui", any: ["qui", "in italia", "adesso", "invece"], etichetta: "il confronto con l'Italia" }
+            ]
+          }
         ]
       }
     ]

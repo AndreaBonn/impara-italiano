@@ -241,10 +241,14 @@ describe("answers to the open sections", () => {
        the summary they stand as material to check on your own. */
     const run = podejscie(silnik());
     run.zapiszScritta({ it: "Scrivi una cartolina" }, "Ciao, sono a Roma.");
-    run.zapiszOrale("La mia città", 3);
+    run.zapiszOrale({ it: "La mia città", richiede: [] });
+    run.zapiszTrascrizione("Abito a Roma da tre anni.");
 
     assert.equal(run.dane.scritta.testo, "Ciao, sono a Roma.");
-    assert.equal(run.dane.orale.spuntate, 3);
+    assert.equal(run.dane.orale.argomento.it, "La mia città");
+    /* The oral part arrives in two steps: the topic while the clock runs,
+       the words afterwards, in the review with no clock. */
+    assert.equal(run.dane.orale.testo, "Abito a Roma da tre anni.");
     assert.equal(run.dane.punti.scritta, undefined, "no points is not zero points");
     assert.equal(run.esito().abilita.scritta.misurata, false);
   });

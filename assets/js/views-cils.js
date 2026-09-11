@@ -37,6 +37,17 @@
   var run = null;
   var tick = null;
 
+  /* The student's own recording, kept for the review that follows the exam.
+     Module scope rather than inside the oral section, because the section it
+     was made in is gone by the time it is listened to. In memory only: it is
+     dropped with the page, and nothing writes audio to disk. */
+  var nagranie = null;
+
+  /* Whether the review after the oral part has already been through. Without
+     it the summary would send the student back to the review it just came
+     from, for ever. */
+  var poRewizji = false;
+
   /* ═══════════════════ The list and the preamble ═══════════════════ */
 
   Views.esame = function (params) {
@@ -58,6 +69,8 @@
     var s = Cils.sim(id);
     if (!s) { set(Views.shell.empty(t("cils.none"))); return; }
     run = CilsRun.create(s);
+    nagranie = null;
+    poRewizji = false;
     rysujSezione();
   }
 
@@ -129,10 +142,23 @@
   function rysujSezione() {
     fermaTimer();
     var sez = run.sekcja();
-    if (!sez) return riepilogo();
+    if (!sez) return poEgzaminie();
     if (sez.id === "ascolto" || sez.id === "lettura") return sezioneChiusa(sez);
     if (sez.id === "scritta") return sezioneScritta(sez);
     return sezioneOrale(sez);
+  }
+
+  /**
+   * What happens when the sections run out: first the review, then the report.
+   *
+   * The review is skipped for whoever never reached the oral part — a
+   * student who left after the reading has nothing to listen back to, and a
+   * screen asking them to write down what they said would be asking about
+   * something that never happened.
+   */
+  function poEgzaminie() {
+    if (run.dane.orale && !poRewizji) return rewizja();
+    riepilogo();
   }
 
   function avanti() {
@@ -234,28 +260,53 @@
     if (!powod) podepnijNagranie();
 
     razTylko(el().querySelector(".js-next"), function () {
-      run.zapiszOrale((sez.argomenti || [])[scelto], spuntate());
+      run.zapiszOrale((sez.argomenti || [])[scelto]);
       avanti();
     });
     avviaTimer(sez.minuti * 60, function () {
-      run.zapiszOrale((sez.argomenti || [])[scelto], spuntate());
+      run.zapiszOrale((sez.argomenti || [])[scelto]);
       scadi(sez.id);
     });
   }
 
-  function spuntate() {
-    var n = 0;
-    el().querySelectorAll('.cils-check input[type="checkbox"]').forEach(function (c) {
-      if (c.checked) n++;
+  /**
+   * The review after the exam: listen to yourself, write what you said.
+   *
+   * OUTSIDE the clock, deliberately. Under a countdown this would be a
+   * second written task, and what it would measure is typing speed. The
+   * recording cannot be transcribed for the student — `Audio2.listen` closes
+   * at the first pause, and it would be contending for a microphone
+   * `MediaRecorder` already holds — so the words are theirs, and the report
+   * says so rather than calling them a transcript.
+   *
+   * Skipping is a first-class way out: the button says "go to the report",
+   * not "cancel". Whoever does not want to write gets the report they would
+   * have got anyway, with the oral row saying nothing was collected.
+   */
+  function rewizja() {
+    Views.onLeave = fermaTimer;
+    var powod = !nagranie;
+    set(pageHead(t("cils.kicker") + " · " + esc(run.dane.sim.titoloIt), t("cils.reviewTitle"), "") +
+      H.rewizja(run.dane.orale, powod) + H.coda("cils.reviewDone"));
+
+    if (!powod) {
+      el().querySelector(".js-play-mine").addEventListener("click", function () {
+        var a = new global.Audio(nagranie.url);
+        a.play().catch(function () { Core.toast(t("cils.playFailed")); });
+      });
+    }
+
+    razTylko(el().querySelector(".js-next"), function () {
+      run.zapiszTrascrizione(el().querySelector(".js-said").value);
+      poRewizji = true;
+      riepilogo();
     });
-    return n;
   }
 
   function podepnijNagranie() {
     var b = el().querySelector(".js-rec");
     var play = el().querySelector(".js-play-mine");
     var stan = el().querySelector(".js-state");
-    var nagranie = null;
 
     b.addEventListener("click", function () {
       if (Recorder.nagrywa()) { Recorder.stop(); return; }
@@ -299,6 +350,68 @@
 
     el().querySelector(".js-again").addEventListener("click", function () { App.go("esame", { id: run.dane.sim.id }); });
     el().querySelector(".js-list").addEventListener("click", function () { App.go("esame"); });
+
+    poproszOLekture();
+  }
+
+  /**
+   * The model's reading of the two productions, when the student has set one
+   * up at all.
+   *
+   * Everything here is optional twice over: without a key nothing is asked
+   * and the report is the one this course has always drawn, and even with a
+   * key an answer that turns out to be a mark comes back as nothing
+   * (`Llm.reportProduction` runs it through `CilsReport.pulisci` first).
+   *
+   * `zywy` for the reason views-talk.js has it: the answer lands seconds
+   * later and the student may be on another screen by then, where these
+   * elements no longer exist.
+   */
+  function poproszOLekture() {
+    if (!global.Llm || !Llm.available()) return;
+
+    var zywy = true;
+    var poprzednie = Views.onLeave;
+    Views.onLeave = function () {
+      zywy = false;
+      if (typeof poprzednie === "function") poprzednie();
+    };
+
+    [
+      { sel: ".js-lettura-scritta", sezione: "scritta", dane: run.dane.scritta,
+        traccia: run.dane.scritta && run.dane.scritta.traccia,
+        testo: run.dane.scritta && run.dane.scritta.testo },
+      { sel: ".js-lettura-orale", sezione: "orale", dane: run.dane.orale,
+        traccia: run.dane.orale && run.dane.orale.argomento,
+        testo: run.dane.orale && run.dane.orale.testo }
+    ].forEach(function (cel) {
+      var box = el().querySelector(cel.sel);
+      if (!box || !cel.dane || !String(cel.testo || "").trim()) return;
+
+      box.classList.add("is-waiting");
+      box.textContent = t("cils.reading");
+
+      Llm.reportProduction({
+        sezione: cel.sezione, traccia: cel.traccia, testo: cel.testo, cefr: "B1"
+      }, function (tekst) {
+        if (!zywy) return;
+        box.classList.remove("is-waiting");
+        /* Nothing to show is an EMPTY box, not a message: the stylesheet
+           hides an empty one, so the report closes up as if the reading had
+           never been asked for — which is the report without a key. */
+        if (!tekst) { box.textContent = ""; return; }
+        /* textContent, never innerHTML: this is the only string on the
+           report the course did not write, and it was produced by a model
+           that has just read a text the student typed. */
+        box.textContent = "";
+        var etykieta = global.document.createElement("b");
+        etykieta.textContent = t("cils.readingLabel") + " ";
+        var tresc = global.document.createElement("span");
+        tresc.textContent = tekst;
+        box.appendChild(etykieta);
+        box.appendChild(tresc);
+      });
+    });
   }
 
   /** Saving the run into the student's history; the entry shape and the ceiling are in cils-run.js. */

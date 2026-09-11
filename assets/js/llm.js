@@ -166,6 +166,54 @@
   }
 
   /**
+   * A reading of one exam production — the fourth way in, and the most
+   * constrained.
+   *
+   * It shares everything with `review` except what it is allowed to say. The
+   * answer goes through `CilsReport.pulisci` before the caller ever sees it,
+   * so a model that grades in spite of the instruction produces a shorter
+   * reading, or none at all, rather than a mark on the screen. That is the
+   * same shape as `judge`, where the verdict passes through `clamp`: the
+   * decision lives in code, and the instruction merely asks nicely.
+   *
+   * No cache, for the reason `review` has none: the student may have
+   * rewritten the text in between, and a key carrying the whole text to tell
+   * the two apart would be the text itself.
+   *
+   * @param {object} task  {sezione:"scritta"|"orale", traccia, testo, cefr}
+   * @param {function} cb  receives a string, or null when there is nothing to show
+   */
+  function reportProduction(task, cb) {
+    if (!available()) return cb(null);
+    if (spent >= MAX_PER_SESSION) return cb(null);
+    var t = task || {};
+    if (!String(t.testo || "").trim()) return cb(null);
+
+    var settings = global.Core.state.settings;
+    var keys = global.LlmKeys.all();
+    var order = Array.isArray(settings.llmOrder) && settings.llmOrder.length
+      ? settings.llmOrder
+      : global.LlmProviders.ORDER;
+
+    global.Consent.zZgodaLlm(function () {
+      spent++;
+      var prompt = global.LlmPrompts.esame(settings.lang, t.sezione, t.traccia, t.testo, t.cefr);
+      var deadline = global.Date.now() + TOTAL_MS;
+      global.LlmNet.askChain(order, keys, prompt, deadline, function (out, failures) {
+        if (out === null) {
+          announce(failures);
+          return cb(null);
+        }
+        /* Empty after the guard means everything the model sent was a mark or
+           a verdict. The caller treats that as no answer, which is the course
+           without a key: the report stands as it always did. */
+        var czyste = global.CilsReport.pulisci(out);
+        cb(czyste || null);
+      });
+    }, function () { cb(null); });
+  }
+
+  /**
    * Tries one key on its own, for the settings page.
    *
    * Deliberately outside `judge`: it must run before any consent exists and
@@ -189,6 +237,7 @@
   global.Llm = {
     judge: judge,
     review: review,
+    reportProduction: reportProduction,
     test: test,
     available: available,
     useTransport: global.LlmNet.useTransport,

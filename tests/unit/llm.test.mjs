@@ -564,6 +564,11 @@ function rozmawiaj(Llm, task) {
   return new Promise((resolve) => Llm.chat(task, resolve));
 }
 
+/** Like `rozmawiaj`, but keeps the reason the callback gives for a null. */
+function rozmawiajZPowodem(Llm, task) {
+  return new Promise((resolve) => Llm.chat(task, (out, powod) => resolve({ out, powod })));
+}
+
 const SCENA = { id: "bar", cefr: "A1", ruolo: "un barista", situazione: "Al banco." };
 
 function replika(id, risposta, correzione) {
@@ -599,6 +604,37 @@ describe("a turn of a free conversation", () => {
     c.box.sandbox.Llm.useTransport((req) => Promise.resolve(answer(idOf(req.url), "SI", "Va bene.")));
     const verdict = await judge(c.Llm);
     assert.equal(verdict.promote, true, "the judge stopped working after ten turns of talk");
+  });
+
+  test("a spent conversation budget does not look like a dead network", async () => {
+    /* Both exits used to be a bare `cb(null)`, and the view drew the same
+       "no answer came back, try again" for each. The student then retried a
+       conversation that was over for the rest of the session, with the turn
+       refunded every time and the counter never moving: a dead end that
+       reads as a hiccup. The transport here answers every single time, so
+       any null that comes out is the budget and nothing else. */
+    const c = rozmowa({ answers: { gemini: replika("gemini", "Va bene.", "") } });
+    const sufit = c.box.sandbox.Llm.MAX_CHAT_PER_SESSION;
+
+    for (let i = 0; i < sufit; i++) {
+      const r = await rozmawiajZPowodem(c.Llm, { scenario: SCENA, message: "ciao " + i, history: [] });
+      assert.ok(r.out, `turn ${i + 1} of ${sufit} came back empty with a healthy transport`);
+    }
+
+    const poSuficie = await rozmawiajZPowodem(c.Llm, { scenario: SCENA, message: "ancora", history: [] });
+    assert.equal(poSuficie.out, null, "the ceiling did not stop the conversation");
+    assert.equal(poSuficie.powod, "budget", "the caller cannot tell a spent budget from a failed request");
+  });
+
+  test("a failed request is not reported as a spent budget", async () => {
+    /* The paired positive case: the same null, a different reason. Without
+       it the assertion above passes on a build that answers "budget" to
+       everything, which would be the same defect with the labels swapped. */
+    const c = rozmowa({ answers: {} });
+    c.Llm.useTransport(() => Promise.resolve({ status: 500, json: {} }));
+    const r = await rozmawiajZPowodem(c.Llm, { scenario: SCENA, message: "ciao", history: [] });
+    assert.equal(r.out, null);
+    assert.notEqual(r.powod, "budget", "a dead network was labelled as a spent budget");
   });
 
   test("the history travels, and the last thing said is not in it twice", async () => {

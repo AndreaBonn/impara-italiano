@@ -736,6 +736,7 @@ LINGUAI.addUI("pl", {
   "chat.send": "Wyślij",
   "chat.waiting": "Rozmówca pisze…",
   "chat.failed": "Odpowiedź nie przyszła. Tura nie została policzona — spróbuj jeszcze raz.",
+  "chat.budgetSpent": "Limit swobodnej rozmowy na tę sesję wyczerpany. Sędzia ćwiczeń działa dalej; rozmowa wróci po odświeżeniu strony.",
   "chat.left": "Zostało tur: {n}",
   "chat.over": "Koniec rozmowy. Tur: {n}.",
   "chat.noFixes": "Rozmówca nie poprawił niczego.",

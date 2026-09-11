@@ -241,7 +241,11 @@
    */
   function chat(task, cb) {
     if (!available()) return cb(null);
-    if (spentChat >= MAX_CHAT_PER_SESSION) return cb(null);
+    /* The one null that is not a hiccup, and the caller has to be able to
+       tell: every other exit here is worth retrying, this one is not, and
+       drawing them the same way sends the student back to an input box that
+       will never answer again for the rest of the session. */
+    if (spentChat >= MAX_CHAT_PER_SESSION) return cb(null, "budget");
     var t = task || {};
     if (!String(t.message || "").trim()) return cb(null);
 

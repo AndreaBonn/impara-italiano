@@ -662,9 +662,9 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 | Biblioteka: teksty / zdania / słowa | 6 / 213 / 2893 | `node scripts/baseline.mjs` |
 | Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
 | Nagrania | 4071 plików mp3, 46 MiB bajtów; 4070 skrótów w indeksie | `node scripts/baseline.mjs` |
-| Klucze interfejsu na język | 889 × 5 języków | `node scripts/baseline.mjs` |
+| Klucze interfejsu na język | 890 × 5 języków | `node scripts/baseline.mjs` |
 | Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
-| Pliki silnika | 77 w assets/js/, 16034 linii | `node scripts/baseline.mjs` |
+| Pliki silnika | 77 w assets/js/, 16049 linii | `node scripts/baseline.mjs` |
 
 Trzy rzeczy, których tabela nie mieści, a które trzeba przeczytać razem z nią.
 Wszystkie trzynaście typów ćwiczeń stoi w danych, ale `truefalse` (27 wystąpień) wyłącznie

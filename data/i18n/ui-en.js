@@ -725,6 +725,7 @@ LINGUAI.addUI("en", {
   "chat.send": "Send",
   "chat.waiting": "They're typing…",
   "chat.failed": "No answer came back. The turn was not counted — try again.",
+  "chat.budgetSpent": "This session's conversation budget is spent. The exercise judge still works; conversation comes back when you reload the page.",
   "chat.left": "Turns left: {n}",
   "chat.over": "End of the conversation. Turns: {n}.",
   "chat.noFixes": "They corrected nothing.",

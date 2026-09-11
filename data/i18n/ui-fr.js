@@ -735,6 +735,7 @@ LINGUAI.addUI("fr", {
   "chat.send": "Envoyer",
   "chat.waiting": "Votre interlocuteur écrit…",
   "chat.failed": "Aucune réponse n'est arrivée. Le tour n'a pas été compté : réessayez.",
+  "chat.budgetSpent": "Le budget de conversation de cette session est épuisé. Le juge des exercices fonctionne toujours ; la conversation revient au rechargement de la page.",
   "chat.left": "Tours restants : {n}",
   "chat.over": "Fin de la conversation. Tours : {n}.",
   "chat.noFixes": "Rien n'a été corrigé.",

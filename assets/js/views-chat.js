@@ -193,9 +193,20 @@
           cefr: run.scenario.cefr,
           message: tekst,
           history: run.historia.slice(0, -1)
-        }, function (turnData) {
+        }, function (turnData, powod) {
           if (!zywy) return;
           czeka = false;
+
+          if (!turnData && powod === "budget") {
+            /* The session's conversation budget is gone. Nothing here will
+               work again until the page is reloaded, so the turn is NOT
+               given back and the box stays shut: refunding it and inviting
+               a retry would be the course lying about what happens next. */
+            if (dlg.lastChild) dlg.removeChild(dlg.lastChild);
+            input.value = tekst;
+            stan.textContent = t("chat.budgetSpent");
+            return;
+          }
 
           if (!turnData) {
             /* Nothing came back: give the turn back rather than spend it on

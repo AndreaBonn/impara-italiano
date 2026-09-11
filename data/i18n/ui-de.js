@@ -730,6 +730,7 @@ LINGUAI.addUI("de", {
   "chat.send": "Senden",
   "chat.waiting": "Ihr Gegenüber schreibt…",
   "chat.failed": "Es kam keine Antwort. Die Runde wurde nicht gezählt — versuchen Sie es noch einmal.",
+  "chat.budgetSpent": "Das Gesprächsbudget dieser Sitzung ist aufgebraucht. Der Übungsrichter arbeitet weiter; das Gespräch kehrt nach dem Neuladen der Seite zurück.",
   "chat.left": "Verbleibende Runden: {n}",
   "chat.over": "Ende des Gesprächs. Runden: {n}.",
   "chat.noFixes": "Es wurde nichts korrigiert.",

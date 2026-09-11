@@ -735,6 +735,7 @@ LINGUAI.addUI("es", {
   "chat.send": "Enviar",
   "chat.waiting": "Está escribiendo…",
   "chat.failed": "No llegó respuesta. El turno no se ha contado: inténtalo otra vez.",
+  "chat.budgetSpent": "Se ha agotado el límite de conversación de esta sesión. El juez de los ejercicios sigue funcionando; la conversación vuelve al recargar la página.",
   "chat.left": "Turnos restantes: {n}",
   "chat.over": "Fin de la conversación. Turnos: {n}.",
   "chat.noFixes": "No te ha corregido nada.",

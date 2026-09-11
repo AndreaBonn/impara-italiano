@@ -20,6 +20,11 @@ jobs:
   gates:
     runs-on: ubuntu-latest
 
+    # The badges of the last step are committed back to main, and nothing
+    # else here writes to the repository.
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -64,8 +69,16 @@ jobs:
       - name: Can a new release announce itself
         run: node scripts/check_swversion.mjs
 
+      # `tee` on the three steps below, and nothing else changed about them:
+      # the badges of the last step are read off these runs rather than off a
+      # second, duplicate one. `set -o pipefail` is what keeps a red suite red
+      # through the pipe: without it the exit code would be tee's.
       - name: Unit tests
-        run: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          npm test | tee reports/unit.log
 
       # Coverage says a line was executed; this says somebody checks it. An
       # assertion that also passes over an empty result has 100% coverage and
@@ -78,7 +91,36 @@ jobs:
       # A threshold, not a decoration: a refactor that silently unhooks a
       # tested branch from the suite passes "npm test" green and stops here.
       - name: Engine coverage
-        run: node scripts/coverage.mjs --min 99
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/coverage.mjs --min 99 | tee reports/coverage.txt
 
       - name: Browser tests
-        run: npm run test:dom
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: reports/dom.json
+        run: npm run test:dom -- --reporter=list,json
+
+      # What the profile page (github.com/AndreaBonn) shows about this
+      # repository. The numbers come from the three runs above, so they cannot
+      # drift from the suite the way a figure written into a README does.
+      - name: Badges for the profile page
+        run: |
+          node scripts/badges.mjs \
+            --unit reports/unit.log \
+            --dom reports/dom.json \
+            --coverage reports/coverage.txt
+
+      # Only on main, and only on a push: a pull request from a fork has no
+      # write token, and a badge built from a branch would describe code that
+      # is not released. `[skip ci]` keeps this commit from starting the
+      # workflow again.
+      - name: Commit the badges
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add badges/test-badge.json badges/coverage-badge.json
+          git diff --cached --quiet \
+            || git commit -m "ci: update badges [skip ci]"
+          git push

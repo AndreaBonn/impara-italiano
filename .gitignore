@@ -22,6 +22,10 @@ Thumbs.db
 test-results/
 playwright-report/
 
+# surowe raporty przebiegów, z których scripts/badges.mjs liczy odznaki;
+# same odznaki (badges/) wchodzą do repozytorium, bo czyta je strona profilu
+reports/
+
 # dziennik pracy — zostaje na dysku i nadal się go uzupełnia,
 # ale nie wchodzi do repozytorium: to notatnik wewnętrzny, nie dokumentacja kursu
 docs/REPORT_ATTIVITA.md

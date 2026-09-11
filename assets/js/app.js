@@ -220,6 +220,10 @@
       startRouting();
     });
     Core.touchDay();
+    /* Last, and after the state is loaded: everything it does depends on how
+       many lessons are behind the student, and one of the four asks the
+       browser for a permission we only ever get to ask for once. */
+    Retention.start();
   }
 
   /**

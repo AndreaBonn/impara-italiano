@@ -70,6 +70,10 @@ const T_RULES = "tests/unit/llm-rules.test.mjs";
 const T_PROV = "tests/unit/llm-providers.test.mjs";
 const PROMPTS = "assets/js/llm-prompts.js";
 const T_PROMPTS = "tests/unit/llm-prompts.test.mjs";
+const RET = "assets/js/retention-rules.js";
+const T_RET = "tests/unit/retention-rules.test.mjs";
+const ICS = "assets/js/ics.js";
+const T_ICS = "tests/unit/ics.test.mjs";
 
 /**
  * The mutations. `z` must occur in the file EXACTLY ONCE — with two
@@ -222,6 +226,38 @@ const MUTACJE = [
   { plik: PROMPTS, test: T_PROMPTS, opis: "writing: the level never reaches the model",
     z: "      system: writingSystem(lang, t.cefr),",
     na: "      system: writingSystem(lang)," },
+
+  /* ---- retention-rules.js: the three decisions behind coming back ---- */
+  { plik: RET, test: T_RET, opis: "storage: asked before a single lesson is done",
+    z: "    return (s.lekcje || 0) >= PROG_MIEJSCA;", na: "    return true;" },
+  { plik: RET, test: T_RET, opis: "storage: the one attempt spent twice",
+    z: "    if (s.pytano) return false;        /* our one attempt is spent */\n", na: "" },
+  { plik: RET, test: T_RET, opis: "install: a refusal that comes back",
+    z: "    if (s.odrzucona) return false;     /* asked and answered, for good */\n", na: "" },
+  { plik: RET, test: T_RET, opis: "install: offered inside the installed app",
+    z: "    if (s.samodzielna) return false;   /* this IS the installed app */\n", na: "" },
+  { plik: RET, test: T_RET, opis: "badge: the horizon dropped, so it counts only what is due now",
+    z: "    var granica = teraz + HORYZONT_MS;", na: "    var granica = teraz;" },
+  { plik: RET, test: T_RET, opis: "badge: a card with no due date counted as due",
+    z: "        if (!c || typeof c.due !== \"number\") return;", na: "        if (!c) return;" },
+  { plik: RET, test: T_RET, opis: "badge: only the first deck walked, so mistakes stop counting",
+    z: "    (Array.isArray(talie) ? talie : []).forEach(function (talia) {",
+    na: "    (Array.isArray(talie) ? talie : []).slice(0, 1).forEach(function (talia) {" },
+
+  /* ---- ics.js: what another program has to be able to read ---- */
+  { plik: ICS, test: T_ICS, opis: "escaping: the comma left as a value separator",
+    z: "      .replace(/,/g, \"\\\\,\")\n", na: "" },
+  { plik: ICS, test: T_ICS, opis: "escaping: a newline left to end the property",
+    z: "      .replace(/\\r\\n|\\r|\\n/g, \"\\\\n\");", na: "      .replace(/\\r\\n|\\r|\\n/g, \"\\n\");" },
+  { plik: ICS, test: T_ICS, opis: "escaping: the backslash escaped last, so every escape doubles",
+    z: "      .replace(/\\\\/g, \"\\\\\\\\\")\n", na: "" },
+  { plik: ICS, test: T_ICS, opis: "folding: measured in characters instead of octets",
+    z: "      var dl = oktety(ch);", na: "      var dl = 1;" },
+  { plik: ICS, test: T_ICS, opis: "folding: the continuation space not counted in its own line",
+    z: "        limit = MAX_OKTETOW - 1;   /* the leading space of a continuation */",
+    na: "        limit = MAX_OKTETOW;" },
+  { plik: ICS, test: T_ICS, opis: "start: written in UTC, so the hour moves with the timezone",
+    z: "      \"DTSTART:\" + poczatek,", na: "      \"DTSTART:\" + stempel(p.teraz)," }
 ];
 
 /* ---------------- Running ---------------- */

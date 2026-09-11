@@ -394,3 +394,44 @@ for (const theme of ["light", "dark"]) {
     }
   });
 }
+
+/* ============================================================
+   The return card in the settings.
+
+   Measured here rather than with an external gate for the reason stated at
+   the top of this file: run against the real page, `verify_states.mjs`
+   reports this card's download button at 1.52:1 and reads its colour as
+   "rgb(0.99,0.005,40)" — an OKLCH triple parsed as RGB, with the hue taken
+   for a blue channel. The same tool reports the same figure for the export
+   button that has been shipping for months. The number is the parser, not
+   the palette, and the only way to tell one from the other is to let the
+   browser do the conversion, which is what this file does.
+
+   Both themes, and the hour select included: it is the one control here
+   whose text is drawn by the platform rather than by us.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`the return card: contrast in the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    /* The badge switch only exists where the browser has the API. Given here
+       so that the control is really on the screen when it is measured: an
+       absent element passes any threshold without anybody noticing. */
+    await page.addInitScript(() => {
+      window.navigator.setAppBadge = () => Promise.resolve();
+      window.navigator.clearAppBadge = () => Promise.resolve();
+    });
+    await page.goto("/index.html#/impostazioni");
+    await page.waitForSelector(".js-ics");
+    await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* the palette transition */
+
+    for (const [sel, opis, prog] of [
+      [".js-ics", "the reminder button", UI],
+      [".js-hour", "the hour select", TEKST]
+    ]) {
+      const m = await page.evaluate((s) => window.__kontrast(s), sel);
+      expect(m, `${opis}: element nie istnieje`).not.toBeNull();
+      expect(m.tekst, `${opis}: ${m.tekst.toFixed(2)}:1, próg ${prog}`).toBeGreaterThanOrEqual(prog);
+    }
+  });
+}

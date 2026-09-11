@@ -57,7 +57,10 @@ ucznia do treści kursu); `router.js` (adres, wybór widoku, `Views.onLeave`) pr
 przed `exercises-choice/text/voice.js` (czternaście typów, wołają `Ex.register`);
 `views.js` (skorupa i `Views.shell`) przed kilkunastoma `views-*.js`, po jednym na ekran;
 `pwa-rules.js` (trzy decyzje o zapowiedzi nowej wersji, czyste funkcje) przed `pwa.js`
-(rejestracja, nasłuchy, komunikat, przeładowanie).
+(rejestracja, nasłuchy, komunikat, przeładowanie); `retention-rules.js` (trzy decyzje
+o powrotach: kiedy pytać o trwałą pamięć, kiedy proponować instalację, jaka liczba na
+ikonie) i `ics.js` (plik dla kalendarza, czysta funkcja napisu) przed `retention.js`
+(zgoda przeglądarki, licznik, `beforeinstallprompt`, pobranie).
 
 Tą samą granicą idzie drugi sędzia odpowiedzi otwartych: `llm-providers.js` (tabela
 czterech dostawców, cztery czyste funkcje na każdego), `llm-prompts.js` (o co pytamy model)
@@ -330,6 +333,41 @@ Odcisk to skrót treści wszystkich plików z `PRECACHE`; dopisuje go
 zwietrzeć. Granica jest świadoma: liczy się powłoka, bo pliki poziomów dociągane są
 w czasie działania i odświeżają się same strategią „najpierw sieć".
 
+### Powroty: co kurs może zrobić bez serwera
+
+Kurs nie ma jak przypomnieć o sobie: powiadomienia z zegarem (`TimestampTrigger`)
+zniknęły z jedynej przeglądarki, która je miała, a push wymaga serwera, z którego
+miałby wyjść. Zostają cztery rzeczy i żadna z nich nie jest powiadomieniem.
+
+- **Trwała pamięć** (`navigator.storage.persist()`). Profil siedzi w `localStorage`,
+  nie ma konta ani synchronizacji, więc to, co przeglądarka sprzątnie, przepada.
+  Pytamy **raz na profil**, i to dopiero po pierwszej skończonej lekcji: odmowę pamięta
+  przeglądarka, nie my, więc jedno podejście wydane na kogoś, kto jeszcze niczego nie
+  zrobił, jest wydane na obcego. Pytanie pada przy starcie, nie na końcu lekcji, bo
+  prośba o uprawnienie nad podsumowaniem przerywa coś, a przy otwarciu — nic.
+- **Licznik na ikonie** (`navigator.setAppBadge`). **Domyślnie wyłączony**, i to jest
+  decyzja o prywatności, nie preferencja: to jedyna rzecz, którą ten kurs rysuje poza
+  własną stroną, i widzi ją każdy, kto spojrzy na telefon. Liczy karty wymagalne
+  **w ciągu doby**, nie w tej sekundzie — licznik zapisuje się przy wyjściu i nikt go
+  potem nie rusza, więc liczba „na teraz" dawałaby zero każdemu, kto właśnie skończył
+  powtórki. Horyzont jest zadeklarowany w Ustawieniach i myli się w bezpieczną stronę:
+  im dłużej ucznia nie ma, tym bardziej zaniża.
+- **Zaproszenie do instalacji**. Nie marketing: instalacja jest tym, co czyni zgodę na
+  trwałą pamięć prawdopodobną, a licznik w ogóle widocznym. Raz, po kilku lekcjach,
+  a odmowa jest ostateczna. Gdzie `beforeinstallprompt` nie istnieje (Firefox, iOS),
+  w miejscu przycisku stoi zdanie z instrukcją — martwy przycisk wygląda jak zepsuty
+  kurs, a nie jak brakująca funkcja przeglądarki.
+- **Plik `.ics`**. Jedyne przypomnienie, które naprawdę działa bez serwera, bo wykonuje
+  je program, który uczeń i tak ma otwarty. Odwołuje się je w kalendarzu, nie tutaj.
+
+`ics.js` jest czystą funkcją napisu i to nie jest kosmetyka: **tu psuje się cicho i
+w cudzym programie**. Przecinek albo nowa linia w wartości nie psują wiersza, tylko go
+KOŃCZĄ, a reszta czyta się jako następna właściwość; limit 75 **oktetów** (nie znaków)
+przy polskich i włoskich literach wypada w innym miejscu, niż podpowiada oko; a
+rozcięcie pary zastępczej odbiera plikowi status UTF-8. `DTSTART` celowo nie ma ani `Z`,
+ani `TZID`: RFC 5545 nazywa to czasem pływającym i o to chodzi, bo „siódma rano" ma
+znaczyć siódmą tam, gdzie uczeń jest.
+
 ## Podgląd linku
 
 Obrazek, który widać po wysłaniu komuś adresu kursu, powstaje ze skryptu, nie z ręki.
@@ -468,7 +506,7 @@ node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
-npm run test:mutations              # czy testy widzą czerwone (53 mutacje, 7 plików)
+npm run test:mutations              # czy testy widzą czerwone (66 mutacji, 9 plików)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
@@ -521,12 +559,12 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 | Czytanki / zadania pisane / zbiory par minimalnych | 24 / 6 / 5 | `node scripts/baseline.mjs` |
 | Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
 | Nagrania | 3494 plików mp3, 37 MiB bajtów; 3493 skrótów w indeksie | `node scripts/baseline.mjs` |
-| Klucze interfejsu na język | 819 × 5 języków | `node scripts/baseline.mjs` |
+| Klucze interfejsu na język | 842 × 5 języków | `node scripts/baseline.mjs` |
 | Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
-| Pliki silnika | 70 w assets/js/, 13990 linii | `node scripts/baseline.mjs` |
-| Testy jednostkowe | 944 przebiegi w 40 plikach, zielone | `npm test` |
-| Testy DOM | 263 przebiegi w 34 plikach, zielone | `npm run test:dom` |
-| Mutacje | 53 w 7 plikach silnika | `npm run test:mutations` |
+| Pliki silnika | 73 w assets/js/, 14674 linii | `node scripts/baseline.mjs` |
+| Testy jednostkowe | 979 przebiegów w 42 plikach, zielone | `npm test` |
+| Testy DOM | 271 przebiegów w 36 plikach, zielone | `npm run test:dom` |
+| Mutacje | 66 w 9 plikach silnika | `npm run test:mutations` |
 | Pokrycie silnika testami jednostkowymi | 99,3%, próg w CI: 99 | `node scripts/coverage.mjs` |
 
 Trzy rzeczy, których tabela nie mieści, a które trzeba przeczytać razem z nią.
@@ -555,16 +593,17 @@ tabeli. Trzy deklaracje, nie trzy przeoczenia.
 sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
 `assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
-decyzji w silniku (53 mutacje w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
-`llm-rules.js`, `llm-providers.js` i `llm-prompts.js`) i wymaga, żeby wskazany
+decyzji w silniku (66 mutacji w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
+`llm-rules.js`, `llm-providers.js`, `llm-prompts.js`, `retention-rules.js` i `ics.js`)
+i wymaga, żeby wskazany
 plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
 puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
 `cils-hint`, `cils.limit` łapiące `cils.limitLabel`.
 
 Trzy rzeczy, które trzeba o niej wiedzieć:
 
-- **Zasięg jest wąski i zadeklarowany.** Siedem plików z siedemdziesięciu. „53/53" nie znaczy
-  „silnik sprawdzony", znaczy „te 53 decyzje sprawdzone". Nowy plik z czystymi funkcjami
+- **Zasięg jest wąski i zadeklarowany.** Dziewięć plików z siedemdziesięciu trzech. „66/66"
+  nie znaczy „silnik sprawdzony", znaczy „te 66 decyzji sprawdzone". Nowy plik z czystymi funkcjami
   to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
 - **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po
   refaktorze) i wiele wystąpień kończą się błędem, nie ostrzeżeniem: mutacja, która po

@@ -117,7 +117,30 @@
          counts from there, not from the beginning of the course. Container
          ADDED: an older profile gets it at zero through merge and sees the
          first reminder after ten new lessons, not immediately. */
-      backup: { at: 0, ts: 0, snoozed: 0 }
+      backup: { at: 0, ts: 0, snoozed: 0 },
+      /* The return hook. Container ADDED, so an older profile gets it empty
+         through merge() and the schema number does not move.
+
+         Three of the four fields exist to make something happen AT MOST
+         ONCE. `pytanoOMiejsce` is spent on the first attempt because the
+         browser, not us, remembers a refusal of the storage prompt;
+         `instalacjaOdrzucona` outlives the session on purpose, since an
+         invitation that comes back is the thing people install a blocker
+         for.
+
+         `odznaka` is off until the student turns it on, and that is a
+         privacy decision rather than a preference: it is the only part of
+         this course that draws anything outside its own page, and what it
+         draws is visible to whoever is holding the phone. */
+      retention: {
+        pytanoOMiejsce: false,
+        trwale: false,
+        pytanoOInstalacje: false,
+        instalacjaOdrzucona: false,
+        odznaka: false,
+        /* {godzina, minuta} once the student has picked one, null before. */
+        przypomnienie: null
+      }
     };
   };
 
@@ -370,7 +393,7 @@
     settings: "object", streak: "object", stats: "object",
     errors: "object", drills: "object", reviews: "array",
     session: "object", writing: "object", cils: "object",
-    backup: "object", onboarded: "boolean"
+    backup: "object", onboarded: "boolean", retention: "object"
   };
 
   function typeOf(v) {

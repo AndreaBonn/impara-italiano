@@ -78,6 +78,78 @@
     );
   }
 
+  /**
+   * The row about surviving in storage.
+   *
+   * Three states for the same reason offlineRow has three: "not granted" and
+   * "cannot be asked" are different facts, and the second one is what a
+   * student opening the course from a disk will see. Only the first is worth
+   * doing anything about.
+   */
+  function storageRow() {
+    var r = Core.state.retention || {};
+    var mozna = Retention.wspiera.miejsce();
+    return supportRow(
+      t("set.storage"),
+      t("set.storageUse"),
+      !!r.trwale,
+      t(r.trwale ? "set.storageGranted" : mozna ? "set.storageDenied" : "set.storageUnknown")
+    );
+  }
+
+  /** The hours a reminder may be set to, as whole hours: 06:00 … 22:00. */
+  function godzinyPrzypomnienia(wybrana) {
+    var out = "";
+    for (var h = 6; h <= 22; h++) {
+      var etykieta = (h < 10 ? "0" : "") + h + ":00";
+      out += '<option value="' + h + '"' + (h === wybrana ? " selected" : "") + ">" + etykieta + "</option>";
+    }
+    return out;
+  }
+
+  /**
+   * The card that exists so that tomorrow happens.
+   *
+   * Three controls and each one is drawn only where it can do something. The
+   * badge switch is absent where the operating system has no badge; the
+   * installation button is absent until the browser has actually offered us
+   * an installation, and in its place stands the sentence that says how to
+   * do it by hand — which on iOS is the only way there has ever been.
+   */
+  function powrotyCard() {
+    var r = Core.state.retention || {};
+    var godzina = (r.przypomnienie && r.przypomnienie.godzina) || 9;
+
+    return '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' +
+      t("ret.title") + "</h3>" +
+      '<p style="color:var(--ink-soft);font-size:.9rem">' + esc(t("ret.intro")) + "</p>" +
+      '<div class="stack" style="margin-top:12px">' +
+
+      (Retention.wspiera.odznaka()
+        ? '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-badge"' +
+          (r.odznaka ? " checked" : "") +
+          ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + esc(t("ret.badge")) + "</span></label>" +
+          '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
+          esc(t("ret.badgeHint")) + "</span>"
+        : '<span style="display:block;font-size:.84rem;color:var(--ink-soft)">' +
+          esc(t("ret.badgeAbsent")) + "</span>") +
+
+      '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' +
+      esc(t("ret.reminder")) + "</span>" +
+      '<select class="field js-hour" style="max-width:200px">' + godzinyPrzypomnienia(godzina) + "</select></label>" +
+      '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
+      esc(t("ret.reminderHint")) + "</span>" +
+      '<button class="btn btn--green btn--sm js-ics" style="align-self:flex-start">' + t("ret.download") + "</button>" +
+
+      (Retention.samodzielna()
+        ? '<span style="display:block;font-size:.84rem;color:var(--ink-soft)">' + esc(t("ret.installed")) + "</span>"
+        : Retention.mozliwaInstalacja()
+          ? '<button class="btn btn--ghost btn--sm js-install" style="align-self:flex-start">' + t("ret.install") + "</button>"
+          : '<span style="display:block;font-size:.84rem;color:var(--ink-soft)">' + esc(t("ret.installManual")) + "</span>") +
+
+      "</div></div>";
+  }
+
   Views.impostazioni = function () {
     var st = Core.state.settings;
     var voices = Audio2.italianVoices();
@@ -205,6 +277,8 @@
       '<input type="file" accept=".tsv,.txt,.csv,text/plain" class="js-tsv-in" hidden></label></div>' +
       '<div class="js-tsv-preview" style="margin-top:14px"></div></div>' +
 
+      powrotyCard() +
+
       '<div class="card" style="margin-bottom:20px"><h3 style="font-size:1.05rem;margin-bottom:6px">' + t("set.backup") + "</h3>" +
       '<p style="color:var(--ink-soft);font-size:.9rem">' + t("set.backupHint") + "</p>" +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
@@ -223,6 +297,7 @@
                  t(Audio2.sttSupported ? "set.works" : "set.absentTyping")) +
       supportRow(t("set.italianVoices"), t("set.fallbackOnly"), false, String(voices.length)) +
       offlineRow() +
+      storageRow() +
       "</div></div>" +
 
       /* The notice, last on the page and reachable in one click. The footer
@@ -354,6 +429,32 @@
     });
     el().querySelector(".js-test").addEventListener("click", function () {
       Audio2.speak("Ciao! Sono la tua voce italiana. Andiamo a studiare insieme.");
+    });
+
+    /* The three controls of the return card. Each one is queried rather than
+       assumed: the card draws a switch only where the browser has the API
+       behind it, so on Firefox `.js-badge` is genuinely absent and reading
+       `.addEventListener` on nothing would break the whole settings screen
+       over a feature that is not there. */
+    var odznaka = el().querySelector(".js-badge");
+    if (odznaka) odznaka.addEventListener("change", function (e) {
+      Retention.ustawOdznake(e.target.checked);
+      Core.toast(t(e.target.checked ? "ret.badgeOn" : "ret.badgeOff"));
+    });
+
+    el().querySelector(".js-ics").addEventListener("click", function () {
+      var h = parseInt(el().querySelector(".js-hour").value, 10);
+      Retention.pobierzPrzypomnienie(h, 0);
+      Core.toast(t("ret.saved"));
+    });
+
+    var instaluj = el().querySelector(".js-install");
+    if (instaluj) instaluj.addEventListener("click", function () {
+      /* Redrawing afterwards, because the browser's event is single-use: the
+         button has to disappear once it has been spent, or the second click
+         does nothing and says nothing. */
+      Retention.zainstaluj();
+      Views.impostazioni();
     });
 
     el().querySelector(".js-place").addEventListener("click", function () { App.go("piazzamento"); });

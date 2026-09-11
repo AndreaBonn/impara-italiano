@@ -29,7 +29,11 @@ di `CLAUDE.md` a coincidere con il repository.
 - `navigator.storage.persist()` viene chiesto una volta sola, dopo la prima lezione
   conclusa, mai al primo caricamento. L'esito compare in Impostazioni in tre stati.
 - Il `.ics` scaricato si importa senza errori in due calendari reali e crea un evento
-  ricorrente all'ora scelta.
+  ricorrente all'ora scelta. **Non verificato:** nessun import reale è stato fatto. Quello
+  che è stato misurato è la forma del file, con `tests/unit/ics.test.mjs`: escape di `\`,
+  `;`, `,` e newline, folding a 75 ottetti senza spezzare una coppia surrogata, `DTSTART`
+  in ora locale fluttuante, `UID` presente. Finché l'import non viene fatto, il criterio
+  resta aperto e il file va trattato come non provato sul campo.
 - Dove `beforeinstallprompt` e `setAppBadge` non esistono (Firefox, iOS) non compare
   nessun controllo morto: al loro posto c'è il testo delle istruzioni manuali.
 
@@ -38,9 +42,12 @@ di `CLAUDE.md` a coincidere con il repository.
   lettura in prosa di 3-6 frasi che cita le parole dello studente.
 - Nessuna cifra, percentuale o parola di verdetto attraversa quella lettura, e la garanzia
   è un test su `CilsReport`, non una riga del prompt.
-- Le caselle di autovalutazione sparite: `grep -rn "controllo\|selfCheck" data/core/cils.js
-  assets/js/ data/i18n/` non torna nulla (ADR-009 le aveva scartate come opzione G e sono
-  nel codice da allora).
+- Le caselle di autovalutazione sparite: `grep -rn 'type="checkbox"' assets/js/cils-html.js
+  assets/js/views-cils.js` non torna nulla (ADR-009 le aveva scartate come opzione G).
+  Il criterio nasceva come `grep -rn "controllo\|selfCheck" …` e andava riscritto: quel
+  pattern colpisce `Cils.controlloScritta`, cioè il rilevamento presente/mancante che la
+  riga sopra dice esplicitamente di tenere. Un gate che non può diventare verde non
+  controlla niente, dichiara solo di farlo.
 - Il punto 5 di ADR-009 è onorato: il testo della prova orale passa da `Writing.analyse`.
 - Senza chiave, senza consenso o da `file://` il referto è byte per byte quello di oggi.
 
@@ -54,7 +61,9 @@ di `CLAUDE.md` a coincidere con il repository.
 
 **O1 — biblioteca**
 - Ogni livello ha almeno un testo fra 400 e 800 parole, con ascolto continuo, ripresa dal
-  punto in cui si era rimasti e consultazione di qualsiasi parola.
+  punto in cui si era rimasti e consultazione di qualsiasi parola. A1 (289 parole) e A2
+  (381) erano sotto soglia alla chiusura della fase 4 e sono stati estesi dopo, a 415 e
+  527: la soglia era scritta e non rispettata, e nessun gate la misurava.
 - Aprire il corso senza entrare in biblioteca non carica nessun file della biblioteca.
 - `uv run --script scripts/build_audio.py --dry-run` dice zero mancanti.
 
@@ -124,7 +133,7 @@ come sub-task prima dell'implementazione.
 |---|---|---|
 | S1 | Una guardia a lista nera su cifre e percentuali non ferma un verdetto discorsivo («hai superato con ottimo risultato») | Lista nera deterministica su cifre, percentuali e lessico di verdetto, più la frase permanente accanto al referto. **Rischio residuo dichiarato nell'addendum ad ADR-009**: nessuna guardia in codice può togliere un giudizio scritto in prosa, e va detto invece di fingere che il filtro basti |
 | S2 | Il tema d'esame e il testo dell'orale possono contenere nome, città, famiglia, e oggi escono con lo stesso consenso pensato per una frase | Il consenso nomina «l'intero tema e il testo della prova orale»; avviso prima del primo invio |
-| S3 | La storia rimandata a ogni turno contiene anche le risposte precedenti del modello: un turno avvelenato rientra come contesto legittimo | Nessun `innerHTML` in `views-chat.js`, con `grep` come gate prima del merge; cap sui turni conservati e sui caratteri totali |
+| S3 | La storia rimandata a ogni turno contiene anche le risposte precedenti del modello: un turno avvelenato rientra come contesto legittimo | Nessun testo proveniente dal modello raggiunge `innerHTML`: la risposta e la correzione entrano solo da `textContent` (`assets/js/views-chat.js:124`, `:130`, `:136`), e il gate sta lì, sul punto d'ingresso. La formulazione iniziale vietava `innerHTML` nel file: è più stretta del rischio e fallisce su markup costante, che nel file resta in due punti (`:161`, `:237`, entrambi con le stringhe i18n passate da `Core.esc`). In più, cap sui turni conservati e sui caratteri totali |
 | S4 | `SUMMARY` e `DESCRIPTION` di un `.ics` senza escape iniettano una proprietà nel calendario di chi lo importa | `escapeIcsText()` dedicato su `\`, `;`, `,` e newline; `UID` casuale |
 | S5 | `setAppBadge` mostra a livello di sistema operativo quante carte sono in scadenza, anche a schermo bloccato: è la prima cosa del corso visibile senza aprirlo | Spento di default, si accende da Impostazioni |
 | S6 | `storage.persist()` non espone niente di nuovo | Nessun sub-task |

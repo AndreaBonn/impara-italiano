@@ -51,17 +51,29 @@ LINGUAI.addReadings([
       "La signora è stata tranquilla e ha detto che il contratto lo faceva sempre.",
       "Abbiamo firmato in cucina, con il caffè davanti.",
       "Adesso vivo lì da otto mesi e conosco il nome della portinaia e quello del panettiere.",
+      "Ho imparato altre due cose in questi mesi, e le dico a chi arriva adesso.",
+      "La prima riguarda i soldi: quasi nessuno accetta il bonifico per la caparra.",
+      "Molti chiedono contanti, e questo è un problema, perché senza ricevuta non hai nessuna prova.",
+      "Io ho insistito e ho ottenuto una ricevuta firmata, su un foglio qualsiasi.",
+      "La prima volta però avevo pagato in contanti senza chiedere niente.",
+      "Quella stanza poi non l'ho presa, e per riavere i soldi ci sono volute tre settimane.",
+      "La seconda riguarda le spese condominiali, che spesso non sono nel prezzo dell'annuncio.",
+      "Quaranta euro al mese sembrano pochi, ma in un anno sono quasi cinquecento.",
+      "Su queste ho chiesto subito, e la signora me le ha scritte nel contratto.",
+      "Chiedere prima non è maleducazione: è la cosa che fanno tutti.",
+      "Nessuno si è mai offeso perché ho fatto una domanda sui soldi.",
       "Se dovessi ricominciare, comincerei dalle bacheche e non dai siti.",
       "E comincerei a luglio, non a settembre."
     ],
-    glossIt: ["l'annuncio", "la bacheca", "la bolletta", "il cortile", "la residenza", "il riscaldamento"],
-    lexIt: ["valigia", "affitto", "stanza", "quartiere", "dipartimento", "vergognarsi", "accento", "cugina", "camera", "incluso", "bolletta", "firmare", "contratto", "portinaia", "panettiere"],
+    glossIt: ["l'annuncio", "la bacheca", "la bolletta", "il cortile", "la residenza", "il riscaldamento", "la caparra", "le spese condominiali"],
+    lexIt: ["valigia", "affitto", "stanza", "quartiere", "dipartimento", "vergognarsi", "accento", "cugina", "camera", "incluso", "bolletta", "firmare", "contratto", "portinaia", "panettiere", "bonifico", "contanti", "ricevuta"],
     questions: [
       { t: "mcq", q: "Perché a settembre era difficile trovare una stanza?", opts: ["Perché gli studenti arrivano tutti insieme", "Perché i prezzi salgono d'inverno", "Perché gli uffici sono chiusi"], a: 0 },
       { t: "truefalse", q: "I siti grandi avevano gli annunci migliori.", a: 1 },
       { t: "mcq", q: "Chi gli ha dato il contatto della stanza?", opts: ["Un professore", "Una barista", "La portinaia"], a: 1 },
       { t: "mcq", q: "Perché ha chiesto un contratto scritto?", opts: ["Per pagare di meno", "Per avere il riscaldamento incluso", "Perché senza contratto non si chiede la residenza"], a: 2 },
-      { t: "truefalse", q: "Alla fine consiglia di cercare casa a luglio.", a: 0 }
+      { t: "truefalse", q: "Alla fine consiglia di cercare casa a luglio.", a: 0 },
+      { t: "mcq", q: "Perché consiglia di chiedere una ricevuta per la caparra?", opts: ["Per pagare meno tasse", "Perché senza ricevuta non c'è nessuna prova del pagamento", "Perché il bonifico costa"], a: 1 }
     ]
   }
 

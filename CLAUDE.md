@@ -170,9 +170,18 @@ za grosze, druga wymaga Playwrighta — i dopóki mieszkają w jednym pliku, ca�
 tyle, co ta droższa połowa. Odwrotnie też: nie dzielimy dlatego, że plik jest długi.
 `store.js` i `verbs-data.js` zostają w całości, bo rozbicie ich rozdzieliłoby rzeczy, które
 muszą się zgadzać (tożsamość rekordu w stanie, tabele jednego języka). `views-cils.js`
-(306 linii) też zostaje: po wyprowadzeniu przebiegu i markupu każda jego linia dotyka
-zegara, DOM-u albo mikrofonu, więc dalszy podział szedłby już za liczbą linii, a nie za
-granicą czystości.
+też zostaje: po wyprowadzeniu przebiegu (`cils-run.js`) i markupu (`cils-html.js`) każda
+jego linia dotyka zegara, DOM-u albo mikrofonu, więc dalszy podział szedłby już za liczbą
+linii, a nie za granicą czystości. `llm.js` zostaje z tego samego powodu: czyste kawałki
+wyszły do `llm-rules.js`, `llm-prompts.js` i `llm-providers.js`, a to, co zostało, to trzy
+wejścia i bramki, które ich pilnują — same skutki uboczne.
+
+Te trzy pliki przekraczają limit 300 linii z `code-standards.md` i to jest świadome
+odstępstwo, nie przeoczenie: limit liczy linie, a kryterium tego projektu liczy
+testowalność, i przy konflikcie wygrywa kryterium. **Liczby nie ma w tym zdaniu celowo** —
+poprzednia wersja mówiła „`views-cils.js` (306 linii)", plik urósł do 422 i zdanie
+zgniło po cichu, dokładnie jak wiersze tabeli Baseline przed `baseline.mjs`. Aktualny stan:
+`wc -l assets/js/*.js | sort -rn`.
 
 ## Kontrakty
 
@@ -641,9 +650,9 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 | Jednostki / lekcje / ćwiczenia | 37 / 170 / 1735 | `node scripts/baseline.mjs` |
 | Pozycje słownika / rozmowy / hasła gramatyczne | 1592 / 14 / 42 | `node scripts/baseline.mjs` |
 | Czytanki / zadania pisane / zbiory par minimalnych | 24 / 6 / 5 | `node scripts/baseline.mjs` |
-| Biblioteka: teksty / zdania / słowa | 6 / 188 / 2621 | `node scripts/baseline.mjs` |
+| Biblioteka: teksty / zdania / słowa | 6 / 213 / 2893 | `node scripts/baseline.mjs` |
 | Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
-| Nagrania | 4040 plików mp3, 45 MiB bajtów; 4039 skrótów w indeksie | `node scripts/baseline.mjs` |
+| Nagrania | 4071 plików mp3, 46 MiB bajtów; 4070 skrótów w indeksie | `node scripts/baseline.mjs` |
 | Klucze interfejsu na język | 889 × 5 języków | `node scripts/baseline.mjs` |
 | Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
 | Pliki silnika | 77 w assets/js/, 16034 linii | `node scripts/baseline.mjs` |

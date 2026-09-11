@@ -4,8 +4,8 @@ LINGUAI.addStrings("es", {
 
   "read:lib-a1-giornata": {
     title: "El día de Amina",
-    gloss: ["el despertador", "la lavandería", "la cortina", "el escaparate", "la raya", "la recogida"],
-    lex: ["despertarse", "desayuno", "galleta", "portal", "retraso", "cliente", "anciana", "nieto", "cuaderno", "mancha", "clase", "país", "barato"]
+    gloss: ["el despertador", "la lavandería", "la cortina", "el escaparate", "la raya", "la recogida", "el mantel"],
+    lex: ["despertarse", "desayuno", "galleta", "portal", "retraso", "cliente", "anciana", "nieto", "cuaderno", "mancha", "clase", "país", "barato", "dueño", "contar"]
   }
 
 });

@@ -4,8 +4,8 @@ LINGUAI.addStrings("fr", {
 
   "read:lib-a2-casa": {
     title: "Comment j'ai trouvé une chambre à Bologne",
-    gloss: ["l'annonce", "le panneau d'affichage", "la facture", "la cour", "la déclaration de résidence", "le chauffage"],
-    lex: ["valise", "location", "chambre", "quartier", "département", "avoir honte", "accent", "cousine", "chambre", "inclus", "facture", "signer", "contrat", "concierge", "boulanger"]
+    gloss: ["l'annonce", "le panneau d'affichage", "la facture", "la cour", "la déclaration de résidence", "le chauffage", "la caution", "les charges de copropriété"],
+    lex: ["valise", "location", "chambre", "quartier", "département", "avoir honte", "accent", "cousine", "chambre", "inclus", "facture", "signer", "contrat", "concierge", "boulanger", "virement", "espèces", "reçu"]
   }
 
 });

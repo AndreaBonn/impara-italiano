@@ -4,8 +4,8 @@ LINGUAI.addStrings("en", {
 
   "read:lib-a1-giornata": {
     title: "Amina's day",
-    gloss: ["the alarm clock", "the laundrette", "the curtain", "the shop window", "the crease", "the collection"],
-    lex: ["to wake up", "breakfast", "biscuit", "front door", "delay", "customer", "elderly", "grandchild", "notebook", "stain", "lesson", "country", "cheap"]
+    gloss: ["the alarm clock", "the laundrette", "the curtain", "the shop window", "the crease", "the collection", "the tablecloth"],
+    lex: ["to wake up", "breakfast", "biscuit", "front door", "delay", "customer", "elderly", "grandchild", "notebook", "stain", "lesson", "country", "cheap", "owner", "to count"]
   }
 
 });

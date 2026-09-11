@@ -4,8 +4,8 @@ LINGUAI.addStrings("de", {
 
   "read:lib-a2-casa": {
     title: "Wie ich in Bologna ein Zimmer fand",
-    gloss: ["die Anzeige", "das schwarze Brett", "die Rechnung", "der Innenhof", "die Anmeldung", "die Heizung"],
-    lex: ["Koffer", "Miete", "Zimmer", "Viertel", "Institut", "sich schämen", "Akzent", "Cousine", "Zimmer", "inklusive", "Rechnung", "unterschreiben", "Vertrag", "Hausmeisterin", "Bäcker"]
+    gloss: ["die Anzeige", "das schwarze Brett", "die Rechnung", "der Innenhof", "die Anmeldung", "die Heizung", "die Kaution", "die Nebenkosten"],
+    lex: ["Koffer", "Miete", "Zimmer", "Viertel", "Institut", "sich schämen", "Akzent", "Cousine", "Zimmer", "inklusive", "Rechnung", "unterschreiben", "Vertrag", "Hausmeisterin", "Bäcker", "Überweisung", "Bargeld", "Quittung"]
   }
 
 });

@@ -101,3 +101,26 @@ Contenuto puro, una unità da quattro lezioni per volta, ogni unità spedibile.
 | 5.n.4 | Registrazione e verifica | 5.n.3 | O5 | `build_audio.py --dry-run` zero mancanti | 2h |
 
 Ritmo: una unità da quattro lezioni = **56h**, di cui 54 di scrittura.
+
+**Stato al 2026-09-11: fase 5 chiusa.** Cinque unità consegnate, nell'ordine in cui
+sono state committate:
+
+| unità | livello | file | tema | commit |
+|---|---|---|---|---|
+| b2-u05 | B2 16→20 | `b2-02.js` | discorso indiretto | `7432d3a` |
+| b2-u06 | B2 20→24 | `b2-03.js` | concessive e connettivi testuali | `ca646e0` |
+| c1-u04 | C1 12→16 | `c1-02.js` | futuro epistemico e modali di probabilità | `276189c` |
+| c1-u05 | C1 16→20 | `c1-03.js` | gerundio, participio, infinito al posto di una subordinata | `276189c` |
+| c2-u04 | C2 12→16 | `c2-02.js` | relativi oltre `che` e reggenza verbale | `276189c` |
+
+Le tre unità alte sono state scelte leggendo quali tag di `GRAMMAR_REF` C1 e C2 non
+usavano mai: `g-futuro`, `g-gerundio`, `g-infinito`, `g-relativi`, `g-prep-verbi`.
+
+**Fuori piano, emerso durante la fase:** aggiungere unità in coda ha lasciato l'esame
+di livello in mezzo al percorso, e quell'esame campionava solo le unità che esistevano
+quando è stato scritto. Su tutti e tre i livelli il vecchio esame è diventato
+`Test — Ripasso unità 1-N` e l'esame di livello è passato all'ultima unità, con dodici
+esercizi presi da tutto il livello (`a5679cb` per B2, `276189c` per C1 e C2).
+
+Baseline dopo la fase: 37 unità, 170 lezioni, 1735 esercizi, 4039 registrazioni
+(`node scripts/baseline.mjs`).

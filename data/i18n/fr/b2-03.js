@@ -479,8 +479,16 @@ LINGUAI.addStrings("fr", {
     ]
   },
   "lesson:b2-u06-test": {
-    "theme": "Grammaire",
-    "title": "Test — Concession et connecteurs",
+    "theme": "Examen",
+    "title": "Examen final du niveau B2",
+    "objectives": [
+      "vérifier le subjonctif, les conditionnelles, le discours indirect, la concession et les connecteurs"
+    ],
+    "theory": [
+      {
+        "p": "Douze exercices tirés de tout le niveau B2. Réussite à partir de 70%."
+      }
+    ],
     "exercises": [
       {
         "q": "Quel mode après «sebbene» ?",
@@ -522,6 +530,12 @@ LINGUAI.addStrings("fr", {
           "Anche se piove, esco.",
           "Anche se piova, esco."
         ]
+      },
+      {
+        "q": "Discours indirect. Complétez : «Mi ha detto che ___ il giorno dopo.» (venire)"
+      },
+      {
+        "tr": "S'ils m'avaient écouté, le problème aurait été résolu."
       },
       {
         "q": "Mettez les formes.",

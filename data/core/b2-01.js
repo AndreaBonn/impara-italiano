@@ -762,7 +762,7 @@ LINGUAI.addUnits("B2", [
       id: "b2-u04-test",
       tags: ["g-congiuntivo-imp", "g-periodo-ipotetico", "g-passivo"],
       cefr: "B2",
-      titleIt: "Esame finale B2",
+      titleIt: "Test — Ripasso unità 1-4",
       exercises: [
         { t: "conj", verb: "essere", tense: "congImp", persons: [0, 2, 5] },
         { t: "fill", a: ["fosse"] },

@@ -479,8 +479,16 @@ LINGUAI.addStrings("de", {
     ]
   },
   "lesson:b2-u06-test": {
-    "theme": "Grammatik",
-    "title": "Test — Konzessive und Konnektoren",
+    "theme": "Prüfung",
+    "title": "Abschlussprüfung Niveau B2",
+    "objectives": [
+      "Konjunktiv, Konditionalsätze, indirekte Rede, Konzessive und Konnektoren prüfen"
+    ],
+    "theory": [
+      {
+        "p": "Zwölf Aufgaben aus dem gesamten Niveau B2. Bestanden ab 70%."
+      }
+    ],
     "exercises": [
       {
         "q": "Welcher Modus nach «sebbene»?",
@@ -522,6 +530,12 @@ LINGUAI.addStrings("de", {
           "Anche se piove, esco.",
           "Anche se piova, esco."
         ]
+      },
+      {
+        "q": "Indirekte Rede. Ergänzen Sie: «Mi ha detto che ___ il giorno dopo.» (venire)"
+      },
+      {
+        "tr": "Wenn sie auf mich gehört hätten, wäre das Problem gelöst worden."
       },
       {
         "q": "Setzen Sie die Formen ein.",

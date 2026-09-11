@@ -479,8 +479,16 @@ LINGUAI.addStrings("pl", {
     ]
   },
   "lesson:b2-u06-test": {
-    "theme": "Gramatyka",
-    "title": "Test — Przyzwolenie i spójniki",
+    "theme": "Egzamin",
+    "title": "Egzamin końcowy poziomu B2",
+    "objectives": [
+      "sprawdzić congiuntivo, okresy warunkowe, mowę zależną, przyzwolenie i spójniki"
+    ],
+    "theory": [
+      {
+        "p": "Dwanaście zadań z całego poziomu B2. Zaliczenie od 70%."
+      }
+    ],
     "exercises": [
       {
         "q": "Który tryb po „sebbene”?",
@@ -522,6 +530,12 @@ LINGUAI.addStrings("pl", {
           "Anche se piove, esco.",
           "Anche se piova, esco."
         ]
+      },
+      {
+        "q": "Mowa zależna. Uzupełnij: „Mi ha detto che ___ il giorno dopo.” (venire)"
+      },
+      {
+        "tr": "Gdyby mnie posłuchali, problem zostałby rozwiązany."
       },
       {
         "q": "Wstaw formy.",

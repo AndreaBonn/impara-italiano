@@ -479,8 +479,16 @@ LINGUAI.addStrings("en", {
     ]
   },
   "lesson:b2-u06-test": {
-    "theme": "Grammar",
-    "title": "Test — Concession and connectives",
+    "theme": "Exam",
+    "title": "Final exam, level B2",
+    "objectives": [
+      "test the subjunctive, conditionals, reported speech, concession and connectives"
+    ],
+    "theory": [
+      {
+        "p": "Twelve tasks drawn from the whole of B2. You pass at 70%."
+      }
+    ],
     "exercises": [
       {
         "q": "Which mood after «sebbene»?",
@@ -522,6 +530,12 @@ LINGUAI.addStrings("en", {
           "Anche se piove, esco.",
           "Anche se piova, esco."
         ]
+      },
+      {
+        "q": "Reported speech. Fill in: «Mi ha detto che ___ il giorno dopo.» (venire)"
+      },
+      {
+        "tr": "If they had listened to me, the problem would have been solved."
       },
       {
         "q": "Put in the forms.",

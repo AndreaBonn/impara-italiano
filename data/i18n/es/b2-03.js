@@ -479,8 +479,16 @@ LINGUAI.addStrings("es", {
     ]
   },
   "lesson:b2-u06-test": {
-    "theme": "Gramática",
-    "title": "Test — Concesión y conectores",
+    "theme": "Examen",
+    "title": "Examen final del nivel B2",
+    "objectives": [
+      "comprobar el subjuntivo, las condicionales, el estilo indirecto, la concesión y los conectores"
+    ],
+    "theory": [
+      {
+        "p": "Doce tareas de todo el nivel B2. Se aprueba a partir del 70%."
+      }
+    ],
     "exercises": [
       {
         "q": "¿Qué modo tras «sebbene»?",
@@ -522,6 +530,12 @@ LINGUAI.addStrings("es", {
           "Anche se piove, esco.",
           "Anche se piova, esco."
         ]
+      },
+      {
+        "q": "Estilo indirecto. Completa: «Mi ha detto che ___ il giorno dopo.» (venire)"
+      },
+      {
+        "tr": "Si me hubieran escuchado, el problema se habría resuelto."
       },
       {
         "q": "Pon las formas.",

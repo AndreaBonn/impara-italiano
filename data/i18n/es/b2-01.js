@@ -1144,9 +1144,9 @@ LINGUAI.addStrings("es", {
   },
   "lesson:b2-u04-test": {
     theme: "Examen",
-    title: "Examen final de B2",
+    title: "Test — repaso de las unidades 1-4",
     objectives: ["comprobar el congiuntivo, las condicionales, la pasiva y la argumentación"],
-    theory: [{ p: "Doce tareas de todo el nivel. Se aprueba con un 70 %." }],
+    theory: [{ p: "Doce tareas de las primeras cuatro unidades. Se aprueba con un 70 %." }],
     exercises: [
       {  },
       { q: "«Pensavo che ___ più semplice.»" },

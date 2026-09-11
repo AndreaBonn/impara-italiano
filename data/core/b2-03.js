@@ -170,9 +170,9 @@ LINGUAI.addUnits("B2", [
     ],
     test: {
       id: "b2-u06-test",
-      tags: ["g-connettivi"],
+      tags: ["g-connettivi", "g-congiuntivo-imp", "g-periodo-ipotetico", "g-discorso-indiretto"],
       cefr: "B2",
-      titleIt: "Test — Anche se piove",
+      titleIt: "Esame finale B2",
       exercises: [
         { t: "mcq", a: 1 },
         { t: "mcq", a: 0 },
@@ -181,6 +181,15 @@ LINGUAI.addUnits("B2", [
         { t: "fill", a: ["anzi"] },
         { t: "mcq", a: 2 },
         { t: "multi", a: [0, 1] },
+        { t: "fill", a: ["sarebbe venuto"] },
+        {
+          t: "trans",
+          dir: "toIt",
+          a: [
+            "se mi avessero ascoltato il problema sarebbe stato risolto",
+            "se mi avessero ascoltato, il problema sarebbe stato risolto"
+          ]
+        },
         {
           t: "cloze",
           text: "Benché {{1}} (essere) tardi siamo usciti; {{2}} pioveva, non ci siamo fermati.",

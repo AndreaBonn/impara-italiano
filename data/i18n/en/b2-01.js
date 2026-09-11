@@ -1141,9 +1141,9 @@ LINGUAI.addStrings("en", {
   },
   "lesson:b2-u04-test": {
     theme: "Exam",
-    title: "B2 final exam",
+    title: "Test — review of units 1-4",
     objectives: ["check the congiuntivo, conditionals, the passive and argument"],
-    theory: [{ p: "Twelve tasks from the whole level. Pass mark 70%." }],
+    theory: [{ p: "Twelve tasks from the first four units. Pass mark 70%." }],
     exercises: [
       {  },
       { q: "\"Pensavo che ___ più semplice.\"" },

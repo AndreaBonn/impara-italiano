@@ -1152,9 +1152,9 @@ LINGUAI.addStrings("de", {
   },
   "lesson:b2-u04-test": {
     theme: "Prüfung",
-    title: "B2-Abschlussprüfung",
+    title: "Test — Wiederholung der Einheiten 1-4",
     objectives: ["das congiuntivo, die Bedingungssätze, das Passiv und die Argumentation prüfen"],
-    theory: [{ p: "Zwölf Aufgaben aus der ganzen Stufe. Bestanden ab 70 %." }],
+    theory: [{ p: "Zwölf Aufgaben aus den ersten vier Einheiten. Bestanden ab 70 %." }],
     exercises: [
       {  },
       { q: "„Pensavo che ___ più semplice.\"" },

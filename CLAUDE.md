@@ -638,7 +638,7 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 
 | Co | Ile | Polecenie |
 |---|---|---|
-| Jednostki / lekcje / ćwiczenia | 34 / 158 / 1600 | `node scripts/baseline.mjs` |
+| Jednostki / lekcje / ćwiczenia | 34 / 158 / 1602 | `node scripts/baseline.mjs` |
 | Pozycje słownika / rozmowy / hasła gramatyczne | 1484 / 14 / 42 | `node scripts/baseline.mjs` |
 | Czytanki / zadania pisane / zbiory par minimalnych | 24 / 6 / 5 | `node scripts/baseline.mjs` |
 | Biblioteka: teksty / zdania / słowa | 6 / 188 / 2621 | `node scripts/baseline.mjs` |

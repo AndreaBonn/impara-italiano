@@ -1150,9 +1150,9 @@ LINGUAI.addStrings("fr", {
   },
   "lesson:b2-u04-test": {
     theme: "Examen",
-    title: "Examen final de B2",
+    title: "Test — révision des unités 1 à 4",
     objectives: ["vérifier le congiuntivo, les conditionnelles, le passif et l'argumentation"],
-    theory: [{ p: "Douze tâches sur tout le niveau. On valide à 70 %." }],
+    theory: [{ p: "Douze tâches sur les quatre premières unités. On valide à 70 %." }],
     exercises: [
       {  },
       { q: "« Pensavo che ___ più semplice. »" },

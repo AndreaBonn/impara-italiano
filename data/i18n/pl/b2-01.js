@@ -1141,9 +1141,9 @@ LINGUAI.addStrings("pl", {
   },
   "lesson:b2-u04-test": {
     theme: "Egzamin",
-    title: "Egzamin końcowy poziomu B2",
+    title: "Test — powtórka jednostek 1-4",
     objectives: ["sprawdzić congiuntivo, okresy warunkowe, stronę bierną i argumentację"],
-    theory: [{ p: "Dwanaście zadań z całego poziomu. Zaliczenie od 70%." }],
+    theory: [{ p: "Dwanaście zadań z pierwszych czterech jednostek. Zaliczenie od 70%." }],
     exercises: [
       {  },
       { q: "„Pensavo che ___ più semplice.”" },

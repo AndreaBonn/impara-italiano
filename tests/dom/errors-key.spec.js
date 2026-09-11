@@ -48,7 +48,7 @@ test("the keys of every exercise in the course are different", async ({ page }) 
      is added — and the value to put here is the one `node scripts/baseline.mjs`
      prints, not a number anybody counts by hand. */
   expect(wynik.lekcji).toBe(158);
-  expect(wynik.ile).toBe(1600);
+  expect(wynik.ile).toBe(1602);
 });
 
 test("every key finds its own exercise again", async ({ page }) => {

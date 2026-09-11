@@ -574,7 +574,7 @@ LINGUAI.addUnits("C1", [
       id: "c1-u03-test",
       tags: ["g-si", "g-verbi-pronominali", "g-registri"],
       cefr: "C1",
-      titleIt: "Esame finale C1",
+      titleIt: "Test — Ripasso unità 1-3",
       exercises: [
         { t: "mcq", a: 1 },
         { t: "fill", a: ["ci"] },

@@ -898,9 +898,9 @@ LINGUAI.addStrings("de", {
   },
   "lesson:c2-u03-test": {
     theme: "Prüfung",
-    title: "C2-Abschlussprüfung",
+    title: "Test — Wiederholung der Einheiten 1-3",
     objectives: ["die Partizipien, die Wortbildung, die Register und die Nuancen prüfen"],
-    theory: [{ p: "Zwölf Aufgaben aus der ganzen Stufe. Bestanden ab 70 %. Es ist der letzte Test des Kurses." }],
+    theory: [{ p: "Zwölf Aufgaben aus den ersten drei Einheiten. Bestanden ab 70 %." }],
     exercises: [
       { q: "„Gli aventi diritto\":", opts: ["die recht haben", "die Anspruchsberechtigten", "die Eigentümer"] },
       { q: "Angleichung: „Terminat___ i lavori…\"" },

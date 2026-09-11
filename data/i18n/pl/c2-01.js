@@ -880,9 +880,9 @@ LINGUAI.addStrings("pl", {
   },
   "lesson:c2-u03-test": {
     theme: "Egzamin",
-    title: "Egzamin końcowy poziomu C2",
+    title: "Test — powtórka jednostek 1-3",
     objectives: ["sprawdzić imiesłowy, słowotwórstwo, rejestry i niuanse"],
-    theory: [{ p: "Dwanaście zadań z całego poziomu. Zaliczenie od 70%. To ostatni sprawdzian kursu." }],
+    theory: [{ p: "Dwanaście zadań z pierwszych trzech jednostek. Zaliczenie od 70%." }],
     exercises: [
       { q: "„Gli aventi diritto”:", opts: ["mający rację", "uprawnieni", "posiadacze"] },
       { q: "Zgodność: „Terminat___ i lavori…”" },

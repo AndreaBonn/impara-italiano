@@ -912,9 +912,9 @@ LINGUAI.addStrings("de", {
   },
   "lesson:c1-u03-test": {
     theme: "Prüfung",
-    title: "C1-Abschlussprüfung",
+    title: "Test — Wiederholung der Einheiten 1-3",
     objectives: ["das si, die verbi pronominali, die Register und die Kohäsion prüfen"],
-    theory: [{ p: "Zwölf Aufgaben aus der ganzen Stufe. Bestanden ab 70 %." }],
+    theory: [{ p: "Zwölf Aufgaben aus den ersten drei Einheiten. Bestanden ab 70 %." }],
     exercises: [
       { q: "„Qui si ___ appartamenti.\"", opts: ["affitta", "affittano", "affittare"] },
       { q: "„___ si abitua a tutto.\"" },

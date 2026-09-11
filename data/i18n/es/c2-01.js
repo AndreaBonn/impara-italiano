@@ -898,9 +898,9 @@ LINGUAI.addStrings("es", {
   },
   "lesson:c2-u03-test": {
     theme: "Examen",
-    title: "Examen final de C2",
+    title: "Test — repaso de las unidades 1-3",
     objectives: ["comprobar los participios, la formación de palabras, los registros y los matices"],
-    theory: [{ p: "Doce tareas de todo el nivel. Se aprueba con un 70 %. Es la última prueba del curso." }],
+    theory: [{ p: "Doce tareas de las primeras tres unidades. Se aprueba con un 70 %." }],
     exercises: [
       { q: "«Gli aventi diritto»:", opts: ["los que tienen razón", "los derechohabientes", "los propietarios"] },
       { q: "Concordancia: «Terminat___ i lavori…»" },

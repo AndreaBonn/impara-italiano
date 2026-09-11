@@ -903,9 +903,9 @@ LINGUAI.addStrings("en", {
   },
   "lesson:c1-u03-test": {
     theme: "Exam",
-    title: "C1 final exam",
+    title: "Test — review of units 1-3",
     objectives: ["check si, the verbi pronominali, registers and cohesion"],
-    theory: [{ p: "Twelve tasks from the whole level. Pass mark 70%." }],
+    theory: [{ p: "Twelve tasks from the first three units. Pass mark 70%." }],
     exercises: [
       { q: "\"Qui si ___ appartamenti.\"", opts: ["affitta", "affittano", "affittare"] },
       { q: "\"___ si abitua a tutto.\"" },

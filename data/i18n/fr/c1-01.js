@@ -912,9 +912,9 @@ LINGUAI.addStrings("fr", {
   },
   "lesson:c1-u03-test": {
     theme: "Examen",
-    title: "Examen final de C1",
+    title: "Test — révision des unités 1 à 3",
     objectives: ["vérifier le si, les verbi pronominali, les registres et la cohésion"],
-    theory: [{ p: "Douze tâches sur tout le niveau. On valide à 70 %." }],
+    theory: [{ p: "Douze tâches sur les trois premières unités. On valide à 70 %." }],
     exercises: [
       { q: "« Qui si ___ appartamenti. »", opts: ["affitta", "affittano", "affittare"] },
       { q: "« ___ si abitua a tutto. »" },

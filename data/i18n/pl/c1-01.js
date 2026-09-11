@@ -903,9 +903,9 @@ LINGUAI.addStrings("pl", {
   },
   "lesson:c1-u03-test": {
     theme: "Egzamin",
-    title: "Egzamin końcowy poziomu C1",
+    title: "Test — powtórka jednostek 1-3",
     objectives: ["sprawdzić si, verbi pronominali, rejestry i spójność"],
-    theory: [{ p: "Dwanaście zadań z całego poziomu. Zaliczenie od 70%." }],
+    theory: [{ p: "Dwanaście zadań z pierwszych trzech jednostek. Zaliczenie od 70%." }],
     exercises: [
       { q: "„Qui si ___ appartamenti.”", opts: ["affitta", "affittano", "affittare"] },
       { q: "„___ si abitua a tutto.”" },

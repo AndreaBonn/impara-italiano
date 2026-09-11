@@ -898,9 +898,9 @@ LINGUAI.addStrings("fr", {
   },
   "lesson:c2-u03-test": {
     theme: "Examen",
-    title: "Examen final de C2",
+    title: "Test — révision des unités 1 à 3",
     objectives: ["vérifier les participes, la formation des mots, les registres et les nuances"],
-    theory: [{ p: "Douze tâches sur tout le niveau. On valide à 70 %. C'est le dernier test du cours." }],
+    theory: [{ p: "Douze tâches sur les trois premières unités. On valide à 70 %." }],
     exercises: [
       { q: "« Gli aventi diritto » :", opts: ["ceux qui ont raison", "les ayants droit", "les propriétaires"] },
       { q: "Accord : « Terminat___ i lavori… »" },

@@ -880,9 +880,9 @@ LINGUAI.addStrings("en", {
   },
   "lesson:c2-u03-test": {
     theme: "Exam",
-    title: "C2 final exam",
+    title: "Test — review of units 1-3",
     objectives: ["check the participles, word formation, registers and nuance"],
-    theory: [{ p: "Twelve tasks from the whole level. Pass mark 70%. This is the last test of the course." }],
+    theory: [{ p: "Twelve tasks from the first three units. Pass mark 70%." }],
     exercises: [
       { q: "\"Gli aventi diritto\":", opts: ["those who are right", "those entitled", "the owners"] },
       { q: "Agreement: \"Terminat___ i lavori…\"" },

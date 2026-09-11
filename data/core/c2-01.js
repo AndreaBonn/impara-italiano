@@ -519,7 +519,7 @@ LINGUAI.addUnits("C2", [
       id: "c2-u03-test",
       tags: ["g-registri", "g-nome-avanzato", "g-participio"],
       cefr: "C2",
-      titleIt: "Esame finale C2",
+      titleIt: "Test — Ripasso unità 1-3",
       exercises: [
         { t: "mcq", a: 1 },
         { t: "fill", a: ["i"] },

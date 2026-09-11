@@ -12,7 +12,7 @@ A static Italian course, A1 to C2, that runs entirely in the browser: no account
 
 150 lessons, 1514 exercises and 3494 recorded Italian sentences, explained in the learner's own language. Open `index.html` and the course runs.
 
-The grammar syllabus goes level by level from A1 to C2. Explanations exist in five languages (Polish, English, Spanish, French, German) and the learner picks one at any time, without losing progress. Everything the learner does stays in their browser. One thing leaves the device: a voice recording sent for speech recognition, and only after they agree to it.
+The grammar syllabus goes level by level from A1 to C2. Explanations exist in five languages (Polish, English, Spanish, French, German) and the learner picks one at any time, without losing progress. Everything the learner does stays in their browser. Two things can leave the device, and both are off until the learner turns them on: a voice recording sent for speech recognition, and an answer the course has already rejected, sent to a language model the learner pays for with their own key.
 
 **Live:** [andreabonn.github.io/impara-italiano](https://andreabonn.github.io/impara-italiano/)
 
@@ -28,6 +28,7 @@ The grammar syllabus goes level by level from A1 to C2. Explanations exist in fi
 - [Quality gates](#quality-gates)
 - [Adding course content](#adding-course-content)
 - [The audio pipeline](#the-audio-pipeline)
+- [The optional model check](#the-optional-model-check)
 - [Deployment and CI](#deployment-and-ci)
 - [User manual](#user-manual)
 - [Security](#security)
@@ -58,7 +59,7 @@ Beyond the lessons themselves the course carries a spaced-repetition deck (FSRS 
 
 - Plain ES5+ JavaScript, classic scripts, one global per file. No framework, no bundler, no polyfill.
 - CSS in a single stylesheet, colors in OKLCH.
-- Fraunces and Inter, self-hosted as woff2 (280 KB, SIL Open Font License). The page contacts no third-party domain.
+- Fraunces and Inter, self-hosted as woff2 (280 KB, SIL Open Font License). The page loads nothing from a third-party domain; the only requests that ever leave it are the two optional ones, speech recognition and the model check.
 - Service worker for offline use, plus a web app manifest for installation.
 
 **Toolchain (development only)**
@@ -244,6 +245,33 @@ File names are FNV-1a 64-bit hashes of the sentence text, computed by `audio_has
 Two voices: `it-IT-IsabellaNeural` narrates, `it-IT-GiuseppeMultilingualNeural` plays the other speaker in dialogues.
 
 When you add a minimal pair, run `uv run --script scripts/check_minpairs.py`. The voice honors accents unevenly: `pèsca` and `pésca` get different files, but `vènti` and `vénti` come back byte-identical, and a pair nobody can hear apart teaches guessing. Nothing on screen, in the code or in the tests would show it.
+
+## The optional model check
+
+Open answers are judged by comparing text, so a sentence that is correct but worded differently gets rejected. A language model can give that judgement a second opinion, and the learner supplies the key.
+
+Nothing is on by default. Without a key, without consent, or with the page opened from disk, `Llm.available()` is false and the course behaves as it did before the feature existed: same verdicts, same score, not one outbound request.
+
+**What the model is allowed to do.** It is asked only about an answer the course has already rejected, and its reply reaches the exercise through `LlmRules.clamp`, as `ok || promote`. No path turns an accepted answer into a rejected one. A model that answers nonsense, answers in the wrong language, or is compromised outright produces a missing promotion, which is the course as it behaves today. The guarantee is in the code rather than in the prompt, so it survives a swap of provider.
+
+**Four providers, keys on the device.** Google Gemini, Groq, OpenAI and Anthropic, each the middle tier of its vendor rather than the top one: the question is closed, the essay is a beginner's, and the learner pays for every call. They paste the keys they already have in Settings and set the order; the cascade asks the first provider that has a key and moves on only when that one fails. A rejected key retires its provider for the session and says so once. A timeout says nothing at all, because the local verdict is already correct and an optional feature failing mid-exercise is noise.
+
+Keys live in their own `localStorage` container, `linguai.llm.v1`, which `store.js` does not know about. `exportState` serialises the whole profile into the backup file learners are told to keep, and a credential billed to their card does not belong in a file they are encouraged to carry around. Erasing the profile erases the keys with it.
+
+**Budgets.** Three seconds for one provider, eight for the whole chain, sixty requests per session. Verdicts are cached for the session and never written to disk, where they would accumulate the learner's own sentences to save a request that may never be repeated.
+
+**A second use, pointed the other way.** The writing screen offers a button that asks for a reading of the whole composition. That answer changes no score, no card and no progress, so there is nothing to clamp: it comes back as prose and is drawn as text. The two prompts are written in opposite directions. The judge answers a closed question and refuses when in doubt, because a wrong sentence accepted is a wrong sentence practised. The reader has no verdict to get wrong, so caution buys it nothing: it quotes and commits, because a polite generality costs money and teaches nobody anything.
+
+| File | What is in it |
+|---|---|
+| `llm-providers.js` | the four vendors as data: url, headers, body, and how to read what came back |
+| `llm-prompts.js` | what gets asked, which changes for reasons of teaching |
+| `llm-rules.js` | the cascade, the parsing and the clamp, which change for reasons of engineering |
+| `llm-keys.js` | the keys, structurally outside the state |
+| `llm-net.js` | the request, its clock, and the walk down the chain |
+| `llm.js` | three ways in (`judge`, `review`, `test`) behind the protocol, consent and budget gates |
+
+The first three files are pure functions and are checked by `node:test` without a key and without a browser, with the transport injected. Eighteen of the mutation gates live there, the first of them being the one that breaks the clamp and requires `tests/unit/llm-rules.test.mjs` to turn red. `connect-src` in `index.html` names those four hosts and nothing else, which makes the CSP the honest statement of where this page can send anything.
 
 ## Deployment and CI
 

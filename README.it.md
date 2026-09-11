@@ -12,7 +12,7 @@ Un corso di italiano statico, dall'A1 al C2, che gira tutto nel browser: niente 
 
 150 lezioni, 1514 esercizi e 3494 frasi italiane registrate, spiegate nella lingua di chi studia. Si apre `index.html` e il corso parte.
 
-Il programma di grammatica sale livello per livello dall'A1 al C2. Le spiegazioni esistono in cinque lingue (polacco, inglese, spagnolo, francese, tedesco) e si cambiano quando si vuole, senza perdere i progressi. Tutto quello che lo studente fa resta nel suo browser. Una cosa sola esce dal dispositivo: la registrazione della voce mandata al riconoscimento vocale, e solo dopo che lui ha acconsentito.
+Il programma di grammatica sale livello per livello dall'A1 al C2. Le spiegazioni esistono in cinque lingue (polacco, inglese, spagnolo, francese, tedesco) e si cambiano quando si vuole, senza perdere i progressi. Tutto quello che lo studente fa resta nel suo browser. Dal dispositivo possono uscire due cose, e nessuna delle due parte finché non è lui ad accenderla: la registrazione della voce mandata al riconoscimento vocale, e una risposta che il corso ha già rifiutato, mandata a un modello linguistico che lo studente paga con la propria chiave.
 
 **Online:** [andreabonn.github.io/impara-italiano](https://andreabonn.github.io/impara-italiano/)
 
@@ -28,6 +28,7 @@ Il programma di grammatica sale livello per livello dall'A1 al C2. Le spiegazion
 - [I controlli di qualità](#i-controlli-di-qualità)
 - [Aggiungere contenuto al corso](#aggiungere-contenuto-al-corso)
 - [La pipeline audio](#la-pipeline-audio)
+- [Il controllo facoltativo con un modello](#il-controllo-facoltativo-con-un-modello)
 - [Deploy e CI](#deploy-e-ci)
 - [Manuale utente](#manuale-utente)
 - [Sicurezza](#sicurezza)
@@ -58,7 +59,7 @@ Oltre alle lezioni il corso porta un mazzo di ripetizione dilazionata (FSRS per 
 
 - JavaScript ES5+, script classici, un globale per file. Nessun framework, nessun bundler, nessun polyfill.
 - CSS in un foglio unico, colori in OKLCH.
-- Fraunces e Inter, ospitati nel repository come woff2 (280 KB, licenza SIL Open Font). La pagina non contatta nessun dominio esterno.
+- Fraunces e Inter, ospitati nel repository come woff2 (280 KB, licenza SIL Open Font). La pagina non carica niente da un dominio esterno: le uniche richieste che escono sono le due facoltative, il riconoscimento vocale e il controllo con un modello.
 - Service worker per il funzionamento offline e web app manifest per l'installazione.
 
 **Toolchain (solo per lo sviluppo)**
@@ -244,6 +245,33 @@ Il nome del file è l'hash FNV-1a a 64 bit del testo della frase, calcolato da `
 Due voci: `it-IT-IsabellaNeural` legge, `it-IT-GiuseppeMultilingualNeural` fa il secondo parlante nei dialoghi.
 
 Quando aggiungi una coppia minima, lancia `uv run --script scripts/check_minpairs.py`. La voce onora gli accenti in modo diseguale: `pèsca` e `pésca` ricevono due file diversi, ma `vènti` e `vénti` tornano identici byte per byte, e una coppia che nessuno distingue insegna solo a tirare a indovinare. Non lo mostrerebbe niente: né lo schermo, né il codice, né i test.
+
+## Il controllo facoltativo con un modello
+
+Le risposte aperte si giudicano confrontando testo, quindi una frase corretta ma formulata diversamente viene rifiutata. Un modello linguistico può dare un secondo parere su quel giudizio, e la chiave la mette lo studente.
+
+Di default non è acceso niente. Senza chiave, senza consenso o con la pagina aperta da disco, `Llm.available()` è falso e il corso si comporta come prima che la funzione esistesse: stessi verdetti, stesso punteggio, nemmeno una richiesta in uscita.
+
+**Cosa il modello può cambiare.** Lo si interroga soltanto su una risposta che il corso ha già rifiutato, e la sua replica arriva all'esercizio attraverso `LlmRules.clamp`, nella forma `ok || promote`. Non esiste un percorso che trasformi una risposta accettata in una rifiutata. Un modello che risponde a caso, che risponde nella lingua sbagliata o che è compromesso del tutto produce una promozione mancata, cioè il corso di oggi. La garanzia sta nel codice e non nel prompt, quindi sopravvive al cambio di fornitore.
+
+**Quattro fornitori, chiavi sul dispositivo.** Google Gemini, Groq, OpenAI e Anthropic, ciascuno nella fascia media del proprio catalogo e non in quella di punta: la domanda è chiusa, il testo da leggere è di un principiante e ogni chiamata la paga lo studente. Nelle Impostazioni incolla le chiavi che già ha e ne stabilisce l'ordine; la cascata interroga il primo fornitore che ha una chiave e passa al successivo solo quando quello fallisce. Una chiave rifiutata ritira il suo fornitore per la sessione e lo dice una volta. Un timeout non dice niente, perché il verdetto locale è già corretto e una funzione facoltativa che fallisce in mezzo a un esercizio è rumore.
+
+Le chiavi stanno in un contenitore `localStorage` tutto loro, `linguai.llm.v1`, che `store.js` non conosce. `exportState` serializza l'intero profilo nel file di backup che il corso invita a conservare, e una credenziale addebitata sulla carta dello studente non ha posto in un file che gli diciamo di portarsi in giro. Cancellare il profilo cancella anche le chiavi.
+
+**I budget.** Tre secondi per un fornitore, otto per l'intera catena, sessanta richieste a sessione. I verdetti restano in cache per la sessione e non finiscono mai su disco, dove accumulerebbero le frasi dello studente per risparmiare una richiesta che potrebbe non ripetersi mai.
+
+**Un secondo uso, orientato al contrario.** La schermata di scrittura offre un pulsante che chiede una lettura dell'intero testo. Quella risposta non cambia nessun punteggio, nessuna scheda e nessun progresso, quindi non c'è niente da fermare: torna come prosa e viene disegnata come testo. Le due istruzioni sono scritte in direzioni opposte. Il giudice risponde a una domanda chiusa e nel dubbio rifiuta, perché una frase sbagliata accettata è una frase sbagliata che poi si esercita. Il lettore non ha nessun verdetto da sbagliare, quindi la prudenza non gli compra niente: cita e si espone, perché un generico garbato costa soldi e non insegna niente a nessuno.
+
+| File | Cosa contiene |
+|---|---|
+| `llm-providers.js` | i quattro fornitori come dati: url, header, body e come si legge la risposta |
+| `llm-prompts.js` | cosa si chiede, che cambia per ragioni didattiche |
+| `llm-rules.js` | la cascata, la lettura del verdetto e il clamp, che cambiano per ragioni ingegneristiche |
+| `llm-keys.js` | le chiavi, strutturalmente fuori dallo stato |
+| `llm-net.js` | la richiesta, il suo orologio e la discesa lungo la catena |
+| `llm.js` | tre vie d'ingresso, `judge`, `review` e `test`, dietro i cancelli del protocollo, del consenso e del budget |
+
+I primi tre file sono funzioni pure e si verificano in `node:test` senza chiave e senza browser, iniettando il trasporto. Diciotto dei test di mutazione stanno lì, e la prima è quella che rompe il clamp e pretende che `tests/unit/llm-rules.test.mjs` diventi rosso. In `index.html` la direttiva `connect-src` nomina quei quattro host e nient'altro: è la CSP a dire con onestà dove questa pagina può mandare qualcosa.
 
 ## Deploy e CI
 

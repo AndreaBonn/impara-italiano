@@ -40,22 +40,46 @@ Safari 16+ oraz połączenia szyfrowanego: działa na `localhost` i po opublikow
 ale nie po otwarciu pliku z dysku. W pozostałych przypadkach te ćwiczenia zamieniają się
 w pisane — kurs działa dalej, tylko bez oceny wymowy.
 
-**To jedyne miejsce, w którym coś opuszcza Twoje urządzenie.** Rozpoznawanie mowy nie liczy
-się w przeglądarce: przeglądarki, które je udostępniają, wysyłają nagranie Twojego głosu na
+**Dopóki sam tego nie włączysz, nic nie opuszcza Twojego urządzenia.** Rozpoznawanie mowy nie
+liczy się w przeglądarce: przeglądarki, które je udostępniają, wysyłają nagranie Twojego głosu na
 serwer swojego dostawcy i odsyłają tekst. Nie mamy nad tym kontroli i nie da się tego zrobić
 inaczej bez własnego serwera, którego kurs celowo nie ma. Dotyczy to ćwiczeń z mikrofonem
 i rozmów na głos; **nie** dotyczy niczego innego — teoria, ćwiczenia pisane, słuchanie,
 fiszki i postępy zostają u Ciebie. Jeśli Ci to nie odpowiada, nie dotykaj mikrofonu: te
 ćwiczenia same zamieniają się w pisane i kurs działa w całości.
 
+Drugie i ostatnie takie miejsce to opisane niżej sprawdzanie odpowiedzi przez model,
+domyślnie wyłączone.
+
 Jedyne miejsce z głosem systemowym to **odmiana czasowników**: generuje dowolne formy,
 więc nie da się ich nagrać z góry.
+
+### Sprawdzanie odpowiedzi przez model (opcjonalne)
+
+Kurs porównuje Twoją odpowiedź ze wzorcem litera po literze, więc zdanie poprawne, ale ułożone
+inaczej, potrafi odrzucić. Możesz dać mu drugą opinię: w **Ustawieniach** wklejasz klucz API
+dostawcy, z którego już korzystasz (Google Gemini, Groq, OpenAI albo Anthropic), i zaznaczasz
+zgodę na wysyłanie odpowiedzi.
+
+Co się wtedy zmienia:
+
+- kurs pyta model **tylko wtedy, gdy sam odrzucił** Twoją odpowiedź, i tylko o tę jedną odpowiedź;
+- model może **wyłącznie** zamienić odrzucenie w zaliczenie i dopisać zdanie wyjaśnienia. Nie ma
+  drogi, którą mógłby odebrać punkt za odpowiedź już uznaną za dobrą — model, który odpowiada
+  bzdury, daje w najgorszym razie brak poprawki, czyli kurs taki jak dziś;
+- na ekranie pisania pojawia się przycisk, który prosi model o opinię o całym tekście. Ta opinia
+  niczego nie ocenia i nie zmienia żadnego wyniku.
+
+Klucz zostaje w tej przeglądarce, w innym miejscu niż postępy, więc **nie wchodzi do pliku
+z eksportem**. Za każde zapytanie płacisz Ty, u swojego dostawcy — dlatego kurs pyta oszczędnie
+i ma twardy limit na sesję. Bez klucza, bez zgody albo po otwarciu pliku z dysku nie dzieje się
+nic z powyższych i kurs działa dokładnie tak jak wcześniej.
 
 ## Postępy
 
 Wszystko zapisuje się lokalnie w przeglądarce. Nie ma serwera, konta ani śledzenia, a kurs
-nie wysyła Twoich postępów nigdzie — jedynym wyjątkiem jest rozpoznawanie mowy opisane wyżej,
-i tylko wtedy, gdy sam włączysz mikrofon. W zakładce **Ustawienia** możesz wyeksportować
+nie wysyła Twoich postępów nigdzie. Wyjątki są dwa i oba opisano wyżej: rozpoznawanie mowy,
+kiedy sam włączysz mikrofon, i sprawdzanie odpowiedzi przez model, kiedy sam wpiszesz klucz. W zakładce **Ustawienia** możesz wyeksportować
 postępy do pliku i wczytać je na innym komputerze.
 
 Wyczyszczenie danych przeglądarki kasuje postępy. Warto co jakiś czas zrobić eksport.

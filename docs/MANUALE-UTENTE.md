@@ -16,6 +16,7 @@ Il corso spiega l'italiano in polacco, inglese, spagnolo, francese o tedesco. I 
 - [Scrivere in italiano](#scrivere-in-italiano)
 - [L'audio](#laudio)
 - [Il microfono e la tua voce](#il-microfono-e-la-tua-voce)
+- [Il controllo delle risposte con un modello](#il-controllo-delle-risposte-con-un-modello)
 - [Le schermate, una per una](#le-schermate-una-per-una)
   - [Oggi](#oggi)
   - [Percorso di studio](#percorso-di-studio)
@@ -164,7 +165,7 @@ Se sul tuo sistema non c'è nessuna voce italiana, il corso te lo dice e resta i
 
 ## Il microfono e la tua voce
 
-Questa è l'unica parte del corso in cui qualcosa esce dal tuo dispositivo.
+Questa è una delle due parti del corso in cui qualcosa esce dal tuo dispositivo. L'altra è [il controllo delle risposte con un modello](#il-controllo-delle-risposte-con-un-modello), ed è spenta finché non sei tu ad accenderla.
 
 Il riconoscimento vocale non gira sul tuo computer. I browser che lo offrono mandano una registrazione della tua voce al server del proprio fornitore e ricevono indietro del testo. Il corso non ha controllo su questo e non può fare altrimenti senza un server proprio, che ha deliberatamente scelto di non avere.
 
@@ -176,6 +177,28 @@ Per questo, la prima volta che qualcosa userebbe il riconoscimento vocale il cor
 La decisione si revoca dalle Impostazioni. Riguarda i circa 150 esercizi di pronuncia e le quattordici conversazioni, e nient'altro: teoria, esercizi scritti, ascolto, carte e progressi non escono mai dal tuo browser.
 
 **Shadowing e la sezione orale dell'esame sono un'altra cosa.** Registrano con il microfono ma non mandano niente da nessuna parte: l'audio resta nella pagina e sparisce quando la chiudi. Servono per riascoltarti, non per farti valutare.
+
+## Il controllo delle risposte con un modello
+
+Quando scrivi una frase in italiano, il corso la confronta con le risposte che ha in archivio. Il confronto perdona gli accenti e le sviste di battitura, ma non può sapere che la tua frase dice la stessa cosa con altre parole: ogni tanto, quindi, segna come sbagliata una risposta giusta.
+
+Puoi dargli un secondo parere. Costa soldi, perciò il corso non te lo prepara da sé. Nelle Impostazioni c'è un campo per ciascuno di quattro fornitori: Google Gemini, Groq, OpenAI, Anthropic. Se hai già un account con uno di loro, incolla la sua chiave API, spunta il consenso e premi **Try it** per sapere che funziona prima di incontrarla in mezzo a una lezione.
+
+Da quel momento, negli esercizi scritti e nelle conversazioni:
+
+- Il corso controlla la tua risposta per primo, come ha sempre fatto. Una risposta giusta viene accettata lì, e non esce niente da nessuna parte.
+- Esce soltanto una risposta **rifiutata**, e solo quella frase, insieme alla consegna e alle risposte che il corso si aspettava. Per un istante il riquadro dice **Checking…**.
+- Il modello può fare una cosa sola: trasformare quel rifiuto in un'accettazione e aggiungere una riga sulla tua frase. Non può toglierti un punto che hai già preso. Se risponde a caso, o non risponde affatto, resta il rifiuto di prima e tu vai avanti.
+
+**Nella schermata di scrittura fa un'altra cosa.** Lì il corso verifica solo quello che si può verificare, quindi un pulsante ti offre una lettura del testo intero. Quel parere non valuta niente e non cambia nessun punteggio: è prosa da leggere. Il pulsante lo premi ogni volta che ne vuoi uno, perché una lettura che non hai chiesto è una spesa che non hai autorizzato.
+
+Qualche punto che vale la pena sapere:
+
+- **La chiave resta in questo browser**, in un posto diverso dai tuoi progressi, così il file di esportazione non la contiene mai. Cancellare i dati cancella anche le chiavi, e nelle Impostazioni **Delete every key** le toglie da sole.
+- **Paghi tu**, dal tuo fornitore, a domanda. Il corso chiede con parsimonia: non chiede mai su una risposta che ha accettato, ricorda le risposte già pagate finché la scheda resta aperta, e si ferma a sessanta domande per sessione.
+- **Se hai salvato più chiavi**, il corso interroga il primo fornitore del tuo ordine e passa al successivo solo quando quello fallisce. Le frecce cambiano l'ordine. Una chiave rifiutata te la segnala una volta, con un messaggio che ti manda nelle Impostazioni; un fornitore soltanto lento viene scartato in silenzio, perché la tua risposta è già stata corretta e un ritardo non vale l'interruzione di una lezione.
+- **Non aspetta più di otto secondi.** Dopo resta il verdetto locale.
+- **Senza tutte e tre le condizioni non succede niente**: chiave, consenso e pagina servita. Se apri il corso dal disco la funzione non esiste; se ritiri il consenso il corso torna a confrontare lettera per lettera, esattamente come faceva prima.
 
 ## Le schermate, una per una
 
@@ -296,6 +319,7 @@ Una versione più corta di questo manuale, dentro il corso stesso.
 | Audio | sorgente della voce, velocità, riproduzione automatica, obbligo degli accenti, un pulsante di prova |
 | Ripasso | ogni quanto tornano le carte, su tre gradini |
 | Copia dei progressi | esporta, importa, cancella tutto |
+| Controllo con un modello | un campo chiave per fornitore, un pulsante di prova, l'ordine in cui vengono interrogati, la spunta del consenso e un pulsante che cancella tutte le chiavi |
 | Supporto del browser | quali fra sintesi vocale, riconoscimento vocale e modalità offline funzionano qui, e quali voci italiane ha il tuo sistema |
 
 Nelle Impostazioni stanno anche il test di piazzamento, se vuoi rifarlo, e l'esportazione e l'importazione dei mazzi Anki.
@@ -323,6 +347,8 @@ Tocca una parola qualsiasi in un testo e una scheda ti dice cosa significa e ti 
 Sei prove, di due tipi: composizioni e traduzione frase per frase. Ci si arriva da Allenamento.
 
 La schermata è onesta sui propri limiti. Qui dentro nessuno valuta la tua prosa. Si verifica quello che si può verificare: se hai usato le costruzioni che la consegna chiedeva e se hai raggiunto il numero di parole. Poi ti mostra un testo modello, non come traccia da copiare ma da confrontare, e una lista di domande da farti, possibilmente dopo aver letto ad alta voce quello che hai scritto.
+
+Se hai configurato [il controllo delle risposte con un modello](#il-controllo-delle-risposte-con-un-modello), accanto a quelle domande compare un pulsante che gli chiede di leggere quello che hai scritto. Continua a non valutare niente e non cambia nessun punteggio: quello che torna è un parere, nella tua lingua, sulle parti che il corso non sa misurare.
 
 ### Ricerca
 
@@ -386,6 +412,9 @@ Chiudere il messaggio con la crocetta lascia la versione nuova in attesa, e il m
 | Un'importazione viene rifiutata | Il messaggio dice il motivo: non è un file di salvataggio, manca il numero di versione, viene da una versione più nuova del corso, un campo è danneggiato, oppure è troppo grande. |
 | Dopo il cambio di lingua una parte del corso resta nella precedente | Alcuni file di traduzione non si sono caricati. Il corso dice quanti. Ricarica la pagina. |
 | Un esercizio dice «tipo sconosciuto» | Uno script non si è caricato. Ricarica; se continua, è un bug che vale la pena segnalare. |
+| Un messaggio dice che nessuna chiave è stata accettata | Ogni fornitore che hai salvato ha rifiutato la sua chiave. Apri le Impostazioni e provale una per una con **Try it**: il messaggio riporta quello che ha risposto il fornitore. |
+| Le risposte vengono confrontate lettera per lettera anche se una chiave è salvata | Manca una delle altre due condizioni: la spunta del consenso nelle Impostazioni, oppure una pagina servita su `http(s)` invece che aperta dal disco. |
+| A metà sessione il controllo con il modello ha smesso di partire | Sessanta domande sono il tetto di una sessione. Ricarica la pagina per cominciarne una nuova. |
 
 ---
 

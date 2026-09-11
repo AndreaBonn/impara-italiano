@@ -14,6 +14,7 @@ Everything the course can do, screen by screen. You do not need to read it in or
 - [Typing Italian](#typing-italian)
 - [Sound](#sound)
 - [The microphone and your voice](#the-microphone-and-your-voice)
+- [Answer checking by a model](#answer-checking-by-a-model)
 - [The screens, one by one](#the-screens-one-by-one)
   - [Today](#today)
   - [Learning path](#learning-path)
@@ -162,7 +163,7 @@ If your system has no Italian voice at all, the course says so and stays silent 
 
 ## The microphone and your voice
 
-This is the one part of the course where something leaves your device.
+This is one of the two parts of the course where something leaves your device. The other one is [answer checking by a model](#answer-checking-by-a-model), and it is off until you switch it on.
 
 Speech recognition does not run on your computer. The browsers that offer it send a recording of your voice to their own vendor's server and send text back. The course has no control over that and cannot do it differently without a server of its own, which it deliberately does not have.
 
@@ -174,6 +175,28 @@ Because of that, the first time anything would use speech recognition the course
 You can revoke the decision later in Settings. It affects the roughly 150 pronunciation exercises and the fourteen conversations, and nothing else: theory, written exercises, listening, flashcards and progress never leave your browser.
 
 **Shadowing and the exam speaking section are different.** Those record you with the microphone but do not send anything anywhere: the audio stays in the page and is gone when you close it. They are for listening to yourself, not for being graded.
+
+## Answer checking by a model
+
+When you type an Italian sentence, the course compares it with the answers it holds. That comparison forgives accents and small typing slips, but it cannot know that your sentence says the same thing in different words, so sometimes it marks a correct answer wrong.
+
+You can give it a second opinion, and it costs money, so the course does not arrange it for you. In Settings there is a field for each of four providers: Google Gemini, Groq, OpenAI, Anthropic. If you already have an account with one of them, paste its API key, tick the consent box, and press **Try it** to be sure the key works before you meet it in the middle of a lesson.
+
+From then on, in written exercises and in the spoken conversations:
+
+- The course checks your answer first, as it always did. A correct answer is accepted on the spot and nothing is sent anywhere.
+- Only a **rejected** answer is sent, and only that one sentence, with the question and the answers the course expected. For a moment the box reads **Checking…**.
+- The model can do exactly one thing: turn that rejection into an acceptance, and add a short line about your sentence. It cannot take away a mark you have already earned. If it answers nonsense, or does not answer at all, the original rejection stands and you carry on.
+
+**On the writing screen it does something else.** There the course checks only what can be checked, so a button offers a reading of your whole composition. That opinion grades nothing and changes no score; it is prose to read. You press the button each time you want one, because a reading you did not ask for is money you did not agree to spend.
+
+A few things worth knowing:
+
+- **The key stays in this browser** and in a different place from your progress, so the export file never contains it. Erasing your data erases the keys too, and **Delete every key** in Settings removes them on their own.
+- **You are paying**, at your provider, per question. The course asks sparingly: it never asks about an answer it accepted, it remembers the answers it already bought for as long as the tab is open, and it stops at sixty questions in one session.
+- **If several keys are saved**, the course asks the first provider in your order and moves to the next only when that one fails. The arrows change the order. A key that gets rejected is reported once, in a message telling you to check Settings; a provider that is merely slow is dropped in silence, because your answer was already marked and a delay is not worth interrupting a lesson for.
+- **It waits no more than eight seconds.** After that the local verdict stands.
+- **Nothing happens without all three of key, consent and a served page.** Open the course from disk and the feature does not exist; withdraw consent and the course goes back to comparing letter by letter, exactly as it did before.
 
 ## The screens, one by one
 
@@ -294,6 +317,7 @@ A shorter version of this manual, inside the course itself.
 | Speech | voice source, speech rate, autoplay, require accents, a voice test button |
 | Reviews | how often cards come back, in three steps |
 | Progress backup | export, import, erase everything |
+| Answer checking by a model | one key field per provider, a Try it button, the order they are asked in, the consent box, and a button that deletes every key |
 | Browser support | which of TTS, speech recognition and offline mode work here, and which Italian voices your system has |
 
 Settings is also where the placement test lives if you want to retake it, and where the Anki deck export and import sit.
@@ -321,6 +345,8 @@ Tap any word in a text and a card tells you what it means and offers to add it t
 Six tasks, in two kinds: compositions and sentence-by-sentence translation. Reached from Training.
 
 The screen is honest about its own limits. Nothing here grades your prose. What gets checked is what can be checked: whether you used the constructions the task asked for, and whether you hit the word count. Then it shows you a model text, not as a template to copy but to compare against, and a list of questions to ask yourself, ideally after reading your own text out loud.
+
+If you have set up [answer checking by a model](#answer-checking-by-a-model), a button next to those questions asks it to read what you wrote. It still grades nothing, and it changes no score: what comes back is an opinion, in your own language, about the parts the course cannot measure.
 
 ### Search
 
@@ -384,6 +410,9 @@ Closing the message with the cross keeps the new version waiting, and the messag
 | An import is rejected | The message names the reason: not a save file, no version number, from a newer version of the course, a damaged field, or too large. |
 | Part of the course stays in the previous language after switching | Some overlay files failed to load. The course says how many. Reload the page. |
 | An exercise says "Unknown exercise type" | A script did not load. Reload; if it persists, it is a bug worth reporting. |
+| A message says none of your keys was accepted | Every provider you saved refused its key. Open Settings and try each one with the Try it button; the message names what the provider said. |
+| Answers are checked letter by letter although a key is saved | One of the other two conditions is missing: the consent box in Settings, or a page served over `http(s)` rather than opened from disk. |
+| The model check stopped happening halfway through a session | Sixty questions is the ceiling for one session. Reload the page to start a new one. |
 
 ---
 

@@ -35,17 +35,29 @@ Quello che resta da difendere:
 
 - codice estraneo che si attacca alla pagina (un'estensione del browser, o una dipendenza che un giorno arrivi dalla rete)
 - un file ostile passato alle funzioni di importazione
-- l'unico canale in uscita che esiste, il riconoscimento vocale
+- i due canali in uscita che esistono, il riconoscimento vocale e il controllo facoltativo con un modello, entrambi spenti finché non è lo studente ad accenderli
+- l'unica credenziale che la pagina arrivi mai a tenere, la chiave API che lo studente incolla per il controllo con un modello
+- il testo che arriva da un modello, l'unica stringa a schermo che non viene né dal repository né dallo studente
 
 ## Misure di sicurezza implementate
 
 Ogni voce qui sotto è stata verificata nel codice al riferimento indicato.
 
-- **Content Security Policy** che limita gli script alla stessa origine, con `object-src 'none'`, `base-uri 'none'` e `form-action 'none'` (`index.html:18`). Il corso non contiene un solo script inline né un solo attributo `on*=`, quindi `script-src 'self'` non costa niente. `style-src` mantiene `'unsafe-inline'` perché il motore costruisce attributi `style="..."` da valori calcolati in 166 punti, e senza server e senza build non si può produrre né un nonce né un hash. `frame-ancestors` manca di proposito: i browser lo ignorano dentro un tag `<meta>`, e una regola che non fa niente, nell'elenco, sembra identica a una che funziona.
+- **Content Security Policy** che limita gli script alla stessa origine, con `object-src 'none'`, `base-uri 'none'` e `form-action 'none'` (`index.html:27`). Il corso non contiene un solo script inline né un solo attributo `on*=`, quindi `script-src 'self'` non costa niente. `style-src` mantiene `'unsafe-inline'` perché il motore costruisce attributi `style="..."` da valori calcolati in 166 punti, e senza server e senza build non si può produrre né un nonce né un hash. `frame-ancestors` manca di proposito: i browser lo ignorano dentro un tag `<meta>`, e una regola che non fa niente, nell'elenco, sembra identica a una che funziona.
 
-- **Nessuna origine di terzi.** La pagina non chiede niente fuori dalla propria cartella. I font stanno in `assets/fonts/` e il service worker si rifiuta di mettere in cache risposte cross-origin (`sw.js`), perché una risposta opaca in cache è un ingombro di cui non si può ispezionare il contenuto.
+- **Da nessuna origine di terzi viene caricato niente.** Ogni script, foglio di stile, font e registrazione viene dalla cartella della pagina, e il service worker si rifiuta di mettere in cache risposte cross-origin (`sw.js`), perché una risposta opaca in cache è un ingombro di cui non si può ispezionare il contenuto. Le uniche richieste che escono dalla pagina sono le `fetch` verso i quattro endpoint di modelli nominati in `connect-src`, e solo per uno studente che ha inserito una chiave e dato il consenso.
+
+- **`connect-src` è una lista chiusa di quattro host** (`index.html:27`): gli endpoint API di Gemini, Groq, OpenAI e Anthropic. `default-src 'self'` non si estende a `connect-src`, quindi la direttiva è stata scritta a mano ed è l'enunciato applicabile di dove questa pagina può mandare qualcosa.
 
 - **Consenso esplicito prima che la voce esca dal browser**, con la barriera in un punto solo invece che a ogni chiamata (`assets/js/consent.js:42`, applicata dentro `Audio2.listen`). Il consenso parte negato, è salvato nelle impostazioni ed è revocabile. Una difesa distribuita fra le tre viste che oggi la chiamano avrebbe retto fino all'aggiunta della quarta.
+
+- **Il modello può soltanto promuovere un rifiuto.** Il verdetto arriva all'esercizio attraverso `LlmRules.clamp` (`assets/js/llm-rules.js:173`) nella forma `ok || promote`, e nessun percorso dentro quella funzione trasforma una risposta accettata in una rifiutata. Un modello che risponde a caso, che risponde nella lingua sbagliata o che è compromesso del tutto produce una promozione mancata, cioè il corso come si comporta senza la funzione. La garanzia sta nel codice e non nel prompt, quindi sopravvive a un modello che mente e al cambio di fornitore, e una mutazione che la rimuove deve far diventare rosso `tests/unit/llm-rules.test.mjs`.
+
+- **Un secondo consenso, in un punto solo, per il controllo con un modello** (`assets/js/consent.js:102`, applicato dentro `Llm.judge` a `assets/js/llm.js:78`). Parte negato, è salvato nelle impostazioni, si revoca dalle Impostazioni, e viene verificato una volta sola invece che dentro ciascuno dei tre punti di chiamata.
+
+- **Le chiavi API stanno strutturalmente fuori dallo stato esportabile** (`assets/js/llm-keys.js:30`). Vivono in un contenitore `localStorage` tutto loro, `linguai.llm.v1`, che `store.js` non conosce e che `exportState` e `importState` non attraversano mai: un file di backup che diciamo allo studente di conservare non può portarsi dietro una credenziale addebitata sulla sua carta, e un file di backup di qualcun altro non può raggiungere le chiavi né riordinare i fornitori. Cancellare il profilo le cancella. L'unico punto in cui il testo d'errore di un fornitore arriva a schermo, il pulsante di prova nelle Impostazioni, lo fa passare prima per `LlmKeys.redact` (`assets/js/llm-keys.js:150`), così una chiave restituita dentro un messaggio d'errore non finisce stampata accanto al campo da cui viene.
+
+- **L'output del modello è scritto con `textContent` in tutte e tre le sue destinazioni** (`assets/js/exercises.js:76`, `assets/js/notice.js:25` per il messaggio nelle conversazioni, `assets/js/views-writing.js:220`) e troncato a 200 caratteri da `llm-rules.js`. È l'unico testo a schermo che non hanno scritto né il repository né lo studente.
 
 - **Escape dell'output** per tutto ciò che arriva al DOM come testo, su `&`, `<`, `>`, `"` e `'` (`assets/js/text.js:102`, riesposto come `Core.esc`).
 
@@ -63,6 +75,10 @@ Ogni voce qui sotto è stata verificata nel codice al riferimento indicato.
 
 - **Il riconoscimento vocale manda la voce dello studente al fornitore del suo browser.** È una proprietà della Web Speech API, non un difetto del corso, e non si può evitare senza un server che il progetto ha scelto di non avere. Viene detto allo studente nella finestra di consenso prima del primo uso, riguarda circa 150 esercizi e le quattordici conversazioni, e rifiutare trasforma quegli esercizi in esercizi scritti.
 
+- **Il controllo con un modello manda la frase dello studente al fornitore che ha scelto lui.** È la funzione, non un difetto: esce la risposta rifiutata, la consegna e le risposte attese, ed esce solo dopo che una chiave è stata inserita e il consenso dato. Quello che il fornitore ne fa poi è regolato dalle sue condizioni, non da questo progetto, e il corso non ha modo di verificarlo. Rifiutare, o semplicemente non inserire nessuna chiave, toglie il canale del tutto.
+
+- **Una chiave API sta in `localStorage`, in chiaro.** Un browser non ha un posto migliore dove metterla: non c'è un server che la tenga e non c'è un archivio di segreti legato all'origine che una pagina statica possa raggiungere. Chiunque riesca già a eseguire JavaScript su questa origine può leggerla, cioè la stessa classe di attaccante che potrebbe leggere il file dei progressi, ma la conseguenza è più grande perché la chiave si paga. Sta fuori dal file di esportazione, si cancella insieme al profilo e si può togliere da sola: questo limita il raggio dell'esposizione, non cifra niente. Chi preferisce non correre il rischio usi una chiave dedicata a questo corso, con un tetto di spesa impostato dal fornitore, oppure lasci perdere la funzione.
+
 - **I campi di teoria delle lezioni sono inseriti come HTML di proposito**, perché il grassetto e gli altri segni servono dentro le spiegazioni. È sicuro perché quei campi vengono da `data/`, cioè da contenuto del repository. Niente che provenga da chi studia deve mai finire lì dentro.
 
 - **`style-src` consente gli stili inline.** Il motivo, e cosa questo apre e cosa no, sta nella nota sulla CSP qui sopra.
@@ -76,7 +92,8 @@ Ogni voce qui sotto è stata verificata nel codice al riferimento indicato.
 - Servi il corso su HTTPS. Il riconoscimento vocale e la modalità offline richiedono entrambi un contesto sicuro, e su `http` semplice non sono disponibili oltre `localhost`.
 - Importa file di progressi e mazzi Anki solo da una fonte di cui ti fidi. I validatori limitano il danno che un file malformato può fare, non rendono affidabile un file sconosciuto.
 - Esporta i progressi prima di cancellare i dati di navigazione. Dopo non si recupera niente.
-- Se preferisci che non esca proprio nulla dal tuo dispositivo, rifiuta il consenso al riconoscimento vocale. Il corso funziona per intero anche così.
+- Se usi il controllo con un modello, dagli una chiave che puoi limitare e revocare: una chiave dedicata a questo corso, con un tetto di spesa impostato dal fornitore. Cancellala dalle Impostazioni quando finisci su un computer condiviso o prestato, e tieni presente che la chiave non sta nell'esportazione dei progressi, quindi su un dispositivo nuovo va reinserita.
+- Se preferisci che non esca proprio nulla dal tuo dispositivo, rifiuta entrambi i consensi, quello al riconoscimento vocale e quello al controllo con un modello. Nessuno dei due è obbligatorio e il corso funziona per intero anche così.
 
 ## Fuori ambito
 

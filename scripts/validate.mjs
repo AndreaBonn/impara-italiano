@@ -82,7 +82,15 @@ ALL.forEach(f => run(join("data", "core", f)));
 const biblioteka = readdirSync(join(ROOT, "data", "core"))
   .filter(f => /^library-[abc]\d\.js$/.test(f))
   .sort();
-biblioteka.forEach(f => run(join("data", "core", f)));
+/* Which text came from which library file. The length check below applies to
+   these and not to the short readings of `readings.js`, and the difference
+   cannot be guessed from the data: it is where the text is declared. */
+const dlugieTeksty = new Map();
+biblioteka.forEach(f => {
+  const przed = (sandbox.READINGS || []).length;
+  run(join("data", "core", f));
+  (sandbox.READINGS || []).slice(przed).forEach(r => { if (r && r.id) dlugieTeksty.set(r.id, f); });
+});
 
 /* A snapshot of the neutral layer BEFORE the overlay writes the student's
    texts in: after applyStrings those same objects already carry
@@ -295,12 +303,33 @@ const gramIds = new Set();
 });
 
 /* ---------------- The readings ---------------- */
+
+/* The band the plan asks of every library text (specs/006-input-e-produzione,
+   Definition of Done for O1). It sat there as prose for a whole phase while A1
+   stood at 289 words and A2 at 381: the number was written, nothing measured
+   it, and the phase closed green. Both bounds are checked, because both come
+   from the plan — raising the ceiling is a decision to take there, in the open,
+   not a line to quietly exceed here. */
+const MIN_SLOW = 400;
+const MAX_SLOW = 800;
+function ileSlow(zdania) {
+  return (zdania || []).join(" ").split(/\s+/).filter(Boolean).length;
+}
+
 const readIds = new Set();
 (sandbox.READINGS || []).forEach(r => {
   if (readIds.has(r.id)) errors.push(`Duplikat id czytanki: ${r.id}`);
   readIds.add(r.id);
   if (!Array.isArray(r.sentences) || r.sentences.length < 3) {
     errors.push(`Czytanka ${r.id}: mniej niż trzy zdania`);
+  }
+  if (dlugieTeksty.has(r.id)) {
+    const slow = ileSlow(r.sentences);
+    if (slow < MIN_SLOW || slow > MAX_SLOW) {
+      errors.push(
+        `Biblioteka ${r.id} (${dlugieTeksty.get(r.id)}): ${slow} słów, poza ${MIN_SLOW}-${MAX_SLOW}`
+      );
+    }
   }
   if (!r.titleIt) errors.push(`Czytanka ${r.id}: brak titleIt`);
   if (!r.title) errors.push(`Czytanka ${r.id}: brak tytułu w nakładce`);

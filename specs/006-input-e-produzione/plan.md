@@ -63,7 +63,7 @@ di `CLAUDE.md` a coincidere con il repository.
 - Ogni livello ha almeno un testo fra 400 e 800 parole, con ascolto continuo, ripresa dal
   punto in cui si era rimasti e consultazione di qualsiasi parola. A1 (289 parole) e A2
   (381) erano sotto soglia alla chiusura della fase 4 e sono stati estesi dopo, a 415 e
-  527: la soglia era scritta e non rispettata, e nessun gate la misurava.
+  527: la soglia era scritta e non rispettata, e nessun gate la misurava. Ora la misura `validate.mjs`, che esce 1 fuori dalla fascia 400-800.
 - Aprire il corso senza entrare in biblioteca non carica nessun file della biblioteca.
 - `uv run --script scripts/build_audio.py --dry-run` dice zero mancanti.
 

@@ -378,6 +378,15 @@ Dwie rzeczy, które widok robi inaczej na długim tekście, obie z jednego powod
   (`onLine`), nie na końcu, bo uczeń, który zamyka kartę w połowie, jest dokładnie tym,
   dla którego to istnieje. Przycisk „wznów" pojawia się tylko wtedy, gdy jest dokąd wrócić.
 
+**Długość tekstu jest bramką, nie prośbą.** `validate.mjs` liczy słowa każdego tekstu
+biblioteki i kończy się kodem 1 poza przedziałem 400-800. Przedział bierze się z planu
+(`specs/006-input-e-produzione`, DoD dla O1), gdzie stał jako proza przez całą fazę: A1
+miał wtedy 289 słów, A2 381, i faza zamknęła się na zielono, bo liczby nikt nie mierzył.
+Sprawdzane są **oba** krańce: podniesienie sufitu to decyzja do podjęcia w planie, nie
+linia do cichego przekroczenia tutaj. Bramka odróżnia tekst biblioteki od krótkiej
+czytanki po tym, z którego pliku przyszedł, a nie po liczbie zdań: tego nie da się
+zgadnąć z danych.
+
 Nagrania powstają normalnie: `extract_strings.mjs` wylicza pliki `library-*.js` z katalogu
 (a nie z ręcznej listy), więc tekst dopisany do poziomu, o którym nikt nie pamiętał, i tak
 dostanie swoje mp3. Bez tego zjechałby na syntezę systemową, nie mówiąc o tym ani słowa.
@@ -586,7 +595,7 @@ plik niósł już nową wartość i po odzyskaniu nie prosił od razu o następn
 
 ```bash
 npm run lint                        # poprawność kodu (eslint, flat config, cztery bloki)
-node scripts/validate.mjs           # duplikaty id, kompletność ćwiczeń, statystyki (domyślnie pl)
+node scripts/validate.mjs           # duplikaty id, kompletność ćwiczeń, długość tekstów biblioteki, statystyki (domyślnie pl)
 node scripts/validate.mjs en        # to samo dla nakładki angielskiej
 node scripts/parity.mjs             # czy każdy język ma ten sam kształt co polski
 node scripts/check_precache.mjs     # czy guska wczyta wszystko, co ładuje index.html

@@ -42,8 +42,13 @@ test("the keys of every exercise in the course are different", async ({ page }) 
   });
 
   expect(wynik.zderzenia, `zderzenia kluczy: ${wynik.zderzenia.join(", ")}`).toEqual([]);
-  expect(wynik.lekcji).toBe(150);
-  expect(wynik.ile).toBe(1514);
+  /* The two counts are the guard that the walk really saw the whole course:
+     without them a registry that loaded half the levels would report zero
+     collisions and pass. They are a BASELINE, so they move whenever content
+     is added — and the value to put here is the one `node scripts/baseline.mjs`
+     prints, not a number anybody counts by hand. */
+  expect(wynik.lekcji).toBe(154);
+  expect(wynik.ile).toBe(1557);
 });
 
 test("every key finds its own exercise again", async ({ page }) => {

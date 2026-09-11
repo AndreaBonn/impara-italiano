@@ -38,6 +38,11 @@ const sandbox = {
     addUnits(code, units) {
       if (!byCode[code]) { errors.push(`addUnits dla nieznanego poziomu: ${code}`); return; }
       byCode[code].units = byCode[code].units.concat(units);
+    },
+    /* The library appends to the same list readings.js assigns whole, so
+       every check below sees the long texts as what they are: readings. */
+    addReadings(lista) {
+      sandbox.READINGS = (sandbox.READINGS || []).concat(lista || []);
     }
   }
 };
@@ -69,6 +74,16 @@ const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-r
    that is supposed to be Italian. */
 run(join("data", "core", "chat-scenarios.js"));
 ALL.forEach(f => run(join("data", "core", f)));
+/* The library, one file per level. Enumerated from the directory: a text
+   added to a level nobody remembered to list here would skip every check
+   below — and the tag check is one of them, so an invented topic id would
+   reach the student's mistake notebook as a raw string. That is exactly how
+   three of them got in. */
+const biblioteka = readdirSync(join(ROOT, "data", "core"))
+  .filter(f => /^library-[abc]\d\.js$/.test(f))
+  .sort();
+biblioteka.forEach(f => run(join("data", "core", f)));
+
 /* A snapshot of the neutral layer BEFORE the overlay writes the student's
    texts in: after applyStrings those same objects already carry
    translations and the scan means nothing. */
@@ -83,6 +98,10 @@ const neutralneDane = JSON.parse(JSON.stringify({
 }));
 
 ALL.forEach(f => run(join("data", "i18n", LANG, f)));
+/* …and the library's own overlays, by the same names as its neutral files.
+   Without them every long text reports a missing title, which is what this
+   gate is for: the same complaint a student would see as an empty heading. */
+biblioteka.forEach(f => run(join("data", "i18n", LANG, f)));
 sandbox.LINGUAI.applyStrings(LANG);
 
 /* ---------------- Validation ---------------- */

@@ -638,12 +638,12 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 
 | Co | Ile | Polecenie |
 |---|---|---|
-| Jednostki / lekcje / ćwiczenia | 32 / 150 / 1514 | `node scripts/baseline.mjs` |
-| Pozycje słownika / rozmowy / hasła gramatyczne | 1412 / 14 / 42 | `node scripts/baseline.mjs` |
+| Jednostki / lekcje / ćwiczenia | 33 / 154 / 1557 | `node scripts/baseline.mjs` |
+| Pozycje słownika / rozmowy / hasła gramatyczne | 1448 / 14 / 42 | `node scripts/baseline.mjs` |
 | Czytanki / zadania pisane / zbiory par minimalnych | 24 / 6 / 5 | `node scripts/baseline.mjs` |
 | Biblioteka: teksty / zdania / słowa | 6 / 188 / 2621 | `node scripts/baseline.mjs` |
 | Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
-| Nagrania | 3780 plików mp3, 42 MiB bajtów; 3779 skrótów w indeksie | `node scripts/baseline.mjs` |
+| Nagrania | 3833 plików mp3, 43 MiB bajtów; 3832 skrótów w indeksie | `node scripts/baseline.mjs` |
 | Klucze interfejsu na język | 889 × 5 języków | `node scripts/baseline.mjs` |
 | Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
 | Pliki silnika | 77 w assets/js/, 16034 linii | `node scripts/baseline.mjs` |

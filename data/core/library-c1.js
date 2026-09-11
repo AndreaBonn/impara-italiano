@@ -13,7 +13,7 @@ LINGUAI.addReadings([
   {
     id: "lib-c1-burocrazia",
     cefr: "C1",
-    tag: "g-congiuntivo-imperfetto",
+    tag: "g-congiuntivo-imp",
     titleIt: "Elogio parziale della lentezza italiana",
     sentences: [
       "Chi arriva in Italia dall'Europa del Nord passa i primi due anni a lamentarsi della lentezza, e ha ragione.",

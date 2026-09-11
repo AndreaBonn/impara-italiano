@@ -13,7 +13,7 @@ LINGUAI.addReadings([
   {
     id: "lib-b1-permesso",
     cefr: "B1",
-    tag: "g-congiuntivo",
+    tag: "g-congiuntivo-pres",
     titleIt: "La fila che comincia alle quattro del mattino",
     sentences: [
       "Davanti a certe questure italiane la fila comincia prima dell'alba.",

@@ -13,7 +13,7 @@ LINGUAI.addReadings([
   {
     id: "lib-c2-cortesia",
     cefr: "C2",
-    tag: "g-forme-implicite",
+    tag: "g-registri",
     titleIt: "Manuale minimo del rifiuto italiano",
     sentences: [
       "In italiano il «no» esiste, è breve, ed è considerato una risorsa da spendere con parsimonia.",

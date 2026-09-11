@@ -17,7 +17,13 @@
    W nakładce zostaje to, czego uczeń nie przeczyta po włosku na tym
    poziomie: tytuł, jedno zdanie wprowadzenia i glosy trudnych słów.
    ============================================================ */
-window.READINGS = [
+/* APPENDS rather than assigns, and that one word is load-bearing. The
+   library adds its long texts to this same list from the level files, and an
+   assignment here wipes whatever arrived first: in the browser the order
+   happens to protect us (this file is eager, the library is lazy), but every
+   script that loads the data in a sandbox is free to pick its own order —
+   and one of them did, silently dropping six texts and every check on them. */
+LINGUAI.addReadings([
 
   /* ---------------- A1 ---------------- */
   {
@@ -591,4 +597,4 @@ window.READINGS = [
       { t: "mcq", q: "Quando entrò in vigore la Costituzione?", opts: ["Il primo gennaio 1948", "Il due giugno 1946", "Nel 1861"], a: 0 }
     ]
   }
-];
+]);

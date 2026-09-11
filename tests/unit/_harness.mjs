@@ -77,11 +77,14 @@ export const LLM = [
   "assets/js/llm-keys.js",
   "assets/js/llm-net.js",
   "assets/js/llm.js",
-  /* Last, and not part of the chain: llm.js reads it at CALL time, when the
-     exam report asks for a reading of a production. In index.html it sits
-     further down, next to the other cils-* files; here it has to be present
-     or `reportProduction` would hand back everything the model said. */
-  "assets/js/cils-report.js"
+  /* Last, and not part of the chain: llm.js reads both at CALL time — the
+     first when the exam report asks for a reading of a production, the
+     second when a free conversation sends a turn. In index.html they sit
+     further down, next to the files that use them; here they have to be
+     present, or `reportProduction` would hand back everything the model said
+     and `chat` would throw on a missing global. */
+  "assets/js/cils-report.js",
+  "assets/js/chat-rules.js"
 ];
 
 /**

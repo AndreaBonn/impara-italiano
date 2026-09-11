@@ -109,6 +109,46 @@
     });
   }
 
+  /* ============================================================
+     The third thing that leaves the browser: a whole conversation.
+
+     A separate consent again, and for the reason that made the second one
+     separate: it is a different FACT. The judge sends one sentence of the
+     student's and the sentences it was compared against; the free
+     conversation sends everything they have said in that scene, turn after
+     turn, to a company of their choosing. Somebody who agreed to have an
+     answer checked has not agreed to that, and revoking one must not revoke
+     the other.
+
+     Same shape as the two above, same reason: the gate lives in one place
+     (`Llm.chat`), not in the view that happens to call it.
+     ============================================================ */
+
+  var pytajChat = null;
+
+  /** Whether the student agreed to send a whole conversation to a provider. */
+  function udzielonaChat() { return ustawienia().llmChatConsent === true; }
+
+  /** Stores the decision. `false` revokes consent given earlier. */
+  function ustawChat(wartosc) {
+    var s = ustawienia();
+    s.llmChatConsent = !!wartosc;
+    if (global.Core && global.Core.save) global.Core.save();
+  }
+
+  function uzyjPytaniaChat(fn) { pytajChat = fn; }
+
+  /** Runs `akcja()` only if consent exists or is granted. */
+  function zZgodaChat(akcja, odmowa) {
+    if (udzielonaChat()) { akcja(); return; }
+    if (!pytajChat) { odmowa && odmowa(); return; }
+    pytajChat(function (tak) {
+      if (!tak) { odmowa && odmowa(); return; }
+      ustawChat(true);
+      akcja();
+    });
+  }
+
   Consent.udzielona = udzielona;
   Consent.ustaw = ustaw;
   Consent.uzyjPytania = uzyjPytania;
@@ -117,6 +157,10 @@
   Consent.ustawLlm = ustawLlm;
   Consent.uzyjPytaniaLlm = uzyjPytaniaLlm;
   Consent.zZgodaLlm = zZgodaLlm;
+  Consent.udzielonaChat = udzielonaChat;
+  Consent.ustawChat = ustawChat;
+  Consent.uzyjPytaniaChat = uzyjPytaniaChat;
+  Consent.zZgodaChat = zZgodaChat;
   global.Consent = Consent;
 
 })(window);

@@ -40,11 +40,20 @@
      their bill. */
   var MAX_PER_SESSION = 60;
 
+  /* A ceiling of its own for the free conversation, and this is not tidiness.
+     The judge exists so that a correct sentence worded differently is not
+     counted wrong; that is the function the course cannot lose. A twelve-turn
+     conversation would eat a fifth of a shared budget, and the student would
+     find out when an exercise stopped being promoted — with nothing on screen
+     connecting the two. Two counters, two ceilings, no interference. */
+  var MAX_CHAT_PER_SESSION = 40;
+
   /* Answers already bought, for this session only. Not in localStorage: it
      would accumulate the student's sentences on disk to save a request they
      may never repeat. */
   var cache = {};
   var spent = 0;
+  var spentChat = 0;
 
   /* ---------------- Availability ---------------- */
 
@@ -214,6 +223,56 @@
   }
 
   /**
+   * One turn of a free conversation — the fifth way in.
+   *
+   * It differs from the other four in what it does NOT have. There is no
+   * clamp, because there is no verdict: this mode corrects and never marks,
+   * and nothing it returns touches a score, a card, the streak or the deck.
+   * That absence is the defence, and it is structural rather than
+   * promised — there is no path from here to the student's progress.
+   *
+   * It carries its own consent (`llmChatConsent`) for the reason consent.js
+   * gives about the other two: what leaves here is not one sentence but the
+   * whole conversation, and somebody who agreed to have an answer checked
+   * has not thereby agreed to that.
+   *
+   * @param {object} task  {scenario, cefr, message, history}
+   * @param {function} cb  receives {risposta, correzione} or null
+   */
+  function chat(task, cb) {
+    if (!available()) return cb(null);
+    if (spentChat >= MAX_CHAT_PER_SESSION) return cb(null);
+    var t = task || {};
+    if (!String(t.message || "").trim()) return cb(null);
+
+    var settings = global.Core.state.settings;
+    var keys = global.LlmKeys.all();
+    var order = Array.isArray(settings.llmOrder) && settings.llmOrder.length
+      ? settings.llmOrder
+      : global.LlmProviders.ORDER;
+
+    global.Consent.zZgodaChat(function () {
+      spentChat++;
+      var prompt = global.LlmPrompts.chat(settings.lang, t.cefr, t.scenario, t.message);
+      /* The history rides in the prompt, and each provider turns it into its
+         own dialect. With none, the body is the one the judge sends. */
+      prompt.history = global.ChatRules.doWyslania(t.history);
+      var deadline = global.Date.now() + TOTAL_MS;
+
+      global.LlmNet.askChain(order, keys, prompt, deadline, function (out, failures) {
+        if (out === null) {
+          announce(failures);
+          return cb(null);
+        }
+        var turn = global.ChatRules.czytaj(out);
+        /* Nothing to say is no turn: the view keeps the student's own line on
+           screen instead of drawing an empty bubble opposite it. */
+        cb(turn.risposta ? turn : null);
+      });
+    }, function () { cb(null); });
+  }
+
+  /**
    * Tries one key on its own, for the settings page.
    *
    * Deliberately outside `judge`: it must run before any consent exists and
@@ -238,12 +297,14 @@
     judge: judge,
     review: review,
     reportProduction: reportProduction,
+    chat: chat,
     test: test,
     available: available,
     useTransport: global.LlmNet.useTransport,
     PER_PROVIDER_MS: PER_PROVIDER_MS,
     TOTAL_MS: TOTAL_MS,
-    MAX_PER_SESSION: MAX_PER_SESSION
+    MAX_PER_SESSION: MAX_PER_SESSION,
+    MAX_CHAT_PER_SESSION: MAX_CHAT_PER_SESSION
   };
 
 })(window);

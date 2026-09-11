@@ -107,6 +107,30 @@ describe("i18n: no key is asked for and missing", () => {
     assert.ok(znalezione > 20, `only ${znalezione} markup keys found — the scan is broken`);
   });
 
+  test("every conversation scene has a title in every language", () => {
+    /* `t("chat.sc." + s.id)` is a computed key, so the scan above is blind to
+       it by construction. The list of ids is right there in the data,
+       though, so the check is worth making explicitly: a scene added without
+       its title would show up on screen as the literal string
+       "chat.sc.whatever", which is how cils.again shipped. */
+    const ctx = { console };
+    ctx.window = ctx;
+    vm.createContext(ctx);
+    vm.runInContext(readFileSync(join(ROOT, "data", "core", "chat-scenarios.js"), "utf8"), ctx);
+    /* Copied into this realm: node:vm gives the sandbox its own
+       Array.prototype, and deepEqual compares prototypes — an empty list
+       from there does not equal an empty list from here. */
+    const sceny = Array.from(ctx.CHAT_SCENARIOS || []);
+    assert.ok(sceny.length > 0, "no scenes were loaded, so nothing is checked");
+
+    for (const lang of LANGS) {
+      const dict = slownik(lang);
+      const brak = sceny.map((s) => "chat.sc." + s.id)
+        .filter((k) => !Object.prototype.hasOwnProperty.call(dict, k));
+      assert.deepEqual(brak, [], `ui-${lang}.js has no title for: ${brak.join(", ")}`);
+    }
+  });
+
   test("the other four languages define what Polish defines", () => {
     /* parity.mjs compares the COURSE overlays; the interface dictionaries
        are a different set of files and had no such check. */

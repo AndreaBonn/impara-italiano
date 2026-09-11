@@ -267,3 +267,94 @@ describe("reading a failure", () => {
     }
   });
 });
+
+/* ============================================================
+   The history of a conversation, in three dialects.
+
+   A judgement is a closed question with no past; a conversation IS the past.
+   The four providers speak three dialects between them (OpenAI and Groq
+   share one), so the turns are normalised three times rather than four, and
+   a fifth provider speaking one of the three stays a single record in the
+   table.
+
+   THE CONDITION THAT MATTERS MOST is the one that has nothing to do with
+   conversations: with no history, the body must come out exactly as it did
+   before. Everything the judge does goes through these same functions, and
+   the judge is the part of the course that must not move.
+   ============================================================ */
+const ROZMOWA = {
+  system: "You are a patient Italian speaker.",
+  user: "vorrei un caffè per favore",
+  history: [
+    { role: "student", text: "buongiorno" },
+    { role: "partner", text: "Buongiorno! Cosa prende?" }
+  ]
+};
+
+describe("the history of a conversation", () => {
+  test("with no history every body is byte for byte the one from before", () => {
+    /* The judge and the essay reader both come through here. If this ever
+       fails, a feature nobody asked to change has changed. */
+    const P = providers();
+    for (const id of copy(P.ORDER)) {
+      const przed = JSON.stringify(P.request(id, "k", PROMPT, {}).body);
+      const po = JSON.stringify(P.request(id, "k", { ...PROMPT, history: [] }, {}).body);
+      assert.equal(po, przed, id + " changed shape on an empty history");
+      const bez = JSON.stringify(P.request(id, "k", { ...PROMPT, history: undefined }, {}).body);
+      assert.equal(bez, przed, id + " changed shape on a missing history");
+    }
+  });
+
+  test("openai and groq: the turns become messages between system and user", () => {
+    const P = providers();
+    for (const id of ["openai", "groq"]) {
+      const b = P.request(id, "k", ROZMOWA, {}).body;
+      assert.deepEqual(copy(b.messages).map((m) => m.role),
+        ["system", "user", "assistant", "user"], id);
+      assert.equal(b.messages[1].content, "buongiorno");
+      assert.equal(b.messages[2].content, "Buongiorno! Cosa prende?");
+      assert.equal(b.messages[3].content, ROZMOWA.user, id + ": the new turn comes last");
+    }
+  });
+
+  test("gemini: the turns are contents, and the model's role is called model", () => {
+    /* Not "assistant": that word belongs to the other dialect, and this one
+       rejects it. The kind of mistake that comes back as "the key is wrong". */
+    const b = providers().request("gemini", "k", ROZMOWA, {}).body;
+    assert.deepEqual(copy(b.contents).map((c) => c.role), ["user", "model", "user"]);
+    assert.equal(b.contents[0].parts[0].text, "buongiorno");
+    assert.equal(b.contents[2].parts[0].text, ROZMOWA.user);
+    assert.equal(b.system_instruction.parts[0].text, ROZMOWA.system,
+      "the instruction stays out of the turns");
+  });
+
+  test("anthropic: the turns are messages, the instruction stays in system", () => {
+    const b = providers().request("anthropic", "k", ROZMOWA, {}).body;
+    assert.deepEqual(copy(b.messages).map((m) => m.role), ["user", "assistant", "user"]);
+    assert.equal(b.system, ROZMOWA.system);
+    assert.equal(b.messages[2].content, ROZMOWA.user);
+  });
+
+  test("a turn with an unknown role is dropped, not relabelled", () => {
+    /* Counting, not looking for the word. An unknown role never reaches the
+       wire as itself: the mapping turns anything that is not "student" into
+       the partner's name, so a turn that should have been dropped arrives
+       looking exactly like something the partner said. The mutation gate
+       found this hole by leaving the assertion green.
+
+       Every dialect refuses a role it does not know anyway, and the refusal
+       reads as a bad request — transient, retried on every turn, never
+       explained. Dropping costs one line of context; relabelling puts words
+       in the partner's mouth. */
+    const P = providers();
+    const dziwny = { ...ROZMOWA, history: [{ role: "narrator", text: "NARRATORE" }, ...ROZMOWA.history] };
+    for (const id of copy(P.ORDER)) {
+      const czysty = P.request(id, "k", ROZMOWA, {}).body;
+      const b = P.request(id, "k", dziwny, {}).body;
+      const ile = (x) => copy(x.messages || x.contents).length;
+      assert.equal(ile(b), ile(czysty), id + " sent the unknown turn under another name");
+      assert.equal(JSON.stringify(b).indexOf("NARRATORE"), -1, id + " passed its text through");
+      assert.ok(JSON.stringify(b).indexOf("Cosa prende") > 0, id + " dropped the valid turns too");
+    }
+  });
+});

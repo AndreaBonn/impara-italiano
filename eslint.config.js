@@ -34,12 +34,12 @@ const globals = require("globals");
    "readonly". The list comes from the `global.` assignments in assets/js/**,
    not from memory. */
 const KURS = [
-  "Anki", "App", "Audio2", "Cils", "CilsHtml", "CilsRun", "Consent", "Core", "Drills", "Errors", "Ex",
+  "Anki", "App", "Audio2", "ChatRules", "ChatRun", "Cils", "CilsHtml", "CilsReport", "CilsRun", "Consent", "Core", "Drills", "Errors", "Ex",
   "Frequency", "Fsrs", "I18n", "Keys", "Lemma", "Lex", "LINGUAI", "Llm", "LlmKeys", "LlmNet",
   "LlmPrompts", "LlmProviders", "LlmRules", "Lookup",
   "Placement", "PWA", "Recorder", "Retention", "Router", "Search", "Talk", "Train", "Verbs", "Views", "Writing",
   /* course data: the files in data/ assign these to the global scope */
-  "AUDIO_INDEX", "CONVERSATIONS", "GRAMMAR_REF", "PHONETICS", "CILS", "READINGS",
+  "AUDIO_INDEX", "CONVERSATIONS", "CHAT_SCENARIOS", "GRAMMAR_REF", "PHONETICS", "CILS", "READINGS",
   "INTERFERENCE", "FREQUENCY", "WRITING"
 ].reduce(function (zbior, nazwa) { zbior[nazwa] = "readonly"; return zbior; }, {});
 

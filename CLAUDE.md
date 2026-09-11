@@ -90,6 +90,33 @@ własność kodu, nie promptu, więc przeżywa model, który kłamie, i podmian�
 bez zgody albo z `file://` kurs zachowuje się dokładnie tak jak wcześniej: `Llm.available()`
 milczy, a `judge()` oddaje `null`.
 
+Tą samą granicą idzie swobodna rozmowa: `chat-rules.js` (globalna `ChatRules`: sufit tur,
+potarcie historii, odczyt repliki i korekty — same czyste funkcje) i `chat-run.js` (przebieg
+jednej sceny) przed `views-chat.js` (bąbelki, pole, licznik).
+
+**Swobodna rozmowa to nie jest piętnasta scena z `conversations.js`**, i różnice są
+projektem, nie przypadkiem. Tam każdą kwestię napisał człowiek, więc scena wie, co jest
+poprawną odpowiedzią, zatrzymuje się na błędzie i mówi nagraniem. Tutaj nie ma poprawnej
+odpowiedzi, więc nic się nie zatrzymuje: korekta przychodzi **obok** repliki, a nie zamiast
+niej. Rozmowa nic nie punktuje — ani XP, ani passy, ani fiszki, ani lekcji — i właśnie
+dlatego nie potrzebuje odpowiednika `clamp`: nie ma werdyktu, który trzeba by ograniczać.
+Nie ma też nagrań i mieć nie może, bo zdania rozmówcy powstają w czasie rozmowy i nie leżą
+w `data/core/`: czyta je synteza systemowa, i ekran to mówi.
+
+Trzy rzeczy, które kosztują ucznia pieniądze i dlatego są widoczne od pierwszej kwestii:
+sufit tur (`MAX_TUR`), licznik pozostałych tur na ekranie, i **osobny budżet sesji**
+(`MAX_CHAT_PER_SESSION` w `llm.js`). Ostatnie jest ważniejsze, niż wygląda: sędzia
+odpowiedzi jest funkcją, której kurs nie może stracić, a dwunastoturowa rozmowa na wspólnym
+suficie zjadłaby go po cichu — uczeń zobaczyłby to dopiero wtedy, gdy ćwiczenie przestałoby
+być promowane, bez niczego na ekranie, co łączyłoby jedno z drugim.
+
+Historia turów wędruje do dostawcy jako **trzecie pole promptu** (`history`), a `llm-providers.js`
+tłumaczy ją na TRZY dialekty, nie cztery: OpenAI i Groq dzielą jeden. Bez historii ciało
+żądania wychodzi bajt w bajt takie, jak wychodziło — i to jest warunek, którego pilnuje test,
+bo przez te same funkcje idzie sędzia. Tura o nieznanej roli jest **wyrzucana**, nie
+przemianowywana: mapowanie zamieniłoby ją w wypowiedź rozmówcy, czyli włożyłoby mu w usta
+zdanie, którego nie powiedział.
+
 Ta sama zasada dotyczy dwóch ekranów, na których przebieg jest czymś więcej niż rysowaniem:
 `talk-run.js` (rozmowa: rozwidlenia, wynik, powrót na ostatni wybór) przed `views-talk.js`,
 a `cils-run.js` (podejście do egzaminu: kolejność sekcji, siatka odpowiedzi, wpis do
@@ -534,7 +561,7 @@ node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
-npm run test:mutations              # czy testy widzą czerwone (74 mutacje, 10 plików)
+npm run test:mutations              # czy testy widzą czerwone (82 mutacje, 11 plików)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
@@ -587,12 +614,12 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 | Czytanki / zadania pisane / zbiory par minimalnych | 24 / 6 / 5 | `node scripts/baseline.mjs` |
 | Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
 | Nagrania | 3494 plików mp3, 37 MiB bajtów; 3493 skrótów w indeksie | `node scripts/baseline.mjs` |
-| Klucze interfejsu na język | 856 × 5 języków | `node scripts/baseline.mjs` |
+| Klucze interfejsu na język | 887 × 5 języków | `node scripts/baseline.mjs` |
 | Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
-| Pliki silnika | 74 w assets/js/, 15172 linii | `node scripts/baseline.mjs` |
-| Testy jednostkowe | 1090 przebiegów w 44 plikach, zielone | `npm test` |
-| Testy DOM | 275 przebiegów w 37 plikach, zielone | `npm run test:dom` |
-| Mutacje | 74 w 10 plikach silnika | `npm run test:mutations` |
+| Pliki silnika | 77 w assets/js/, 15929 linii | `node scripts/baseline.mjs` |
+| Testy jednostkowe | 1140 przebiegów w 46 plikach, zielone | `npm test` |
+| Testy DOM | 283 przebiegi w 38 plikach, zielone | `npm run test:dom` |
+| Mutacje | 82 w 11 plikach silnika | `npm run test:mutations` |
 | Pokrycie silnika testami jednostkowymi | 99,3%, próg w CI: 99 | `node scripts/coverage.mjs` |
 
 Trzy rzeczy, których tabela nie mieści, a które trzeba przeczytać razem z nią.
@@ -621,9 +648,9 @@ tabeli. Trzy deklaracje, nie trzy przeoczenia.
 sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
 `assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
-decyzji w silniku (74 mutacje w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
-`llm-rules.js`, `llm-providers.js`, `llm-prompts.js`, `retention-rules.js`, `ics.js`
-i `cils-report.js`)
+decyzji w silniku (82 mutacje w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
+`llm-rules.js`, `llm-providers.js`, `llm-prompts.js`, `retention-rules.js`, `ics.js`,
+`cils-report.js` i `chat-rules.js`)
 i wymaga, żeby wskazany
 plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
 puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
@@ -631,8 +658,8 @@ puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` ł
 
 Trzy rzeczy, które trzeba o niej wiedzieć:
 
-- **Zasięg jest wąski i zadeklarowany.** Dziesięć plików z siedemdziesięciu czterech. „74/74"
-  nie znaczy „silnik sprawdzony", znaczy „te 74 decyzje sprawdzone". Nowy plik z czystymi funkcjami
+- **Zasięg jest wąski i zadeklarowany.** Jedenaście plików z siedemdziesięciu siedmiu. „82/82"
+  nie znaczy „silnik sprawdzony", znaczy „te 82 decyzje sprawdzone". Nowy plik z czystymi funkcjami
   to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
 - **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po
   refaktorze) i wiele wystąpień kończą się błędem, nie ostrzeżeniem: mutacja, która po

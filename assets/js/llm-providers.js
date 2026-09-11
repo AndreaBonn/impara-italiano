@@ -97,18 +97,46 @@
   /* ---------------- OpenAI, and everything shaped like it ---------------- */
 
   /**
+   * The turns of a conversation so far, in whichever dialect asked for them.
+   *
+   * THREE NORMALISERS, NOT FOUR, because the four providers speak three
+   * dialects: OpenAI and Groq share one. A fifth provider speaking one of
+   * the three stays a single record in this table, which is the property
+   * that makes the table worth having.
+   *
+   * An unknown role is DROPPED rather than guessed. Every dialect refuses a
+   * role it does not know, and the refusal comes back as a bad request —
+   * transient in our classification, so it would be retried on every turn
+   * and never explained. Dropping costs one line of context; guessing costs
+   * the conversation.
+   *
+   * `mapa` gives the two role names of the dialect: what the student is
+   * called, and what the model is called.
+   */
+  function tury(history, mapa) {
+    return (Array.isArray(history) ? history : [])
+      .filter(function (t) { return t && (t.role === "student" || t.role === "partner"); })
+      .map(function (t) {
+        return { role: t.role === "student" ? mapa.student : mapa.partner, text: String(t.text || "") };
+      });
+  }
+
+  /**
    * Groq speaks the OpenAI chat-completions dialect, so both are built from
    * this one function. What genuinely differs between them is the host and
    * the model name — not enough to justify two copies of the body builder,
    * and a copy would be the thing that drifts.
+   *
+   * With no history the list is the two messages it always was: the judge
+   * and the essay reader come through here too, and they must not move.
    */
   function chatBody(prompt) {
+    var wczesniej = tury(prompt.history, { student: "user", partner: "assistant" })
+      .map(function (t) { return { role: t.role, content: t.text }; });
     return {
       model: null,          // filled in by the entry that owns this body
-      messages: [
-        { role: "system", content: prompt.system },
-        { role: "user", content: prompt.user }
-      ],
+      messages: [{ role: "system", content: prompt.system }]
+        .concat(wczesniej, [{ role: "user", content: prompt.user }]),
       max_tokens: MAX_OUT,
       /* Deterministic on purpose: the same sentence judged twice in one
          lesson should not get two different verdicts. */
@@ -182,10 +210,14 @@
          comes back as a candidate with no text — which this provider reports
          as a permanent failure and retires itself over. "low" is the same
          call as Anthropic's `effort` above, made against the same ceiling. */
+      /* "model", not "assistant": that word belongs to the other dialect and
+         this one refuses it, which comes back looking like a rejected key. */
       body: function (prompt) {
+        var wczesniej = tury(prompt.history, { student: "user", partner: "model" })
+          .map(function (t) { return { role: t.role, parts: [{ text: t.text }] }; });
         return {
           system_instruction: { parts: [{ text: prompt.system }] },
-          contents: [{ role: "user", parts: [{ text: prompt.user }] }],
+          contents: wczesniej.concat([{ role: "user", parts: [{ text: prompt.user }] }]),
           generationConfig: {
             maxOutputTokens: MAX_OUT,
             thinkingConfig: { thinkingLevel: "low" }
@@ -268,11 +300,13 @@
          answer is exactly what we parse as a verdict. Low effort costs less
          than that failure would. */
       body: function (prompt, cfg) {
+        var wczesniej = tury(prompt.history, { student: "user", partner: "assistant" })
+          .map(function (t) { return { role: t.role, content: t.text }; });
         return {
           model: cfg.model,
           max_tokens: MAX_OUT,
           system: prompt.system,
-          messages: [{ role: "user", content: prompt.user }],
+          messages: wczesniej.concat([{ role: "user", content: prompt.user }]),
           output_config: { effort: "low" }
         };
       },

@@ -259,6 +259,17 @@
       ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("llm.consent") + "</span></label>" +
       '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
       esc(t("llm.consentHint")) + "</span>" +
+
+      /* The second switch, under the first and never folded into it. What
+         leaves is a different thing: the judge sends one sentence, the free
+         conversation sends everything said in the scene. Somebody who agreed
+         to the first has not agreed to the second, and turning one off must
+         leave the other alone. */
+      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-chat-consent"' +
+      (Consent.udzielonaChat() ? " checked" : "") +
+      ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("chat.consent") + "</span></label>" +
+      '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
+      esc(t("chat.consentHint")) + "</span>" +
       '<div class="fb js-llm-fb" role="status"></div>' +
       '<div><button class="btn btn--ghost btn--sm js-llm-clear">' + t("llm.forget") + "</button></div>" +
       "</div></div>" +
@@ -411,9 +422,18 @@
       Core.toast(t(e.target.checked ? "llm.consentOn" : "llm.consentOff"));
     });
 
+    el().querySelector(".js-chat-consent").addEventListener("change", function (e) {
+      Consent.ustawChat(e.target.checked);
+      Core.toast(t(e.target.checked ? "chat.consentOn" : "chat.consentOff"));
+    });
+
     el().querySelector(".js-llm-clear").addEventListener("click", function () {
       LlmKeys.clear();
       Consent.ustawLlm(false);
+      /* Forgetting the keys withdraws BOTH consents: the button says the
+         course forgets everything, and leaving one of the two behind would
+         make that sentence false. */
+      Consent.ustawChat(false);
       Core.toast(t("llm.forgotten"));
       App.go("impostazioni");
     });

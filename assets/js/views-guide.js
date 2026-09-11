@@ -47,7 +47,8 @@
      student will not find on their own. */
   var EKRANY = [
     ["oggi", "nav.today"], ["percorso", "nav.path"], ["ripasso", "nav.review"],
-    ["allenamento", "nav.train"], ["conversazione", "nav.talk"], ["grammatica", "nav.grammar"],
+    ["allenamento", "nav.train"], ["conversazione", "nav.talk"], ["chiacchiere", "nav.chat"],
+    ["grammatica", "nav.grammar"],
     ["coniugatore", "nav.verbs"], ["lessico", "nav.lexicon"], ["shadowing", "nav.shadow"],
     ["velocita", "nav.speed"], ["esame", "nav.exam"], ["falsi", "nav.falsi"],
     ["copertura", "nav.coverage"], ["progressi", "nav.progress"], ["impostazioni", "nav.settings"],

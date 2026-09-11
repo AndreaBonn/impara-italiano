@@ -62,6 +62,12 @@ const dataFiles = readdirSync(join(ROOT, "data", "core"))
   .filter(f => /^[abc]\d-\d+\.js$/.test(f))
   .sort();
 const ALL = ["curriculum-index.js", ...dataFiles, "conversations.js", "grammar-reference.js", "phonetics.js", "readings.js", "writing.js"];
+/* Loaded but NOT overlaid: the free-conversation scenes have no student-language
+   layer at all. Their titles live in the interface dictionaries, because every
+   other field is Italian spoken by the partner. They are read here for one
+   reason — the scan below, which is what keeps a Polish word out of a file
+   that is supposed to be Italian. */
+run(join("data", "core", "chat-scenarios.js"));
 ALL.forEach(f => run(join("data", "core", f)));
 /* A snapshot of the neutral layer BEFORE the overlay writes the student's
    texts in: after applyStrings those same objects already carry
@@ -72,7 +78,8 @@ const neutralneDane = JSON.parse(JSON.stringify({
   grammar: (sandbox.GRAMMAR_REF || []).map(s => ({ items: (s.items || []).map(i => ({ id: i.id, cefr: i.cefr })) })),
   phonetics: sandbox.PHONETICS || [],
   writing: (sandbox.WRITING || []).map(w => ({ id: w.id, titleIt: w.titleIt, model: w.model, items: (w.items || []).map(i => ({ a: i.a })) })),
-  readings: (sandbox.READINGS || []).map(r => ({ id: r.id, titleIt: r.titleIt, sentences: r.sentences, questions: r.questions }))
+  readings: (sandbox.READINGS || []).map(r => ({ id: r.id, titleIt: r.titleIt, sentences: r.sentences, questions: r.questions })),
+  chat: sandbox.CHAT_SCENARIOS || []
 }));
 
 ALL.forEach(f => run(join("data", "i18n", LANG, f)));

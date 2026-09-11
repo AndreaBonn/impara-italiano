@@ -76,6 +76,9 @@ const ICS = "assets/js/ics.js";
 const T_ICS = "tests/unit/ics.test.mjs";
 const RAPORT = "assets/js/cils-report.js";
 const T_RAPORT = "tests/unit/cils-report.test.mjs";
+const CHAT = "assets/js/chat-rules.js";
+const T_CHAT = "tests/unit/chat-rules.test.mjs";
+const PROV_CHAT = "tests/unit/llm-providers.test.mjs";
 
 /**
  * The mutations. `z` must occur in the file EXACTLY ONCE — with two
@@ -284,7 +287,34 @@ const MUTACJE = [
     na: "    var zdania = s.match(/[^.!?]+[.!?]*/g) || [s];" },
   { plik: RAPORT, test: T_RAPORT, opis: "report: a mark said in words passes (9 su 12, otto punti su dodici)",
     z: "    if (NA_ILE.test(zdanie) || NA_SLOWNIE.test(zdanie) || OCENA.test(zdanie)) return true;",
-    na: "" }
+    na: "" },
+
+  /* ---- chat-rules.js: a conversation the student pays for ---- */
+  { plik: CHAT, test: T_CHAT, opis: "chat: the partner's replies counted against the ceiling too",
+    z: 'var moje = lista(historia).filter(function (t) { return t && t.role === "student"; }).length;',
+    na: "var moje = lista(historia).length;" },
+  { plik: CHAT, test: T_CHAT, opis: "chat: the ceiling goes negative instead of stopping at zero",
+    z: "    return Math.max(0, MAX_TUR - moje);", na: "    return MAX_TUR - moje;" },
+  { plik: CHAT, test: T_CHAT, opis: "chat: the history is pruned from the newest end",
+    z: "    for (var i = wszystkie.length - 1; i >= 0; i--) {",
+    na: "    for (var i = 0; i < wszystkie.length; i++) {" },
+  { plik: CHAT, test: T_CHAT, opis: "chat: an oversized turn is dropped, so the newest line never travels",
+    z: "        if (out.length === 0) out.unshift({ role: t.role, text: tekst.slice(0, MAX_ZNAKOW) });",
+    na: "" },
+  { plik: CHAT, test: T_CHAT, opis: "chat: prose instead of JSON kills the turn",
+    z: '    return { risposta: porzadek(surowy).slice(0, MAX_REPLIKI), correzione: "" };',
+    na: '    return { risposta: "", correzione: "" };' },
+  { plik: CHAT, test: T_CHAT, opis: "chat: a reply that runs on is not cut",
+    z: "        risposta: porzadek(parsed.risposta).slice(0, MAX_REPLIKI),",
+    na: "        risposta: porzadek(parsed.risposta)," },
+
+  /* ---- llm-providers.js: the same turns in three dialects ---- */
+  { plik: PROV, test: PROV_CHAT, opis: "chat: gemini given the role name of the other dialect",
+    z: 'var wczesniej = tury(prompt.history, { student: "user", partner: "model" })',
+    na: 'var wczesniej = tury(prompt.history, { student: "user", partner: "assistant" })' },
+  { plik: PROV, test: PROV_CHAT, opis: "chat: an unknown role passed through instead of dropped",
+    z: '      .filter(function (t) { return t && (t.role === "student" || t.role === "partner"); })',
+    na: "      .filter(function (t) { return !!t; })" }
 ];
 
 /* ---------------- Running ---------------- */

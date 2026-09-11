@@ -98,6 +98,7 @@
       <li><button class="rail__item" data-route="ripasso"><span class="rail__ico" aria-hidden="true">🔁</span><span data-i18n="nav.review">Powtórki</span><span class="rail__badge" id="dueBadge" hidden>0</span></button></li>
       <li><button class="rail__item" data-route="allenamento"><span class="rail__ico" aria-hidden="true">🎯</span><span data-i18n="nav.train">Trening</span></button></li>
       <li><button class="rail__item" data-route="conversazione"><span class="rail__ico" aria-hidden="true">🎙️</span><span data-i18n="nav.talk">Rozmowy na głos</span></button></li>
+      <li><button class="rail__item" data-route="chiacchiere"><span class="rail__ico" aria-hidden="true">💬</span><span data-i18n="nav.chat">Swobodna rozmowa</span></button></li>
       <li><button class="rail__item" data-route="grammatica"><span class="rail__ico" aria-hidden="true">📐</span><span data-i18n="nav.grammar">Gramatyka</span></button></li>
       <li><button class="rail__item" data-route="coniugatore"><span class="rail__ico" aria-hidden="true">🧩</span><span data-i18n="nav.verbs">Odmiana czasowników</span></button></li>
       <li><button class="rail__item" data-route="lessico"><span class="rail__ico" aria-hidden="true">📖</span><span data-i18n="nav.lexicon">Mój słownik</span></button></li>
@@ -205,6 +206,11 @@
 <!-- after views.js: consumes Views.shell, defined at the end of that file -->
 <script src="assets/js/talk-run.js"></script>
 <script src="assets/js/views-talk.js"></script>
+<!-- the free conversation: the rules and the run before the view, the same
+     order as talk-run.js before views-talk.js -->
+<script src="assets/js/chat-rules.js"></script>
+<script src="assets/js/chat-run.js"></script>
+<script src="assets/js/views-chat.js"></script>
 <!-- after views.js: adds the practice tabs to the already defined views -->
 <script src="assets/js/views-train.js"></script>
 <!-- after views-train.js: the daily session uses Train.topicLabel -->
@@ -255,6 +261,7 @@
 <script src="data/core/curriculum-index.js"></script>
 <script src="data/core/grammar-reference.js"></script>
 <script src="data/core/conversations.js"></script>
+<script src="data/core/chat-scenarios.js"></script>
 <script src="data/core/phonetics.js"></script>
 <script src="data/core/cils.js"></script>
 <script src="data/core/readings.js"></script>

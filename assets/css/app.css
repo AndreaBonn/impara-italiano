@@ -1073,6 +1073,13 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .cils-gap{color:var(--rosa-deep);}
 .cils-audio{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
 .cils-hint{font-size:.86rem;color:var(--ink-soft);margin:6px 0 0;}
+/* The free conversation. The correction sits INSIDE the partner's bubble and
+   under their words, set apart by size and by a rule rather than by colour:
+   it is a second voice in the same breath, not a state. The counter of turns
+   left is plain text and always present — it costs the student money, so it
+   is not something to discover when it runs out. */
+.chat-fix{display:block;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:.86rem;color:var(--ink-soft);}
+.chat-left{margin:12px 0 0;font-size:.86rem;color:var(--ink-soft);text-align:right;}
 /* The model's reading of a production. Set apart from the course's own text
    by an indent rather than by a colour: it is somebody else's sentence, not
    a state, and colouring it would read as a verdict. Empty by default, so a

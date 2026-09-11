@@ -514,6 +514,25 @@ describe("reading an exam production", () => {
     assert.equal(poszlo, false);
   });
 
+  test("a chain that runs out gives no reading, and no exception", async () => {
+    /* The report of an hour-long exam is on the screen while this is in
+       flight: whatever happens out there, the student keeps what they earned. */
+    const c = course({ answers: { gemini: REJECTED, openai: REJECTED } });
+    assert.equal(await czytaj(c.Llm, PRODUKCJA), null);
+    assert.deepEqual(c.calls, ["gemini", "openai"]);
+  });
+
+  test("the student's own order of providers is honoured here too", async () => {
+    const c = course({
+      keys: { gemini: "key-gemini-1", openai: "key-openai-2" },
+      order: ["openai", "gemini"],
+      answers: { openai: proza("openai", "Va bene così.") }
+    });
+    const out = await czytaj(c.Llm, PRODUKCJA);
+    assert.equal(c.calls[0], "openai", "asked in the order the student set");
+    assert.match(out, /Va bene/);
+  });
+
   test("the spoken section is told it is reading speech, not writing", async () => {
     /* The difference is load-bearing: the text was typed from memory after
        listening back, so remarks about spelling would be remarks about the
@@ -528,5 +547,132 @@ describe("reading an exam production", () => {
     await czytaj(c.Llm, { ...PRODUKCJA, sezione: "orale" });
     assert.match(wyslany, /SAID in a spoken exam task/);
     assert.match(wyslany, /typed this from memory|typed it out from memory/);
+  });
+});
+
+/* ============================================================
+   The fifth way in: one turn of a free conversation.
+
+   What is checked here is only what differs from the other four, and the
+   difference that matters most is the BUDGET. The judge is the function this
+   course cannot lose — it exists so a correct sentence worded differently is
+   not counted wrong — and a twelve-turn conversation drawing on the same
+   ceiling would quietly spend it. The student would find out when an
+   exercise stopped being promoted, with nothing on screen connecting the two.
+   ============================================================ */
+function rozmawiaj(Llm, task) {
+  return new Promise((resolve) => Llm.chat(task, resolve));
+}
+
+const SCENA = { id: "bar", cefr: "A1", ruolo: "un barista", situazione: "Al banco." };
+
+function replika(id, risposta, correzione) {
+  const text = JSON.stringify({ risposta: risposta, correzione: correzione || "" });
+  if (id === "gemini") return { status: 200, json: { candidates: [{ content: { parts: [{ text }] } }] } };
+  if (id === "anthropic") return { status: 200, json: { content: [{ type: "text", text }] } };
+  return { status: 200, json: { choices: [{ message: { content: text } }] } };
+}
+
+/** A course with the conversation consent granted as well. */
+function rozmowa(options) {
+  const c = course(options);
+  c.box.sandbox.Consent.ustawChat(true);
+  return c;
+}
+
+describe("a turn of a free conversation", () => {
+  test("the reply and the correction come back apart", async () => {
+    const c = rozmowa({ answers: { gemini: replika("gemini", "Certo, un caffè!", "Si dice «vorrei».") } });
+    const out = await rozmawiaj(c.Llm, { scenario: SCENA, cefr: "A1", message: "volere un caffè", history: [] });
+    assert.equal(out.risposta, "Certo, un caffè!");
+    assert.match(out.correzione, /vorrei/);
+  });
+
+  test("a conversation does not spend the judge's budget", async () => {
+    /* The assertion that justifies the second counter existing. Ten turns go
+       out, and then the judge is asked and answers — which it could not do
+       if the two shared a ceiling low enough to matter. */
+    const c = rozmowa({ answers: { gemini: replika("gemini", "Sì!", "") } });
+    for (let i = 0; i < 10; i++) {
+      await rozmawiaj(c.Llm, { scenario: SCENA, message: "ciao " + i, history: [] });
+    }
+    c.box.sandbox.Llm.useTransport((req) => Promise.resolve(answer(idOf(req.url), "SI", "Va bene.")));
+    const verdict = await judge(c.Llm);
+    assert.equal(verdict.promote, true, "the judge stopped working after ten turns of talk");
+  });
+
+  test("the history travels, and the last thing said is not in it twice", async () => {
+    let wyslany = null;
+    const c = rozmowa({ answers: { gemini: replika("gemini", "Va bene.", "") } });
+    c.Llm.useTransport((req) => {
+      wyslany = req.body;
+      return Promise.resolve(replika("gemini", "Va bene.", ""));
+    });
+    await rozmawiaj(c.Llm, {
+      scenario: SCENA,
+      message: "vorrei un caffè",
+      history: [{ role: "student", text: "buongiorno" }, { role: "partner", text: "Buongiorno!" }]
+    });
+    const wszystko = JSON.stringify(wyslany);
+    assert.match(wszystko, /buongiorno/, "the past did not travel");
+    assert.equal((wszystko.match(/vorrei un caffè/g) || []).length, 1,
+      "the new message was sent twice");
+  });
+
+  test("without the conversation consent nothing leaves, even with the other one given", async () => {
+    /* The two consents are separate facts, and this is where that stops
+       being a comment and becomes a test: `course()` already granted
+       llmConsent, and it buys nothing here. */
+    const c = course({ answers: { gemini: replika("gemini", "Ciao!", "") } });
+    assert.equal(await rozmawiaj(c.Llm, { scenario: SCENA, message: "ciao", history: [] }), null);
+    assert.deepEqual(c.calls, []);
+  });
+
+  test("the student's own order of providers is honoured in a conversation too", () => {
+    /* Keys of at least MIN_KEY characters: `LlmKeys.set` silently refuses
+       anything shorter, and a refused key means no key at all — which the
+       course reports as "the judge is not set up", a very convincing way for
+       this test to check nothing. */
+    const c = rozmowa({
+      keys: { gemini: "key-gemini-1", openai: "key-openai-2" },
+      order: ["openai", "gemini"],
+      answers: { openai: replika("openai", "Certo!", "") }
+    });
+    return rozmawiaj(c.Llm, { scenario: SCENA, message: "ciao", history: [] }).then((out) => {
+      assert.equal(c.calls[0], "openai");
+      assert.equal(out.risposta, "Certo!");
+    });
+  });
+
+  test("an empty message is not sent anywhere", async () => {
+    const c = rozmowa({ answers: { gemini: replika("gemini", "Ciao!", "") } });
+    assert.equal(await rozmawiaj(c.Llm, { scenario: SCENA, message: "   ", history: [] }), null);
+    assert.deepEqual(c.calls, []);
+  });
+
+  test("a model that answers nothing is no turn, not an empty bubble", async () => {
+    const c = rozmowa({ answers: { gemini: replika("gemini", "", "qualcosa") } });
+    assert.equal(await rozmawiaj(c.Llm, { scenario: SCENA, message: "ciao", history: [] }), null);
+  });
+
+  test("from a disk a conversation does not exist either", async () => {
+    /* The same gate as the other four ways in, checked separately because a
+       gate is only a gate where it is actually called. From file:// the
+       origin is null, the preflight fails, and a request that goes out
+       anyway is a failure the student sees as nothing happening. */
+    const b = loadEngine({ files: FILES, protocol: "file:" });
+    b.Core.load();
+    b.sandbox.LlmKeys.set("openai", "key-openai-2");
+    b.sandbox.Consent.ustawLlm(true);
+    b.sandbox.Consent.ustawChat(true);
+    let poszlo = false;
+    b.sandbox.Llm.useTransport(() => { poszlo = true; return Promise.resolve(replika("openai", "Ciao!", "")); });
+    assert.equal(await rozmawiaj(b.sandbox.Llm, { scenario: SCENA, message: "ciao", history: [] }), null);
+    assert.equal(poszlo, false);
+  });
+
+  test("a chain that runs out gives no turn and does not throw", async () => {
+    const c = rozmowa({ answers: { gemini: REJECTED, openai: REJECTED } });
+    assert.equal(await rozmawiaj(c.Llm, { scenario: SCENA, message: "ciao", history: [] }), null);
   });
 });

@@ -70,7 +70,7 @@
     /* The second thing that leaves the device, after the voice and before
        the paperwork. Its list sits after the second paragraph, which is the
        one that introduces it. */
-    { id: "modello", akapity: 5, lista: 3, listaPo: 2, doUstawien: true },
+    { id: "modello", akapity: 6, lista: 3, listaPo: 2, doUstawien: true },
     { id: "cache", akapity: 1 },
     { id: "hosting", akapity: 1 },
     { id: "base", akapity: 2 },

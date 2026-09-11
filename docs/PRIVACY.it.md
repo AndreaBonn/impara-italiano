@@ -107,6 +107,20 @@ La tua **voce** non esce mai da qui per questa strada: la registrazione della pr
 resta nella memoria della pagina e sparisce quando la chiudi. Quello che esce è solo ciò che
 hai scritto tu.
 
+E c'è un quarto posto, che è quello dove esce di più: la **conversazione libera**. Lì non
+parte una frase, parte tutto quello che hai detto in quella scena, turno dopo turno, e
+riparte a ogni turno nuovo, perché il modello ha bisogno del seguito per rispondere. Per
+questo ha un consenso **suo**, separato da quello per il controllo delle risposte: chi ha
+accettato che una frase venga controllata non ha con ciò accettato di mandare una
+conversazione intera, e spegnere uno non spegne l'altro. Lo trovi in Impostazioni, sotto
+il primo, e lo togli quando vuoi.
+
+Due cose di quella modalità che è giusto sapere prima di cominciare. La conversazione
+**non viene salvata**: vive nella memoria della pagina e sparisce quando la chiudi o
+ricarichi, e non entra nel file che scarichi con `Esporta`. E ogni turno è **una richiesta
+a pagamento** sul tuo contratto: il contatore dei turni rimasti è sullo schermo dal primo
+momento proprio per questo.
+
 Tre cose che è giusto tu sappia prima:
 
 - **la chiave resta su questo dispositivo.** Non passa da noi in nessun momento: viaggia dal

@@ -140,7 +140,12 @@
         odznaka: false,
         /* {godzina, minuta} once the student has picked one, null before. */
         przypomnienie: null
-      }
+      },
+      /* Where the student stopped listening, per text. Only the long library
+         texts make this worth anything: half an hour of continuous audio is
+         not something anybody restarts from the beginning. Container ADDED,
+         so an older profile gets it empty and the schema number stays at 2. */
+      library: {}         // reading id -> {frase, ts}
     };
   };
 
@@ -393,7 +398,8 @@
     settings: "object", streak: "object", stats: "object",
     errors: "object", drills: "object", reviews: "array",
     session: "object", writing: "object", cils: "object",
-    backup: "object", onboarded: "boolean", retention: "object"
+    backup: "object", onboarded: "boolean", retention: "object",
+    library: "object"
   };
 
   function typeOf(v) {

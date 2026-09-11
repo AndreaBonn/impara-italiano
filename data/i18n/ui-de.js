@@ -344,6 +344,8 @@ LINGUAI.addUI("de", {
   "read.hubHint": "Längere Texte mit Fragen und Diktat. Satz für Satz kommt man bis B1 und bleibt dort stehen.",
   "read.intro": "Echtes Italienisch kommt nicht Satz für Satz. Diese Texte üben, was Einzelaufgaben nicht üben: den Sinn über mehrere Sätze hinweg festzuhalten.",
   "read.open": "Öffnen",
+  "read.long": "{n} Sätze",
+  "read.resume": "Ab Satz {n} fortsetzen",
   "read.back": "← Texte",
   "read.backList": "Andere Texte",
   "read.modesLabel": "Wie du mit dem Text arbeitest",

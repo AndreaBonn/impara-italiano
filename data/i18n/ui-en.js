@@ -339,6 +339,8 @@ LINGUAI.addUI("en", {
   "read.hubHint": "Longer texts with questions and dictation. Sentence by sentence you can reach B1 and stop there.",
   "read.intro": "Real Italian does not arrive one sentence at a time. These texts train what single exercises cannot: holding the sense across several sentences in a row.",
   "read.open": "Open",
+  "read.long": "{n} sentences",
+  "read.resume": "Resume from sentence {n}",
   "read.back": "← Texts",
   "read.backList": "Other texts",
   "read.modesLabel": "How to work with the text",

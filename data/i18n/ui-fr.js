@@ -346,6 +346,8 @@ LINGUAI.addUI("fr", {
   "read.hubHint": "Des textes plus longs, avec questions et dictée. Phrase par phrase on atteint B1 et on s'y arrête.",
   "read.intro": "Le vrai italien n'arrive pas une phrase à la fois. Ces textes travaillent ce que les exercices isolés ne travaillent pas : tenir le sens sur plusieurs phrases d'affilée.",
   "read.open": "Ouvrir",
+  "read.long": "{n} phrases",
+  "read.resume": "Reprendre à la phrase {n}",
   "read.back": "← Textes",
   "read.backList": "D'autres textes",
   "read.modesLabel": "Comment travailler le texte",

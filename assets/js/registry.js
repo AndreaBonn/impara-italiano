@@ -169,9 +169,34 @@
     EAGER_FILES: EAGER_FILES
   };
 
-  /* The course data files call these two when they load. */
+  /**
+   * Reading texts arriving with a level, rather than at startup.
+   *
+   * `data/core/readings.js` is loaded eagerly and assigns `window.READINGS`
+   * whole. The library of long texts cannot do that twice over — the second
+   * file would replace the first — and it must not be eager either: it is
+   * ten times the prose of the short readings, for material a student opens
+   * a fraction of.
+   *
+   * So the library files APPEND, one per level, pulled in with the rest of
+   * that level's data. Deduplicated by id because a level can be asked for
+   * twice in a session (the coverage screen pulls every level to count what
+   * the course teaches), and a text listed twice would be a text that gets
+   * two different reading positions.
+   */
+  function addReadings(lista) {
+    var wszystkie = global.READINGS || (global.READINGS = []);
+    (lista || []).forEach(function (r) {
+      if (!r || !r.id) return;
+      for (var i = 0; i < wszystkie.length; i++) if (wszystkie[i].id === r.id) return;
+      wszystkie.push(r);
+    });
+  }
+
+  /* The course data files call these when they load. */
   global.LINGUAI = global.LINGUAI || {};
   global.LINGUAI.registerLevel = registerLevel;
   global.LINGUAI.addUnits = addUnits;
+  global.LINGUAI.addReadings = addReadings;
 
 })(window);

@@ -27,7 +27,13 @@ const sandbox = {
   window: {}, console,
   LINGUAI: {
     registerLevel(lv) { lv.units = lv.units || []; levels.push(lv); byCode[lv.code] = lv; },
-    addUnits(code, units) { if (byCode[code]) byCode[code].units = byCode[code].units.concat(units); }
+    addUnits(code, units) { if (byCode[code]) byCode[code].units = byCode[code].units.concat(units); },
+    /* The library appends to the same list the short readings assign, so
+       everything downstream — the sentences, the glosses, the tapped words —
+       is collected by the code that already walks READINGS. */
+    addReadings(lista) {
+      sandbox.READINGS = (sandbox.READINGS || []).concat(lista || []);
+    }
   }
 };
 sandbox.window = sandbox;
@@ -47,6 +53,11 @@ readdirSync(CORE).filter(f => /^[abc]\d-\d+\.js$/.test(f)).sort().forEach(run);
 run("conversations.js");
 run("phonetics.js");
 run("readings.js");
+/* The library, one file per level. Enumerated rather than listed by hand:
+   a text added to a level that nobody remembered to name here would have no
+   recordings at all, and the course would fall back to system synthesis
+   without saying a word about it. */
+readdirSync(CORE).filter(f => /^library-[abc]\d\.js$/.test(f)).sort().forEach(run);
 run("interference.js");
 run("cils.js");
 

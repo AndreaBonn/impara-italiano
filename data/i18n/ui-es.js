@@ -346,6 +346,8 @@ LINGUAI.addUI("es", {
   "read.hubHint": "Textos más largos con preguntas y dictado. Frase a frase se llega a B1 y ahí uno se queda.",
   "read.intro": "El italiano de verdad no llega de frase en frase. Estos textos entrenan lo que los ejercicios sueltos no entrenan: sostener el sentido a lo largo de varias frases seguidas.",
   "read.open": "Abrir",
+  "read.long": "{n} frases",
+  "read.resume": "Reanudar desde la frase {n}",
   "read.back": "← Textos",
   "read.backList": "Otros textos",
   "read.modesLabel": "Cómo trabajar el texto",

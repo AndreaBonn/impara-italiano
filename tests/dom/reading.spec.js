@@ -122,3 +122,53 @@ test("the reading strings exist in five languages", async ({ page }) => {
   });
   expect(braki, JSON.stringify(braki)).toEqual({});
 });
+
+/* ============================================================
+   The library: long texts that arrive with their level.
+
+   The short readings live in a file loaded at startup; these do not, and
+   that is the whole point — they are ten times the prose, for material most
+   students open a fraction of. Three things follow, and all three are
+   invisible until somebody opens the list from a cold profile.
+   ============================================================ */
+test("the list shows texts from every level, not only the loaded one", async ({ page }) => {
+  await page.goto("/index.html#/lettura");
+  await page.waitForSelector(".js-open");
+  /* Drawn first, pulled second, drawn again: the wait is for the second
+     drawing, which is the one under test. */
+  await page.waitForFunction(() =>
+    document.body.innerText.includes("Bologna"), null, { timeout: 15000 });
+
+  const righe = await page.locator(".list-row").allInnerTexts();
+  const poziomy = new Set(righe.map((r) => r.split("\n")[0]));
+  expect(poziomy.has("A1") && poziomy.has("C2"), "levels present: " + [...poziomy]).toBe(true);
+});
+
+test("a long text says how long it is and does not offer dictation", async ({ page }) => {
+  /* Dictation on thirty sentences is not a harder exercise, it is one with
+     no end, and whoever starts it finds that out ten sentences in. */
+  await page.goto("/index.html#/lettura?id=lib-a2-casa");
+  await page.waitForSelector(".tabs");
+  const tryby = await page.locator(".tab").allInnerTexts();
+  expect(tryby.length, "read and listen, nothing else: " + tryby.join(",")).toBe(2);
+
+  await page.goto("/index.html#/lettura?id=r-a1-mattina");
+  await page.waitForSelector(".tabs");
+  expect((await page.locator(".tab").allInnerTexts()).length,
+    "a short text keeps its dictation").toBe(3);
+});
+
+test("listening remembers where it got to, and offers to go back there", async ({ page }) => {
+  await page.goto("/index.html#/lettura?id=lib-a2-casa&mode=listen");
+  await page.waitForSelector(".js-all");
+  /* No resume button before anything has been played. */
+  await expect(page.locator(".js-resume")).toHaveCount(0);
+
+  await page.evaluate(() => {
+    window.Core.state.library = { "lib-a2-casa": { frase: 7, ts: Date.now() } };
+    window.App.go("lettura", { id: "lib-a2-casa", mode: "listen" });
+  });
+  await page.waitForSelector(".js-resume");
+  const etykieta = await page.locator(".js-resume").innerText();
+  expect(etykieta, "the sentence number reaches the label").toContain("8");
+});

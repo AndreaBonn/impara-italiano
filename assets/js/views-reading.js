@@ -31,28 +31,74 @@
   function teksty() { return global.READINGS || []; }
   function tekst(id) { return teksty().filter(function (r) { return r.id === id; })[0]; }
 
+  /* Above this many sentences a text is a LONG one: it comes from the
+     library rather than from readings.js, the list says how long it is, and
+     dictation is not offered. Dictation on forty sentences is not a harder
+     exercise, it is an exercise with no end, and whoever starts it finds
+     that out ten sentences in. */
+  var DLUGI = 20;
+
+  function dlugosc(r) { return (r.sentences || []).length; }
+
+  function wiersz(x) {
+    return '<div class="list-row"><span class="chip chip--cefr">' + esc(x.cefr || "") + "</span>" +
+      '<span class="list-row__main"><b>' + esc(x.titleIt) + "</b>" +
+      "<span>" + esc(x.title || "") +
+      (dlugosc(x) > DLUGI ? " · " + esc(t("read.long", { n: dlugosc(x) })) : "") +
+      "</span></span>" +
+      '<button class="btn btn--primary btn--sm js-open" data-id="' + esc(x.id) + '">' +
+      esc(t("read.open")) + "</button></div>";
+  }
+
   Views.lettura = function (params) {
     var r = params && params.id ? tekst(params.id) : null;
     if (r) return widokTekstu(r, (params && params.mode) || "read");
 
+    rysujListe();
+
+    /* The long texts arrive with their level, so a student who has only ever
+       opened A1 has only A1 in memory and would see a library of one level.
+       Draw what we have, pull the rest, draw again — the same three steps as
+       the coverage screen, and the same toast when a file does not load,
+       because a list that is quietly short looks like a list that is
+       complete. */
+    var brakujace = Core.registry.levels.filter(function (lv) { return !Core.registry.loaded[lv.code]; });
+    if (!brakujace.length) return;
+
+    var zostalo = brakujace.length;
+    var nieudane = [];
+    brakujace.forEach(function (lv) {
+      Core.loadLevelData(lv.code, function (got) {
+        if (!got) nieudane.push(lv.code);
+        if (--zostalo > 0) return;
+        /* Only if the student is still here: the levels take a moment, and
+           redrawing over whatever screen they opened in the meantime would
+           replace it with a list they did not ask for. */
+        if (Router.current.route !== "lettura" || Router.current.params.id) return;
+        rysujListe();
+        if (nieudane.length) Core.toast(t("search.partial", { levels: nieudane.join(", ") }));
+      });
+    });
+  };
+
+  function rysujListe() {
+    var lista = teksty().slice().sort(function (a, b) {
+      return String(a.cefr || "").localeCompare(String(b.cefr || "")) || dlugosc(a) - dlugosc(b);
+    });
     set(pageHead(t("read.kicker"), t("read.title"), t("read.intro")) +
-      '<div class="stack">' + teksty().map(function (x) {
-        return '<div class="list-row"><span class="chip chip--cefr">' + esc(x.cefr || "") + "</span>" +
-          '<span class="list-row__main"><b>' + esc(x.titleIt) + "</b>" +
-          "<span>" + esc(x.title || "") + "</span></span>" +
-          '<button class="btn btn--primary btn--sm js-open" data-id="' + esc(x.id) + '">' +
-          esc(t("read.open")) + "</button></div>";
-      }).join("") + "</div>");
+      '<div class="stack">' + lista.map(wiersz).join("") + "</div>");
 
     Views.shell.root().querySelectorAll(".js-open").forEach(function (b) {
       b.addEventListener("click", function () { App.go("lettura", { id: b.getAttribute("data-id") }); });
     });
-  };
+  }
 
   /* ---------------- The modes ---------------- */
 
   function pasekTrybow(r, tryb) {
-    var tryby = [["read", "read.modeRead"], ["listen", "read.modeListen"], ["dictation", "read.modeDictation"]];
+    var tryby = [["read", "read.modeRead"], ["listen", "read.modeListen"]];
+    /* Dictation only on the short texts. See DLUGI. */
+    if (dlugosc(r) <= DLUGI) tryby.push(["dictation", "read.modeDictation"]);
     return '<div class="tabs" role="group" aria-label="' + esc(t("read.modesLabel")) + '">' +
       tryby.map(function (x) {
         return '<button type="button" class="tab js-mode" data-mode="' + x[0] + '"' +
@@ -122,19 +168,47 @@
     });
   }
 
+  /** Where the student stopped listening to this text, or zero. */
+  function znacznik(r) {
+    var b = (Core.state.library || {})[r.id];
+    var n = b && typeof b.frase === "number" ? b.frase : 0;
+    /* Past the end means finished: start again rather than offering to
+       resume from a sentence that no longer exists. */
+    return n > 0 && n < (r.sentences || []).length ? n : 0;
+  }
+
+  function zapiszZnacznik(r, i) {
+    if (!Core.state.library) Core.state.library = {};
+    Core.state.library[r.id] = { frase: i, ts: Date.now() };
+    Core.save();
+  }
+
   function trybSluchania(r, box) {
+    var od = znacznik(r);
     box.innerHTML = '<div class="card"><p style="color:var(--ink-soft)">' + esc(t("read.listenHint")) + "</p>" +
       '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">' +
       '<button class="btn btn--green js-all">' + esc(t("read.playAll")) + "</button>" +
+      /* Only where there is something to go back to. A button that resumes
+         from the first sentence is the play button with a longer label. */
+      (od ? '<button class="btn btn--primary js-resume">' +
+        esc(t("read.resume", { n: od + 1 })) + "</button>" : "") +
       '<button class="btn btn--ghost btn--sm js-slow">' + esc(t("ex.listen.slow")) + "</button></div></div>" +
       '<div style="margin-top:18px"><button class="btn btn--primary js-quiz">' + esc(t("read.toQuestions")) + "</button></div>" +
       '<div id="quizBox" style="margin-top:18px"></div>';
 
-    function graj(rate) {
-      Audio2.speakSequence(r.sentences.map(function (s) { return { it: s }; }), rate ? { rate: rate } : {});
+    function graj(rate, start) {
+      var zdania = (r.sentences || []).slice(start || 0);
+      Audio2.speakSequence(zdania.map(function (s) { return { it: s }; }), {
+        rate: rate,
+        /* Written as it plays, not at the end: a student who closes the tab
+           in the middle is exactly the one this is for. */
+        onLine: function (_line, i) { zapiszZnacznik(r, (start || 0) + i); }
+      });
     }
-    box.querySelector(".js-all").addEventListener("click", function () { graj(); });
-    box.querySelector(".js-slow").addEventListener("click", function () { graj(0.7); });
+    box.querySelector(".js-all").addEventListener("click", function () { graj(null, 0); });
+    var wznow = box.querySelector(".js-resume");
+    if (wznow) wznow.addEventListener("click", function () { graj(null, od); });
+    box.querySelector(".js-slow").addEventListener("click", function () { graj(0.7, 0); });
     box.querySelector(".js-quiz").addEventListener("click", function () {
       Audio2.stop();
       pytania(r, document.getElementById("quizBox"));

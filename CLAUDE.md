@@ -344,6 +344,35 @@ odpytuje już żadnej cudzej domeny. Zmierzone, nie założone: wszystkie cztery
 **także z `file://`** — obawa, że CORS je tam zablokuje, okazała się nietrafiona, natomiast
 `<link rel="preload" crossorigin>` faktycznie tam pada i dlatego go nie ma.
 
+## Biblioteka: długie teksty, które przychodzą z poziomem
+
+Kurs miał 1514 ćwiczeń i 2252 słowa do CZYTANIA. Uczył dużo i dawał mało do
+skonsumowania — a od B1 w górę to jest ta połowa, której brakuje najbardziej.
+
+**Biblioteka nie jest nowym typem danych.** Tekst na sześćset słów ma tę samą budowę co
+czytanka: `sentences[]`, `glossIt`, `lexIt`, `questions`. Różnica jest w DŁUGOŚCI, więc
+nie ma osobnego widoku ani osobnego globalnego: `LINGUAI.addReadings` (registry.js)
+dokłada je do tej samej listy, a `views-reading.js` rysuje je bez zmiany jednej linii.
+
+**Wchodzą z poziomem, nie przy starcie.** `data/core/library-<lvl>.js` stoi w `dataFiles`
+poziomu, dokładnie jak pliki lekcji, i nie ma go w `PRECACHE` — tak samo jak lekcji.
+Dziesięciokrotność prozy krótkich czytanek nie może się ładować komuś, kto jej nigdy nie
+otworzy. Lista czytanek rysuje więc to, co ma, dociąga resztę i rysuje jeszcze raz: ten
+sam wzorzec co ekran pokrycia (`views-frequency.js`), i z tego samego powodu — lista,
+która po cichu jest krótsza, wygląda jak lista kompletna.
+
+Dwie rzeczy, które widok robi inaczej na długim tekście, obie z jednego powodu:
+
+- **nie ma dyktanda** powyżej `DLUGI` (20 zdań). Dyktando z trzydziestu zdań to nie
+  trudniejsze ćwiczenie, tylko ćwiczenie bez końca, i dowiadujesz się o tym po dziesiątym;
+- **jest znacznik miejsca**: `state.library[id].frase` zapisuje się W TRAKCIE słuchania
+  (`onLine`), nie na końcu, bo uczeń, który zamyka kartę w połowie, jest dokładnie tym,
+  dla którego to istnieje. Przycisk „wznów" pojawia się tylko wtedy, gdy jest dokąd wrócić.
+
+Nagrania powstają normalnie: `extract_strings.mjs` wylicza pliki `library-*.js` z katalogu
+(a nie z ręcznej listy), więc tekst dopisany do poziomu, o którym nikt nie pamiętał, i tak
+dostanie swoje mp3. Bez tego zjechałby na syntezę systemową, nie mówiąc o tym ani słowa.
+
 **Po dopisaniu pliku do `assets/js/` albo `data/core/` dopisz go do `PRECACHE` w `sw.js`
 i podnieś `SW_VERSION`.** Inaczej pierwszy start bez sieci padnie na brakującym skrypcie.
 
@@ -612,13 +641,14 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 | Jednostki / lekcje / ćwiczenia | 32 / 150 / 1514 | `node scripts/baseline.mjs` |
 | Pozycje słownika / rozmowy / hasła gramatyczne | 1412 / 14 / 42 | `node scripts/baseline.mjs` |
 | Czytanki / zadania pisane / zbiory par minimalnych | 24 / 6 / 5 | `node scripts/baseline.mjs` |
+| Biblioteka: teksty / zdania / słowa | 6 / 188 / 2621 | `node scripts/baseline.mjs` |
 | Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
-| Nagrania | 3494 plików mp3, 37 MiB bajtów; 3493 skrótów w indeksie | `node scripts/baseline.mjs` |
-| Klucze interfejsu na język | 887 × 5 języków | `node scripts/baseline.mjs` |
+| Nagrania | 3780 plików mp3, 42 MiB bajtów; 3779 skrótów w indeksie | `node scripts/baseline.mjs` |
+| Klucze interfejsu na język | 889 × 5 języków | `node scripts/baseline.mjs` |
 | Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
-| Pliki silnika | 77 w assets/js/, 15929 linii | `node scripts/baseline.mjs` |
+| Pliki silnika | 77 w assets/js/, 16034 linii | `node scripts/baseline.mjs` |
 | Testy jednostkowe | 1140 przebiegów w 46 plikach, zielone | `npm test` |
-| Testy DOM | 283 przebiegi w 38 plikach, zielone | `npm run test:dom` |
+| Testy DOM | 286 przebiegów w 38 plikach, zielone | `npm run test:dom` |
 | Mutacje | 82 w 11 plikach silnika | `npm run test:mutations` |
 | Pokrycie silnika testami jednostkowymi | 99,3%, próg w CI: 99 | `node scripts/coverage.mjs` |
 

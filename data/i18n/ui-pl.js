@@ -344,6 +344,8 @@ LINGUAI.addUI("pl", {
   "read.hubHint": "Dłuższe teksty z pytaniami i dyktandem. Zdanie po zdaniu da się dojść do B1 i tam stanąć.",
   "read.intro": "Prawdziwy włoski nie przychodzi po jednym zdaniu. Te teksty ćwiczą to, czego pojedyncze ćwiczenia nie ćwiczą: trzymanie sensu przez kilka zdań z rzędu.",
   "read.open": "Otwórz",
+  "read.long": "{n} zdań",
+  "read.resume": "Wznów od zdania {n}",
   "read.back": "← Teksty",
   "read.backList": "Inne teksty",
   "read.modesLabel": "Tryb pracy z tekstem",

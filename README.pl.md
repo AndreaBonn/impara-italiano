@@ -188,3 +188,14 @@ nagrania zostają nietknięte.
 
 Treść dydaktyczna napisana od zera. Program gramatyczny oparty na publicznie dostępnych sylabusach
 referencyjnych dla włoskiego jako języka obcego. Fonty: Fraunces i Inter (SIL Open Font License).
+
+## Wesprzyj projekt
+
+Impara l'Italiano jest bezpłatna. Jeśli kurs Ci się przydał i chcesz się odwdzięczyć, możesz
+zostawić napiwek przez PayPal. Kwotę wybierasz sam, a wpłata jest całkowicie dobrowolna.
+
+<div align="center">
+
+[![Wesprzyj przez PayPal](https://img.shields.io/badge/Wesprzyj-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/AndreaBonacci19)
+
+</div>

@@ -307,3 +307,11 @@ The fonts are third-party work under the SIL Open Font License, whose texts trav
 ## Support the project
 
 If the course was useful to you, a star on [GitHub](https://github.com/AndreaBonn/impara-italiano) helps other learners find it.
+
+Impara l'Italiano is free to use. If you want to give something back, you can leave a tip via PayPal. The amount is up to you and it is entirely optional.
+
+<div align="center">
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/AndreaBonacci19)
+
+</div>

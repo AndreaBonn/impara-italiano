@@ -107,12 +107,23 @@ test("recordings are not fetched a second time", async ({ page }) => {
     const url = "audio/" + hash.slice(0, 2) + "/" + hash + ".mp3";
     await fetch(url);
     await new Promise(r => setTimeout(r, 300));
-    const c = await caches.open("linguai-audio");
-    const klucze = await c.keys();
-    return { url: url, wPamieci: klucze.some(k => k.url.endsWith(url)) };
+    /* The cache is looked up by prefix and not by full name on purpose: the
+       suffix on AUDIO_CACHE is bumped whenever the audio at unchanged
+       addresses changes, that is on a change of voice (sw.js). A name written
+       out here would turn that bump into a red test about nothing, and the
+       property under test is "the recording landed in the audio cache", not
+       what that cache is called today. */
+    const nazwy = (await caches.keys()).filter(n => n.indexOf("linguai-audio") === 0);
+    const trafienia = [];
+    for (const n of nazwy) {
+      const klucze = await (await caches.open(n)).keys();
+      if (klucze.some(k => k.url.endsWith(url))) trafienia.push(n);
+    }
+    return { url: url, wPamieci: trafienia.length > 0, nazwy: nazwy };
   });
 
-  expect(wynik.wPamieci, `the recording ${wynik.url} did not reach the cache`).toBe(true);
+  expect(wynik.nazwy.length, "there is no audio cache at all").toBeGreaterThan(0);
+  expect(wynik.wPamieci, `the recording ${wynik.url} did not reach the cache ${wynik.nazwy}`).toBe(true);
 });
 
 test("a foreign origin is not intercepted", async ({ page }) => {

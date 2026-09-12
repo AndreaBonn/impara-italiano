@@ -281,8 +281,46 @@ sięga zwykle po espeak-ng (synteza formantowa, brzmi mechanicznie), a jakość 
 systemach jest nieprzewidywalna. Backend odpadał, bo zabiłby statyczność.
 
 - **Głosy**: `it-IT-IsabellaNeural` (główny), `it-IT-GiuseppeMultilingualNeural` (rozmówca
-  w dialogach i konwersacjach). Zmiana głosu = zmiana stałej w `scripts/build_audio.py`
-  i pełny przebieg z `--force`.
+  w dialogach i konwersacjach). Edge TTS daje cztery głosy it-IT: Isabella, Elsa, Diego
+  i Giuseppe Multilingual, z czego Diego jest jedynym jednojęzycznym męskim. Próba
+  podmiany Giuseppe na Diego (2026-09-12) została **wycofana po odsłuchu**: rodzina
+  `*MultilingualNeural` faktycznie umie przejść na rodzimą fonetykę zapożyczenia, ale na
+  pełnych zdaniach kursu tego nie robi, a Diego wypadł gorzej. Sam mechanizm nie jest
+  wymyślony, tylko celuje w inne miejsce, zob. punkt niżej.
+- **„Amerykańska wymowa" w kursie była AKCENTEM TONICZNYM, nie angielską fonetyką.**
+  Głos przenosi akcent na złą sylabę w części włoskich słów (`figurati` czytane `figuràti`
+  zamiast `figùrati`), a przesunięty akcent brzmi obco, choć wszystkie dźwięki są włoskie.
+  Dwie hipotezy, które po drodze upadły, i obie są tu po to, żeby nikt ich nie wracał
+  sprawdzać: (1) rodzina `*MultilingualNeural` — odsłuch mówi, że na zdaniach kursu nie
+  przechodzi na angielski; (2) `xml:lang` w kopercie SSML, którą `edge-tts` na sztywno
+  ustawia na `en-US` (`communicate.py`) — **zmierzone: koperta jest bezczynna**, usługa
+  bierze język z głosu. Uwaga na pomiar: ta sama prośba dwa razy daje inne bajty dla części
+  napisów, więc porównanie plików bez kontroli powtarzalności pokazuje różnicę, której nie ma.
+- **Akcent poprawia się tabelą `STRESS_FIXES` w `scripts/build_audio.py`.** Grafia z akcentem
+  idzie **wyłącznie do syntezatora**: `voiced_text()` przepisuje napis przed wysłaniem, a
+  `audio_hash()` liczy skrót z napisu ORYGINALNEGO. Uczeń nadal czyta `figurati`, plik zostaje
+  pod swoim adresem, zmienia się samo nagranie. To jedyne miejsce w projekcie, gdzie tekst
+  mówiony rozjeżdża się z pisanym, i dlatego rozjazd jest jedną funkcją, a nie drugą kopią danych.
+- **Każdy wpis tabeli jest odsłuchany, nie wydedukowany.** 162 słowa kursu z grup ryzyka (formy
+  z enklityką, trzecia osoba mnoga, -issimo, -abile/-ibile/-evole, homografy, sdrucciole)
+  wygenerowano osobno i przesłuchano jedno po drugim; złych było siedem: `costano`, `dormono`,
+  `falliscono`, `figurati`, `imparano`, `ingannano`, `seguito`. Zasada dopisywania: słowo,
+  którego OBA odczyty występują w kursie, do tabeli NIE wchodzi — homograf `seguito` jest
+  bezpieczny tylko dlatego, że w kursie stoi raz, jako imiesłów (`mi ha seguito`). Taki
+  przypadek trzeba rozdzielić po zdaniu, nie po słowie.
+- **Zmiana tabeli to zmiana nagrań, w trzech krokach**: usuń pliki zdań z tym słowem,
+  przebiegnij `build_audio.py` bez `--force`, podnieś sufiks w `AUDIO_CACHE` w `sw.js`.
+  Krok trzeci jest obowiązkowy: treść pod tym samym adresem się zmienia, a guska trzyma
+  nagrania cache-first bez unieważniania.
+- **Zmiana głosu to trzy kroki, nie jeden.** Nazwa pliku jest skrótem TREŚCI, a nie głosu,
+  więc sama podmiana stałej nie rusza ani jednego pliku, a `--force` przegenerowałby
+  wszystkie 4070 (46 MB ruchu w gicie) zamiast tych, które faktycznie się zmieniają.
+  Kolejno: (1) stała w `scripts/build_audio.py`; (2) usunięcie plików TEGO głosu (skróty
+  z właściwej połowy `scripts/audio-strings.json`) i przebieg bez `--force`; (3) **sufiks
+  w `AUDIO_CACHE` w `sw.js`**, bo guska trzyma nagrania cache-first bez unieważniania,
+  a `sweepAudio()` tego nie wyłapie: skrót nie jest sierotą, jest identyczny. Bez kroku (3)
+  uczeń, który już korzystał z kursu, zostaje ze starym głosem na zawsze. Sprawdzone
+  w praktyce na wycofanej zmianie z 2026-09-12.
 - **Kto co robi**: `assets/js/recordings.js` (globalna `Recordings`) odpowiada wyłącznie na
   pytanie „czy to zdanie ma nagranie i pod jakim adresem" — jest czystą funkcją napisu i to
   jedyna część dźwięku, która ma bliźniaka po stronie budowania. `assets/js/audio.js` to

@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -40,10 +41,40 @@ STRINGS_FILE = ROOT / "scripts" / "audio-strings.json"
 VOICE_PRIMARY = "it-IT-IsabellaNeural"
 VOICE_OTHER = "it-IT-GiuseppeMultilingualNeural"
 
+# Words the voice stresses on the wrong syllable, with the written accent that
+# puts it back. The student keeps reading "figurati": this spelling goes to the
+# synthesiser ONLY, and the file name stays the hash of the original sentence,
+# so a word added here re-records that sentence without moving its address.
+#
+# Every entry was heard, one word at a time, against the real course voice at
+# the real bitrate, and every occurrence was read in context before being added.
+# "seguito" is the entry that shows what "in context" has to mean: as a noun it
+# is "seguito", so the fix is only safe because both places the course uses the
+# word are the participle ("mi ha seguito" in cils.js, "chi ha seguito" in a
+# reading passage that is not voiced). A word whose two readings both occur does
+# NOT belong in this table: it needs splitting by sentence instead. Count the
+# occurrences in data/core/, not only in audio-strings.json — a word can enter
+# the spoken set later, and a table checked against the spoken half alone would
+# then be wrong without anyone touching it.
+STRESS_FIXES = {
+    "costano": "còstano",
+    "dormono": "dòrmono",
+    "falliscono": "fallìscono",
+    "figurati": "figùrati",
+    "imparano": "impàrano",
+    "ingannano": "ingànnano",
+    "seguito": "seguìto",
+}
+
 BITRATE = "32k"
 SAMPLE_RATE = "24000"
 CONCURRENCY = 4
 RETRIES = 3
+
+STRESS_RE = re.compile(
+    r"\b(" + "|".join(sorted(STRESS_FIXES, key=len, reverse=True)) + r")\b",
+    re.IGNORECASE,
+) if STRESS_FIXES else None
 
 FNV_OFFSET = 0xCBF29CE484222325
 FNV_PRIME = 0x100000001B3
@@ -62,16 +93,41 @@ def target_path(digest: str) -> Path:
     return AUDIO_DIR / digest[:2] / f"{digest}.mp3"
 
 
+def voiced_text(text: str) -> str:
+    """Applies STRESS_FIXES to the text going to the synthesiser.
+
+    The hash, and therefore the file name, is computed on the ORIGINAL text by
+    audio_hash(): this rewriting must never reach it.
+
+    Parameters
+    ----------
+    text
+        The sentence as it appears in the course.
+
+    Returns
+    -------
+    str
+        The same sentence with the accented spelling of any word in
+        STRESS_FIXES, keeping an initial capital where the original had one.
+    """
+    def one(m: re.Match[str]) -> str:
+        fixed = STRESS_FIXES[m.group(0).lower()]
+        return fixed[0].upper() + fixed[1:] if m.group(0)[0].isupper() else fixed
+
+    return STRESS_RE.sub(one, text) if STRESS_FIXES else text
+
+
 async def synth(text: str, voice: str, dest: Path) -> None:
     """Synthesises and transcodes to a low-bitrate mono MP3."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
         raw = Path(tmp.name)
     try:
+        spoken = voiced_text(text)
         last: Exception | None = None
         for attempt in range(RETRIES):
             try:
-                await edge_tts.Communicate(text, voice).save(str(raw))
+                await edge_tts.Communicate(spoken, voice).save(str(raw))
                 if raw.stat().st_size > 0:
                     last = None
                     break
@@ -134,6 +190,19 @@ async def main() -> int:
 
     if len(seen) != len(jobs):
         print("BŁĄD: kolizja skrótów.", file=sys.stderr)
+        return 1
+
+    # A key that matches nothing is a typo in the table, and without this it is
+    # the quietest failure this script has: the run says "generated", the file
+    # is rewritten byte for byte the same, and the wrong stress stays in the
+    # course with nothing anywhere saying so.
+    martwe = sorted(
+        w for w in STRESS_FIXES
+        if not any(re.search(rf"\b{re.escape(w)}\b", t, re.IGNORECASE) for t, _, _ in jobs)
+    )
+    if martwe:
+        print("BŁĄD: te wpisy STRESS_FIXES nie pasują do żadnego napisu "
+              f"(literówka?): {', '.join(martwe)}", file=sys.stderr)
         return 1
 
     todo = [j for j in jobs if args.force or not target_path(j[2]).exists()]

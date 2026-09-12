@@ -11,6 +11,12 @@
      hash of the sentence's content (FNV-1a), so the file at a given
      address never changes its contents. Invalidating such a cache makes no
      sense: a corrected sentence simply gets a different address.
+     The one event that would break that invariant is a change of VOICE,
+     because the address is a hash of the sentence and not of the voice
+     reading it: the same address would then carry different audio, and
+     sweepAudio() could not see it — the hash is not orphaned, it is
+     identical. The remedy is a suffix on AUDIO_CACHE below, added by hand on
+     such a change, and tests/dom/pwa-update.spec.js holds that rule down.
 
    - CODE AND DATA — network-first, from the cache only when the network is
      gone. The project has no build step, so the files have no hash in
@@ -45,8 +51,14 @@
 var SW_VERSION = "v35.efd87fd0ea50";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
-/* Recordings are content-addressed, so their cache survives a version change. */
-var AUDIO_CACHE = "linguai-audio";
+/* Recordings are content-addressed, so their cache survives a version change.
+   Bump this suffix whenever the audio at unchanged addresses changes: a change
+   of voice, or a change to the text handed to the synthesiser (STRESS_FIXES in
+   scripts/build_audio.py). The activate handler then drops the old cache by the
+   rule it already has for stale linguai-* caches, so it needs no code of its
+   own and leaves no list to clean up later.
+   -2: twelve recordings re-recorded with the stress fixes of 2026-09-12. */
+var AUDIO_CACHE = "linguai-audio-2";
 
 var PRECACHE = [
   "./",

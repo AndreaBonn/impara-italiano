@@ -19,16 +19,26 @@ const { join } = require("node:path");
 
 const ROOT = join(__dirname, "..", "..");
 const ZRODLO = readFileSync(join(ROOT, "sw.js"), "utf8");
+/* The shipped recording cache, read from the worker instead of written out
+   again: its suffix moves on every change of voice. */
+const PAMIEC_AUDIO = /var AUDIO_CACHE = "([^"]+)";/.exec(ZRODLO)[1];
 
 const KOMUNIKAT = "#toastStack .toast--stuck";
 
 /** The same worker under a different version: different bytes and a different shell cache name. */
 function wydanie(nazwa) {
-  return ZRODLO.replace(/var SW_VERSION = "[^"]+";/, `var SW_VERSION = "${nazwa}";`);
+  const zrodlo = biezaceAudio
+    ? ZRODLO.replace(/var AUDIO_CACHE = "[^"]+";/, `var AUDIO_CACHE = "${biezaceAudio}";`)
+    : ZRODLO;
+  return zrodlo.replace(/var SW_VERSION = "[^"]+";/, `var SW_VERSION = "${nazwa}";`);
 }
 
 let serwer, ADRES;
 let biezace = "v900.000000000000";
+/* null = the AUDIO_CACHE this repo really ships. A name here serves a release
+   with a different recording cache, which is what a change of voice looks
+   like from the browser's side. */
+let biezaceAudio = null;
 
 test.beforeAll(async () => {
   const modul = await import("../../scripts/serve.mjs");
@@ -153,4 +163,80 @@ test("two tabs: accepting in one brings the other into line", async ({ browser }
   await pamiecPowloki(druga, "v903.000000000000");
 
   await ctx.close();
+});
+
+
+test("a change of voice does not leave the student with the old recordings", async ({ browser }) => {
+  /*
+   * The recordings are cached forever and never invalidated, and the licence
+   * for that is the invariant "the file at a given address never changes its
+   * contents". A change of VOICE would break it: the address is a hash of the
+   * sentence, not of the voice reading it, so the same address would start
+   * carrying different audio and sweepAudio() could not see it — the hash is
+   * not orphaned, it is identical. The remedy is a suffix on AUDIO_CACHE, and
+   * this test is what says the worker's own expiry rule carries it: the stale
+   * cache goes, the current one keeps the recordings it already had. Written
+   * during a change of voice that was then rolled back after listening
+   * (2026-09-12) — the rule outlived the change, which is why it is a test
+   * and not a line in a commit message.
+   */
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+
+  biezaceAudio = "linguai-audio-stare";
+  try {
+    await podKontrola(page);
+    await pamiecPowloki(page, biezace);
+
+    /* Two entries, and the second is the whole point of the pair. The stale
+       one goes into the cache the OLD release used; the live one goes into
+       the cache this release ships, under a hash that really is in the index
+       — sweepAudio() drops anything the index does not know, so an invented
+       address would vanish for a reason that has nothing to do with the
+       test. */
+    const ADRES_MP3 = "/audio/00/0000000000000000.mp3";
+    const zywy = await page.evaluate(async (pamiec) => {
+      const hash = window.AUDIO_INDEX.slice(0, 16);
+      const u = "/audio/" + hash.slice(0, 2) + "/" + hash + ".mp3";
+      const c = await caches.open(pamiec);
+      await c.put(new Request(u), new Response(new Blob(["zywy glos"])));
+      return u;
+    }, PAMIEC_AUDIO);
+    await page.evaluate(async (u) => {
+      const c = await caches.open("linguai-audio-stare");
+      await c.put(new Request(u), new Response(new Blob(["stary glos"])));
+    }, ADRES_MP3);
+    expect(
+      await page.evaluate(() => caches.keys()),
+      "the setup itself failed: the old cache is not there"
+    ).toContain("linguai-audio-stare");
+
+    /* The release this repo ships, with its own AUDIO_CACHE. */
+    biezaceAudio = null;
+    await nowaWersja(page, "v904.000000000000");
+    await expect(page.locator(KOMUNIKAT)).toBeVisible({ timeout: 20000 });
+    await page.locator(KOMUNIKAT + " .toast__act").click();
+    await pamiecPowloki(page, "v904.000000000000");
+
+    await page.waitForFunction(
+      async () => !(await caches.keys()).includes("linguai-audio-stare"),
+      null, { timeout: 20000 }
+    );
+    const nazwy = await page.evaluate(() => caches.keys());
+    expect(nazwy, "the old recording cache survived the release").not.toContain("linguai-audio-stare");
+    /* The paired positive case, and it has to be a RECORDING and not a cache
+       name: sweepAudio() calls caches.open(AUDIO_CACHE), so the current cache
+       exists again even after a handler that deleted every cache it found —
+       an assertion on its mere presence would be true on the broken worker
+       too. What tells the two apart is the entry: the release keeps the
+       recordings it already had, a wipe comes back with an empty cache. */
+    const zostal = await page.evaluate(async ([pamiec, u]) => {
+      const c = await caches.open(pamiec);
+      return !!(await c.match(new Request(u)));
+    }, [PAMIEC_AUDIO, zywy]);
+    expect(zostal, `the release threw away a recording it already had (${zywy})`).toBe(true);
+  } finally {
+    biezaceAudio = null;
+    await ctx.close();
+  }
 });

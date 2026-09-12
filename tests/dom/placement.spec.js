@@ -19,6 +19,7 @@ async function przejdzCaly(page) {
   await page.locator(".js-go").click();
   await page.waitForSelector(".exq", { timeout: 20000 });
 
+  let poprzednie = null, zablokowane = 0;
   for (let krok = 0; krok < 40; krok++) {
     if (await page.locator(".summary").count()) break;
     const check = page.locator(".exq .js-check").first();
@@ -27,11 +28,36 @@ async function przejdzCaly(page) {
       if (await inp.count()) await inp.fill("qualcosa");
       const radio = page.locator('.exq input[type="radio"]').first();
       if (await radio.count()) await radio.check();
+      /* A checkbox, not a radio: "multi" refuses an empty answer on purpose
+         (exercises-choice.js), so without this tick onDone never fires, the
+         "next" button stays hidden and the loop spins to its last turn. */
+      const box = page.locator('.exq input[type="checkbox"]').first();
+      if (await box.count()) await box.check();
       await check.click();
     }
     const next = page.locator(".js-next");
     if (await next.count() && await next.isVisible()) await next.click();
     else await page.waitForTimeout(120);
+
+    /* A task we cannot answer has to say so. Otherwise the run leaves behind
+       nothing but ".summary is not visible" after every turn, and the type
+       that blocked it has to be dug out by hand — which is what happened
+       here: the session's drills are drawn from the current day
+       (views-today.js), so the exercise that turns up first changes daily
+       and a type the loop cannot handle only shows up on some dates. */
+    const exq = page.locator(".exq").first();
+    /* The signature is the task's own text. data-idx is NOT usable here: it
+       numbers the exercise inside its lesson, so two tasks in a row can carry
+       the same one. And it is read only when .exq is still there — after the
+       last task the run swaps it for .summary, and waiting for a locator that
+       will never appear turns the end of the run into a timeout. */
+    const firma = (await exq.count()) ? (await exq.innerText()).slice(0, 120) : null;
+    if (firma !== null && firma === poprzednie) zablokowane++;
+    else zablokowane = 0;
+    poprzednie = firma;
+    if (zablokowane >= 8) {
+      throw new Error("the run is stuck on a task the loop cannot answer:\n" + firma);
+    }
   }
   await expect(page.locator(".summary")).toBeVisible();
 }

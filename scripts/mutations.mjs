@@ -79,6 +79,8 @@ const T_RAPORT = "tests/unit/cils-report.test.mjs";
 const CHAT = "assets/js/chat-rules.js";
 const T_CHAT = "tests/unit/chat-rules.test.mjs";
 const PROV_CHAT = "tests/unit/llm-providers.test.mjs";
+const STORE = "assets/js/store.js";
+const T_STORE = "tests/unit/store.test.mjs";
 
 /**
  * The mutations. `z` must occur in the file EXACTLY ONCE — with two
@@ -314,7 +316,13 @@ const MUTACJE = [
     na: 'var wczesniej = tury(prompt.history, { student: "user", partner: "assistant" })' },
   { plik: PROV, test: PROV_CHAT, opis: "chat: an unknown role passed through instead of dropped",
     z: '      .filter(function (t) { return t && (t.role === "student" || t.role === "partner"); })',
-    na: "      .filter(function (t) { return !!t; })" }
+    na: "      .filter(function (t) { return !!t; })" },
+
+  /* ---- store.js: the save that must not wait for the timer ---- */
+  { plik: STORE, test: T_STORE, opis: "flush writes but leaves the timer to write again",
+    z: "    global.clearTimeout(saveTimer);\n", na: "\n" },
+  { plik: STORE, test: T_STORE, opis: "flush on every visibility change, visible included",
+    z: 'if (global.document.visibilityState === "hidden") flush();', na: "flush();" }
 ];
 
 /* ---------------- Running ---------------- */

@@ -189,3 +189,43 @@ describe("the loading order", () => {
     assert.doesNotThrow(() => loadEngine({ files: CORE }), "z nim wstaje normalnie");
   });
 });
+
+/* save() waits 180 ms before writing. A student who answers a card and closes
+   the tab inside that window loses the answer, and nothing on the screen says
+   so: the next visit simply shows the card as still due. */
+describe("flushing the pending save", () => {
+  test("flush writes a pending save without waiting for the timer", () => {
+    const box = loadEngine();
+    box.sandbox.Store.state.xp = 77;
+    box.sandbox.Store.save();
+    assert.equal(box.stored(), null, "before flush the debounce holds the write back");
+    box.sandbox.Store.flush();
+    assert.equal(box.stored().xp, 77);
+    assert.equal(box.clock.size, 0, "the timer is cleared, so it does not write a second time");
+  });
+
+  test("flush with nothing pending writes nothing", () => {
+    const box = loadEngine();
+    box.sandbox.Store.flush();
+    assert.equal(box.stored(), null);
+  });
+
+  test("pagehide flushes the pending save", () => {
+    const box = loadEngine();
+    box.sandbox.Store.state.xp = 5;
+    box.sandbox.Store.save();
+    box.okno.odpal("pagehide");
+    assert.equal(box.stored().xp, 5);
+  });
+
+  test("a page going hidden flushes; a page coming back does not write", () => {
+    const box = loadEngine();
+    box.sandbox.Store.state.xp = 9;
+    box.sandbox.Store.save();
+    box.wDokumencie("visibilitychange");
+    assert.equal(box.stored(), null, "visible: the debounce keeps its job");
+    box.sandbox.document.visibilityState = "hidden";
+    box.wDokumencie("visibilitychange");
+    assert.equal(box.stored().xp, 9);
+  });
+});

@@ -329,6 +329,30 @@
   }
 
   /**
+   * Writes a pending save now. The debounce above leaves a 180 ms window in
+   * which an answer lives only in memory: a student who grades a card and
+   * closes the tab inside it finds the card still due on the next visit,
+   * with nothing on screen to say why. With nothing pending there is nothing
+   * to write, so this never turns into a write on every tab switch.
+   */
+  function flush() {
+    if (!saveTimer) return;
+    global.clearTimeout(saveTimer);
+    saveTimer = null;
+    persist();
+  }
+
+  /* Both events, not one: mobile browsers often kill a backgrounded tab
+     without ever firing pagehide, and "hidden" is the last moment they
+     guarantee. */
+  if (global.addEventListener) global.addEventListener("pagehide", flush);
+  if (global.document && global.document.addEventListener) {
+    global.document.addEventListener("visibilitychange", function () {
+      if (global.document.visibilityState === "hidden") flush();
+    });
+  }
+
+  /**
    * Keys an outside file has no right to bring in.
    *
    * JSON.parse turns "__proto__" into an ordinary object property, but
@@ -465,7 +489,7 @@
     KEY: STORE_KEY,
     SCHEMA: SCHEMA,
     get state() { return state; },
-    load: load, save: save,
+    load: load, save: save, flush: flush,
     isForbidden: isForbidden, cardKey: cardKey,
     exportState: exportState, importState: importState, resetState: resetState
   };

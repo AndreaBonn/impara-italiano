@@ -174,6 +174,10 @@ function checkLesson(l, lv, unit) {
   if (!l.id) { errors.push(`${lv.code}/${unit.id}: lekcja bez id`); return; }
   if (ids.has(l.id)) errors.push(`Duplikat id lekcji: ${l.id}`);
   ids.set(l.id, true);
+  /* The five-minute session reads the level from this prefix to load the
+     lessons a student finished; a lesson filed under another level would
+     load the wrong file and its words would silently never come up. */
+  if (l.id.split("-")[0] !== lv.code.toLowerCase()) errors.push(`${l.id}: prefiks id nie zgadza się z poziomem ${lv.code}`);
   if (!l.titleIt) errors.push(`${l.id}: brak titleIt`);
   if (!l.title) errors.push(`${l.id}: brak title`);
 

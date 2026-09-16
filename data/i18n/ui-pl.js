@@ -1039,7 +1039,7 @@ LINGUAI.addUI("pl", {
   "flash.kicker": "PIĘĆ MINUT",
   "flash.title": "Krótka sesja, która się kończy",
   "flash.intro": "Pięć minut albo dwadzieścia fiszek, co nastąpi pierwsze. Każda odpowiedź zapisuje się od razu, więc zamknięcie karty w połowie niczego nie traci.",
-  "flash.ready": { one: "Do powtórzenia jest teraz {n} fiszka.", few: "Do powtórzenia są teraz {n} fiszki.", many: "Do powtórzenia jest teraz {n} fiszek.", other: "Do powtórzenia jest teraz {n} fiszki." },
+  "flash.ready": { one: "Ta sesja ma {n} fiszkę.", few: "Ta sesja ma {n} fiszki.", many: "Ta sesja ma {n} fiszek.", other: "Ta sesja ma {n} fiszki." },
   "flash.start": "Zaczynam",
   "flash.timeLeft": "Pozostały czas",
   "flash.oneMinute": "Została minuta.",
@@ -1049,7 +1049,17 @@ LINGUAI.addUI("pl", {
   "flash.end.empty": "Na razie nie ma więcej fiszek.",
   "flash.again": "Jeszcze pięć minut",
   "flash.emptyTitle": "Teraz nie ma nic do powtórzenia",
-  "flash.emptyText": "Fiszki biorą się z lekcji: oznacz słówko gwiazdką albo pomyl się w ćwiczeniu, a wróci tutaj, kiedy przyjdzie jego pora.",
+  "flash.emptyText": "Wszystkie słowa z tego miejsca są już w twojej talii i żadne nie czeka na powtórkę. Wybierz inną jednostkę albo wróć później.",
+  "flash.fromNew": { one: "W tym {n} nowe słowo z twoich lekcji.", few: "W tym {n} nowe słowa z twoich lekcji.", many: "W tym {n} nowych słów z twoich lekcji.", other: "W tym {n} nowego słowa z twoich lekcji." },
+  "flash.unitLabel": "Skąd brać nowe słowa",
+  "flash.unitDone": "Z lekcji, które już zaliczyłeś",
+  "flash.unitFirst": "Z pierwszej jednostki kursu",
+  "flash.emptyQuota": "Dziesięć nowych słów na dziś już za tobą. Jutro przyjdą kolejne, a te dzisiejsze wrócą, kiedy przyjdzie ich pora.",
+  "flash.loading": "Wczytuję słowa z kursu…",
+  "flash.newWord": "nowe słowo",
+  "flash.meaning": "Co to znaczy?",
+  "flash.show": "Pokaż",
+  "flash.tryIt": "Pięć minut z nowymi słowami",
   "guide.s.cinque": "Sesja fiszek, która kończy się po pięciu minutach albo dwudziestu fiszkach."
 
 });

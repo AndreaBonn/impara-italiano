@@ -466,3 +466,21 @@ for (const theme of ["light", "dark"]) {
     }
   });
 }
+
+for (const theme of ["light", "dark"]) {
+  test(`five minutes, a new word: contrast of the chip and the picker label in the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html#/cinque");
+    await page.waitForSelector(".js-start");
+    await page.evaluate(t => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* the palette transition */
+
+    const etykieta = await page.evaluate(() => window.__kontrast(".flash__unit span"));
+    expect(etykieta.tekst, `picker label ${etykieta.tekst.toFixed(2)}:1`).toBeGreaterThanOrEqual(TEKST);
+
+    await page.locator(".js-start").click();
+    const chip = await page.evaluate(() => window.__kontrast(".flash__card .chip"));
+    expect(chip, "a new word carries its chip").not.toBeNull();
+    expect(chip.tekst, `chip ${chip.tekst.toFixed(2)}:1`).toBeGreaterThanOrEqual(TEKST);
+  });
+}

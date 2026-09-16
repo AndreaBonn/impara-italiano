@@ -1027,7 +1027,7 @@ LINGUAI.addUI("en", {
   "flash.kicker": "FIVE MINUTES",
   "flash.title": "A short session that ends",
   "flash.intro": "Five minutes or twenty cards, whichever comes first. Every answer is saved as you go, so closing the tab halfway loses nothing.",
-  "flash.ready": { one: "{n} card is due now.", other: "{n} cards are due now." },
+  "flash.ready": { one: "This session has {n} card.", other: "This session has {n} cards." },
   "flash.start": "Start",
   "flash.timeLeft": "Time left",
   "flash.oneMinute": "One minute left.",
@@ -1037,7 +1037,17 @@ LINGUAI.addUI("en", {
   "flash.end.empty": "No more cards for now.",
   "flash.again": "Another five minutes",
   "flash.emptyTitle": "Nothing due right now",
-  "flash.emptyText": "Cards come from lessons: star a word, or get one wrong in an exercise, and it shows up here when it is due.",
+  "flash.emptyText": "Every word from here is already in your deck and none is due. Pick another unit, or come back later.",
+  "flash.fromNew": { one: "{n} of them is a new word from your lessons.", other: "{n} of them are new words from your lessons." },
+  "flash.unitLabel": "Where new words come from",
+  "flash.unitDone": "Lessons you have finished",
+  "flash.unitFirst": "The first unit of the course",
+  "flash.emptyQuota": "You have had your ten new words for today. More come tomorrow, and today's come back when they are due.",
+  "flash.loading": "Loading words from the course…",
+  "flash.newWord": "new word",
+  "flash.meaning": "What does it mean?",
+  "flash.show": "Show",
+  "flash.tryIt": "Five minutes with new words",
   "guide.s.cinque": "A card session that stops after five minutes or twenty cards."
 
 });

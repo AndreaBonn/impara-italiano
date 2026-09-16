@@ -119,3 +119,15 @@ Commit: `feat(flash): add listening cards where a recording exists`.
 
 Le stime contano test, stringhe e click-through dentro ogni riga: la parte di sola scrittura
 del codice è circa un terzo.
+
+## Scostamenti emersi in esecuzione
+
+Registrati qui perché il piano sopra resta com'era stato approvato.
+
+| Fase | Scostamento | Perché |
+|---|---|---|
+| 1 | Guardia sui `keydown` ripetuti dei bottoni voto, `preventDefault` sull'Invio nel campo | Il click-through e la review hanno trovato due modi di votare carte mai viste: un Invio che rivelava e votava insieme, un Invio tenuto premuto che votava in cascata |
+| 2 | La carta `gira` arriva in fase 2, solo per le parole nuove, invece che in fase 3 | Una parola mai vista non si può scrivere in italiano: senza `gira` la riserva sarebbe stata inutilizzabile fino alla fase 3. In fase 3 resta la rotazione dei modi per stabilità |
+| 2 | Un commit invece di due (riserva e selettore d'unità) | Il selettore e il ridisegno dopo il caricamento dei livelli condividono lo stesso codice di ingresso della vista |
+| 2 | Correzione in `registry.js`, commit separato | `loadLevelData` rispondeva subito "caricato" a chi chiedeva un livello già in caricamento: la vista disegnava da un livello senza unità |
+| 2 | Ripresa della sessione in `Views.cinque` (`aktywna`) | `app.js` ridisegna la rotta corrente quando arriva il livello di avvio: su rete lenta azzerava una sessione già iniziata. Lo stesso difetto esiste in `views-today.js`, fuori scope |

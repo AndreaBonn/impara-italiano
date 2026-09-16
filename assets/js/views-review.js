@@ -64,7 +64,11 @@
       var total = Object.keys(Core.state.srs).length;
       host.innerHTML = '<p class="exq__sub" style="margin-bottom:14px">' +
         esc(total ? t("srs.allResting", { n: total }) : t("srs.deckEmpty")) + "</p>" +
-        empty(t("srs.howTitle"), t("srs.howText"));
+        empty(t("srs.howTitle"), t("srs.howText")) +
+        /* Nothing due is exactly when five minutes has something to offer:
+           new words from the lessons, which this tab does not draw from. */
+        '<button class="btn btn--ghost js-flash">' + esc(t("flash.tryIt")) + "</button>";
+      host.querySelector(".js-flash").addEventListener("click", function () { App.go("cinque"); });
       return;
     }
 

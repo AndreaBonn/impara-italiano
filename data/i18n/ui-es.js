@@ -1035,7 +1035,7 @@ LINGUAI.addUI("es", {
   "flash.kicker": "CINCO MINUTOS",
   "flash.title": "Una sesión corta que termina",
   "flash.intro": "Cinco minutos o veinte tarjetas, lo que llegue antes. Cada respuesta se guarda al momento, así que cerrar la pestaña a mitad no pierde nada.",
-  "flash.ready": { one: "Tienes {n} tarjeta pendiente ahora.", many: "Tienes {n} tarjetas pendientes ahora.", other: "Tienes {n} tarjetas pendientes ahora." },
+  "flash.ready": { one: "Esta sesión tiene {n} tarjeta.", many: "Esta sesión tiene {n} tarjetas.", other: "Esta sesión tiene {n} tarjetas." },
   "flash.start": "Empezar",
   "flash.timeLeft": "Tiempo restante",
   "flash.oneMinute": "Queda un minuto.",
@@ -1045,7 +1045,17 @@ LINGUAI.addUI("es", {
   "flash.end.empty": "No hay más tarjetas por ahora.",
   "flash.again": "Otros cinco minutos",
   "flash.emptyTitle": "Nada pendiente ahora mismo",
-  "flash.emptyText": "Las tarjetas salen de las lecciones: marca una palabra con la estrella o equivócate en un ejercicio, y aparecerá aquí cuando le toque.",
+  "flash.emptyText": "Todas las palabras de aquí ya están en tu baraja y ninguna toca ahora. Elige otra unidad o vuelve más tarde.",
+  "flash.fromNew": { one: "{n} de ellas es una palabra nueva de tus lecciones.", many: "{n} de ellas son palabras nuevas de tus lecciones.", other: "{n} de ellas son palabras nuevas de tus lecciones." },
+  "flash.unitLabel": "De dónde salen las palabras nuevas",
+  "flash.unitDone": "De las lecciones que ya terminaste",
+  "flash.unitFirst": "De la primera unidad del curso",
+  "flash.emptyQuota": "Ya tuviste tus diez palabras nuevas de hoy. Mañana llegan más, y las de hoy volverán cuando les toque.",
+  "flash.loading": "Cargando palabras del curso…",
+  "flash.newWord": "palabra nueva",
+  "flash.meaning": "¿Qué significa?",
+  "flash.show": "Mostrar",
+  "flash.tryIt": "Cinco minutos con palabras nuevas",
   "guide.s.cinque": "Una sesión de tarjetas que se detiene a los cinco minutos o a las veinte tarjetas."
 
 });

@@ -338,9 +338,22 @@ const MUTACJE = [
   { plik: FLASH, test: T_FLASH, opis: "a started second rounds down to 0:00",
     z: "var s = Math.ceil(Math.max(0, ms) / 1000);", na: "var s = Math.floor(Math.max(0, ms) / 1000);" },
   { plik: RUN, test: T_RUN, opis: "the bound checked before grading the open card",
-    z: "      global.Core.gradeCard(kolejka[i].key, q);\n      i++;", na: "      if (Rules.isOver(start, now, i)) { powod = \"time\"; return powod; }\n      global.Core.gradeCard(kolejka[i].key, q);\n      i++;" },
+    z: "      if (powod) return powod;\n      var c = kolejka[i];",
+    na: "      if (powod) return powod;\n      if (Rules.isOver(start, now, i + 1) === \"time\") { powod = \"time\"; return powod; }\n      var c = kolejka[i];" },
   { plik: RUN, test: T_RUN, opis: "answering after the end grades again",
-    z: "      if (powod) return powod;\n      global.Core.gradeCard", na: "      global.Core.gradeCard" }
+    z: "      if (powod) return powod;\n      var c = kolejka[i];", na: "      var c = kolejka[i] || kolejka[kolejka.length - 1];" },
+  { plik: RUN, test: T_RUN, opis: "a new word graded without joining the deck",
+    z: "var key = c.fresh ? global.Core.addCard(c.it, c.tr, c.src) : c.key;", na: "var key = c.key;" },
+  { plik: FLASH, test: T_FLASH, opis: "reserve: the same word twice",
+    z: "if (!k || seen[k] || opts.inDeck(k)) return;", na: "if (!k || opts.inDeck(k)) return;" },
+  { plik: FLASH, test: T_FLASH, opis: "reserve: words already in the deck come back as new",
+    z: "if (!k || seen[k] || opts.inDeck(k)) return;", na: "if (!k || seen[k]) return;" },
+  { plik: FLASH, test: T_FLASH, opis: "reserve: a student with nothing finished gets nothing",
+    z: "      if (!lekcje.length) {", na: "      if (false) {" },
+  { plik: FLASH, test: T_FLASH, opis: "new today: a review at midnight counted as yesterday",
+    z: "return first[k] >= dayStart;", na: "return first[k] > dayStart;" },
+  { plik: FLASH, test: T_FLASH, opis: "compose: an overdrawn allowance goes negative",
+    z: "Math.max(0, NEW_PER_DAY - newSoFar)", na: "NEW_PER_DAY - newSoFar" }
 ];
 
 /* ---------------- Running ---------------- */

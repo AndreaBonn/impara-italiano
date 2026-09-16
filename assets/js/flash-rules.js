@@ -54,11 +54,104 @@
     return m + ":" + (r < 10 ? "0" : "") + r;
   }
 
+  /* ---------------- The reserve deck ----------------
+
+     A student with nothing due still opened the screen for five minutes of
+     work. The reserve fills the session with words from the lessons they
+     finished, and a new word becomes a deck card only once it is answered:
+     adding the whole reserve up front would grow the "due" badge by words the
+     student never saw. */
+
+  /* A product decision, not a measurement: ten new words a day keeps the
+     reviews they cause tomorrow inside a five-minute session. */
+  var NEW_PER_DAY = 10;
+
+  /** "a1-u01-l1" -> "A1", when that level is registered; null otherwise. */
+  function levelOfLesson(id, codes) {
+    var code = String(id || "").split("-")[0].toUpperCase();
+    return code && codes.indexOf(code) !== -1 ? code : null;
+  }
+
+  function lessonsOf(levels, pick) {
+    var out = [];
+    levels.forEach(function (lv) {
+      (lv.units || []).forEach(function (u) {
+        (u.lessons || []).forEach(function (l) { if (pick(l, u)) out.push(l); });
+      });
+    });
+    return out;
+  }
+
+  /**
+   * New words for the session, in course order.
+   *
+   * @param {Array}  levels Core.registry.levels (only loaded units are seen)
+   * @param {object} opts   {isDone(id), inDeck(key), keyOf(it), unitId?}
+   * @returns {Array} [{it, tr, src, fresh: true}]
+   *
+   * The gloss comes from the word's OWN lesson: registry.vocabIndex keeps
+   * the last lesson indexed, and the same word glossed differently in two
+   * lessons would show the student a translation from a lesson they have not
+   * reached. Without anything finished the first unit stands in, so a new
+   * student is never shown an empty screen.
+   */
+  function reserve(levels, opts) {
+    var lekcje;
+    if (opts.unitId) {
+      lekcje = lessonsOf(levels, function (l, u) { return u.id === opts.unitId; });
+    } else {
+      lekcje = lessonsOf(levels, function (l) { return opts.isDone(l.id); });
+      if (!lekcje.length) {
+        var pierwsza = null;
+        lessonsOf(levels, function (l, u) { if (!pierwsza) pierwsza = u.id; return false; });
+        lekcje = lessonsOf(levels, function (l, u) { return u.id === pierwsza; });
+      }
+    }
+    var seen = {};
+    var out = [];
+    lekcje.forEach(function (l) {
+      (l.vocab || []).forEach(function (v) {
+        if (!v.it || !v.tr) return;
+        var k = opts.keyOf(v.it);
+        if (!k || seen[k] || opts.inDeck(k)) return;
+        seen[k] = true;
+        out.push({ it: v.it, tr: v.tr, src: l.id, fresh: true });
+      });
+    });
+    return out;
+  }
+
+  /**
+   * How many keys had their FIRST review at or after dayStart. The journal
+   * is trimmed from the oldest end past Srs.MAX_REVIEWS, so for a very long
+   * history an old card can look new: that errs towards fewer new words,
+   * which is the safe side.
+   */
+  function newToday(reviews, dayStart) {
+    var first = {};
+    (reviews || []).forEach(function (r) {
+      if (!(r.k in first) || r.t < first[r.k]) first[r.k] = r.t;
+    });
+    return Object.keys(first).filter(function (k) { return first[k] >= dayStart; }).length;
+  }
+
+  /** Due cards first, then new words, within the card cap and today's allowance. */
+  function compose(due, fresh, newSoFar) {
+    var q = due.slice(0, LIMITS.cards);
+    var room = Math.min(LIMITS.cards - q.length, Math.max(0, NEW_PER_DAY - newSoFar));
+    return q.concat(fresh.slice(0, room));
+  }
+
   global.FlashRules = {
     LIMITS: LIMITS,
+    NEW_PER_DAY: NEW_PER_DAY,
     isOver: isOver,
     remaining: remaining,
-    clock: clock
+    clock: clock,
+    levelOfLesson: levelOfLesson,
+    reserve: reserve,
+    newToday: newToday,
+    compose: compose
   };
 
 })(window);

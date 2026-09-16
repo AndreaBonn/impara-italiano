@@ -46,32 +46,142 @@
     return pageHead(t("flash.kicker"), t("flash.title"), t("flash.intro"));
   }
 
-  Views.cinque = function () {
+  /** Local midnight: "new today" means today where the student is. */
+  function dayStart() {
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+
+  function codes() {
+    return Core.registry.levels.map(function (lv) { return lv.code; });
+  }
+
+  /**
+   * The levels whose data the reserve needs: the chosen unit's, or those of
+   * every finished lesson, or the first level for a student with nothing
+   * finished. Units arrive with their level's file, so a level that is not
+   * loaded contributes no words and no entries in the unit picker.
+   */
+  function levelsNeeded(unitId) {
+    var all = codes();
+    if (unitId) return [Rules.levelOfLesson(unitId, all)].filter(Boolean);
+    var out = [];
+    Object.keys(Core.state.lessons).forEach(function (id) {
+      var code = Core.isLessonDone(id) && Rules.levelOfLesson(id, all);
+      if (code && out.indexOf(code) === -1) out.push(code);
+    });
+    return out.length ? out : all.slice(0, 1);
+  }
+
+  function anyDone() {
+    return Object.keys(Core.state.lessons).some(Core.isLessonDone);
+  }
+
+  function unitPicker(unitId) {
+    var groups = Core.registry.levels.filter(function (lv) { return (lv.units || []).length; })
+      .map(function (lv) {
+        return '<optgroup label="' + esc(lv.code) + '">' + lv.units.map(function (u) {
+          return '<option value="' + esc(u.id) + '"' + (u.id === unitId ? " selected" : "") + ">" +
+            esc(u.titleIt + (u.title ? " · " + u.title : "")) + "</option>";
+        }).join("") + "</optgroup>";
+      }).join("");
+    return '<label class="flash__unit"><span>' + esc(t("flash.unitLabel")) + "</span>" +
+      '<select class="field js-unit">' +
+      '<option value="">' + esc(t(anyDone() ? "flash.unitDone" : "flash.unitFirst")) + "</option>" +
+      groups + "</select></label>";
+  }
+
+  /* The session running on this screen, or null. The router redraws the
+     current route once the startup level arrives (app.js, startRouting), and
+     on a slow connection that lands after the student pressed Start: without
+     this the redraw threw the session away mid-card. */
+  var aktywna = null;
+
+  Views.cinque = function (params) {
+    var unitId = (params && params.unit) || "";
+    if (aktywna && aktywna.unitId === unitId && document.contains(aktywna.box)) {
+      aktywna.resume();
+      return;
+    }
     stopClock();
-    var queue = Core.dueCards(Rules.LIMITS.cards);
+    aktywna = null;
+    /* "loading" is not loaded: a level another screen started fetching still
+       has no units, and the registry holds our callback until it lands. */
+    var brak = levelsNeeded(unitId).filter(function (c) { return Core.registry.loaded[c] !== true; });
+
+    rysuj(unitId, brak.length > 0);
+    if (!brak.length) return;
+
+    /* The same pattern as the coverage screen: draw what we have, load the
+       rest, draw again. A reserve built from half the levels looks like the
+       whole of it. */
+    var zostalo = brak.length;
+    var nieudane = [];
+    brak.forEach(function (code) {
+      Core.loadLevelData(code, function (got) {
+        if (!got) nieudane.push(code);
+        if (--zostalo > 0) return;
+        /* The student may have picked another unit while this level was on
+           its way: that pick drew its own screen and must not be undone. */
+        var teraz = global.Router.current;
+        if (aktywna || teraz.route !== "cinque" || ((teraz.params && teraz.params.unit) || "") !== unitId) return;
+        rysuj(unitId, false);
+        if (nieudane.length) Core.toast(t("search.partial", { levels: nieudane.join(", ") }));
+      });
+    });
+  };
+
+  function rysuj(unitId, loading) {
+    var due = Core.dueCards(Rules.LIMITS.cards);
+    var fresh = Rules.reserve(Core.registry.levels, {
+      isDone: Core.isLessonDone,
+      inDeck: function (k) { return !!Core.state.srs[k]; },
+      keyOf: Core.cardKey,
+      unitId: unitId
+    });
+    var soFar = Rules.newToday(Core.state.reviews, dayStart());
+    var queue = Rules.compose(due, fresh, soFar);
+    var nowe = queue.filter(function (c) { return c.fresh; }).length;
+
+    var picker = unitPicker(unitId);
 
     if (!queue.length) {
-      set(head() + empty(esc(t("flash.emptyTitle")), esc(t("flash.emptyText"))) +
+      var why = loading ? "flash.loading"
+        : fresh.length && soFar >= Rules.NEW_PER_DAY ? "flash.emptyQuota" : "flash.emptyText";
+      set(head() + picker +
+        empty(esc(t("flash.emptyTitle")), esc(t(why))) +
         '<button class="btn btn--ghost js-path">' + esc(t("nav.path")) + "</button>");
       document.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
+      wirePicker();
       return;
     }
 
-    set(head() +
-      '<p class="exq__sub js-ready" style="margin-bottom:14px">' + esc(t("flash.ready", { n: queue.length })) + "</p>" +
+    set(head() + picker +
+      '<p class="exq__sub js-ready" style="margin-bottom:14px">' + esc(t("flash.ready", { n: queue.length })) +
+      (nowe ? " " + esc(t("flash.fromNew", { n: nowe })) : "") + "</p>" +
       '<button class="btn btn--primary js-start">' + esc(t("flash.start")) + "</button>" +
       '<div id="flashBox" style="margin-top:20px"></div>');
 
-    document.querySelector(".js-start").addEventListener("click", function () { przebieg(queue); });
-  };
+    wirePicker();
+    document.querySelector(".js-start").addEventListener("click", function () { przebieg(queue, unitId); });
+  }
+
+  function wirePicker() {
+    var sel = document.querySelector(".js-unit");
+    sel.addEventListener("change", function () {
+      App.go("cinque", sel.value ? { unit: sel.value } : {});
+    });
+  }
 
   /* ---------------- The run ---------------- */
 
-  function przebieg(queue) {
+  function przebieg(queue, unitId) {
     /* The count said how many were due before starting; left on screen it
        goes stale with the first answer and contradicts the counter below. */
     document.querySelector(".js-start").hidden = true;
     document.querySelector(".js-ready").hidden = true;
+    document.querySelector(".flash__unit").hidden = true;
     var run = global.FlashRun.create(queue, Date.now());
     var box = document.getElementById("flashBox");
 
@@ -101,15 +211,20 @@
       }
     }
 
-    stopClock();
-    zegar = global.setInterval(odlicz, 1000);
-    Views.onLeave = stopClock;
+    function resume() {
+      stopClock();
+      zegar = global.setInterval(odlicz, 1000);
+      Views.onLeave = stopClock;
+      odlicz();
+    }
+    aktywna = { unitId: unitId, box: box, resume: resume };
+    resume();
 
     function karta() {
       var c = run.current();
       if (!c) { koniec(); return; }
       countEl.textContent = t("srs.cardOf", { i: run.summary().answered + 1, n: queue.length });
-      kartaPisana(cardEl, c, function (q, ok) {
+      (c.fresh ? kartaGira : kartaPisana)(cardEl, c, function (q, ok) {
         if (run.answer(q, ok, Date.now())) koniec();
         else karta();
       });
@@ -117,12 +232,13 @@
 
     function koniec() {
       stopClock();
+      aktywna = null;
       var s = run.summary();
       box.innerHTML = '<div class="summary"><div class="summary__score">' + s.right + "/" + s.answered + "</div>" +
         '<p class="summary__msg">' + esc(t("flash.end." + s.reason)) + "</p>" +
         '<div class="summary__acts"><button class="btn btn--primary js-again">' + esc(t("flash.again")) + "</button>" +
         '<button class="btn btn--ghost js-path">' + esc(t("nav.path")) + "</button></div></div>";
-      box.querySelector(".js-again").addEventListener("click", function () { Views.cinque(); });
+      box.querySelector(".js-again").addEventListener("click", function () { Views.cinque(global.Router.current.params); });
       box.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
       box.querySelector(".js-again").focus();
       App.refreshRail();
@@ -144,11 +260,7 @@
       esc(t("srs.ph")) + '" autocomplete="off" spellcheck="false">' +
       '<button class="btn btn--primary js-show">' + esc(t("ex.check")) + "</button></div>" +
       '<div class="fb" role="status"></div>' +
-      '<div class="flash__grades js-grade" hidden>' +
-      '<button class="btn btn--ghost btn--sm" data-q="0">' + esc(t("srs.grade0")) + "</button>" +
-      '<button class="btn btn--ghost btn--sm" data-q="3">' + esc(t("srs.grade3")) + "</button>" +
-      '<button class="btn btn--green btn--sm" data-q="4">' + esc(t("srs.grade4")) + "</button>" +
-      '<button class="btn btn--green btn--sm" data-q="5">' + esc(t("srs.grade5")) + "</button></div></div>";
+      gradeButtons() + "</div>";
 
     var input = host.querySelector(".js-in");
     var fb = host.querySelector(".fb");
@@ -179,18 +291,60 @@
       e.preventDefault();
       reveal();
     });
-    /* A held Enter repeats onto the grade that reveal() just focused, and
-       every grade draws the next card: without this one long press grades
-       cards the student never saw. */
+    wireGrades(grade, function (q) { onGrade(q, ok); });
+  }
+
+  function gradeButtons() {
+    return '<div class="flash__grades js-grade" hidden>' +
+      '<button class="btn btn--ghost btn--sm" data-q="0">' + esc(t("srs.grade0")) + "</button>" +
+      '<button class="btn btn--ghost btn--sm" data-q="3">' + esc(t("srs.grade3")) + "</button>" +
+      '<button class="btn btn--green btn--sm" data-q="4">' + esc(t("srs.grade4")) + "</button>" +
+      '<button class="btn btn--green btn--sm" data-q="5">' + esc(t("srs.grade5")) + "</button></div>";
+  }
+
+  function wireGrades(grade, onPick) {
+    /* A held Enter repeats onto the grade that was just focused, and every
+       grade draws the next card: without this one long press grades cards
+       the student never saw. */
     grade.addEventListener("keydown", function (e) {
       if (e.repeat) e.preventDefault();
     });
-
     grade.querySelectorAll("button").forEach(function (b) {
-      b.addEventListener("click", function () {
-        onGrade(parseInt(b.getAttribute("data-q"), 10), ok);
-      });
+      b.addEventListener("click", function () { onPick(parseInt(b.getAttribute("data-q"), 10)); });
     });
+  }
+
+  /**
+   * The flip card, for a word the student meets here for the first time:
+   * nobody can type the Italian for a word they have never seen, so the
+   * Italian is shown and the meaning is what gets recalled. The first grade
+   * turns it into a deck card (flash-run.js).
+   */
+  function kartaGira(host, c, onGrade) {
+    host.innerHTML = '<div class="exq">' +
+      '<p class="exq__num"><span class="chip chip--gold">' + esc(t("flash.newWord")) + "</span></p>" +
+      '<p class="exq__prompt" style="font-size:1.3rem" lang="it">' + esc(c.it) +
+      ' <button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' +
+      esc(t("a11y.listenTo", { what: c.it })) + '">🔊</button></p>' +
+      '<p class="exq__sub">' + esc(t("flash.meaning")) + "</p>" +
+      '<button class="btn btn--primary js-show">' + esc(t("flash.show")) + "</button>" +
+      '<div class="fb" role="status"></div>' + gradeButtons() + "</div>";
+
+    Ex.wireSpeakers(host);
+    var show = host.querySelector(".js-show");
+    var fb = host.querySelector(".fb");
+    var grade = host.querySelector(".js-grade");
+    show.focus();
+
+    show.addEventListener("click", function () {
+      fb.className = "fb is-on";
+      fb.innerHTML = "<b>" + esc(Core.cardTr(c)) + "</b>";
+      Audio2.speak(c.it);
+      show.hidden = true;
+      grade.hidden = false;
+      grade.querySelector("button").focus();
+    });
+    wireGrades(grade, function (q) { onGrade(q, q >= 3); });
   }
 
 })(window);

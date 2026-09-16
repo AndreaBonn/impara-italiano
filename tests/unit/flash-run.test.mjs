@@ -103,3 +103,34 @@ describe("the bounds", () => {
     assert.equal(box.Core.state.reviews.length, 0);
   });
 });
+
+describe("new words from the reserve", () => {
+  const nowe = () => [
+    { it: "il gatto", tr: "kot", src: "a1-u02-l1", fresh: true },
+    { it: "il cane", tr: "pies", src: "a1-u02-l1", fresh: true },
+    { it: "la casa", tr: "dom", src: "a1-u01-l2", fresh: true }
+  ];
+
+  test("a new word enters the deck only when it is answered", () => {
+    const box = silnik();
+    const run = box.sandbox.FlashRun.create(nowe(), T0);
+    assert.equal(Object.keys(box.Core.state.srs).length, 0, "starting a session adds nothing");
+    assert.equal(box.Core.dueCount(), 0);
+
+    run.answer(4, true, T0);
+    run.answer(0, false, T0);
+    const w = Object.keys(box.Core.state.srs);
+    assert.equal(w.length, 2, "two answered, two in the deck, not three");
+    const kot = box.Core.state.srs[box.Core.cardKey("il gatto")];
+    assert.equal(kot.src, "a1-u02-l1");
+    assert.equal(kot.reps, 1, "and it was graded, not just added");
+  });
+
+  test("a word the deck refuses is skipped without a grade", () => {
+    const box = silnik();
+    const run = box.sandbox.FlashRun.create([{ it: "__proto__", tr: "x", src: "t", fresh: true }, nowe()[0]], T0);
+    assert.equal(run.answer(4, true, T0), null);
+    assert.equal(box.Core.state.reviews.length, 0);
+    assert.equal(run.current().it, "il gatto");
+  });
+});

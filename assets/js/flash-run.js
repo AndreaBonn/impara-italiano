@@ -42,7 +42,11 @@
      */
     function answer(q, ok, now) {
       if (powod) return powod;
-      global.Core.gradeCard(kolejka[i].key, q);
+      var c = kolejka[i];
+      /* A new word joins the deck here, at its first answer, and not when the
+         queue was built: a word shown and left unanswered stays out. */
+      var key = c.fresh ? global.Core.addCard(c.it, c.tr, c.src) : c.key;
+      if (key) global.Core.gradeCard(key, q);
       i++;
       if (ok) dobre++;
       powod = Rules.isOver(start, now, i) || (i >= kolejka.length ? "empty" : null);

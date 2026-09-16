@@ -755,6 +755,8 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
 /* The note keeps its height when empty, so the card does not jump down when the minute warning appears. */
 .flash__note{min-height:1.5em;font-size:.92rem;color:var(--ink-soft);margin:0 0 10px;}
 .flash__grades{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.flash__unit{display:block;margin-bottom:16px;}
+.flash__unit span{display:block;font-weight:600;margin-bottom:5px;}
 
 /* ══════════════════ SIATKI POMOCNICZE ══════════════════ */
 .stack{display:flex;flex-direction:column;gap:14px;}

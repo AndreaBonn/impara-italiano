@@ -1035,7 +1035,7 @@ LINGUAI.addUI("fr", {
   "flash.kicker": "CINQ MINUTES",
   "flash.title": "Une séance courte qui s'arrête",
   "flash.intro": "Cinq minutes ou vingt cartes, selon ce qui arrive en premier. Chaque réponse est enregistrée tout de suite : fermer l'onglet en cours de route ne te fait rien perdre.",
-  "flash.ready": { one: "{n} carte à réviser maintenant.", many: "{n} cartes à réviser maintenant.", other: "{n} cartes à réviser maintenant." },
+  "flash.ready": { one: "Cette séance compte {n} carte.", many: "Cette séance compte {n} cartes.", other: "Cette séance compte {n} cartes." },
   "flash.start": "Commencer",
   "flash.timeLeft": "Temps restant",
   "flash.oneMinute": "Il reste une minute.",
@@ -1045,7 +1045,17 @@ LINGUAI.addUI("fr", {
   "flash.end.empty": "Plus de cartes pour l'instant.",
   "flash.again": "Encore cinq minutes",
   "flash.emptyTitle": "Rien à réviser pour le moment",
-  "flash.emptyText": "Les cartes viennent des leçons : marque un mot avec l'étoile ou trompe-toi dans un exercice, et il reviendra ici au bon moment.",
+  "flash.emptyText": "Tous les mots d'ici sont déjà dans ton paquet et aucun n'est à réviser. Choisis une autre unité ou reviens plus tard.",
+  "flash.fromNew": { one: "Dont {n} mot nouveau tiré de tes leçons.", many: "Dont {n} mots nouveaux tirés de tes leçons.", other: "Dont {n} mots nouveaux tirés de tes leçons." },
+  "flash.unitLabel": "D'où viennent les mots nouveaux",
+  "flash.unitDone": "Des leçons que tu as terminées",
+  "flash.unitFirst": "De la première unité du cours",
+  "flash.emptyQuota": "Tu as eu tes dix mots nouveaux pour aujourd'hui. D'autres arrivent demain, et ceux d'aujourd'hui reviendront au bon moment.",
+  "flash.loading": "Chargement des mots du cours…",
+  "flash.newWord": "mot nouveau",
+  "flash.meaning": "Qu'est-ce que ça veut dire ?",
+  "flash.show": "Afficher",
+  "flash.tryIt": "Cinq minutes avec des mots nouveaux",
   "guide.s.cinque": "Une séance de cartes qui s'arrête après cinq minutes ou vingt cartes."
 
 });

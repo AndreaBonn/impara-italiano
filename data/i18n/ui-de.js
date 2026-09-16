@@ -1030,7 +1030,7 @@ LINGUAI.addUI("de", {
   "flash.kicker": "FÜNF MINUTEN",
   "flash.title": "Eine kurze Runde mit Ende",
   "flash.intro": "Fünf Minuten oder zwanzig Karten, je nachdem, was zuerst kommt. Jede Antwort wird sofort gespeichert, du verlierst also nichts, wenn du den Tab mittendrin schließt.",
-  "flash.ready": { one: "{n} Karte ist jetzt fällig.", other: "{n} Karten sind jetzt fällig." },
+  "flash.ready": { one: "Diese Runde hat {n} Karte.", other: "Diese Runde hat {n} Karten." },
   "flash.start": "Los geht's",
   "flash.timeLeft": "Verbleibende Zeit",
   "flash.oneMinute": "Noch eine Minute.",
@@ -1040,7 +1040,17 @@ LINGUAI.addUI("de", {
   "flash.end.empty": "Im Moment keine Karten mehr.",
   "flash.again": "Noch fünf Minuten",
   "flash.emptyTitle": "Gerade ist nichts fällig",
-  "flash.emptyText": "Karten kommen aus den Lektionen: Markier ein Wort mit dem Stern oder mach in einer Übung einen Fehler, dann taucht es hier auf, wenn es fällig ist.",
+  "flash.emptyText": "Alle Wörter von hier sind schon in deinem Stapel, und keins ist fällig. Wähl eine andere Einheit oder komm später wieder.",
+  "flash.fromNew": { one: "Davon ist {n} ein neues Wort aus deinen Lektionen.", other: "Davon sind {n} neue Wörter aus deinen Lektionen." },
+  "flash.unitLabel": "Woher die neuen Wörter kommen",
+  "flash.unitDone": "Aus Lektionen, die du abgeschlossen hast",
+  "flash.unitFirst": "Aus der ersten Einheit des Kurses",
+  "flash.emptyQuota": "Deine zehn neuen Wörter für heute hast du schon. Morgen kommen weitere, und die von heute kehren zurück, wenn sie fällig sind.",
+  "flash.loading": "Wörter aus dem Kurs werden geladen…",
+  "flash.newWord": "neues Wort",
+  "flash.meaning": "Was bedeutet das?",
+  "flash.show": "Zeigen",
+  "flash.tryIt": "Fünf Minuten mit neuen Wörtern",
   "guide.s.cinque": "Eine Kartenrunde, die nach fünf Minuten oder zwanzig Karten endet."
 
 });

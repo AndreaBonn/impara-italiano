@@ -130,14 +130,14 @@
   }
 
   /**
-   * The flip card, for a word the student meets here for the first time:
-   * nobody can type the Italian for a word they have never seen, so the
-   * Italian is shown and the meaning is what gets recalled. The first grade
-   * turns it into a deck card (flash-run.js).
+   * The flip card: the Italian shown, the meaning recalled. It is the only
+   * way to meet a word for the first time (nobody can type or pick a word
+   * never seen), and one of the ways a deck card turns, so the "new word"
+   * chip goes on reserve words only: on a word reviewed for weeks it lies.
    */
   function flip(host, c, options, onGrade) {
     host.innerHTML = '<div class="exq">' +
-      '<p class="exq__num"><span class="chip chip--gold">' + esc(t("flash.newWord")) + "</span></p>" +
+      (c.fresh ? '<p class="exq__num"><span class="chip chip--gold">' + esc(t("flash.newWord")) + "</span></p>" : "") +
       '<p class="exq__prompt" style="font-size:1.3rem" lang="it">' + esc(c.it) +
       ' <button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' +
       esc(t("a11y.listenTo", { what: c.it })) + '">🔊</button></p>' +

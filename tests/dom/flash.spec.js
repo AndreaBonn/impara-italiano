@@ -509,3 +509,31 @@ test("moving to the next card silences the word still playing", async ({ page })
   await expect(page.locator(".flash__card .exq")).toBeVisible();
   expect(await page.evaluate(() => window.__cisza), "the next card stops the audio").toBeGreaterThan(przed);
 });
+
+/* Since cards turn modes, a deck card can come as a flip card too. The
+   "new word" chip belongs to a word met here for the first time; on a word
+   the student has reviewed for weeks it says something false. */
+test("the new-word chip marks only a word never seen", async ({ page }) => {
+  await page.goto("/index.html#/percorso");
+  await page.waitForFunction(() => window.Core && window.FlashModes);
+  await page.evaluate(() => {
+    const d = window.Core.today();
+    for (let i = 0; i < 200; i++) {
+      const key = "parola" + i;
+      if (window.FlashModes.pickMode({ key, st: "learning", s: 1 }, { choice: true, audio: false }, d) !== "flip") continue;
+      const k = window.Core.addCard(key, "slowo" + i, "test");
+      Object.assign(window.Core.state.srs[k], { st: "learning", s: 1, due: Date.now() - 1000 });
+      return;
+    }
+  });
+  await page.evaluate(() => window.App.go("cinque", { unit: "a1-u01" }));
+  await page.waitForSelector(".js-start");
+  await page.locator(".js-start").click();
+
+  await expect(page.locator(".flash__card .exq__prompt")).toContainText("parola");
+  await expect(page.locator(".flash__card .chip"), "a deck card is not new").toHaveCount(0);
+
+  await page.locator(".flash__card .js-show").click();
+  await page.locator('.flash__card .js-grade button[data-q="4"]').click();
+  await expect(page.locator(".flash__card .chip"), "the next card, from the reserve, is new").toBeVisible();
+});

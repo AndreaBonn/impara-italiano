@@ -92,7 +92,8 @@ milczy, a `judge()` oddaje `null`.
 
 Tą samą granicą idzie sesja „pięć minut": `flash-rules.js` (globalna `FlashRules`: kiedy
 sesja się kończy, ile czasu zostało) i `flash-run.js` (kolejka, ocena prawdziwej karty przez
-`Core.gradeCard`, powód końca) i `flash-cards.js` (karty, po jednej na tryb) przed
+`Core.gradeCard`, powód końca), `flash-modes.js` (globalna `FlashModes`: rodzajniki,
+dystraktory, wybór trybu) i `flash-cards.js` (karty, po jednej na tryb) przed
 `views-flash.js` (zegar, wybór trybu, podsumowanie). Granica
 sprawdza się **po** odpowiedzi, nigdy zamiast niej: karta otwarta w chwili dzwonka zostaje
 uczniowi i jej odpowiedź się liczy. To te same karty co w Powtórkach, nie druga talia:
@@ -105,7 +106,7 @@ odpowiedzi, nigdy przy budowaniu kolejki: słowo pokazane i porzucone nie zawyż
 powtórek. Poziom lekcji czyta się z prefiksu jej id (`a1-u01-l1`), i dlatego `validate.mjs`
 odrzuca lekcję, której prefiks nie zgadza się z poziomem.
 
-Jedna karta, kilka sposobów pytania. Tryb wybiera `FlashRules.pickMode` ze stabilności FSRS:
+Jedna karta, kilka sposobów pytania. Tryb wybiera `FlashModes.pickMode` ze stabilności FSRS:
 karta jeszcze nieutrwalona jest **rozpoznawana** (wybór spośród czterech albo odwrócenie),
 karta trzymająca się od 21 dni jest **produkowana** (wpisanie albo odwrócenie), a nowe słowo
 zawsze przychodzi odwrócone. Dystraktory mają ten sam rodzajnik i pochodzą najpierw z tej
@@ -116,7 +117,7 @@ pole `m`, bo powtórek rozpoznania i przypomnienia nie da się potem rozdzielić
 
 Słowo z nagraniem może przyjść **ze słuchu**: rozpoznawane (`listen-choice`, opcje nadal pisane
 po włosku) albo dyktowane (`listen-write`). Tylko z nagraniem i tylko gdy uczeń nie wybrał w
-Ustawieniach głosu systemowego (`FlashRules.audioAvailable`): karta ze słuchu czytana przez
+Ustawieniach głosu systemowego (`FlashModes.audioAvailable`): karta ze słuchu czytana przez
 espeak uczy złych dźwięków, a wybór ucznia nie jest tu po cichu nadpisywany. W pytaniu nie ma
 włoskiego ani w tekście, ani w atrybucie, a przycisk „posłuchaj jeszcze raz" zostaje, bo
 przeglądarka może odmówić odtworzenia przed pierwszym dotknięciem strony.
@@ -677,7 +678,7 @@ node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
-npm run test:mutations              # czy testy widzą czerwone (110 mutacji, 15 plików)
+npm run test:mutations              # czy testy widzą czerwone (110 mutacji, 16 plików)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
@@ -763,7 +764,7 @@ sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest spraw
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
 decyzji w silniku (110 mutacji w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
 `llm-rules.js`, `llm-providers.js`, `llm-prompts.js`, `retention-rules.js`, `ics.js`,
-`cils-report.js`, `chat-rules.js`, `store.js`, `srs.js`, `flash-rules.js` i `flash-run.js`)
+`cils-report.js`, `chat-rules.js`, `store.js`, `srs.js`, `flash-rules.js`, `flash-modes.js` i `flash-run.js`)
 i wymaga, żeby wskazany
 plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
 puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
@@ -771,7 +772,7 @@ puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` ł
 
 Trzy rzeczy, które trzeba o niej wiedzieć:
 
-- **Zasięg jest wąski i zadeklarowany.** Piętnaście plików z osiemdziesięciu jeden. „110/110"
+- **Zasięg jest wąski i zadeklarowany.** Szesnaście plików z osiemdziesięciu dwóch. „110/110"
   nie znaczy „silnik sprawdzony", znaczy „te 110 decyzji sprawdzonych". Nowy plik z czystymi funkcjami
   to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
 - **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po

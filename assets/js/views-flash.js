@@ -17,7 +17,7 @@
 
    The cards themselves are drawn by flash-cards.js.
 
-   Classic script. Requires core.js, flash-rules.js, flash-run.js, flash-cards.js, views.js.
+   Classic script. Requires core.js, flash-rules.js, flash-modes.js, flash-run.js, flash-cards.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -28,6 +28,7 @@
   var pageHead = Views.shell.head;
   var empty = Views.shell.empty;
   var Rules = global.FlashRules;
+  var Modes = global.FlashModes;
 
   /* When the student hears that one minute is left. One announcement, not a
      countdown read aloud: a timer that talks every second drowns out the
@@ -112,29 +113,36 @@
     var brak = levelsNeeded(unitId).filter(function (c) { return Core.registry.loaded[c] !== true; });
 
     rysuj(unitId, brak.length > 0);
-    if (!brak.length) return;
+    if (brak.length) loadMissing(unitId, brak);
+  };
 
-    /* The same pattern as the coverage screen: draw what we have, load the
-       rest, draw again. A reserve built from half the levels looks like the
-       whole of it. */
+  /**
+   * The same pattern as the coverage screen: draw what we have, load the
+   * rest, draw again. A reserve built from half the levels looks like the
+   * whole of it.
+   */
+  function loadMissing(unitId, brak) {
     var zostalo = brak.length;
     var nieudane = [];
     brak.forEach(function (code) {
       Core.loadLevelData(code, function (got) {
         if (!got) nieudane.push(code);
-        if (--zostalo > 0) return;
-        /* The student may have picked another unit while this level was on
-           its way: that pick drew its own screen and must not be undone. */
-        var teraz = global.Router.current;
-        if (aktywna || teraz.route !== "cinque" || ((teraz.params && teraz.params.unit) || "") !== unitId) return;
+        if (--zostalo > 0 || !stillWaiting(unitId)) return;
         rysuj(unitId, false);
         if (nieudane.length) Core.toast(t("search.partial", { levels: nieudane.join(", ") }));
       });
     });
-  };
+  }
 
-  function rysuj(unitId, loading) {
-    var due = Core.dueCards(Rules.LIMITS.cards);
+  /* The student may have started a session, left, or picked another unit
+     while a level was on its way: each of those drew its own screen, and a
+     late redraw must not undo it. */
+  function stillWaiting(unitId) {
+    var teraz = global.Router.current;
+    return !aktywna && teraz.route === "cinque" && ((teraz.params && teraz.params.unit) || "") === unitId;
+  }
+
+  function buildQueue(unitId) {
     var fresh = Rules.reserve(Core.registry.levels, {
       isDone: Core.isLessonDone,
       inDeck: function (k) { return !!Core.state.srs[k]; },
@@ -142,29 +150,35 @@
       unitId: unitId
     });
     var soFar = Rules.newToday(Core.state.reviews, dayStart());
-    var queue = Rules.compose(due, fresh, soFar);
-    var nowe = queue.filter(function (c) { return c.fresh; }).length;
+    return { fresh: fresh, soFar: soFar, queue: Rules.compose(Core.dueCards(Rules.LIMITS.cards), fresh, soFar) };
+  }
 
-    var picker = unitPicker(unitId);
-
-    if (!queue.length) {
+  function rysuj(unitId, loading) {
+    var q = buildQueue(unitId);
+    if (!q.queue.length) {
       var why = loading ? "flash.loading"
-        : fresh.length && soFar >= Rules.NEW_PER_DAY ? "flash.emptyQuota" : "flash.emptyText";
-      set(head() + picker +
-        empty(esc(t("flash.emptyTitle")), esc(t(why))) +
-        '<button class="btn btn--ghost js-path">' + esc(t("nav.path")) + "</button>");
-      document.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
-      wirePicker();
-      return;
+        : q.fresh.length && q.soFar >= Rules.NEW_PER_DAY ? "flash.emptyQuota" : "flash.emptyText";
+      drawEmpty(unitId, why);
+    } else {
+      drawStart(unitId, q.queue);
     }
+    wirePicker();
+  }
 
-    set(head() + picker +
+  function drawEmpty(unitId, why) {
+    set(head() + unitPicker(unitId) +
+      empty(esc(t("flash.emptyTitle")), esc(t(why))) +
+      '<button class="btn btn--ghost js-path">' + esc(t("nav.path")) + "</button>");
+    document.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
+  }
+
+  function drawStart(unitId, queue) {
+    var nowe = queue.filter(function (c) { return c.fresh; }).length;
+    set(head() + unitPicker(unitId) +
       '<p class="exq__sub js-ready" style="margin-bottom:14px">' + esc(t("flash.ready", { n: queue.length })) +
       (nowe ? " " + esc(t("flash.fromNew", { n: nowe })) : "") + "</p>" +
       '<button class="btn btn--primary js-start">' + esc(t("flash.start")) + "</button>" +
       '<div id="flashBox" style="margin-top:20px"></div>');
-
-    wirePicker();
     document.querySelector(".js-start").addEventListener("click", function () { przebieg(queue, unitId); });
   }
 
@@ -185,11 +199,11 @@
     var options = [];
     if (!c.fresh) {
       var tr = Core.cardTr(c);
-      var ds = Rules.distractors({ it: c.it, tr: tr }, Rules.tiersFor(c.src, Core.registry.levels), 3, c.key + "|" + day);
+      var ds = Modes.distractors({ it: c.it, tr: tr }, Modes.tiersFor(c.src, Core.registry.levels), 3, c.key + "|" + day);
       if (ds.length >= MIN_DISTRACTORS) options = Core.seededShuffle([c.it].concat(ds), c.key + "|" + day + "|order");
     }
-    var audio = Rules.audioAvailable(Audio2.hasNatural(c.it), Core.state.settings.voiceSource);
-    return { name: Rules.pickMode(c, { choice: options.length > 0, audio: audio }, day), options: options };
+    var audio = Modes.audioAvailable(Audio2.hasNatural(c.it), Core.state.settings.voiceSource);
+    return { name: Modes.pickMode(c, { choice: options.length > 0, audio: audio }, day), options: options };
   }
 
   /* ---------------- The run ---------------- */
@@ -197,76 +211,82 @@
   function przebieg(queue, unitId) {
     /* The count said how many were due before starting; left on screen it
        goes stale with the first answer and contradicts the counter below. */
-    document.querySelector(".js-start").hidden = true;
-    document.querySelector(".js-ready").hidden = true;
-    document.querySelector(".flash__unit").hidden = true;
-    var run = global.FlashRun.create(queue, Date.now());
+    ["js-start", "js-ready", "flash__unit"].forEach(function (c) { document.querySelector("." + c).hidden = true; });
     var box = document.getElementById("flashBox");
+    box.innerHTML = runMarkup();
+    var ctx = {
+      run: global.FlashRun.create(queue, Date.now()),
+      total: queue.length,
+      box: box,
+      clock: box.querySelector(".flash__clock"),
+      count: box.querySelector(".flash__count"),
+      note: box.querySelector(".flash__note"),
+      card: box.querySelector(".flash__card")
+    };
+    var resume = clockFor(ctx);
+    aktywna = { unitId: unitId, box: box, resume: resume };
+    resume();
+    showCard(ctx);
+  }
 
-    box.innerHTML = '<div class="flash__bar">' +
+  function runMarkup() {
+    return '<div class="flash__bar">' +
       '<span class="flash__clock" role="timer" aria-live="off" aria-label="' + esc(t("flash.timeLeft")) + '">' +
       Rules.clock(Rules.LIMITS.ms) + "</span>" +
       '<span class="flash__count"></span></div>' +
       '<p class="flash__note" role="status"></p>' +
       '<div class="flash__card"></div>';
+  }
 
-    var clockEl = box.querySelector(".flash__clock");
-    var countEl = box.querySelector(".flash__count");
-    var noteEl = box.querySelector(".flash__note");
-    var cardEl = box.querySelector(".flash__card");
+  /** The visible clock. Returns resume(): start or restart it after a redraw. */
+  function clockFor(ctx) {
     var ostrzezono = false;
-
     function odlicz() {
       var now = Date.now();
-      var left = Rules.remaining(run.start, now);
-      clockEl.textContent = Rules.clock(left);
-      if (run.tick(now) === "time") {
-        noteEl.textContent = t("flash.timeUp");
+      var left = Rules.remaining(ctx.run.start, now);
+      ctx.clock.textContent = Rules.clock(left);
+      if (ctx.run.tick(now) === "time") {
+        ctx.note.textContent = t("flash.timeUp");
         stopClock();
       } else if (!ostrzezono && left <= WARN_MS) {
         ostrzezono = true;
-        noteEl.textContent = t("flash.oneMinute");
+        ctx.note.textContent = t("flash.oneMinute");
       }
     }
-
-    function resume() {
+    return function resume() {
       stopClock();
       zegar = global.setInterval(odlicz, 1000);
       Views.onLeave = stopClock;
       odlicz();
-    }
-    aktywna = { unitId: unitId, box: box, resume: resume };
-    resume();
+    };
+  }
 
-    function karta() {
-      /* Only speak() stops what plays, and most cards do not speak when they
-         appear: without this the last word kept playing over the next question. */
-      Audio2.stop();
-      var c = run.current();
-      if (!c) { koniec(); return; }
-      countEl.textContent = t("srs.cardOf", { i: run.summary().answered + 1, n: queue.length });
-      var mode = modeFor(c);
-      global.FlashCards[mode.name](cardEl, c, mode.options, function (q, ok) {
-        if (run.answer(q, ok, Date.now(), mode.name)) koniec();
-        else karta();
-      });
-    }
+  function showCard(ctx) {
+    /* Only speak() stops what plays, and most cards do not speak when they
+       appear: without this the last word kept playing over the next question. */
+    Audio2.stop();
+    var c = ctx.run.current();
+    if (!c) { showSummary(ctx); return; }
+    ctx.count.textContent = t("srs.cardOf", { i: ctx.run.summary().answered + 1, n: ctx.total });
+    var mode = modeFor(c);
+    global.FlashCards[mode.name](ctx.card, c, mode.options, function (q, ok) {
+      if (ctx.run.answer(q, ok, Date.now(), mode.name)) showSummary(ctx);
+      else showCard(ctx);
+    });
+  }
 
-    function koniec() {
-      stopClock();
-      aktywna = null;
-      var s = run.summary();
-      box.innerHTML = '<div class="summary"><div class="summary__score">' + s.right + "/" + s.answered + "</div>" +
-        '<p class="summary__msg">' + esc(t("flash.end." + s.reason)) + "</p>" +
-        '<div class="summary__acts"><button class="btn btn--primary js-again">' + esc(t("flash.again")) + "</button>" +
-        '<button class="btn btn--ghost js-path">' + esc(t("nav.path")) + "</button></div></div>";
-      box.querySelector(".js-again").addEventListener("click", function () { Views.cinque(global.Router.current.params); });
-      box.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
-      box.querySelector(".js-again").focus();
-      App.refreshRail();
-    }
-
-    karta();
+  function showSummary(ctx) {
+    stopClock();
+    aktywna = null;
+    var s = ctx.run.summary();
+    ctx.box.innerHTML = '<div class="summary"><div class="summary__score">' + s.right + "/" + s.answered + "</div>" +
+      '<p class="summary__msg">' + esc(t("flash.end." + s.reason)) + "</p>" +
+      '<div class="summary__acts"><button class="btn btn--primary js-again">' + esc(t("flash.again")) + "</button>" +
+      '<button class="btn btn--ghost js-path">' + esc(t("nav.path")) + "</button></div></div>";
+    ctx.box.querySelector(".js-again").addEventListener("click", function () { Views.cinque(global.Router.current.params); });
+    ctx.box.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
+    ctx.box.querySelector(".js-again").focus();
+    App.refreshRail();
   }
 
 })(window);

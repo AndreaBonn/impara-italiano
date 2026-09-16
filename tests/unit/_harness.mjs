@@ -108,6 +108,9 @@ export const PWA = ["assets/js/notice.js", "assets/js/pwa-rules.js", "assets/js/
  */
 export const FLASH = ["assets/js/flash-rules.js", "assets/js/flash-run.js"];
 
+/** How a card is asked. Reads Txt and Core at call time, so it loads after CORE. */
+export const MODES = ["assets/js/flash-modes.js"];
+
 /**
  * localStorage with a controllable limit.
  * A real browser throws QuotaExceededError when it overflows; without that

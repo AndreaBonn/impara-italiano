@@ -20,51 +20,46 @@
   var Rules = global.FlashRules;
 
   /**
+   * Grades the open card and moves on.
+   * @param {object}  st  the run state built by create
+   * @param {number}  q   the grade on the 0/3/4/5 scale Core.gradeCard takes
+   * @param {boolean} ok  whether the answer was right, for the summary only
+   * @param {object}  at  {now: ms, mode: how the card was asked, for the journal}
+   * @returns {"cap"|"time"|"empty"|null} why the session ended, or null
+   */
+  function answer(st, q, ok, at) {
+    if (st.powod) return st.powod;
+    var c = st.kolejka[st.i];
+    /* A new word joins the deck here, at its first answer, and not when the
+       queue was built: a word shown and left unanswered stays out. */
+    var key = c.fresh ? global.Core.addCard(c.it, c.tr, c.src) : c.key;
+    if (key) global.Core.gradeCard(key, q, at.mode);
+    st.i++;
+    if (ok) st.dobre++;
+    st.powod = Rules.isOver(st.start, at.now, st.i) || (st.i >= st.kolejka.length ? "empty" : null);
+    return st.powod;
+  }
+
+  /** Whether time is up, without touching the open card. */
+  function tick(st, now) {
+    if (st.powod) return st.powod;
+    return Rules.remaining(st.start, now) === 0 ? "time" : null;
+  }
+
+  /**
    * @param {Array}  queue cards as Core.dueCards returns them ({key, it, ...})
    * @param {number} start session start, ms
    */
   function create(queue, start) {
     var kolejka = (queue || []).slice();
-    var i = 0;
-    var dobre = 0;
-    var powod = kolejka.length ? null : "empty";
-
-    function current() {
-      return powod ? null : kolejka[i];
-    }
-
-    /**
-     * Grades the open card and moves on.
-     * @param {number}  q   the grade on the 0/3/4/5 scale Core.gradeCard takes
-     * @param {boolean} ok  whether the answer was right, for the summary only
-     * @param {number}  now ms
-     * @param {string}  [mode] how the card was asked, for the review journal
-     * @returns {"cap"|"time"|"empty"|null} why the session ended, or null
-     */
-    function answer(q, ok, now, mode) {
-      if (powod) return powod;
-      var c = kolejka[i];
-      /* A new word joins the deck here, at its first answer, and not when the
-         queue was built: a word shown and left unanswered stays out. */
-      var key = c.fresh ? global.Core.addCard(c.it, c.tr, c.src) : c.key;
-      if (key) global.Core.gradeCard(key, q, mode);
-      i++;
-      if (ok) dobre++;
-      powod = Rules.isOver(start, now, i) || (i >= kolejka.length ? "empty" : null);
-      return powod;
-    }
-
-    /** Whether time is up, without touching the open card. */
-    function tick(now) {
-      if (powod) return powod;
-      return Rules.remaining(start, now) === 0 ? "time" : null;
-    }
-
-    function summary() {
-      return { answered: i, right: dobre, reason: powod };
-    }
-
-    return { current: current, answer: answer, tick: tick, summary: summary, start: start };
+    var st = { kolejka: kolejka, i: 0, dobre: 0, start: start, powod: kolejka.length ? null : "empty" };
+    return {
+      start: start,
+      current: function () { return st.powod ? null : st.kolejka[st.i]; },
+      answer: function (q, ok, now, mode) { return answer(st, q, ok, { now: now, mode: mode }); },
+      tick: function (now) { return tick(st, now); },
+      summary: function () { return { answered: st.i, right: st.dobre, reason: st.powod }; }
+    };
   }
 
   global.FlashRun = { create: create };

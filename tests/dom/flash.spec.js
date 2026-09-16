@@ -11,7 +11,7 @@ const { test, expect } = require("@playwright/test");
 
 /**
  * n due cards straight in the deck, then the screen drawn from scratch.
- * With `pisane` every card is stable and one that FlashRules gives the write
+ * With `pisane` every card is stable and one that FlashModes gives the write
  * mode today: the keyboard tests are about the typed card, and the mode
  * otherwise turns with the date.
  */
@@ -25,7 +25,7 @@ async function zTalia(page, n, pisane) {
       const it = "parola" + i;
       if (!tylkoPisane) { window.Core.addCard(it, "slowo" + i, "test"); dodane++; continue; }
       const karta = { key: it, st: "review", s: 30 };
-      if (window.FlashRules.pickMode(karta, { choice: true }, dzien) !== "write") continue;
+      if (window.FlashModes.pickMode(karta, { choice: true }, dzien) !== "write") continue;
       const k = window.Core.addCard(it, "slowo" + i, "test");
       Object.assign(window.Core.state.srs[k], { st: "review", s: 30, d: 5, last: Date.now() - 864e5 * 30, due: Date.now() - 1000 });
       dodane++;
@@ -284,14 +284,14 @@ test("a level that lands after the student picked another unit keeps the student
 /* ---------------- Modes ---------------- */
 
 /**
- * One due card from a real A1 lesson that FlashRules sends as a choice today,
+ * One due card from a real A1 lesson that FlashModes sends as a choice today,
  * with at least two distractors. Returns its Italian and gloss.
  */
 async function kartaWyboru(page) {
   await page.goto("/index.html#/percorso");
   await page.waitForFunction(() => window.Core && window.Core.registry.loaded.A1 === true);
   const karta = await page.evaluate(() => {
-    const R = window.FlashRules, C = window.Core, dzien = C.today();
+    const R = window.FlashModes, C = window.Core, dzien = C.today();
     for (const lv of C.registry.levels) for (const u of lv.units || []) for (const l of u.lessons || []) {
       for (const v of l.vocab || []) {
         if (!R.articleOf(v.it)) continue;
@@ -321,7 +321,7 @@ test("a choice card: Italian options that share the article, graded 3 when right
   const opcje = await page.locator(".flash__card .opt span").allInnerTexts();
   expect(opcje.length).toBeGreaterThanOrEqual(3);
   expect(opcje).toContain(karta.it);
-  const rodzajniki = await page.evaluate(os => os.map(o => window.FlashRules.articleOf(o)), opcje);
+  const rodzajniki = await page.evaluate(os => os.map(o => window.FlashModes.articleOf(o)), opcje);
   expect(rodzajniki, `options ${opcje.join(" / ")}`).toEqual(opcje.map(() => karta.art));
   expect(opcje, "no translation among the options").not.toContain(karta.tr);
   await expect(page.locator(".flash__card .opts")).toHaveAttribute("role", "radiogroup");
@@ -367,7 +367,7 @@ async function kartaSluchu(page, tryb) {
   await page.goto("/index.html#/percorso");
   await page.waitForFunction(() => window.Core && window.Core.registry.loaded.A1 === true);
   const karta = await page.evaluate(szukany => {
-    const R = window.FlashRules, C = window.Core, dzien = C.today();
+    const R = window.FlashModes, C = window.Core, dzien = C.today();
     const stabilna = szukany === "listen-write";
     for (const u of C.registry.byCode.A1.units) for (const l of u.lessons || []) for (const v of l.vocab || []) {
       if (!window.Audio2.hasNatural(v.it)) continue;

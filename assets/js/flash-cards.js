@@ -10,7 +10,7 @@
    declared, not overlooked: runCards has no point between cards where a
    bound could be checked, and changing it would change Reviews and Today.
 
-   Classic script. Requires core.js, flash-rules.js, exercises.js (speakers), audio.js.
+   Classic script. Requires core.js, flash-modes.js, exercises.js (speakers), audio.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -77,37 +77,36 @@
       '<div class="fb" role="status"></div>' +
       gradeButtons() + "</div>";
 
-    var input = host.querySelector(".js-in");
-    var fb = host.querySelector(".fb");
-    var grade = host.querySelector(".js-grade");
-    var show = host.querySelector(".js-show");
-    var ok = false;
+    var st = { c: c, input: host.querySelector(".js-in"), fb: host.querySelector(".fb"),
+               grade: host.querySelector(".js-grade"), show: host.querySelector(".js-show"), ok: false };
     wireReplay(host, c);
-    input.focus();
+    st.input.focus();
 
-    function reveal() {
-      if (show.disabled) return;
-      ok = Core.checkOpen(input.value, [c.it], false).ok;
-      fb.className = "fb is-on " + (ok ? "fb--ok" : "fb--ko");
-      fb.innerHTML = esc(t(ok ? "srs.right" : "srs.wrong")) + " <b>" + esc(c.it) + "</b>" +
-        ' <button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button>';
-      Ex.wireSpeakers(fb);
-      Audio2.speak(c.it);
-      grade.hidden = false;
-      show.disabled = true;
-      input.disabled = true;
-      grade.querySelector("button").focus();
-    }
-    show.addEventListener("click", reveal);
-    /* reveal() moves the focus to the first grade. Without preventDefault
+    st.show.addEventListener("click", function () { revealWritten(st); });
+    /* revealWritten moves the focus to the first grade. Without preventDefault
        the key's default action then clicks that button, grading the card
        "no idea" before the answer is even on screen. */
-    input.addEventListener("keydown", function (e) {
+    st.input.addEventListener("keydown", function (e) {
       if (e.key !== "Enter") return;
       e.preventDefault();
-      reveal();
+      revealWritten(st);
     });
-    wireGrades(grade, function (q) { onGrade(q, ok); });
+    wireGrades(st.grade, function (q) { onGrade(q, st.ok); });
+  }
+
+  function revealWritten(st) {
+    if (st.show.disabled) return;
+    var c = st.c;
+    st.ok = Core.checkOpen(st.input.value, [c.it], false).ok;
+    st.fb.className = "fb is-on " + (st.ok ? "fb--ok" : "fb--ko");
+    st.fb.innerHTML = esc(t(st.ok ? "srs.right" : "srs.wrong")) + " <b>" + esc(c.it) + "</b>" +
+      ' <button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button>';
+    Ex.wireSpeakers(st.fb);
+    Audio2.speak(c.it);
+    st.grade.hidden = false;
+    st.show.disabled = true;
+    st.input.disabled = true;
+    st.grade.querySelector("button").focus();
   }
 
   function gradeButtons() {
@@ -166,7 +165,7 @@
   /**
    * The choice card: the student's language shown, the Italian picked from
    * the answer and distractors that share its article. Graded by the course,
-   * not by the student: a right pick is 3, a wrong one 0 (FlashRules.gradeFor).
+   * not by the student: a right pick is 3, a wrong one 0 (FlashModes.gradeFor).
    * The options are Italian only; a translation among them would give the
    * answer away through its gloss.
    */
@@ -180,8 +179,32 @@
   }
 
   function choiceCard(host, c, options, how, onGrade) {
+    host.innerHTML = choiceMarkup(c, options, how);
+    var st = { c: c, options: options, host: host, labels: host.querySelectorAll(".opt"),
+               check: host.querySelector(".js-check"), next: host.querySelector(".js-next"),
+               fb: host.querySelector(".fb"), ok: false };
+    wireReplay(host, c);
+    host.querySelector("input").focus();
+
+    st.labels.forEach(function (l) {
+      l.addEventListener("click", function () {
+        st.labels.forEach(function (x) { x.classList.remove("is-sel"); });
+        l.classList.add("is-sel");
+      });
+    });
+    st.check.addEventListener("click", function () { checkChoice(st); });
+
+    /* The same held-key guard as the grades: Enter on "check" moves the
+       focus here, and a repeat would skip the feedback it just showed. */
+    st.next.addEventListener("keydown", function (e) { if (e.repeat) e.preventDefault(); });
+    st.next.addEventListener("click", function () {
+      onGrade(global.FlashModes.gradeFor(how.mode, st.ok, null), st.ok);
+    });
+  }
+
+  function choiceMarkup(c, options, how) {
     var name = "flash-" + c.key;
-    host.innerHTML = '<div class="exq">' + how.prompt +
+    return '<div class="exq">' + how.prompt +
       '<div class="opts" role="radiogroup" aria-label="' + esc(t("ex.answersGroup")) + '">' +
       options.map(function (o, i) {
         return '<label class="opt" data-i="' + i + '"><input type="radio" name="' + esc(name) + '" value="' + i + '">' +
@@ -192,46 +215,25 @@
       '<div class="fb" role="status"></div>' +
       '<div style="margin-top:14px"><button class="btn btn--primary js-check">' + esc(t("ex.check")) + "</button>" +
       '<button class="btn btn--primary js-next" hidden>' + esc(t("today.next")) + "</button></div></div>";
+  }
 
-    var labels = host.querySelectorAll(".opt");
-    var check = host.querySelector(".js-check");
-    var next = host.querySelector(".js-next");
-    var fb = host.querySelector(".fb");
-    var ok = false;
-    wireReplay(host, c);
-    host.querySelector("input").focus();
-
-    labels.forEach(function (l) {
-      l.addEventListener("click", function () {
-        labels.forEach(function (x) { x.classList.remove("is-sel"); });
-        l.classList.add("is-sel");
-      });
+  function checkChoice(st) {
+    var sel = st.host.querySelector("input:checked");
+    if (!sel) { Core.toast(t("ex.pickOne")); return; }
+    var c = st.c;
+    st.ok = st.options[parseInt(sel.value, 10)] === c.it;
+    st.labels.forEach(function (l) {
+      var o = st.options[parseInt(l.getAttribute("data-i"), 10)];
+      if (o === c.it) l.classList.add("is-ok");
+      else if (l.contains(sel)) l.classList.add("is-ko");
+      l.querySelector("input").disabled = true;
     });
-
-    check.addEventListener("click", function () {
-      var sel = host.querySelector("input:checked");
-      if (!sel) { Core.toast(t("ex.pickOne")); return; }
-      ok = options[parseInt(sel.value, 10)] === c.it;
-      labels.forEach(function (l) {
-        var o = options[parseInt(l.getAttribute("data-i"), 10)];
-        if (o === c.it) l.classList.add("is-ok");
-        else if (l.contains(sel)) l.classList.add("is-ko");
-        l.querySelector("input").disabled = true;
-      });
-      fb.className = "fb is-on " + (ok ? "fb--ok" : "fb--ko");
-      fb.innerHTML = esc(t(ok ? "srs.right" : "srs.wrong")) + ' <b lang="it">' + esc(c.it) + "</b>";
-      Audio2.speak(c.it);
-      check.hidden = true;
-      next.hidden = false;
-      next.focus();
-    });
-
-    /* The same held-key guard as the grades: Enter on "check" moves the
-       focus here, and a repeat would skip the feedback it just showed. */
-    next.addEventListener("keydown", function (e) { if (e.repeat) e.preventDefault(); });
-    next.addEventListener("click", function () {
-      onGrade(global.FlashRules.gradeFor(how.mode, ok, null), ok);
-    });
+    st.fb.className = "fb is-on " + (st.ok ? "fb--ok" : "fb--ko");
+    st.fb.innerHTML = esc(t(st.ok ? "srs.right" : "srs.wrong")) + ' <b lang="it">' + esc(c.it) + "</b>";
+    Audio2.speak(c.it);
+    st.check.hidden = true;
+    st.next.hidden = false;
+    st.next.focus();
   }
 
   global.FlashCards = {

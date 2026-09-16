@@ -24,12 +24,56 @@
    * picks is what reaches FSRS, as under Reviews.
    */
   function write(host, c, options, onGrade) {
-    host.innerHTML = '<div class="exq">' +
-      '<p class="exq__prompt" style="font-size:1.3rem">' + esc(Core.cardTr(c)) + "</p>" +
-      '<p class="exq__sub">' + esc(t("srs.howInItalian")) + "</p>" +
+    writeCard(host, c, { prompt: readPrompt(c), belowField: "" }, onGrade);
+  }
+
+  /**
+   * The dictation card: the word is heard, never shown, and typed. The
+   * recording plays when the card appears; the replay button stays, because
+   * the browser may refuse to play before the student has touched the page
+   * (audio.js stays silent on NotAllowedError rather than switching voice).
+   */
+  function listenWrite(host, c, options, onGrade) {
+    /* The replay button goes BELOW the field: keys.js opens the accent bar
+       above a focused field, over "nothing clickable", and the button the
+       student needs while typing would be exactly what it covers. */
+    writeCard(host, c, {
+      prompt: '<p class="exq__prompt">' + esc(t("flash.listenWrite")) + "</p>",
+      belowField: '<p style="margin-top:10px">' + replayButton() + "</p>"
+    }, onGrade);
+  }
+
+  /** The student's language, and the question under it. */
+  function readPrompt(c) {
+    return '<p class="exq__prompt" style="font-size:1.3rem">' + esc(Core.cardTr(c)) + "</p>" +
+      '<p class="exq__sub">' + esc(t("srs.howInItalian")) + "</p>";
+  }
+
+  /* No data-say and no Italian anywhere in this markup: the word is the
+     answer, and an attribute a screen reader or a curious student can read
+     would give it away. */
+  function heardPrompt(c, subKey) {
+    return '<p class="exq__prompt">' + replayButton() + "</p>" +
+      '<p class="exq__sub">' + esc(t(subKey)) + "</p>";
+  }
+
+  function replayButton() {
+    return '<button type="button" class="btn btn--ghost js-replay">' +
+      '<span aria-hidden="true">🔊</span> ' + esc(t("flash.replay")) + "</button>";
+  }
+
+  function wireReplay(host, c) {
+    var b = host.querySelector(".js-replay");
+    if (!b) return;
+    b.addEventListener("click", function () { Audio2.speak(c.it); });
+    Audio2.speak(c.it);
+  }
+
+  function writeCard(host, c, layout, onGrade) {
+    host.innerHTML = '<div class="exq flash__typed">' + layout.prompt +
       '<div class="field-row"><input type="text" class="field js-in" aria-label="' + esc(t("srs.ph")) + '" placeholder="' +
       esc(t("srs.ph")) + '" autocomplete="off" spellcheck="false">' +
-      '<button class="btn btn--primary js-show">' + esc(t("ex.check")) + "</button></div>" +
+      '<button class="btn btn--primary js-show">' + esc(t("ex.check")) + "</button></div>" + layout.belowField +
       '<div class="fb" role="status"></div>' +
       gradeButtons() + "</div>";
 
@@ -38,6 +82,7 @@
     var grade = host.querySelector(".js-grade");
     var show = host.querySelector(".js-show");
     var ok = false;
+    wireReplay(host, c);
     input.focus();
 
     function reveal() {
@@ -126,10 +171,17 @@
    * answer away through its gloss.
    */
   function choice(host, c, options, onGrade) {
+    choiceCard(host, c, options, { prompt: readPrompt(c), mode: "choice" }, onGrade);
+  }
+
+  /** The heard choice: the word played, the options still written in Italian. */
+  function listenChoice(host, c, options, onGrade) {
+    choiceCard(host, c, options, { prompt: heardPrompt(c, "flash.listenPick"), mode: "listen-choice" }, onGrade);
+  }
+
+  function choiceCard(host, c, options, how, onGrade) {
     var name = "flash-" + c.key;
-    host.innerHTML = '<div class="exq">' +
-      '<p class="exq__prompt" style="font-size:1.3rem">' + esc(Core.cardTr(c)) + "</p>" +
-      '<p class="exq__sub">' + esc(t("srs.howInItalian")) + "</p>" +
+    host.innerHTML = '<div class="exq">' + how.prompt +
       '<div class="opts" role="radiogroup" aria-label="' + esc(t("ex.answersGroup")) + '">' +
       options.map(function (o, i) {
         return '<label class="opt" data-i="' + i + '"><input type="radio" name="' + esc(name) + '" value="' + i + '">' +
@@ -146,6 +198,7 @@
     var next = host.querySelector(".js-next");
     var fb = host.querySelector(".fb");
     var ok = false;
+    wireReplay(host, c);
     host.querySelector("input").focus();
 
     labels.forEach(function (l) {
@@ -177,10 +230,13 @@
        focus here, and a repeat would skip the feedback it just showed. */
     next.addEventListener("keydown", function (e) { if (e.repeat) e.preventDefault(); });
     next.addEventListener("click", function () {
-      onGrade(global.FlashRules.gradeFor("choice", ok, null), ok);
+      onGrade(global.FlashRules.gradeFor(how.mode, ok, null), ok);
     });
   }
 
-  global.FlashCards = { write: write, flip: flip, choice: choice };
+  global.FlashCards = {
+    write: write, flip: flip, choice: choice,
+    "listen-write": listenWrite, "listen-choice": listenChoice
+  };
 
 })(window);

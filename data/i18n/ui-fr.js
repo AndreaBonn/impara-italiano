@@ -1056,6 +1056,9 @@ LINGUAI.addUI("fr", {
   "flash.meaning": "Qu'est-ce que ça veut dire ?",
   "flash.show": "Afficher",
   "flash.tryIt": "Cinq minutes avec des mots nouveaux",
+  "flash.replay": "Réécouter",
+  "flash.listenPick": "Écoute et choisis ce que tu as entendu.",
+  "flash.listenWrite": "Écoute et écris-le en italien.",
   "guide.s.cinque": "Une séance de cartes qui s'arrête après cinq minutes ou vingt cartes."
 
 });

@@ -136,3 +136,6 @@ Registrati qui perché il piano sopra resta com'era stato approvato.
 | 3 | `"un po'"` escluso dal gruppo dell'articolo `un` | Il render ha mostrato "un po' stanco/a" fra "un caffè" e "un cappuccino": un'eliminazione gratuita |
 | 3 | Un commit invece di due (distrattori e modi) | Le due parti stanno nello stesso file e un modo `choice` senza distrattori non ha stato intermedio utilizzabile |
 | 3 | Nessun paragrafo nuovo nella guida | La schermata non ha una sezione propria nella guida, solo la riga della mappa; aggiungerla è una decisione di contenuto, non di questa fase |
+| 4 | Spazio riservato sopra il campo nelle carte scritte (`flash__typed`), corretto anche sulla carta `write` della fase 1 | La carta compare senza cambio di rotta, quindi il campo resta attivo e `keys.js` apre la barra degli accenti sopra, cioè sulla domanda. In Ripasso non succede perché il router sposta il focus |
+| 4 | Nel dettato il bottone "riascolta" sta sotto il campo | Sopra il campo la barra degli accenti lo coprirebbe proprio mentre lo studente scrive |
+| 4 | Non c'è il test del click-through con audio reale da `file://` (4.7) | L'audio è verificato con uno spy su `Audio2.speak` e con `play()` rifiutato; l'ascolto vero resta da fare a mano |

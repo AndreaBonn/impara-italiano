@@ -1051,6 +1051,9 @@ LINGUAI.addUI("de", {
   "flash.meaning": "Was bedeutet das?",
   "flash.show": "Zeigen",
   "flash.tryIt": "Fünf Minuten mit neuen Wörtern",
+  "flash.replay": "Noch einmal anhören",
+  "flash.listenPick": "Hör zu und wähl aus, was du gehört hast.",
+  "flash.listenWrite": "Hör zu und schreib es auf Italienisch.",
   "guide.s.cinque": "Eine Kartenrunde, die nach fünf Minuten oder zwanzig Karten endet."
 
 });

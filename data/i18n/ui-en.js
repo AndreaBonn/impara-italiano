@@ -1048,6 +1048,9 @@ LINGUAI.addUI("en", {
   "flash.meaning": "What does it mean?",
   "flash.show": "Show",
   "flash.tryIt": "Five minutes with new words",
+  "flash.replay": "Play it again",
+  "flash.listenPick": "Listen and pick what you heard.",
+  "flash.listenWrite": "Listen and write it in Italian.",
   "guide.s.cinque": "A card session that stops after five minutes or twenty cards."
 
 });

@@ -296,7 +296,8 @@ async function kartaWyboru(page) {
       for (const v of l.vocab || []) {
         if (!R.articleOf(v.it)) continue;
         const key = C.cardKey(v.it);
-        if (R.pickMode({ key, st: "learning", s: 1 }, { choice: true }, dzien) !== "choice") continue;
+        const audio = R.audioAvailable(window.Audio2.hasNatural(v.it), C.state.settings.voiceSource);
+        if (R.pickMode({ key, st: "learning", s: 1 }, { choice: true, audio }, dzien) !== "choice") continue;
         const ds = R.distractors({ it: v.it, tr: v.tr }, R.tiersFor(l.id, C.registry.levels), 3, key + "|" + dzien);
         if (ds.length < 2) continue;
         C.addCard(v.it, v.tr, l.id);
@@ -354,4 +355,157 @@ test("a choice card by keyboard, a wrong pick graded 0", async ({ page }) => {
   const wpis = await page.evaluate(() => window.Core.state.reviews[0]);
   expect(wpis.q).toBe(0);
   expect(wpis.m).toBe("choice");
+});
+
+/* ---------------- Listening ---------------- */
+
+/**
+ * One due card from a real A1 lesson that has a recording and gets `tryb`
+ * today. Counts Audio2.speak calls in window.__mowi.
+ */
+async function kartaSluchu(page, tryb) {
+  await page.goto("/index.html#/percorso");
+  await page.waitForFunction(() => window.Core && window.Core.registry.loaded.A1 === true);
+  const karta = await page.evaluate(szukany => {
+    const R = window.FlashRules, C = window.Core, dzien = C.today();
+    const stabilna = szukany === "listen-write";
+    for (const u of C.registry.byCode.A1.units) for (const l of u.lessons || []) for (const v of l.vocab || []) {
+      if (!window.Audio2.hasNatural(v.it)) continue;
+      const key = C.cardKey(v.it);
+      const stan = stabilna ? { st: "review", s: 30 } : { st: "learning", s: 1 };
+      if (R.pickMode(Object.assign({ key }, stan), { choice: true, audio: true }, dzien) !== szukany) continue;
+      const ds = R.distractors({ it: v.it, tr: v.tr }, R.tiersFor(l.id, C.registry.levels), 3, key + "|" + dzien);
+      if (!stabilna && ds.length < 2) continue;
+      C.addCard(v.it, v.tr, l.id);
+      Object.assign(C.state.srs[key], stan, { d: 5, last: Date.now() - 864e5, due: Date.now() - 1000 });
+      window.__mowi = [];
+      const speak = window.Audio2.speak;
+      window.Audio2.speak = function (t, o) { window.__mowi.push(t); return speak.call(this, t, o); };
+      return { it: v.it, tr: v.tr };
+    }
+    return null;
+  }, tryb);
+  expect(karta, `the course has a recorded word for ${tryb} today`).not.toBeNull();
+  await page.evaluate(() => window.App.go("cinque", { unit: "a1-u01" }));
+  await page.waitForSelector(".js-start");
+  return karta;
+}
+
+test("hear and pick: the word plays, is never written in the question, and is graded as a pick", async ({ page }) => {
+  const karta = await kartaSluchu(page, "listen-choice");
+  await page.locator(".js-start").click();
+
+  await expect(page.locator(".flash__card .js-replay")).toBeVisible();
+  expect(await page.evaluate(() => window.__mowi.length), "the recording plays when the card appears").toBe(1);
+  const pytanie = await page.locator(".flash__card .exq__prompt").innerHTML();
+  expect(pytanie, "the Italian is not in the question, not even in an attribute").not.toContain(karta.it);
+  expect(pytanie).not.toContain(karta.tr);
+
+  await page.locator(".flash__card .js-replay").click();
+  expect(await page.evaluate(() => window.__mowi.length), "replay plays again").toBe(2);
+
+  await page.locator(".flash__card .opt", { hasText: karta.it }).first().click();
+  await page.locator(".flash__card .js-check").click();
+  await page.locator(".flash__card .js-next").click();
+  const wpis = await page.evaluate(() => window.Core.state.reviews[0]);
+  expect(wpis.m).toBe("listen-choice");
+  expect(wpis.q).toBe(3);
+});
+
+test("dictation: heard, typed, self-graded", async ({ page }) => {
+  const karta = await kartaSluchu(page, "listen-write");
+  await page.locator(".js-start").click();
+  expect(await page.locator(".flash__card .exq__prompt").innerHTML()).not.toContain(karta.it);
+
+  /* The accent bar opens above a focused field (keys.js), over whatever
+     sits there: that must not be the replay button the student needs while
+     typing. */
+  await page.locator(".flash__card .js-in").focus();
+  await expect(page.locator(".keybar")).toBeVisible();
+  const zakryty = await page.evaluate(() => {
+    const a = document.querySelector(".keybar").getBoundingClientRect();
+    const b = document.querySelector(".flash__card .js-replay").getBoundingClientRect();
+    return !(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top);
+  });
+  expect(zakryty, "the accent bar covers the replay button").toBe(false);
+
+  await page.locator(".flash__card .js-in").fill(karta.it);
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".flash__card .fb")).toHaveClass(/fb--ok/);
+  await page.locator('.flash__card .js-grade button[data-q="4"]').click();
+  const wpis = await page.evaluate(() => window.Core.state.reviews[0]);
+  expect(wpis.m).toBe("listen-write");
+  expect(wpis.q).toBe(4);
+});
+
+test("with the system voice chosen in Settings no card is asked by ear", async ({ page }) => {
+  await kartaSluchu(page, "listen-choice");
+  await page.evaluate(() => { window.Core.state.settings.voiceSource = "system"; window.App.go("cinque", { unit: "a1-u01" }); });
+  await page.waitForSelector(".js-start");
+  await page.locator(".js-start").click();
+  await expect(page.locator(".flash__card .exq")).toBeVisible();
+  await expect(page.locator(".flash__card .js-replay")).toHaveCount(0);
+});
+
+test("a browser that refuses to play leaves the card usable, with no error", async ({ page }) => {
+  const bledy = [];
+  page.on("pageerror", e => bledy.push(e.message));
+  await page.addInitScript(() => {
+    HTMLMediaElement.prototype.play = function () {
+      const e = new Error("autoplay"); e.name = "NotAllowedError";
+      return Promise.reject(e);
+    };
+  });
+  const karta = await kartaSluchu(page, "listen-choice");
+  await page.locator(".js-start").click();
+  await expect(page.locator(".flash__card .js-replay")).toBeVisible();
+  await page.locator(".flash__card .js-replay").click();
+
+  await page.locator(".flash__card .opt", { hasText: karta.it }).first().click();
+  await page.locator(".flash__card .js-check").click();
+  await page.locator(".flash__card .js-next").click();
+  expect(await page.evaluate(() => window.Core.state.reviews.length)).toBe(1);
+  expect(bledy).toEqual([]);
+});
+
+/* The card appears without a route change, so its field keeps the focus and
+   keys.js opens the accent bar above it at once. Above the field sits the
+   question: covered, the student is asked to type a word they cannot see. */
+for (const szer of [320, 375, 1280]) {
+  test(`the accent bar leaves the question readable on a typed card at ${szer}px`, async ({ page }) => {
+    await page.setViewportSize({ width: szer, height: 900 });
+    await zTalia(page, 1, true);
+    await page.locator(".js-start").click();
+    await expect(page.locator(".flash__card .js-in")).toBeFocused();
+    await expect(page.locator(".keybar")).toBeVisible();
+
+    const zakryte = await page.evaluate(() => {
+      const a = document.querySelector(".keybar").getBoundingClientRect();
+      return [...document.querySelectorAll(".flash__card .exq__prompt, .flash__card .exq__sub")]
+        .filter(el => { const r = el.getBoundingClientRect();
+          return !(a.right <= r.left || r.right <= a.left || a.bottom <= r.top || r.bottom <= a.top); })
+        .map(el => el.textContent.trim());
+    });
+    expect(zakryte, "text under the accent bar").toEqual([]);
+  });
+}
+
+/* A card that spoke (a heard card, or any card after its answer is shown)
+   can still be playing when the student moves on. Only speak() stops what
+   plays, and a flip, pick or typed card does not speak when it appears, so
+   the old word went on over the new question. */
+test("moving to the next card silences the word still playing", async ({ page }) => {
+  const karta = await kartaSluchu(page, "listen-choice");
+  await page.locator(".js-start").click();
+  await page.evaluate(() => {
+    window.__cisza = 0;
+    const stop = window.Audio2.stop;
+    window.Audio2.stop = function () { window.__cisza++; return stop.apply(this, arguments); };
+  });
+  await page.locator(".flash__card .opt", { hasText: karta.it }).first().click();
+  await page.locator(".flash__card .js-check").click();
+  const przed = await page.evaluate(() => window.__cisza);
+  await page.locator(".flash__card .js-next").click();
+  await expect(page.locator(".flash__card .exq")).toBeVisible();
+  expect(await page.evaluate(() => window.__cisza), "the next card stops the audio").toBeGreaterThan(przed);
 });

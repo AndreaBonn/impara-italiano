@@ -346,3 +346,50 @@ describe("the grade a mode sends to FSRS", () => {
     assert.equal(R().gradeFor("flip", false, 4), 4);
   });
 });
+
+/* ---------------- Listening ---------------- */
+
+describe("when a listening card is possible", () => {
+  test("only with a recording and the course's own voice", () => {
+    assert.equal(R().audioAvailable(true, "natural"), true);
+    assert.equal(R().audioAvailable(true, undefined), true, "no setting yet means the default, the recordings");
+    assert.equal(R().audioAvailable(false, "natural"), false, "no recording: system synthesis would mispronounce");
+    assert.equal(R().audioAvailable(true, "system"), false, "the student chose the system voice: espeak on Linux");
+  });
+});
+
+describe("listening modes", () => {
+  const KIEDY = "2026-09-16";
+  const tryby = (card, avail) => {
+    const out = new Set();
+    for (let d = 0; d < 40; d++) out.add(R().pickMode({ ...card, key: "k" + d }, avail, KIEDY));
+    return [...out].sort();
+  };
+
+  test("a weak card with a recording may be heard and picked", () => {
+    assert.deepEqual(tryby({ st: "learning", s: 1 }, { choice: true, audio: true }), ["choice", "flip", "listen-choice"]);
+  });
+
+  test("a stable card with a recording may be dictated", () => {
+    assert.deepEqual(tryby({ st: "review", s: 30 }, { choice: true, audio: true }), ["flip", "listen-write", "write"]);
+  });
+
+  test("without a recording no listening mode ever comes up", () => {
+    assert.deepEqual(tryby({ st: "learning", s: 1 }, { choice: true, audio: false }), ["choice", "flip"]);
+    assert.deepEqual(tryby({ st: "review", s: 30 }, { choice: true, audio: false }), ["flip", "write"]);
+  });
+
+  test("hearing and picking needs distractors like reading and picking", () => {
+    assert.deepEqual(tryby({ st: "learning", s: 1 }, { choice: false, audio: true }), ["flip"]);
+  });
+
+  test("a new word stays a flip card even with a recording", () => {
+    assert.equal(R().pickMode({ key: "n", fresh: true }, { choice: true, audio: true }, KIEDY), "flip");
+  });
+
+  test("a heard pick is graded like a read one; a dictation keeps the self-grade", () => {
+    assert.equal(R().gradeFor("listen-choice", true, 5), 3);
+    assert.equal(R().gradeFor("listen-choice", false, 5), 0);
+    assert.equal(R().gradeFor("listen-write", true, 5), 5);
+  });
+});

@@ -1056,6 +1056,9 @@ LINGUAI.addUI("es", {
   "flash.meaning": "¿Qué significa?",
   "flash.show": "Mostrar",
   "flash.tryIt": "Cinco minutos con palabras nuevas",
+  "flash.replay": "Escuchar otra vez",
+  "flash.listenPick": "Escucha y elige lo que oíste.",
+  "flash.listenWrite": "Escucha y escríbelo en italiano.",
   "guide.s.cinque": "Una sesión de tarjetas que se detiene a los cinco minutos o a las veinte tarjetas."
 
 });

@@ -188,7 +188,8 @@
       var ds = Rules.distractors({ it: c.it, tr: tr }, Rules.tiersFor(c.src, Core.registry.levels), 3, c.key + "|" + day);
       if (ds.length >= MIN_DISTRACTORS) options = Core.seededShuffle([c.it].concat(ds), c.key + "|" + day + "|order");
     }
-    return { name: Rules.pickMode(c, { choice: options.length > 0 }, day), options: options };
+    var audio = Rules.audioAvailable(Audio2.hasNatural(c.it), Core.state.settings.voiceSource);
+    return { name: Rules.pickMode(c, { choice: options.length > 0, audio: audio }, day), options: options };
   }
 
   /* ---------------- The run ---------------- */
@@ -238,6 +239,9 @@
     resume();
 
     function karta() {
+      /* Only speak() stops what plays, and most cards do not speak when they
+         appear: without this the last word kept playing over the next question. */
+      Audio2.stop();
       var c = run.current();
       if (!c) { koniec(); return; }
       countEl.textContent = t("srs.cardOf", { i: run.summary().answered + 1, n: queue.length });

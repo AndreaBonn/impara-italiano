@@ -114,6 +114,13 @@ jako 3, nie 4: wybór jest łatwiejszy od przypomnienia, a ocena „dobrze" wyd�
 ponad to, co uczeń umie napisać. Tryb inny niż wpisanie trafia do dziennika powtórek jako
 pole `m`, bo powtórek rozpoznania i przypomnienia nie da się potem rozdzielić.
 
+Słowo z nagraniem może przyjść **ze słuchu**: rozpoznawane (`listen-choice`, opcje nadal pisane
+po włosku) albo dyktowane (`listen-write`). Tylko z nagraniem i tylko gdy uczeń nie wybrał w
+Ustawieniach głosu systemowego (`FlashRules.audioAvailable`): karta ze słuchu czytana przez
+espeak uczy złych dźwięków, a wybór ucznia nie jest tu po cichu nadpisywany. W pytaniu nie ma
+włoskiego ani w tekście, ani w atrybucie, a przycisk „posłuchaj jeszcze raz" zostaje, bo
+przeglądarka może odmówić odtworzenia przed pierwszym dotknięciem strony.
+
 Tą samą granicą idzie swobodna rozmowa: `chat-rules.js` (globalna `ChatRules`: sufit tur,
 potarcie historii, odczyt repliki i korekty — same czyste funkcje) i `chat-run.js` (przebieg
 jednej sceny) przed `views-chat.js` (bąbelki, pole, licznik).
@@ -670,7 +677,7 @@ node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
-npm run test:mutations              # czy testy widzą czerwone (106 mutacji, 15 plików)
+npm run test:mutations              # czy testy widzą czerwone (110 mutacji, 15 plików)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
@@ -754,7 +761,7 @@ tabeli. Trzy deklaracje, nie trzy przeoczenia.
 sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
 `assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
-decyzji w silniku (106 mutacji w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
+decyzji w silniku (110 mutacji w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
 `llm-rules.js`, `llm-providers.js`, `llm-prompts.js`, `retention-rules.js`, `ics.js`,
 `cils-report.js`, `chat-rules.js`, `store.js`, `srs.js`, `flash-rules.js` i `flash-run.js`)
 i wymaga, żeby wskazany
@@ -764,8 +771,8 @@ puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` ł
 
 Trzy rzeczy, które trzeba o niej wiedzieć:
 
-- **Zasięg jest wąski i zadeklarowany.** Piętnaście plików z osiemdziesięciu jeden. „106/106"
-  nie znaczy „silnik sprawdzony", znaczy „te 106 decyzji sprawdzonych". Nowy plik z czystymi funkcjami
+- **Zasięg jest wąski i zadeklarowany.** Piętnaście plików z osiemdziesięciu jeden. „110/110"
+  nie znaczy „silnik sprawdzony", znaczy „te 110 decyzji sprawdzonych". Nowy plik z czystymi funkcjami
   to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
 - **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po
   refaktorze) i wiele wystąpień kończą się błędem, nie ostrzeżeniem: mutacja, która po

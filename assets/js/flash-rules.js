@@ -247,7 +247,8 @@
 
   /**
    * @param {object} card  a deck card ({key, st, s}) or a reserve word ({fresh: true})
-   * @param {object} avail {choice: whether enough distractors exist}
+   * @param {object} avail {choice: whether enough distractors exist,
+   *                        audio: whether the word may be heard (audioAvailable)}
    * @param {string} day   the date, so the mode holds for a day and then turns
    * @returns {"flip"|"choice"|"write"}
    */
@@ -255,7 +256,14 @@
     /* A word never seen cannot be picked or typed, only recognised on sight. */
     if (card.fresh) return "flip";
     var stable = typeof card.s === "number" && card.st === "review" && card.s >= STABLE_DAYS;
-    var family = stable ? ["write", "flip"] : (avail.choice ? ["choice", "flip"] : ["flip"]);
+    var family;
+    if (stable) {
+      family = avail.audio ? ["write", "flip", "listen-write"] : ["write", "flip"];
+    } else if (avail.choice) {
+      family = avail.audio ? ["choice", "flip", "listen-choice"] : ["choice", "flip"];
+    } else {
+      family = ["flip"];
+    }
     return family[hash(String(card.key) + "|" + day) % family.length];
   }
 
@@ -266,8 +274,19 @@
    * can no longer produce it.
    */
   function gradeFor(mode, ok, selfGrade) {
-    if (mode === "choice") return ok ? 3 : 0;
+    if (mode === "choice" || mode === "listen-choice") return ok ? 3 : 0;
     return selfGrade;
+  }
+
+  /**
+   * Whether a card may be asked by ear. Only a recording will do: system
+   * synthesis on Linux is espeak, and a listening card read by it teaches
+   * the wrong sounds. A student who picked the system voice in Settings gets
+   * that voice everywhere, so this screen does not quietly override the
+   * choice; it just stops asking by ear.
+   */
+  function audioAvailable(hasRecording, voiceSource) {
+    return !!hasRecording && voiceSource !== "system";
   }
 
   global.FlashRules = {
@@ -285,7 +304,8 @@
     distractors: distractors,
     tiersFor: tiersFor,
     pickMode: pickMode,
-    gradeFor: gradeFor
+    gradeFor: gradeFor,
+    audioAvailable: audioAvailable
   };
 
 })(window);

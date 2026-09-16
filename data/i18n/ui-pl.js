@@ -1060,6 +1060,9 @@ LINGUAI.addUI("pl", {
   "flash.meaning": "Co to znaczy?",
   "flash.show": "Pokaż",
   "flash.tryIt": "Pięć minut z nowymi słowami",
+  "flash.replay": "Posłuchaj jeszcze raz",
+  "flash.listenPick": "Posłuchaj i wybierz, co usłyszałeś.",
+  "flash.listenWrite": "Posłuchaj i zapisz po włosku.",
   "guide.s.cinque": "Sesja fiszek, która kończy się po pięciu minutach albo dwudziestu fiszkach."
 
 });

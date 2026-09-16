@@ -756,6 +756,12 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
 .flash__note{min-height:1.5em;font-size:.92rem;color:var(--ink-soft);margin:0 0 10px;}
 .flash__grades{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
 .flash__unit{display:block;margin-bottom:16px;}
+/* A typed card keeps its field focused from the moment it appears, and
+   keys.js opens the accent bar ABOVE a focused field (60px, 108px once it
+   wraps under 360px). Without this room the bar sits on the question the
+   student is being asked. */
+.flash__typed .field-row{margin-top:4.5rem;}
+@media (max-width:359px){.flash__typed .field-row{margin-top:7.5rem;}}
 .flash__unit span{display:block;font-weight:600;margin-bottom:5px;}
 
 /* ══════════════════ SIATKI POMOCNICZE ══════════════════ */

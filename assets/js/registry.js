@@ -110,9 +110,18 @@
    * The neutral layer first, then the texts in the student's language —
    * loadScripts keeps the order, and merging happens only once both are in.
    */
+  /* Callers that asked for a level while its files were already on the way.
+     They hear back when the files land, not at once: an immediate "done"
+     had them draw from a level with no units yet. */
+  var waiting = {};
+
   function loadLevelData(code, cb) {
     var lv = registry.byCode[code];
     var files = lv && lv.dataFiles;
+    if (registry.loaded[code] === "loading") {
+      if (cb) (waiting[code] = waiting[code] || []).push(cb);
+      return;
+    }
     if (registry.loaded[code] || !lv || !files || !files.length) { cb && cb(!!lv); return; }
     registry.loaded[code] = "loading";
 
@@ -128,7 +137,10 @@
       var got = (lv.units || []).length > 0;
       registry.loaded[code] = got ? true : "error";
       if (failed.length && got) console.warn("[LinguAI] Nie wczytano: " + failed.join(", "));
+      var reszta = waiting[code] || [];
+      delete waiting[code];
       cb && cb(got);
+      reszta.forEach(function (f) { f(got); });
     });
   }
 

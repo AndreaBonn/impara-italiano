@@ -205,6 +205,37 @@ describe("the memory of loaded overlays", () => {
     assert.deepEqual(R(box).i18nPaths("pl", ["conversations.js"]), [], "the second time there is nothing to take");
   });
 
+  /* Two screens can ask for the same level at once: the startup load in
+     app.js and a view that needs it too. The second caller used to hear
+     "done" at once, while the files were still on their way, and drew from a
+     level with no units - the five-minute screen then said every word was
+     already in the deck. */
+  test("a second caller during loading waits for the files, not for nothing", () => {
+    const box = swiezy();
+    R(box).registerLevel(poziom());
+    const kolejnosc = [];
+    R(box).loadLevelData("A1", ok => kolejnosc.push("pierwszy:" + ok));
+    R(box).loadLevelData("A1", ok => {
+      kolejnosc.push("drugi:" + ok + ":" + (R(box).registry.byCode.A1.units || []).length);
+    });
+    assert.deepEqual([...kolejnosc], [], "nobody hears back before the files arrive");
+
+    R(box).addUnits("A1", [jednostka("a1-u01")]);
+    box.settleScripts();
+    assert.deepEqual([...kolejnosc], ["pierwszy:true", "drugi:true:1"]);
+    assert.equal(box.scripts.length, 2, "the level was fetched once, not twice");
+  });
+
+  test("a second caller during a failed load hears the failure", () => {
+    const box = swiezy();
+    R(box).registerLevel(poziom());
+    let drugi = null;
+    R(box).loadLevelData("A1", () => {});
+    R(box).loadLevelData("A1", ok => { drugi = ok; });
+    box.settleScripts(["data/core/a1-01.js", "data/i18n/pl/a1-01.js"]);
+    assert.equal(drugi, false);
+  });
+
   test("the same file in another language is a different file", () => {
     const box = swiezy();
     R(box).markI18n(R(box).i18nPaths("pl", ["conversations.js"]), []);

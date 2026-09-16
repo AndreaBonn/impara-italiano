@@ -1028,6 +1028,24 @@ LINGUAI.addUI("fr", {
   "privacy.diritti.p2": "Si vous avez une question à laquelle cette page ne répond pas, écrivez à {mail}. Si vous pensez que quelque chose ici ne tient pas, vous pouvez vous adresser à l'autorité de contrôle de votre pays.",
 
   "privacy.zmiany.h": "Si cette notice change",
-  "privacy.zmiany.p1": "La date en haut dit quand le texte a été écrit pour la dernière fois. Le texte vit dans le dépôt du projet, à côté du code qu'il décrit, donc chaque modification est publique et datée dans l'historique des révisions."
+  "privacy.zmiany.p1": "La date en haut dit quand le texte a été écrit pour la dernière fois. Le texte vit dans le dépôt du projet, à côté du code qu'il décrit, donc chaque modification est publique et datée dans l'historique des révisions.",
+
+  /* ---------------- Cinq minutes : une séance de cartes avec une fin ---------------- */
+  "nav.flash": "Cinq minutes",
+  "flash.kicker": "CINQ MINUTES",
+  "flash.title": "Une séance courte qui s'arrête",
+  "flash.intro": "Cinq minutes ou vingt cartes, selon ce qui arrive en premier. Chaque réponse est enregistrée tout de suite : fermer l'onglet en cours de route ne te fait rien perdre.",
+  "flash.ready": { one: "{n} carte à réviser maintenant.", many: "{n} cartes à réviser maintenant.", other: "{n} cartes à réviser maintenant." },
+  "flash.start": "Commencer",
+  "flash.timeLeft": "Temps restant",
+  "flash.oneMinute": "Il reste une minute.",
+  "flash.timeUp": "Le temps est écoulé. Termine cette carte et la séance se ferme.",
+  "flash.end.cap": "Vingt cartes. C'était la séance.",
+  "flash.end.time": "Les cinq minutes sont écoulées.",
+  "flash.end.empty": "Plus de cartes pour l'instant.",
+  "flash.again": "Encore cinq minutes",
+  "flash.emptyTitle": "Rien à réviser pour le moment",
+  "flash.emptyText": "Les cartes viennent des leçons : marque un mot avec l'étoile ou trompe-toi dans un exercice, et il reviendra ici au bon moment.",
+  "guide.s.cinque": "Une séance de cartes qui s'arrête après cinq minutes ou vingt cartes."
 
 });

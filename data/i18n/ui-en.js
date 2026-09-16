@@ -1020,6 +1020,24 @@ LINGUAI.addUI("en", {
   "privacy.diritti.p2": "If you have a question this page does not answer, write to {mail}. If you think something here does not add up, you can contact the supervisory authority in your country.",
 
   "privacy.zmiany.h": "If this notice changes",
-  "privacy.zmiany.p1": "The date at the top says when the text was last written. The text lives in the project's repository next to the code it describes, so every change is public and dated in the revision history."
+  "privacy.zmiany.p1": "The date at the top says when the text was last written. The text lives in the project's repository next to the code it describes, so every change is public and dated in the revision history.",
+
+  /* ---------------- Five minutes: a card session with an end ---------------- */
+  "nav.flash": "Five minutes",
+  "flash.kicker": "FIVE MINUTES",
+  "flash.title": "A short session that ends",
+  "flash.intro": "Five minutes or twenty cards, whichever comes first. Every answer is saved as you go, so closing the tab halfway loses nothing.",
+  "flash.ready": { one: "{n} card is due now.", other: "{n} cards are due now." },
+  "flash.start": "Start",
+  "flash.timeLeft": "Time left",
+  "flash.oneMinute": "One minute left.",
+  "flash.timeUp": "Time is up. Finish this card and the session closes.",
+  "flash.end.cap": "Twenty cards. That was the session.",
+  "flash.end.time": "Five minutes are up.",
+  "flash.end.empty": "No more cards for now.",
+  "flash.again": "Another five minutes",
+  "flash.emptyTitle": "Nothing due right now",
+  "flash.emptyText": "Cards come from lessons: star a word, or get one wrong in an exercise, and it shows up here when it is due.",
+  "guide.s.cinque": "A card session that stops after five minutes or twenty cards."
 
 });

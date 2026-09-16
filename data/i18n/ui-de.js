@@ -1023,6 +1023,24 @@ LINGUAI.addUI("de", {
   "privacy.diritti.p2": "Wenn du eine Frage hast, die diese Seite nicht beantwortet, schreib an {mail}. Wenn du meinst, dass hier etwas nicht stimmt, kannst du dich an die Aufsichtsbehörde deines Landes wenden.",
 
   "privacy.zmiany.h": "Wenn sich diese Erklärung ändert",
-  "privacy.zmiany.p1": "Das Datum oben sagt, wann der Text zuletzt geschrieben wurde. Der Text liegt im Repository des Projekts neben dem Code, den er beschreibt, also ist jede Änderung öffentlich und in der Versionsgeschichte datiert."
+  "privacy.zmiany.p1": "Das Datum oben sagt, wann der Text zuletzt geschrieben wurde. Der Text liegt im Repository des Projekts neben dem Code, den er beschreibt, also ist jede Änderung öffentlich und in der Versionsgeschichte datiert.",
+
+  /* ---------------- Fünf Minuten: eine Kartenrunde mit Ende ---------------- */
+  "nav.flash": "Fünf Minuten",
+  "flash.kicker": "FÜNF MINUTEN",
+  "flash.title": "Eine kurze Runde mit Ende",
+  "flash.intro": "Fünf Minuten oder zwanzig Karten, je nachdem, was zuerst kommt. Jede Antwort wird sofort gespeichert, du verlierst also nichts, wenn du den Tab mittendrin schließt.",
+  "flash.ready": { one: "{n} Karte ist jetzt fällig.", other: "{n} Karten sind jetzt fällig." },
+  "flash.start": "Los geht's",
+  "flash.timeLeft": "Verbleibende Zeit",
+  "flash.oneMinute": "Noch eine Minute.",
+  "flash.timeUp": "Die Zeit ist um. Beantworte diese Karte, dann endet die Runde.",
+  "flash.end.cap": "Zwanzig Karten. Das war die Runde.",
+  "flash.end.time": "Die fünf Minuten sind um.",
+  "flash.end.empty": "Im Moment keine Karten mehr.",
+  "flash.again": "Noch fünf Minuten",
+  "flash.emptyTitle": "Gerade ist nichts fällig",
+  "flash.emptyText": "Karten kommen aus den Lektionen: Markier ein Wort mit dem Stern oder mach in einer Übung einen Fehler, dann taucht es hier auf, wenn es fällig ist.",
+  "guide.s.cinque": "Eine Kartenrunde, die nach fünf Minuten oder zwanzig Karten endet."
 
 });

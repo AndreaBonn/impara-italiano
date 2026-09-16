@@ -90,6 +90,13 @@ własność kodu, nie promptu, więc przeżywa model, który kłamie, i podmian�
 bez zgody albo z `file://` kurs zachowuje się dokładnie tak jak wcześniej: `Llm.available()`
 milczy, a `judge()` oddaje `null`.
 
+Tą samą granicą idzie sesja „pięć minut": `flash-rules.js` (globalna `FlashRules`: kiedy
+sesja się kończy, ile czasu zostało) i `flash-run.js` (kolejka, ocena prawdziwej karty przez
+`Core.gradeCard`, powód końca) przed `views-flash.js` (zegar, karta, podsumowanie). Granica
+sprawdza się **po** odpowiedzi, nigdy zamiast niej: karta otwarta w chwili dzwonka zostaje
+uczniowi i jej odpowiedź się liczy. To te same karty co w Powtórkach, nie druga talia:
+druga talia dałaby jednemu słowu dwa harmonogramy.
+
 Tą samą granicą idzie swobodna rozmowa: `chat-rules.js` (globalna `ChatRules`: sufit tur,
 potarcie historii, odczyt repliki i korekty — same czyste funkcje) i `chat-run.js` (przebieg
 jednej sceny) przed `views-chat.js` (bąbelki, pole, licznik).
@@ -646,7 +653,7 @@ node scripts/extract_strings.mjs    # lista zdań do nagrania
 uv run --script scripts/build_audio.py --dry-run   # ile plików brakuje
 node scripts/serve.mjs 8080         # serwer do testów, zawsze no-store
 npm test                            # logika silnika, node:test w piaskownicy node:vm
-npm run test:mutations              # czy testy widzą czerwone (84 mutacje, 12 plików)
+npm run test:mutations              # czy testy widzą czerwone (90 mutacji, 14 plików)
 npm run test:dom                    # zachowanie w przeglądarce, Playwright
 npm run test:all                    # obie suity; warunek zamknięcia każdej fazy
 node scripts/coverage.mjs [--pelne] [--min 99]   # ile silnika wykonują testy jednostkowe
@@ -730,9 +737,9 @@ tabeli. Trzy deklaracje, nie trzy przeoczenia.
 sprawdza**. Pokrycie mówi, że linia się wykonała, a wykonanie nie jest sprawdzeniem —
 `assert.ok(!out.includes("js-play"))` przechodzi przez cały generator także wtedy, gdy
 generator nie produkuje niczego, i ma przy tym 100% pokrycia. Bramka psuje po jednej
-decyzji w silniku (84 mutacje w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
+decyzji w silniku (90 mutacji w `cils-html.js`, `lemma-morf.js`, `pwa-rules.js`, `pwa.js`,
 `llm-rules.js`, `llm-providers.js`, `llm-prompts.js`, `retention-rules.js`, `ics.js`,
-`cils-report.js`, `chat-rules.js` i `store.js`)
+`cils-report.js`, `chat-rules.js`, `store.js`, `flash-rules.js` i `flash-run.js`)
 i wymaga, żeby wskazany
 plik testów stał się czerwony. Trzy asercje napisane w dniu jej powstania okazały się
 puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` łapiące
@@ -740,8 +747,8 @@ puste właśnie tak: pusty blok audio wchodzący do sekcji czytania, `cils-h` ł
 
 Trzy rzeczy, które trzeba o niej wiedzieć:
 
-- **Zasięg jest wąski i zadeklarowany.** Dwanaście plików z siedemdziesięciu siedmiu. „84/84"
-  nie znaczy „silnik sprawdzony", znaczy „te 84 decyzje sprawdzone". Nowy plik z czystymi funkcjami
+- **Zasięg jest wąski i zadeklarowany.** Czternaście plików z osiemdziesięciu. „90/90"
+  nie znaczy „silnik sprawdzony", znaczy „te 90 decyzji sprawdzonych". Nowy plik z czystymi funkcjami
   to dobry moment na dopisanie wiersza; obowiązku pokrycia całego silnika nie ma.
 - **Fragment `z` musi występować w pliku dokładnie raz.** Zero wystąpień (tabela zgniła po
   refaktorze) i wiele wystąpień kończą się błędem, nie ostrzeżeniem: mutacja, która po

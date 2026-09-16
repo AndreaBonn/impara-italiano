@@ -102,6 +102,13 @@ export const AUDIO = ["data/audio-index.js", "assets/js/recordings.js", "assets/
 export const PWA = ["assets/js/notice.js", "assets/js/pwa-rules.js", "assets/js/pwa.js"];
 
 /**
+ * The five-minute session: the rules before the run, the same order as in
+ * index.html. flash-run.js reads FlashRules at module execution. Load after
+ * CORE, because the run grades through Core.
+ */
+export const FLASH = ["assets/js/flash-rules.js", "assets/js/flash-run.js"];
+
+/**
  * localStorage with a controllable limit.
  * A real browser throws QuotaExceededError when it overflows; without that
  * there is no way to test how save() behaves on a full disk.

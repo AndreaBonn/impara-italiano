@@ -748,6 +748,14 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
 .summary__msg{font-size:1.06rem;color:var(--ink-soft);margin:8px 0 24px;}
 .summary__acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
+/* ══════════════════ PIĘĆ MINUT ══════════════════ */
+.flash__bar{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+.flash__clock{font-family:var(--display);font-size:2rem;font-weight:700;color:var(--rosa-deep);font-variant-numeric:tabular-nums;line-height:1;}
+.flash__count{font-size:.86rem;color:var(--ink-soft);}
+/* The note keeps its height when empty, so the card does not jump down when the minute warning appears. */
+.flash__note{min-height:1.5em;font-size:.92rem;color:var(--ink-soft);margin:0 0 10px;}
+.flash__grades{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+
 /* ══════════════════ SIATKI POMOCNICZE ══════════════════ */
 .stack{display:flex;flex-direction:column;gap:14px;}
 .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}

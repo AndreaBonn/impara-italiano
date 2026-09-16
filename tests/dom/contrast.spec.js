@@ -435,3 +435,34 @@ for (const theme of ["light", "dark"]) {
     }
   });
 }
+
+/* ============================================================
+   Five minutes: the clock, the counter and the note.
+
+   The clock is large display text in the accent colour, the counter and the
+   note are small soft text right under it: three different pairs, and the
+   note is the one a student reads when time is up.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`the five-minute session: contrast in the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html#/percorso");
+    await page.waitForFunction(() => window.Views && window.Views.cinque && window.Core);
+    await page.evaluate(t => {
+      document.documentElement.setAttribute("data-theme", t);
+      window.Core.addCard("il gatto", "kot", "test");
+      window.App.go("cinque");
+    }, theme);
+    await page.locator(".js-start").click();
+    await page.evaluate(() => { document.querySelector(".flash__note").textContent = "x"; });
+    await page.waitForTimeout(600); /* the palette transition */
+
+    const zegar = await page.evaluate(() => window.__kontrast(".flash__clock"));
+    expect(zegar.wielkosc, "the clock counts as large text").toBeGreaterThanOrEqual(24);
+    expect(zegar.tekst, `clock ${zegar.tekst.toFixed(2)}:1`).toBeGreaterThanOrEqual(UI);
+    for (const sel of [".flash__count", ".flash__note"]) {
+      const m = await page.evaluate(s => window.__kontrast(s), sel);
+      expect(m.tekst, `${sel} ${m.tekst.toFixed(2)}:1`).toBeGreaterThanOrEqual(TEKST);
+    }
+  });
+}

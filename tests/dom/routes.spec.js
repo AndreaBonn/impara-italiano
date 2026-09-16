@@ -21,7 +21,7 @@ const { test, expect } = require("@playwright/test");
 
 /* The routes from the side menu plus the ones reachable only from inside the course. */
 const TRASY = [
-  "oggi", "percorso", "ripasso", "allenamento", "conversazione", "grammatica",
+  "oggi", "percorso", "ripasso", "cinque", "allenamento", "conversazione", "grammatica",
   "coniugatore", "lessico", "shadowing", "velocita", "esame", "falsi",
   "copertura", "progressi", "impostazioni",
   "lezione", "piazzamento", "cerca", "lettura", "scrittura", "suoni", "privacy"

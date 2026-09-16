@@ -1032,6 +1032,24 @@ LINGUAI.addUI("pl", {
   "privacy.diritti.p2": "Jeśli masz pytanie, na które ta strona nie odpowiada, napisz na {mail}. Jeśli uważasz, że coś tu się nie zgadza, możesz zwrócić się do organu nadzorczego w swoim kraju.",
 
   "privacy.zmiany.h": "Jeśli ta informacja się zmieni",
-  "privacy.zmiany.p1": "Data na górze mówi, kiedy tekst był pisany ostatni raz. Tekst leży w repozytorium projektu razem z kodem, który opisuje, więc każda zmiana jest jawna i ma datę w historii zmian."
+  "privacy.zmiany.p1": "Data na górze mówi, kiedy tekst był pisany ostatni raz. Tekst leży w repozytorium projektu razem z kodem, który opisuje, więc każda zmiana jest jawna i ma datę w historii zmian.",
+
+  /* ---------------- Pięć minut: sesja fiszek z końcem ---------------- */
+  "nav.flash": "Pięć minut",
+  "flash.kicker": "PIĘĆ MINUT",
+  "flash.title": "Krótka sesja, która się kończy",
+  "flash.intro": "Pięć minut albo dwadzieścia fiszek, co nastąpi pierwsze. Każda odpowiedź zapisuje się od razu, więc zamknięcie karty w połowie niczego nie traci.",
+  "flash.ready": { one: "Do powtórzenia jest teraz {n} fiszka.", few: "Do powtórzenia są teraz {n} fiszki.", many: "Do powtórzenia jest teraz {n} fiszek.", other: "Do powtórzenia jest teraz {n} fiszki." },
+  "flash.start": "Zaczynam",
+  "flash.timeLeft": "Pozostały czas",
+  "flash.oneMinute": "Została minuta.",
+  "flash.timeUp": "Czas minął. Dokończ tę fiszkę, a sesja się zamknie.",
+  "flash.end.cap": "Dwadzieścia fiszek. To była cała sesja.",
+  "flash.end.time": "Pięć minut minęło.",
+  "flash.end.empty": "Na razie nie ma więcej fiszek.",
+  "flash.again": "Jeszcze pięć minut",
+  "flash.emptyTitle": "Teraz nie ma nic do powtórzenia",
+  "flash.emptyText": "Fiszki biorą się z lekcji: oznacz słówko gwiazdką albo pomyl się w ćwiczeniu, a wróci tutaj, kiedy przyjdzie jego pora.",
+  "guide.s.cinque": "Sesja fiszek, która kończy się po pięciu minutach albo dwudziestu fiszkach."
 
 });

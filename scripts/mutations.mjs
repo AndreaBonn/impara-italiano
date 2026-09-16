@@ -81,6 +81,10 @@ const T_CHAT = "tests/unit/chat-rules.test.mjs";
 const PROV_CHAT = "tests/unit/llm-providers.test.mjs";
 const STORE = "assets/js/store.js";
 const T_STORE = "tests/unit/store.test.mjs";
+const FLASH = "assets/js/flash-rules.js";
+const T_FLASH = "tests/unit/flash-rules.test.mjs";
+const RUN = "assets/js/flash-run.js";
+const T_RUN = "tests/unit/flash-run.test.mjs";
 
 /**
  * The mutations. `z` must occur in the file EXACTLY ONCE — with two
@@ -322,7 +326,21 @@ const MUTACJE = [
   { plik: STORE, test: T_STORE, opis: "flush writes but leaves the timer to write again",
     z: "    global.clearTimeout(saveTimer);\n", na: "\n" },
   { plik: STORE, test: T_STORE, opis: "flush on every visibility change, visible included",
-    z: 'if (global.document.visibilityState === "hidden") flush();', na: "flush();" }
+    z: 'if (global.document.visibilityState === "hidden") flush();', na: "flush();" },
+
+  /* ---- flash-rules.js / flash-run.js: the five-minute session ---- */
+  { plik: FLASH, test: T_FLASH, opis: "the card cap one card too late",
+    z: "if (answered >= LIMITS.cards) return \"cap\";", na: "if (answered > LIMITS.cards) return \"cap\";" },
+  { plik: FLASH, test: T_FLASH, opis: "the time bound ignored",
+    z: "if (now - start >= LIMITS.ms) return \"time\";", na: "" },
+  { plik: FLASH, test: T_FLASH, opis: "a clock moved backwards gives extra time",
+    z: "return Math.max(0, Math.min(LIMITS.ms, LIMITS.ms - (now - start)));", na: "return Math.max(0, LIMITS.ms - (now - start));" },
+  { plik: FLASH, test: T_FLASH, opis: "a started second rounds down to 0:00",
+    z: "var s = Math.ceil(Math.max(0, ms) / 1000);", na: "var s = Math.floor(Math.max(0, ms) / 1000);" },
+  { plik: RUN, test: T_RUN, opis: "the bound checked before grading the open card",
+    z: "      global.Core.gradeCard(kolejka[i].key, q);\n      i++;", na: "      if (Rules.isOver(start, now, i)) { powod = \"time\"; return powod; }\n      global.Core.gradeCard(kolejka[i].key, q);\n      i++;" },
+  { plik: RUN, test: T_RUN, opis: "answering after the end grades again",
+    z: "      if (powod) return powod;\n      global.Core.gradeCard", na: "      global.Core.gradeCard" }
 ];
 
 /* ---------------- Running ---------------- */

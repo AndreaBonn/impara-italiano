@@ -1028,6 +1028,24 @@ LINGUAI.addUI("es", {
   "privacy.diritti.p2": "Si tienes una pregunta que esta página no responde, escribe a {mail}. Si crees que algo de aquí no cuadra, puedes dirigirte a la autoridad de control de tu país.",
 
   "privacy.zmiany.h": "Si este aviso cambia",
-  "privacy.zmiany.p1": "La fecha de arriba dice cuándo se escribió el texto por última vez. El texto vive en el repositorio del proyecto junto al código que describe, así que cada cambio es público y va fechado en el historial de revisiones."
+  "privacy.zmiany.p1": "La fecha de arriba dice cuándo se escribió el texto por última vez. El texto vive en el repositorio del proyecto junto al código que describe, así que cada cambio es público y va fechado en el historial de revisiones.",
+
+  /* ---------------- Cinco minutos: una sesión de tarjetas con final ---------------- */
+  "nav.flash": "Cinco minutos",
+  "flash.kicker": "CINCO MINUTOS",
+  "flash.title": "Una sesión corta que termina",
+  "flash.intro": "Cinco minutos o veinte tarjetas, lo que llegue antes. Cada respuesta se guarda al momento, así que cerrar la pestaña a mitad no pierde nada.",
+  "flash.ready": { one: "Tienes {n} tarjeta pendiente ahora.", many: "Tienes {n} tarjetas pendientes ahora.", other: "Tienes {n} tarjetas pendientes ahora." },
+  "flash.start": "Empezar",
+  "flash.timeLeft": "Tiempo restante",
+  "flash.oneMinute": "Queda un minuto.",
+  "flash.timeUp": "Se acabó el tiempo. Termina esta tarjeta y la sesión se cierra.",
+  "flash.end.cap": "Veinte tarjetas. Esa era la sesión.",
+  "flash.end.time": "Han pasado los cinco minutos.",
+  "flash.end.empty": "No hay más tarjetas por ahora.",
+  "flash.again": "Otros cinco minutos",
+  "flash.emptyTitle": "Nada pendiente ahora mismo",
+  "flash.emptyText": "Las tarjetas salen de las lecciones: marca una palabra con la estrella o equivócate en un ejercicio, y aparecerá aquí cuando le toque.",
+  "guide.s.cinque": "Una sesión de tarjetas que se detiene a los cinco minutos o a las veinte tarjetas."
 
 });

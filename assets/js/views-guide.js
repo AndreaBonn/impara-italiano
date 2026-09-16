@@ -46,7 +46,7 @@
      that are not in the rail — because those are exactly the ones the
      student will not find on their own. */
   var EKRANY = [
-    ["oggi", "nav.today"], ["percorso", "nav.path"], ["ripasso", "nav.review"],
+    ["oggi", "nav.today"], ["percorso", "nav.path"], ["ripasso", "nav.review"], ["cinque", "nav.flash"],
     ["allenamento", "nav.train"], ["conversazione", "nav.talk"], ["chiacchiere", "nav.chat"],
     ["grammatica", "nav.grammar"],
     ["coniugatore", "nav.verbs"], ["lessico", "nav.lexicon"], ["shadowing", "nav.shadow"],

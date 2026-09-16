@@ -131,3 +131,8 @@ Registrati qui perché il piano sopra resta com'era stato approvato.
 | 2 | Un commit invece di due (riserva e selettore d'unità) | Il selettore e il ridisegno dopo il caricamento dei livelli condividono lo stesso codice di ingresso della vista |
 | 2 | Correzione in `registry.js`, commit separato | `loadLevelData` rispondeva subito "caricato" a chi chiedeva un livello già in caricamento: la vista disegnava da un livello senza unità |
 | 2 | Ripresa della sessione in `Views.cinque` (`aktywna`) | `app.js` ridisegna la rotta corrente quando arriva il livello di avvio: su rete lenta azzerava una sessione già iniziata. Lo stesso difetto esiste in `views-today.js`, fuori scope |
+| 3 | Una parola nuova arriva sempre come `flip`, mai come `choice` | Scegliere fra quattro parole mai viste è tirare a indovinare, e il voto 3 di un tiro fortunato entrerebbe in FSRS |
+| 3 | Carte estratte in `flash-cards.js` | Con la carta a scelta `views-flash.js` superava le 400 righe; le carte sono una responsabilità distinta dal flusso, come le famiglie `exercises-*.js` |
+| 3 | `"un po'"` escluso dal gruppo dell'articolo `un` | Il render ha mostrato "un po' stanco/a" fra "un caffè" e "un cappuccino": un'eliminazione gratuita |
+| 3 | Un commit invece di due (distrattori e modi) | Le due parti stanno nello stesso file e un modo `choice` senza distrattori non ha stato intermedio utilizzabile |
+| 3 | Nessun paragrafo nuovo nella guida | La schermata non ha una sezione propria nella guida, solo la riga della mappa; aggiungerla è una decisione di contenuto, non di questa fase |

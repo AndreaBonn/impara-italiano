@@ -9,22 +9,48 @@
    ============================================================ */
 const { test, expect } = require("@playwright/test");
 
-/** n due cards straight in the deck, then the screen drawn from scratch. */
-async function zTalia(page, n) {
+/**
+ * n due cards straight in the deck, then the screen drawn from scratch.
+ * With `pisane` every card is stable and one that FlashRules gives the write
+ * mode today: the keyboard tests are about the typed card, and the mode
+ * otherwise turns with the date.
+ */
+async function zTalia(page, n, pisane) {
   await page.goto("/index.html#/percorso");
   await page.waitForFunction(() => window.Views && window.Views.cinque && window.Core);
-  await page.evaluate(ile => {
-    for (let i = 0; i < ile; i++) window.Core.addCard("parola" + i, "slowo" + i, "test");
+  await page.evaluate(([ile, tylkoPisane]) => {
+    const dzien = window.Core.today();
+    let dodane = 0;
+    for (let i = 0; dodane < ile; i++) {
+      const it = "parola" + i;
+      if (!tylkoPisane) { window.Core.addCard(it, "slowo" + i, "test"); dodane++; continue; }
+      const karta = { key: it, st: "review", s: 30 };
+      if (window.FlashRules.pickMode(karta, { choice: true }, dzien) !== "write") continue;
+      const k = window.Core.addCard(it, "slowo" + i, "test");
+      Object.assign(window.Core.state.srs[k], { st: "review", s: 30, d: 5, last: Date.now() - 864e5 * 30, due: Date.now() - 1000 });
+      dodane++;
+    }
     window.Store.flush();
-  }, n);
+  }, [n, !!pisane]);
   await page.evaluate(() => window.App.go("cinque"));
   await page.waitForSelector(".view-head");
 }
 
+/** Answers whatever card is on screen, in the way its mode asks. */
 async function odpowiedz(page) {
-  await page.locator(".flash__card .js-in").fill("x");
-  await page.locator(".flash__card .js-show").click();
-  await page.locator('.flash__card .js-grade button[data-q="4"]').click();
+  const karta = page.locator(".flash__card");
+  if (await karta.locator(".js-in").count()) {
+    await karta.locator(".js-in").fill("x");
+    await karta.locator(".js-show").click();
+    await karta.locator('.js-grade button[data-q="4"]').click();
+  } else if (await karta.locator(".opts").count()) {
+    await karta.locator(".opt").first().click();
+    await karta.locator(".js-check").click();
+    await karta.locator(".js-next").click();
+  } else {
+    await karta.locator(".js-show").click();
+    await karta.locator('.js-grade button[data-q="4"]').click();
+  }
 }
 
 test("thirty due cards: the session stops at twenty and every answer is in the journal", async ({ page }) => {
@@ -47,7 +73,7 @@ test("time runs out on an open card: that card still counts, the next one never 
 
   await page.clock.fastForward("05:01");
   await expect(page.locator(".flash__note")).not.toBeEmpty();
-  await expect(page.locator(".flash__card .js-in"), "the open card stays").toBeVisible();
+  await expect(page.locator(".flash__card .exq"), "the open card stays").toBeVisible();
 
   await odpowiedz(page);
   await expect(page.locator(".summary")).toBeVisible();
@@ -81,7 +107,7 @@ test("the clock counts down and leaving the screen stops it", async ({ page }) =
    has the focus, and one keystroke grades the card "no idea" before the
    student has seen the answer. */
 test("the keyboard: Enter reveals, it does not also grade", async ({ page }) => {
-  await zTalia(page, 2);
+  await zTalia(page, 2, true);
   await page.locator(".js-start").click();
   await page.keyboard.type("parola0");
   await page.keyboard.press("Enter");
@@ -103,7 +129,7 @@ test("the keyboard: Enter reveals, it does not also grade", async ({ page }) => 
    again. Without a guard one long press grades a string of cards the student
    never looked at. */
 test("the keyboard: a held Enter grades nothing", async ({ page }) => {
-  await zTalia(page, 4);
+  await zTalia(page, 4, true);
   await page.locator(".js-start").click();
   await page.keyboard.type("parola0");
   await page.keyboard.down("Enter");
@@ -208,11 +234,13 @@ test("a level that finishes loading mid-session does not redraw over the card", 
   await page.goto("/index.html#/cinque", { waitUntil: "domcontentloaded" });
   await page.waitForSelector(".js-start");
   await page.locator(".js-start").click();
-  await page.locator(".flash__card .js-in").fill("il gatto");
+  /* A mark on the card node: a redraw would replace the node and lose it,
+     whichever mode the card came in. */
+  await page.evaluate(() => { document.querySelector(".flash__card .exq").dataset.znak = "ta sama"; });
 
   pusc();
   await page.waitForFunction(() => window.Core.registry.loaded.B1 === true);
-  await expect(page.locator(".flash__card .js-in"), "the card and what was typed stay").toHaveValue("il gatto");
+  await expect(page.locator(".flash__card .exq"), "the same card node stays").toHaveAttribute("data-znak", "ta sama");
   await expect(page.locator(".js-start")).toBeHidden();
 });
 
@@ -251,4 +279,79 @@ test("a level that lands after the student picked another unit keeps the student
   await page.waitForFunction(() => window.Core.registry.loaded.B1 === true);
   await page.waitForTimeout(300);
   await expect(page.locator(".js-unit")).toHaveValue("a1-u02");
+});
+
+/* ---------------- Modes ---------------- */
+
+/**
+ * One due card from a real A1 lesson that FlashRules sends as a choice today,
+ * with at least two distractors. Returns its Italian and gloss.
+ */
+async function kartaWyboru(page) {
+  await page.goto("/index.html#/percorso");
+  await page.waitForFunction(() => window.Core && window.Core.registry.loaded.A1 === true);
+  const karta = await page.evaluate(() => {
+    const R = window.FlashRules, C = window.Core, dzien = C.today();
+    for (const lv of C.registry.levels) for (const u of lv.units || []) for (const l of u.lessons || []) {
+      for (const v of l.vocab || []) {
+        if (!R.articleOf(v.it)) continue;
+        const key = C.cardKey(v.it);
+        if (R.pickMode({ key, st: "learning", s: 1 }, { choice: true }, dzien) !== "choice") continue;
+        const ds = R.distractors({ it: v.it, tr: v.tr }, R.tiersFor(l.id, C.registry.levels), 3, key + "|" + dzien);
+        if (ds.length < 2) continue;
+        C.addCard(v.it, v.tr, l.id);
+        Object.assign(C.state.srs[key], { st: "learning", s: 1, d: 5, due: Date.now() - 1000 });
+        window.Store.flush();
+        return { it: v.it, tr: v.tr, art: R.articleOf(v.it) };
+      }
+    }
+    return null;
+  });
+  expect(karta, "the course has a word for a choice card today").not.toBeNull();
+  await page.evaluate(() => window.App.go("cinque", { unit: "a1-u01" }));
+  await page.waitForSelector(".js-start");
+  return karta;
+}
+
+test("a choice card: Italian options that share the article, graded 3 when right", async ({ page }) => {
+  const karta = await kartaWyboru(page);
+  await page.locator(".js-start").click();
+
+  const opcje = await page.locator(".flash__card .opt span").allInnerTexts();
+  expect(opcje.length).toBeGreaterThanOrEqual(3);
+  expect(opcje).toContain(karta.it);
+  const rodzajniki = await page.evaluate(os => os.map(o => window.FlashRules.articleOf(o)), opcje);
+  expect(rodzajniki, `options ${opcje.join(" / ")}`).toEqual(opcje.map(() => karta.art));
+  expect(opcje, "no translation among the options").not.toContain(karta.tr);
+  await expect(page.locator(".flash__card .opts")).toHaveAttribute("role", "radiogroup");
+
+  await page.locator(".flash__card .opt", { hasText: karta.it }).first().click();
+  await page.locator(".flash__card .js-check").click();
+  await expect(page.locator(".flash__card .fb")).toHaveClass(/fb--ok/);
+  expect(await page.evaluate(() => window.Core.state.reviews.length), "checking shows, it does not grade").toBe(0);
+  await page.locator(".flash__card .js-next").click();
+
+  const wpis = await page.evaluate(() => window.Core.state.reviews[0]);
+  expect(wpis.q).toBe(3);
+  expect(wpis.m).toBe("choice");
+});
+
+test("a choice card by keyboard, a wrong pick graded 0", async ({ page }) => {
+  const karta = await kartaWyboru(page);
+  await page.locator(".js-start").click();
+  await expect(page.locator(".flash__card .opt input").first()).toBeFocused();
+
+  const opcje = await page.locator(".flash__card .opt span").allInnerTexts();
+  const zla = opcje.findIndex(o => o !== karta.it);
+  for (let i = 0; i < zla; i++) await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Space");
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".flash__card .fb")).toHaveClass(/fb--ko/);
+  await expect(page.locator(".flash__card .js-next")).toBeFocused();
+  await page.keyboard.press("Enter");
+
+  const wpis = await page.evaluate(() => window.Core.state.reviews[0]);
+  expect(wpis.q).toBe(0);
+  expect(wpis.m).toBe("choice");
 });

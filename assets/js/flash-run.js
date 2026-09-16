@@ -38,15 +38,16 @@
      * @param {number}  q   the grade on the 0/3/4/5 scale Core.gradeCard takes
      * @param {boolean} ok  whether the answer was right, for the summary only
      * @param {number}  now ms
+     * @param {string}  [mode] how the card was asked, for the review journal
      * @returns {"cap"|"time"|"empty"|null} why the session ended, or null
      */
-    function answer(q, ok, now) {
+    function answer(q, ok, now, mode) {
       if (powod) return powod;
       var c = kolejka[i];
       /* A new word joins the deck here, at its first answer, and not when the
          queue was built: a word shown and left unanswered stays out. */
       var key = c.fresh ? global.Core.addCard(c.it, c.tr, c.src) : c.key;
-      if (key) global.Core.gradeCard(key, q);
+      if (key) global.Core.gradeCard(key, q, mode);
       i++;
       if (ok) dobre++;
       powod = Rules.isOver(start, now, i) || (i >= kolejka.length ? "empty" : null);

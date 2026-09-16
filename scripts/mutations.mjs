@@ -84,6 +84,8 @@ const T_STORE = "tests/unit/store.test.mjs";
 const FLASH = "assets/js/flash-rules.js";
 const T_FLASH = "tests/unit/flash-rules.test.mjs";
 const RUN = "assets/js/flash-run.js";
+const SRS = "assets/js/srs.js";
+const T_SRS = "tests/unit/srs.test.mjs";
 const T_RUN = "tests/unit/flash-run.test.mjs";
 
 /**
@@ -353,7 +355,27 @@ const MUTACJE = [
   { plik: FLASH, test: T_FLASH, opis: "new today: a review at midnight counted as yesterday",
     z: "return first[k] >= dayStart;", na: "return first[k] > dayStart;" },
   { plik: FLASH, test: T_FLASH, opis: "compose: an overdrawn allowance goes negative",
-    z: "Math.max(0, NEW_PER_DAY - newSoFar)", na: "NEW_PER_DAY - newSoFar" }
+    z: "Math.max(0, NEW_PER_DAY - newSoFar)", na: "NEW_PER_DAY - newSoFar" },
+  { plik: FLASH, test: T_FLASH, opis: "distractors: any article goes",
+    z: "if (seen[k] || articleOf(w.it) !== art || sense(w.tr) === zly) return;", na: "if (seen[k] || sense(w.tr) === zly) return;" },
+  { plik: FLASH, test: T_FLASH, opis: "distractors: the answer offered as its own distractor",
+    z: "    seen[global.Txt.norm(answer.it)] = true;\n", na: "" },
+  { plik: FLASH, test: T_FLASH, opis: "distractors: a word with the same meaning allowed",
+    z: "if (seen[k] || articleOf(w.it) !== art || sense(w.tr) === zly) return;", na: "if (seen[k] || articleOf(w.it) !== art) return;" },
+  { plik: FLASH, test: T_FLASH, opis: "distractors: glosses in parentheses compared too",
+    z: 'String(tr || "").replace(/\\([^)]*\\)/g, " ")', na: 'String(tr || "")' },
+  { plik: FLASH, test: T_FLASH, opis: "articles: \"un po'\" read as un + noun",
+    z: '    if (NOT_AN_ARTICLE.test(String(it || "").toLowerCase().trim())) return "";\n', na: "" },
+  { plik: FLASH, test: T_FLASH, opis: "modes: stable from twenty days",
+    z: "card.s >= STABLE_DAYS;", na: "card.s >= STABLE_DAYS - 1;" },
+  { plik: FLASH, test: T_FLASH, opis: "modes: a new word may come as a choice",
+    z: '    if (card.fresh) return "flip";\n', na: "" },
+  { plik: FLASH, test: T_FLASH, opis: "grades: a right pick graded as recall",
+    z: "if (mode === \"choice\") return ok ? 3 : 0;", na: "if (mode === \"choice\") return ok ? 4 : 0;" },
+  { plik: SRS, test: T_SRS, opis: "journal: the default mode written as well",
+    z: 'if (mode && mode !== "write") wpis.m = mode;', na: "if (mode) wpis.m = mode;" },
+  { plik: SRS, test: T_SRS, opis: "journal: the mode dropped",
+    z: 'if (mode && mode !== "write") wpis.m = mode;', na: "" }
 ];
 
 /* ---------------- Running ---------------- */

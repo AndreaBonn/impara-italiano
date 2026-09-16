@@ -180,7 +180,15 @@
     return silnikCache.silnik;
   }
 
-  function gradeCard(key, q) {
+  /**
+   * @param {string} key
+   * @param {number} q    0/3/4/5
+   * @param {string} [mode] how the card was asked (views-flash.js). Written
+   *   to the journal when it is not the default "write": once recognition and
+   *   recall reviews are mixed there is no telling them apart afterwards, and
+   *   an FSRS optimiser fed both as recall learns the wrong curve.
+   */
+  function gradeCard(key, q, mode) {
     var c = Store.state.srs[key];
     if (!c) return null;
 
@@ -204,7 +212,7 @@
     else c.reps = (c.reps || 0) + 1;
     c.interval = Math.max(0, Math.round((wynik.due - wynik.last) / DAY));
 
-    zapiszPowtorke(key, q, wynik.last);
+    zapiszPowtorke(key, q, wynik.last, mode);
     save();
     return c;
   }
@@ -215,9 +223,11 @@
      room to spare. */
   var MAX_REVIEWS = 5000;
 
-  function zapiszPowtorke(key, q, kiedy) {
+  function zapiszPowtorke(key, q, kiedy, mode) {
     if (!Array.isArray(Store.state.reviews)) Store.state.reviews = [];
-    Store.state.reviews.push({ k: key, t: kiedy, q: q });
+    var wpis = { k: key, t: kiedy, q: q };
+    if (mode && mode !== "write") wpis.m = mode;
+    Store.state.reviews.push(wpis);
     /* We trim from the oldest: recent history describes memory as it is now,
        and that is what has value for tuning. */
     if (Store.state.reviews.length > MAX_REVIEWS) {

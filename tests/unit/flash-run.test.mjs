@@ -134,3 +134,15 @@ describe("new words from the reserve", () => {
     assert.equal(run.current().it, "il gatto");
   });
 });
+
+describe("the mode reaches the journal", () => {
+  test("each answer records how the card was asked", () => {
+    const box = silnik();
+    const run = box.sandbox.FlashRun.create(talia(box, 3), T0);
+    run.answer(3, true, T0, "choice");
+    run.answer(4, true, T0, "flip");
+    run.answer(4, true, T0, "write");
+    const m = box.Core.state.reviews.map(r => r.m);
+    assert.deepEqual([...m], ["choice", "flip", undefined]);
+  });
+});

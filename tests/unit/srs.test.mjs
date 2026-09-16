@@ -183,3 +183,26 @@ describe("the review journal: the ceiling", () => {
     assert.equal(st.reviews[st.reviews.length - 1].k, k, "the fresh review is in there");
   });
 });
+
+describe("the mode in the review journal", () => {
+  test("a grade without a mode writes the journal entry as before", () => {
+    const box = loadEngine();
+    const k = box.Core.addCard("casa", "dom", "t");
+    box.Core.gradeCard(k, 4);
+    assert.deepEqual(Object.keys(box.Core.state.reviews[0]).sort(), ["k", "q", "t"]);
+  });
+
+  test("a recognition mode is written next to the grade", () => {
+    const box = loadEngine();
+    const k = box.Core.addCard("casa", "dom", "t");
+    box.Core.gradeCard(k, 3, "choice");
+    assert.equal(box.Core.state.reviews[0].m, "choice");
+  });
+
+  test("writing is the default and is not written, so old and new entries match", () => {
+    const box = loadEngine();
+    const k = box.Core.addCard("casa", "dom", "t");
+    box.Core.gradeCard(k, 3, "write");
+    assert.equal("m" in box.Core.state.reviews[0], false);
+  });
+});

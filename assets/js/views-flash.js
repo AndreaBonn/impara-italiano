@@ -15,11 +15,9 @@
    running draws nothing, it ticks on nodes already gone from the page, once
    a second for as long as the tab stays open.
 
-   The write card duplicates the one in runCards (views.js). That is
-   declared, not overlooked: runCards has no point between cards where a
-   bound could be checked, and changing it would change Reviews and Today.
+   The cards themselves are drawn by flash-cards.js.
 
-   Classic script. Requires core.js, flash-rules.js, flash-run.js, views.js.
+   Classic script. Requires core.js, flash-rules.js, flash-run.js, flash-cards.js, views.js.
    ============================================================ */
 (function (global) {
   "use strict";
@@ -35,6 +33,9 @@
      countdown read aloud: a timer that talks every second drowns out the
      card the student is trying to answer. */
   var WARN_MS = 60000;
+
+  /* Below two wrong options the choice is guessed, not answered. */
+  var MIN_DISTRACTORS = 2;
 
   var zegar = null;
 
@@ -174,6 +175,22 @@
     });
   }
 
+  /**
+   * How to ask this card today, with the options a choice card needs. The
+   * distractors are worked out before the mode, because a choice between
+   * the answer and one other word is a coin toss, not a question.
+   */
+  function modeFor(c) {
+    var day = Core.today();
+    var options = [];
+    if (!c.fresh) {
+      var tr = Core.cardTr(c);
+      var ds = Rules.distractors({ it: c.it, tr: tr }, Rules.tiersFor(c.src, Core.registry.levels), 3, c.key + "|" + day);
+      if (ds.length >= MIN_DISTRACTORS) options = Core.seededShuffle([c.it].concat(ds), c.key + "|" + day + "|order");
+    }
+    return { name: Rules.pickMode(c, { choice: options.length > 0 }, day), options: options };
+  }
+
   /* ---------------- The run ---------------- */
 
   function przebieg(queue, unitId) {
@@ -224,8 +241,9 @@
       var c = run.current();
       if (!c) { koniec(); return; }
       countEl.textContent = t("srs.cardOf", { i: run.summary().answered + 1, n: queue.length });
-      (c.fresh ? kartaGira : kartaPisana)(cardEl, c, function (q, ok) {
-        if (run.answer(q, ok, Date.now())) koniec();
+      var mode = modeFor(c);
+      global.FlashCards[mode.name](cardEl, c, mode.options, function (q, ok) {
+        if (run.answer(q, ok, Date.now(), mode.name)) koniec();
         else karta();
       });
     }
@@ -245,106 +263,6 @@
     }
 
     karta();
-  }
-
-  /**
-   * The write card: the student's language shown, Italian typed, then a
-   * self-grade. The check only colours the feedback; the grade the student
-   * picks is what reaches FSRS, as under Reviews.
-   */
-  function kartaPisana(host, c, onGrade) {
-    host.innerHTML = '<div class="exq">' +
-      '<p class="exq__prompt" style="font-size:1.3rem">' + esc(Core.cardTr(c)) + "</p>" +
-      '<p class="exq__sub">' + esc(t("srs.howInItalian")) + "</p>" +
-      '<div class="field-row"><input type="text" class="field js-in" aria-label="' + esc(t("srs.ph")) + '" placeholder="' +
-      esc(t("srs.ph")) + '" autocomplete="off" spellcheck="false">' +
-      '<button class="btn btn--primary js-show">' + esc(t("ex.check")) + "</button></div>" +
-      '<div class="fb" role="status"></div>' +
-      gradeButtons() + "</div>";
-
-    var input = host.querySelector(".js-in");
-    var fb = host.querySelector(".fb");
-    var grade = host.querySelector(".js-grade");
-    var show = host.querySelector(".js-show");
-    var ok = false;
-    input.focus();
-
-    function reveal() {
-      if (show.disabled) return;
-      ok = Core.checkOpen(input.value, [c.it], false).ok;
-      fb.className = "fb is-on " + (ok ? "fb--ok" : "fb--ko");
-      fb.innerHTML = esc(t(ok ? "srs.right" : "srs.wrong")) + " <b>" + esc(c.it) + "</b>" +
-        ' <button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' + esc(t("a11y.listen")) + '">🔊</button>';
-      Ex.wireSpeakers(fb);
-      Audio2.speak(c.it);
-      grade.hidden = false;
-      show.disabled = true;
-      input.disabled = true;
-      grade.querySelector("button").focus();
-    }
-    show.addEventListener("click", reveal);
-    /* reveal() moves the focus to the first grade. Without preventDefault
-       the key's default action then clicks that button, grading the card
-       "no idea" before the answer is even on screen. */
-    input.addEventListener("keydown", function (e) {
-      if (e.key !== "Enter") return;
-      e.preventDefault();
-      reveal();
-    });
-    wireGrades(grade, function (q) { onGrade(q, ok); });
-  }
-
-  function gradeButtons() {
-    return '<div class="flash__grades js-grade" hidden>' +
-      '<button class="btn btn--ghost btn--sm" data-q="0">' + esc(t("srs.grade0")) + "</button>" +
-      '<button class="btn btn--ghost btn--sm" data-q="3">' + esc(t("srs.grade3")) + "</button>" +
-      '<button class="btn btn--green btn--sm" data-q="4">' + esc(t("srs.grade4")) + "</button>" +
-      '<button class="btn btn--green btn--sm" data-q="5">' + esc(t("srs.grade5")) + "</button></div>";
-  }
-
-  function wireGrades(grade, onPick) {
-    /* A held Enter repeats onto the grade that was just focused, and every
-       grade draws the next card: without this one long press grades cards
-       the student never saw. */
-    grade.addEventListener("keydown", function (e) {
-      if (e.repeat) e.preventDefault();
-    });
-    grade.querySelectorAll("button").forEach(function (b) {
-      b.addEventListener("click", function () { onPick(parseInt(b.getAttribute("data-q"), 10)); });
-    });
-  }
-
-  /**
-   * The flip card, for a word the student meets here for the first time:
-   * nobody can type the Italian for a word they have never seen, so the
-   * Italian is shown and the meaning is what gets recalled. The first grade
-   * turns it into a deck card (flash-run.js).
-   */
-  function kartaGira(host, c, onGrade) {
-    host.innerHTML = '<div class="exq">' +
-      '<p class="exq__num"><span class="chip chip--gold">' + esc(t("flash.newWord")) + "</span></p>" +
-      '<p class="exq__prompt" style="font-size:1.3rem" lang="it">' + esc(c.it) +
-      ' <button type="button" class="say-btn" data-say="' + esc(c.it) + '" aria-label="' +
-      esc(t("a11y.listenTo", { what: c.it })) + '">🔊</button></p>' +
-      '<p class="exq__sub">' + esc(t("flash.meaning")) + "</p>" +
-      '<button class="btn btn--primary js-show">' + esc(t("flash.show")) + "</button>" +
-      '<div class="fb" role="status"></div>' + gradeButtons() + "</div>";
-
-    Ex.wireSpeakers(host);
-    var show = host.querySelector(".js-show");
-    var fb = host.querySelector(".fb");
-    var grade = host.querySelector(".js-grade");
-    show.focus();
-
-    show.addEventListener("click", function () {
-      fb.className = "fb is-on";
-      fb.innerHTML = "<b>" + esc(Core.cardTr(c)) + "</b>";
-      Audio2.speak(c.it);
-      show.hidden = true;
-      grade.hidden = false;
-      grade.querySelector("button").focus();
-    });
-    wireGrades(grade, function (q) { onGrade(q, q >= 3); });
   }
 
 })(window);

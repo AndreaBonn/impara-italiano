@@ -53,7 +53,7 @@ test("the page draws, styled, and reports nothing broken", async ({ page }) => {
      heading in the browser's default serif and everything else looking
      roughly the same. */
   const krój = await page.locator("h1").evaluate((el) => getComputedStyle(el).fontFamily);
-  expect(krój, "arkusz stylów kursu nie wczytał się przez prefiks").toContain("Fraunces");
+  expect(krój, "arkusz stylów kursu nie wczytał się przez prefiks").toContain("Spectral");
 
   expect(bledy, `błędy na stronie 404: ${bledy.join(" | ")}`).toEqual([]);
 });

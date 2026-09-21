@@ -162,7 +162,7 @@
     }).join("");
 
     var html = '<div class="exq" data-idx="' + idx + '">' + head(idx, ex) +
-      '<p class="exq__prompt">' + t("ex.conj.prompt", { verb: '<b style="color:var(--rosa-deep)">' + esc(ex.verb) + "</b>", tense: esc(tenseLabel) }) + "</p>" +
+      '<p class="exq__prompt">' + t("ex.conj.prompt", { verb: '<b style="color:var(--salvia-deep)">' + esc(ex.verb) + "</b>", tense: esc(tenseLabel) }) + "</p>" +
       (ex.tr ? '<p class="exq__sub">' + esc(ex.tr) + "</p>" : "") +
       '<div class="conj-grid">' + rows + "</div>" +
       '<div style="margin-top:14px">' + checkBtn() + "</div>" + feedbackBox() + "</div>";

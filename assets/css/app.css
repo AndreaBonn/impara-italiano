@@ -1,7 +1,11 @@
 /* ============================================================
-   Impara l'Italiano — sistema wizualny
-   Kolory: flaga Włoch (zieleń / biel / czerwień) w wersji
-   „soft": szałwia, krem, róża. Wszystko w OKLCH.
+   Impara l'Italiano — the visual system.
+
+   Built on the "Impara Italiano" design system that lives in
+   assets/Design system Impara Italiano/: verde as the primary, rosso as
+   the single accent, warm paper neutrals in light and a cool ink base in
+   dark. The palette itself, with the hex each step came from, is in the
+   PALETTE block below; this file holds the components that spend it.
    ============================================================ */
 
 /* Atrybut `hidden` ma naprawdę chować.
@@ -14,162 +18,274 @@
 [hidden]{display:none !important;}
 
 /* ============================================================
-   Kroje pisma — u siebie, nie z Google.
+   Typefaces — hosted here, not fetched from Google.
 
-   Do tej pory `index.html` wciągał Fraunces i Inter z fonts.googleapis.com.
-   To była jedyna rzecz w całym kursie, która wychodziła poza przeglądarkę
-   ucznia, i jedyny powód, dla którego strona bez sieci wyglądała inaczej
-   niż z siecią: service worker celowo nie dotyka cudzych domen, więc te
-   dwa pliki nigdy nie trafiały do pamięci.
+   The course must open from file:// and must work with no network, so the
+   service worker precaches these files and index.html asks no foreign
+   domain for anything. `font-src 'self'` in the CSP makes that a rule the
+   browser enforces, not a habit: a @import of fonts.googleapis.com added
+   later would simply be blocked, and the page would fall back in silence.
 
-   Cztery pliki zamiast dwóch, bo `latin` nie zawiera polskich znaków
-   diakrytycznych — ą, ę, ł, ż siedzą w `latin-ext`. Bez tego zestawu
-   interfejs po polsku sypałby się na zastępczy krój przy co drugim
-   słowie. Pozostałych podzbiorów (cyrylica, greka, wietnamski) nie
-   bierzemy: kurs mówi pięcioma językami i wszystkie są łacińskie.
+   Three families, the three registers of the design system:
+   Spectral (serif) for headings, Manrope (sans) for body and interface,
+   JetBrains Mono for CEFR levels — the "official classification" voice.
 
-   Oba kroje są zmienne (variable), więc jeden plik obsługuje całą oś
-   grubości, a nie cztery osobne pliki: `500 700` dla Fraunces (używanego
-   tylko w nagłówkach) i `400 700` dla Inter. Zakresy nie są takie same,
-   bo nie takie same są zastosowania — Fraunces nigdy nie stoi w tekście
-   ciągłym, więc grubość 400 nie jest mu potrzebna.
+   Two subsets per family, because `latin` carries no Polish diacritics:
+   ą, ę, ł, ż live in `latin-ext`. The other subsets (Cyrillic, Greek,
+   Vietnamese) are not taken: the course speaks five languages and all of
+   them are Latin-script. The mono face is the exception and ships `latin`
+   only — it renders CEFR codes and verb-group labels, which are ASCII;
+   anything outside that range falls through to the next font in the stack,
+   per glyph, which is the behaviour we want there.
 
-   Licencja: SIL Open Font License 1.1 — oba. Wolno hostować u siebie.
+   Manrope and JetBrains Mono are variable, so one file covers the whole
+   weight axis. Spectral is not, and it needs two weights: 600 for headings
+   and 700 for the large display numbers. Faux-bold on a serif is visible,
+   so the second file is cheaper than the artefact.
+
+   Licence: SIL Open Font License 1.1 for all three (OFL-*.txt alongside).
    ============================================================ */
 @font-face{
-  font-family:'Fraunces';
+  font-family:'Spectral';
   font-style:normal;
-  font-weight:500 700;
+  font-weight:600;
   font-display:swap;
-  src:url(../fonts/fraunces-latin-ext.woff2) format('woff2');
+  src:url(../fonts/spectral-600-latin-ext.woff2) format('woff2');
   unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 @font-face{
-  font-family:'Fraunces';
+  font-family:'Spectral';
   font-style:normal;
-  font-weight:500 700;
+  font-weight:600;
   font-display:swap;
-  src:url(../fonts/fraunces-latin.woff2) format('woff2');
+  src:url(../fonts/spectral-600-latin.woff2) format('woff2');
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 @font-face{
-  font-family:'Inter';
+  font-family:'Spectral';
   font-style:normal;
-  font-weight:400 700;
+  font-weight:700;
   font-display:swap;
-  src:url(../fonts/inter-latin-ext.woff2) format('woff2');
+  src:url(../fonts/spectral-700-latin-ext.woff2) format('woff2');
   unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 @font-face{
-  font-family:'Inter';
+  font-family:'Spectral';
   font-style:normal;
-  font-weight:400 700;
+  font-weight:700;
   font-display:swap;
-  src:url(../fonts/inter-latin.woff2) format('woff2');
+  src:url(../fonts/spectral-700-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'Manrope';
+  font-style:normal;
+  font-weight:400 800;
+  font-display:swap;
+  src:url(../fonts/manrope-latin-ext.woff2) format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face{
+  font-family:'Manrope';
+  font-style:normal;
+  font-weight:400 800;
+  font-display:swap;
+  src:url(../fonts/manrope-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'JetBrains Mono';
+  font-style:normal;
+  font-weight:500 700;
+  font-display:swap;
+  src:url(../fonts/jetbrainsmono-latin.woff2) format('woff2');
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
+/* ============================================================
+   PALETTE — the "Impara Italiano" design system, in OKLCH.
+
+   The system is authored in sRGB hex (assets/Design system Impara
+   Italiano/tokens/colors.css); the steps below are the same colours
+   converted, because the rest of this file measures and mixes in OKLCH
+   and a file in two colour spaces lies about lightness in half its rules.
+   The hex each step came from is written next to it, so a drift against
+   the source is a diff and not an opinion.
+
+   Two brand hues with a division of labour, and it is the division that
+   matters more than the hues: VERDE is the primary — progress, lessons
+   done, every ordinary action. ROSSO is the single energetic accent —
+   streaks, milestones, the citizenship track. Red is NOT the error colour:
+   errors are terracotta, so that a wrong answer never borrows the mark.
+
+   Neutrals are warm paper, not cold grey (an exercise book, not a
+   dashboard). Dark mode drops onto a cool ink base rather than a dark
+   green, so both brand hues stay recognisable on top of it.
+   ============================================================ */
 :root{
-  /* --- superfici --- */
-  --paper:        oklch(0.985 0.011 62);
-  --paper-2:      oklch(1 0.004 80);
-  --paper-3:      oklch(0.965 0.018 30);
-  --paper-sunk:   oklch(0.955 0.020 40);
+  /* --- superfici: carta --- */
+  --paper:        oklch(0.980 0.007 81);   /* paper-50  #FBF8F3 */
+  --paper-2:      oklch(0.987 0.004 56);   /* paper-0   #FDFAF8 */
+  --paper-3:      oklch(0.945 0.013 82);   /* paper-100 #F1ECE3 */
+  --paper-sunk:   oklch(0.903 0.015 81);   /* paper-200 #E4DED4 */
 
   /* --- inchiostro --- */
-  /* Odcienie „deep" są celowo ciemniejsze, niż sugerowałaby paleta:
-     wszystkie przechodzą próg kontrastu 4.5:1 wobec papieru i kremu
-     (zmierzone gate'em a11y, nie dobrane na oko). */
-  --ink:          oklch(0.31 0.035 350);
-  --ink-soft:     oklch(0.53 0.032 348);
-  --ink-faint:    oklch(0.55 0.030 348);
+  /* Three steps, three thresholds, all measured against paper and card:
+     --ink 16.7:1, --ink-soft 7.6:1, --ink-faint 5.0:1. The faint step is
+     also the border of a control that carries no fill (.tab), so it has to
+     clear 3:1 as a shape and 4.5:1 as text — one step doing both jobs is
+     why it is not simply the lightest neutral that still reads. */
+  --ink:          oklch(0.211 0.007 67);   /* paper-950 #1B1815 */
+  --ink-soft:     oklch(0.433 0.014 59);   /* paper-700 #574F49 */
+  --ink-faint:    oklch(0.529 0.016 67);   /* paper-600 #726A62 */
 
-  /* --- verde (tricolore, addolcito) --- */
-  --salvia:       oklch(0.885 0.052 166);
-  --salvia-mid:   oklch(0.760 0.082 167);
-  --salvia-deep:  oklch(0.500 0.100 168);
+  /* --- verde: il primario --- */
+  --salvia:       oklch(0.951 0.023 169);  /* green-100 #E1F4EC */
+  --salvia-mid:   oklch(0.656 0.119 168);  /* green-500 #2FA883 */
+  --salvia-deep:  oklch(0.515 0.102 170);  /* green-700 #007A5E — mark */
 
-  /* --- rosso (tricolore, addolcito) --- */
-  --rosa:         oklch(0.885 0.055 12);
-  --rosa-mid:     oklch(0.780 0.105 13);
-  --rosa-deep:    oklch(0.555 0.165 16);
+  /* --- rosso: l'unico accento --- */
+  --rosa:         oklch(0.945 0.022 7);    /* red-100 #FBE7EA */
+  --rosa-deep:    oklch(0.520 0.172 18);   /* red-700 #B72E42 — mark */
 
-  /* --- accenti --- */
-  --oro:          oklch(0.840 0.105 84);
-  --oro-deep:     oklch(0.480 0.100 76);
-  --lavanda:      oklch(0.880 0.050 312);
-  --lavanda-deep: oklch(0.500 0.140 310);
+  /* --- accenti di servizio --- */
+  /* Gold does not flip with the theme, and that is deliberate: it is a
+     fill that always carries dark ink (badge, highlight, test marker), so
+     a pale step plus a fixed --on-oro passes in both themes and removes
+     the hardcoded dark literal this file used to repeat at every use. */
+  --oro:          oklch(0.946 0.037 86);   /* gold-100 #F8ECD2 */
+  /* One step past the end of the system's gold ramp, and it is here because
+     the ramp's own pairing does not hold: gold-700 on gold-100 — the design
+     system's warning badge — measures 4.30:1, under the 4.5 that WCAG asks
+     of small text, and the contrast gate reads it on the "new word" chip in
+     the five-minute session. The gate is right and the ramp is short, so the
+     step is extended rather than the threshold lowered. 5.6:1 on gold-100. */
+  --oro-deep:     oklch(0.490 0.100 74);   /* gold-800, derived — 5.6:1 */
+  /* Teal is the system's "info" hue; it replaces the lavender the earlier
+     palette used, which belonged to no part of the mark. */
+  --lavanda:      oklch(0.932 0.018 214);  /* teal-100 #DCECF0 */
+  --lavanda-deep: oklch(0.446 0.061 221);  /* teal-700 #285C6C */
 
-  /* --- semantica --- */
-  --ok:           oklch(0.500 0.110 160);
-  --ok-bg:        oklch(0.955 0.032 160);
-  --ko:           oklch(0.520 0.170 20);
-  --ko-bg:        oklch(0.960 0.028 20);
+  /* --- semantica: distinta dal marchio --- */
+  /* Success reuses the green; error is TERRACOTTA, not the mark red. A
+     wrong answer and the brand must not be the same colour, or the student
+     learns to read the identity as a warning. */
+  --ok:           oklch(0.422 0.086 165);  /* green-800 #075C42 */
+  --ok-bg:        oklch(0.951 0.023 169);  /* green-100 #E1F4EC */
+  --ko:           oklch(0.456 0.114 39);   /* terracotta-700 #8A3C21 */
+  --ko-bg:        oklch(0.922 0.026 52);   /* terracotta-100 #F4E1D6 */
 
   /* --- linee --- */
-  --line:         oklch(0.925 0.020 16);
-  --line-strong:  oklch(0.855 0.045 12);
-  --line-mint:    oklch(0.880 0.040 166);
-  /* Kontur kontrolki, nie kreska ozdobna: przycisk ghost ma tło papieru,
-     więc to jedyny sygnał, że w ogóle jest przyciskiem, a WCAG 1.4.11
-     żąda przy takim sygnale 3:1. --line-strong daje na papierze 1,58:1
-     i jest dobrany do separatorów, które mają być ledwo widoczne. */
-  --line-control: oklch(0.650 0.045 12);
+  --line:         oklch(0.903 0.015 81);   /* paper-200 #E4DED4 */
+  --line-strong:  oklch(0.821 0.018 76);   /* paper-300 #CBC3B8 */
+  --line-mint:    oklch(0.903 0.045 169);  /* green-200 #C3E9DA */
+  /* The outline of a control, not a decorative rule: a ghost button has the
+     paper as its fill, so this edge is the only sign that it is a button at
+     all, and WCAG 1.4.11 asks 3:1 of such a sign. --line-strong gives 1.6:1
+     and is tuned for separators that should barely show. */
+  --line-control: oklch(0.622 0.017 67);   /* paper-500 #8E857C — 3.4:1 */
 
-  /* --- ombre --- */
-  --shadow-s: 0 1px 2px oklch(0.60 0.08 12 / 0.10);
-  --shadow-m: 0 4px 16px oklch(0.60 0.08 12 / 0.13);
-  --shadow-l: 0 14px 40px oklch(0.58 0.09 12 / 0.18);
+  /* --- testo sopra un fondo pieno --- */
+  /* One pair per fill, flipped in dark mode where the fills themselves get
+     lighter. Before these existed, every filled control repeated a literal
+     and every dark-theme override had to repeat it back. */
+  --on-primary:   oklch(0.987 0.004 56);   /* paper-0 on green-700 — 5.1:1 */
+  --on-accent:    oklch(0.987 0.004 56);   /* paper-0 on red-700   — 5.8:1 */
+  --on-oro:       oklch(0.211 0.007 67);   /* paper-950 on gold-100 */
+  /* The halo around a focused field, the current lesson and the microphone.
+     It has to be its own token rather than a literal of the fill: in the dark
+     theme --salvia-deep and --rosa-deep move several steps lighter, and a glow
+     frozen at the light value stops belonging to the thing it surrounds. */
+  --glow-primary: 0.515 0.102 170;
+  --glow-accent:  0.520 0.172 18;
+
+  /* --- fondi tenui e stati --- */
+  /* The rail is a dark brand panel in BOTH themes, so the ink on it does
+     not flip: --on-rail is a constant, unlike --on-primary. */
+  --on-rail:      oklch(0.987 0.004 56);
+  --on-tonal:     oklch(0.422 0.086 165);  /* green-800 on a green-100 fill */
+  --oro-soft:     oklch(0.946 0.037 86);   /* gold-100 — callout, chip */
+  --btn-primary-hover: oklch(0.422 0.086 165);  /* green-800 — 7.7:1 */
+  --btn-tonal-hover:   oklch(0.903 0.045 169);  /* green-200 */
+
+  /* --- il motivo di marchio: una riga tricolore, usata una volta sola --- */
+  --tri-green:    oklch(0.515 0.102 170);
+  --tri-white:    oklch(0.987 0.004 56);
+  --tri-red:      oklch(0.520 0.172 18);
+
+  /* --- ombre: a tono caldo, mai nero puro --- */
+  --shadow-s: 0 1px 2px oklch(0.211 0.007 67 / 0.08);
+  --shadow-m: 0 8px 20px oklch(0.211 0.007 67 / 0.10), 0 2px 6px oklch(0.211 0.007 67 / 0.06);
+  --shadow-l: 0 16px 36px oklch(0.211 0.007 67 / 0.14), 0 4px 10px oklch(0.211 0.007 67 / 0.08);
 
   /* --- tipografia --- */
-  --display: 'Fraunces', ui-serif, Georgia, serif;
-  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --display: 'Spectral', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
   /* --- metriche --- */
+  /* Measured radii, 8/12/18/24 on a 4px grid. The pill (999px) is reserved
+     for badges, tags and the tricolor rail — not put on every card. */
   --rail-w: 272px;
-  --r-s: 12px;
-  --r-m: 18px;
-  --r-l: 26px;
-  --r-xl: 34px;
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 18px;
+  --r-xl: 24px;
+  --r-pill: 999px;
 }
 
+/* ============================================================
+   DARK — a cool ink base, not a dark green. Only the aliases remap; the
+   ramp each one points at is the same ramp as above, one or two steps
+   lighter where the surface got darker.
+   ============================================================ */
 :root[data-theme="dark"]{
-  --paper:        oklch(0.215 0.018 340);
-  --paper-2:      oklch(0.262 0.021 340);
-  --paper-3:      oklch(0.300 0.026 345);
-  --paper-sunk:   oklch(0.185 0.016 340);
+  --paper:        oklch(0.175 0.009 241);  /* ink-950 #0D1114 */
+  --paper-2:      oklch(0.201 0.011 242);  /* ink-900 #12171B */
+  --paper-3:      oklch(0.244 0.013 243);  /* ink-800 #1B2126 */
+  --paper-sunk:   oklch(0.296 0.016 241);  /* ink-700 #262E34 */
 
-  --ink:          oklch(0.945 0.013 55);
-  --ink-soft:     oklch(0.790 0.020 350);
-  --ink-faint:    oklch(0.660 0.022 350);
+  --ink:          oklch(0.980 0.007 81);   /* paper-50  #FBF8F3 — 17.9:1 */
+  --ink-soft:     oklch(0.821 0.018 76);   /* paper-300 #CBC3B8 — 10.3:1 */
+  --ink-faint:    oklch(0.720 0.019 73);   /* paper-400 #ACA398 —  7.3:1 */
 
-  --salvia:       oklch(0.420 0.055 168);
-  --salvia-mid:   oklch(0.560 0.080 167);
-  --salvia-deep:  oklch(0.780 0.090 168);
+  --salvia:       oklch(0.320 0.055 168);  /* wash, not a ramp step */
+  --salvia-mid:   oklch(0.588 0.115 168);  /* green-600 #14926F */
+  --salvia-deep:  oklch(0.739 0.105 168);  /* green-400 #5FC09E — 8.2:1 */
 
-  --rosa:         oklch(0.400 0.060 14);
-  --rosa-mid:     oklch(0.560 0.110 14);
-  --rosa-deep:    oklch(0.815 0.110 16);
+  --rosa:         oklch(0.320 0.060 17);   /* wash, not a ramp step */
+  --rosa-deep:    oklch(0.736 0.103 11);   /* red-400 #E28E9A — 7.4:1 */
 
-  --oro:          oklch(0.760 0.105 84);
-  --oro-deep:     oklch(0.850 0.110 82);
-  --lavanda:      oklch(0.400 0.055 312);
-  --lavanda-deep: oklch(0.800 0.090 310);
+  /* --oro and --on-oro do not flip: see the note in the light block. */
+  --oro-deep:     oklch(0.678 0.127 73);   /* gold-500 #C68A2E — 6.1:1 */
+  --lavanda:      oklch(0.296 0.030 221);
+  --lavanda-deep: oklch(0.760 0.060 221);
 
-  --ok:           oklch(0.790 0.110 160);
-  --ok-bg:        oklch(0.300 0.045 160);
-  --ko:           oklch(0.800 0.120 20);
-  --ko-bg:        oklch(0.310 0.055 20);
+  --ok:           oklch(0.739 0.105 168);  /* green-400 */
+  --ok-bg:        oklch(0.300 0.055 168);
+  --ko:           oklch(0.740 0.085 40);   /* terracotta, lifted for dark */
+  --ko-bg:        oklch(0.310 0.060 40);
 
-  --line:         oklch(0.330 0.022 340);
-  --line-strong:  oklch(0.420 0.035 345);
-  --line-mint:    oklch(0.400 0.040 166);
-  /* W ciemnym motywie kontur idzie w drugą stronę: jaśnieje wobec papieru. */
-  --line-control: oklch(0.560 0.035 345);
+  --line:         oklch(0.296 0.016 241);  /* ink-700 */
+  --line-strong:  oklch(0.373 0.019 242);  /* ink-600 */
+  --line-mint:    oklch(0.422 0.086 165);  /* green-800 */
+  /* Same job as in the light theme, opposite direction: the outline goes
+     lighter than the paper instead of darker. 3.4:1 against the card. */
+  --line-control: oklch(0.529 0.016 67);   /* paper-600 #726A62 */
 
-  --shadow-s: 0 1px 2px oklch(0.10 0.02 340 / 0.5);
-  --shadow-m: 0 4px 16px oklch(0.10 0.02 340 / 0.55);
-  --shadow-l: 0 14px 40px oklch(0.08 0.02 340 / 0.65);
+  /* The fills get lighter in the dark theme, so the ink on top goes dark. */
+  --on-primary:   oklch(0.175 0.009 241);  /* ink-950 on green-400 — 8.6:1 */
+  --on-accent:    oklch(0.175 0.009 241);  /* ink-950 on red-400   — 7.7:1 */
+  --on-tonal:     oklch(0.980 0.007 81);   /* paper-50 on a green wash */
+  --glow-primary: 0.739 0.105 168;
+  --glow-accent:  0.736 0.103 11;
+  --oro-soft:     oklch(0.300 0.055 74);
+  --btn-primary-hover: oklch(0.824 0.077 168);  /* green-300 */
+  --btn-tonal-hover:   oklch(0.380 0.065 168);
+
+  --shadow-s: 0 1px 2px oklch(0 0 0 / 0.40);
+  --shadow-m: 0 10px 24px oklch(0 0 0 / 0.50);
+  --shadow-l: 0 20px 44px oklch(0 0 0 / 0.55);
 }
 
 *,*::before,*::after{box-sizing:border-box;}
@@ -186,18 +302,29 @@ body{
   line-height:1.62;
   color:var(--ink);
   background:var(--paper);
+  /* Two soft washes rather than a flat sheet of paper: green-200 at the top
+     right, gold-100 at the bottom left. No red down here — the accent is
+     spent on streaks and the citizenship track, not on wallpaper. */
   background-image:
-    radial-gradient(circle at 92% -4%, oklch(0.90 0.055 12 / .45), transparent 46%),
-    radial-gradient(circle at -6% 102%, oklch(0.90 0.045 168 / .40), transparent 44%);
+    radial-gradient(circle at 92% -4%, oklch(0.903 0.045 169 / .55), transparent 46%),
+    radial-gradient(circle at -6% 102%, oklch(0.946 0.037 86 / .70), transparent 44%);
   background-attachment:fixed;
   -webkit-font-smoothing:antialiased;
 }
 
+/* The washes are tuned for paper. On ink they would be two lamps, so the
+   dark theme keeps the shape and drops both the lightness and the alpha. */
+:root[data-theme="dark"] body{
+  background-image:
+    radial-gradient(circle at 92% -4%, oklch(0.422 0.086 165 / .38), transparent 46%),
+    radial-gradient(circle at -6% 102%, oklch(0.363 0.116 17 / .26), transparent 44%);
+}
+
 h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.22;margin:0;letter-spacing:-0.01em;}
 p{margin:0 0 .8em;}
-a{color:var(--rosa-deep);text-underline-offset:3px;}
+a{color:var(--salvia-deep);text-underline-offset:3px;}
 button{font:inherit;color:inherit;}
-:focus-visible{outline:3px solid var(--lavanda-deep);outline-offset:3px;border-radius:6px;}
+:focus-visible{outline:3px solid var(--salvia-deep);outline-offset:3px;border-radius:6px;}
 
 /* Schowany W PIONIE, nie w bok. Odsunięcie poziome jest niewidoczne tylko
    w jedną stronę: `left:-9999px` znika w LTR, a przy `dir="rtl"` wypada za
@@ -206,7 +333,7 @@ button{font:inherit;color:inherit;}
    góra jest poza ekranem w obu. */
 .skip-link{
   position:absolute;left:0;inset-inline-start:0;top:-9999px;z-index:999;
-  background:var(--rosa-deep);color:#fff;padding:12px 20px;border-radius:0 0 var(--r-m) 0;font-weight:600;
+  background:var(--salvia-deep);color:var(--on-primary);padding:12px 20px;border-radius:0 0 var(--r-m) 0;font-weight:600;
 }
 .skip-link:focus{top:0;}
 
@@ -223,25 +350,26 @@ button{font:inherit;color:inherit;}
   width:var(--rail-w);flex:0 0 var(--rail-w);
   position:sticky;top:0;height:100vh;
   display:flex;flex-direction:column;
-  /* fallback dla przeglądarek bez interpolacji w oklab */
-  background: oklch(0.54 0.160 14);
-  /* rosa → salvia bez „błotnistego" pasa: interpolacja w oklab omija żółty.
-     Jasność każdego stopu ≤0.55, żeby biały tekst trzymał 4.5:1 na całej wysokości. */
+  /* fallback for browsers with no oklab interpolation */
+  background: oklch(0.308 0.059 168);
+  /* The brand panel: the deep end of the primary ramp, green-800 down to
+     green-950. Every stop is dark enough for paper-white to hold 4.5:1 over
+     the whole height — the lightest of them, green-800, measures 7.7:1, and
+     the contrast gate reads the stops straight out of this declaration. */
   background:
     linear-gradient(172deg in oklab,
-      oklch(0.55 0.160 16) 0%,
-      oklch(0.53 0.170 12) 40%,
-      oklch(0.51 0.165 8) 70%,
-      oklch(0.50 0.110 155) 100%);
-  color:oklch(0.985 0.010 40);
+      oklch(0.422 0.086 165) 0%,
+      oklch(0.308 0.059 168) 45%,
+      oklch(0.231 0.040 172) 100%);
+  color:var(--on-rail);
   z-index:40;
 }
 :root[data-theme="dark"] .rail{
-  background: oklch(0.33 0.070 10);
+  background: oklch(0.231 0.040 172);
   background:linear-gradient(172deg in oklab,
-    oklch(0.37 0.075 14) 0%,
-    oklch(0.31 0.060 6) 55%,
-    oklch(0.32 0.055 168) 100%);
+    oklch(0.308 0.059 168) 0%,
+    oklch(0.231 0.040 172) 55%,
+    oklch(0.201 0.011 242) 100%);
 }
 
 .rail__head{padding:26px 22px 16px;}
@@ -249,8 +377,18 @@ button{font:inherit;color:inherit;}
   font-family:var(--display);font-weight:600;font-size:1.34rem;
   margin:0 0 2px;display:flex;align-items:center;gap:9px;line-height:1.2;
 }
-.rail__flag{font-size:1.05rem;}
+/* The one brand flourish, and it appears exactly once: a thin tricolor
+   rule under the course name. It also retires the flag emoji that stood
+   before the title — the design system asks for no emoji in the interface,
+   and the span is aria-hidden, so nothing is lost to a screen reader. */
+.rail__flag{display:none;}
 .rail__tag{margin:0;font-size:.78rem;opacity:.96;font-weight:500;letter-spacing:.01em;}
+.rail__tag::after{
+  content:"";display:block;width:56px;height:4px;margin-top:12px;
+  border-radius:var(--r-pill);
+  background:linear-gradient(90deg,
+    var(--tri-green) 0 33.33%, var(--tri-white) 33.33% 66.66%, var(--tri-red) 66.66%);
+}
 
 /* wybór języka wyjaśnień: na przycisku flaga i endonim bieżącego języka,
    reszta w liście. 44 px celu dotykowego na przycisku i na każdej pozycji listy. */
@@ -289,7 +427,7 @@ button{font:inherit;color:inherit;}
 .rail__lang-opt:hover{background:var(--paper-2);}
 .rail__lang-opt[aria-selected="true"]{background:var(--paper-2);font-weight:600;}
 /* offset ujemny: globalny +3px wychodziłby poza ramkę listy i zostałby ucięty */
-.rail__lang-opt:focus-visible{outline:3px solid var(--lavanda-deep);outline-offset:-3px;}
+.rail__lang-opt:focus-visible{outline:3px solid var(--salvia-deep);outline-offset:-3px;}
 
 .rail__stats{
   margin:0 16px 14px;padding:12px 14px;
@@ -313,11 +451,14 @@ button{font:inherit;color:inherit;}
   transition:background .16s ease, transform .16s ease;
 }
 .rail__item:hover{background:oklch(0 0 0 / .18);}
-.rail__item[aria-current="page"]{background:oklch(0.99 0.008 60);color:oklch(0.44 0.150 14);box-shadow:var(--shadow-s);}
+/* Paper and green-800, both fixed: the current entry sits on the brand
+   panel, which is dark in either theme, so a pair that followed the theme
+   would invert under one of them. 7.7:1. */
+.rail__item[aria-current="page"]{background:oklch(0.987 0.004 56);color:oklch(0.422 0.086 165);box-shadow:var(--shadow-s);}
 .rail__ico{font-size:1.02rem;width:22px;text-align:center;flex:0 0 22px;}
 .rail__badge{
-  margin-left:auto;background:var(--oro);color:oklch(0.30 0.05 60);
-  font-size:.70rem;font-weight:700;padding:2px 8px;border-radius:20px;min-width:22px;text-align:center;
+  margin-left:auto;background:var(--oro);color:var(--on-oro);
+  font-size:.70rem;font-weight:700;padding:2px 8px;border-radius:var(--r-pill);min-width:22px;text-align:center;
 }
 /* Wejście do wyszukiwarki w główce panelu, nie jako dziesiąta pozycja menu:
    szuka się z dowolnego miejsca, a menu jest listą miejsc, nie czynności. */
@@ -325,11 +466,11 @@ button{font:inherit;color:inherit;}
   display:flex;align-items:center;gap:8px;width:100%;min-height:44px;
   margin-top:10px;padding:8px 12px;border-radius:var(--r-m);
   background:oklch(0 0 0 / .16);border:1px solid oklch(1 0 0 / .30);
-  color:oklch(0.99 0.005 40);font-family:inherit;font-size:.86rem;font-weight:600;
+  color:var(--on-rail);font-family:inherit;font-size:.86rem;font-weight:600;
   cursor:pointer;text-align:left;
 }
 .rail__search:hover{background:oklch(0 0 0 / .26);}
-.rail__search:focus-visible{outline:3px solid oklch(0.99 0.005 40);outline-offset:2px;}
+.rail__search:focus-visible{outline:3px solid var(--on-rail);outline-offset:2px;}
 
 .rail__foot{padding:12px 16px 18px;border-top:1px solid oklch(1 0 0 / .2);}
 .rail__theme{
@@ -371,7 +512,7 @@ button{font:inherit;color:inherit;}
 .view-head{margin-bottom:30px;}
 .view-head__kicker{
   font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--rosa-deep);margin:0 0 8px;
+  color:var(--salvia-deep);margin:0 0 8px;
 }
 .view-head h1{font-size:clamp(1.85rem,4vw,2.5rem);margin:0 0 8px;}
 .view-head p{color:var(--ink-soft);max-width:64ch;margin:0;font-size:1.02rem;}
@@ -394,37 +535,43 @@ button{font:inherit;color:inherit;}
 }
 .btn:active{transform:translateY(1px);}
 .btn:disabled{opacity:.45;cursor:not-allowed;}
-.btn--primary{background:var(--rosa-deep);color:oklch(0.99 0.005 40);border-color:var(--rosa-deep);}
-.btn--primary:hover:not(:disabled){background:oklch(0.545 0.170 16);border-color:oklch(0.545 0.170 16);}
-:root[data-theme="dark"] .btn--primary{color:oklch(0.20 0.03 20);}
-/* W ciemnym motywie napis na przycisku jest CIEMNY, więc przyciemnienie tła
-   pod kursorem zbliża oba kolory zamiast je rozsuwać: zmierzone 3,36:1 przy
-   progu 4,5. Tu jaśniejemy — kierunek odwrotny niż w jasnym motywie, bo
-   odwrotny jest też napis. */
-:root[data-theme="dark"] .btn--primary:hover:not(:disabled){
-  background:oklch(0.875 0.090 16);border-color:oklch(0.875 0.090 16);}
-.btn--green{background:var(--salvia-deep);color:oklch(0.99 0.005 40);border-color:var(--salvia-deep);}
-.btn--green:hover:not(:disabled){background:oklch(0.49 0.105 168);}
-:root[data-theme="dark"] .btn--green{color:oklch(0.18 0.03 160);}
-/* Ten sam defekt co przy przycisku podstawowym, ta sama poprawka. */
-:root[data-theme="dark"] .btn--green:hover:not(:disabled){background:oklch(0.845 0.075 168);}
+/* The primary action is VERDE. The design system gives the mark green
+   every ordinary action — progress, confirm, continue — and keeps the red
+   for streaks, milestones and the citizenship track, one accent per view.
+   Under the cursor the fill moves in whichever direction pulls AWAY from
+   the label: darker in the light theme, where the label is paper; lighter
+   in the dark theme, where the label is ink. That is one pair of tokens
+   instead of the four theme-specific rules this block used to carry. */
+.btn--primary{background:var(--salvia-deep);color:var(--on-primary);border-color:var(--salvia-deep);}
+.btn--primary:hover:not(:disabled){background:var(--btn-primary-hover);border-color:var(--btn-primary-hover);}
+/* Tonal, not a second solid. The sixteen places carrying btn--green are
+   subordinate confirmations (play, add, export, ok); two solid greens a few
+   steps apart read as a rendering fault, not as a hierarchy. The border is
+   green-700 — 5.0:1 against the page — so the shape still clears WCAG
+   1.4.11 without a fill that competes with the primary. */
+.btn--green{background:var(--salvia);color:var(--on-tonal);border-color:var(--salvia-deep);}
+.btn--green:hover:not(:disabled){background:var(--btn-tonal-hover);}
 .btn--ghost{background:var(--paper-2);border-color:var(--line-control);color:var(--ink);}
-.btn--ghost:hover:not(:disabled){border-color:var(--rosa-deep);color:var(--rosa-deep);}
+.btn--ghost:hover:not(:disabled){border-color:var(--salvia-deep);color:var(--salvia-deep);}
 .btn--quiet{background:transparent;border-color:transparent;color:var(--ink-soft);text-decoration:underline;min-height:36px;padding:6px 10px;}
 .btn--sm{min-height:36px;padding:7px 14px;font-size:.82rem;border-radius:var(--r-s);}
 
 .chip{
   display:inline-flex;align-items:center;gap:6px;
   font-size:.72rem;font-weight:700;letter-spacing:.02em;
-  padding:5px 12px;border-radius:20px;
+  padding:5px 12px;border-radius:var(--r-pill);
   background:var(--paper-3);border:1px solid var(--line-strong);color:var(--ink);
 }
-.chip--cefr{background:var(--rosa-deep);border-color:var(--rosa-deep);color:oklch(0.99 0.005 40);}
-:root[data-theme="dark"] .chip--cefr{color:oklch(0.20 0.03 20);}
-.chip--green{background:oklch(0.94 0.035 166);border-color:var(--line-mint);color:oklch(0.40 0.09 168);}
-:root[data-theme="dark"] .chip--green{background:var(--salvia);color:var(--ink);}
-.chip--gold{background:oklch(0.95 0.045 84);border-color:oklch(0.86 0.07 84);color:oklch(0.44 0.09 76);}
-:root[data-theme="dark"] .chip--gold{background:oklch(0.38 0.06 84);color:var(--oro-deep);}
+/* The CEFR level is set in the mono face, and that is the point of it: the
+   design system reserves JetBrains Mono for classifiers — levels, verb
+   groups, the citizenship mark — so a code reads as a code and not as a
+   word. Green, not red: the level is progress, not an alarm. */
+.chip--cefr{
+  background:var(--salvia-deep);border-color:var(--salvia-deep);color:var(--on-primary);
+  font-family:var(--mono);font-weight:600;letter-spacing:.05em;
+}
+.chip--green{background:var(--salvia);border-color:var(--line-mint);color:var(--on-tonal);}
+.chip--gold{background:var(--oro-soft);border-color:var(--oro-deep);color:var(--oro-deep);}
 
 .meta-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px;}
 
@@ -444,13 +591,15 @@ button{font:inherit;color:inherit;}
   background:var(--paper-2);padding:12px 16px;cursor:pointer;text-align:left;
   transition:border-color .16s, transform .16s;
 }
-.level-pill:hover{transform:translateY(-2px);border-color:var(--rosa-mid);}
-.level-pill[aria-pressed="true"]{border-color:var(--rosa-deep);background:oklch(0.965 0.030 12);}
-:root[data-theme="dark"] .level-pill[aria-pressed="true"]{background:var(--rosa);}
-.level-pill__code{font-family:var(--display);font-size:1.32rem;font-weight:700;display:block;line-height:1.1;}
+.level-pill:hover{transform:translateY(-2px);border-color:var(--salvia-mid);}
+.level-pill[aria-pressed="true"]{border-color:var(--salvia-deep);background:var(--salvia);}
+/* Mono, like every other CEFR code. A monospaced face runs wider than the
+   serif it replaces, so the size comes down a step to keep the pill from
+   growing around it. */
+.level-pill__code{font-family:var(--mono);font-size:1.14rem;font-weight:600;letter-spacing:.03em;display:block;line-height:1.24;}
 .level-pill__name{font-size:.74rem;color:var(--ink-soft);display:block;font-weight:600;}
-.level-pill__bar{height:6px;background:var(--paper-sunk);border-radius:20px;margin-top:8px;overflow:hidden;}
-.level-pill__bar i{display:block;height:100%;background:var(--salvia-deep);border-radius:20px;}
+.level-pill__bar{height:6px;background:var(--paper-sunk);border-radius:var(--r-pill);margin-top:8px;overflow:hidden;}
+.level-pill__bar i{display:block;height:100%;background:var(--salvia-deep);border-radius:var(--r-pill);}
 
 .unit{
   position:relative;
@@ -463,7 +612,7 @@ button{font:inherit;color:inherit;}
   border:1.5px solid var(--line);
 }
 .unit__badge{
-  flex:0 0 52px;height:52px;border-radius:18px;
+  flex:0 0 52px;height:52px;border-radius:var(--r-l);
   display:grid;place-items:center;font-size:1.5rem;
   background:var(--paper-2);border:2px solid var(--line-strong);
 }
@@ -493,7 +642,7 @@ button{font:inherit;color:inherit;}
   box-shadow:var(--shadow-s);
   transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
-.node__btn:hover:not(:disabled){transform:translateY(-3px);box-shadow:var(--shadow-m);border-color:var(--rosa-mid);}
+.node__btn:hover:not(:disabled){transform:translateY(-3px);box-shadow:var(--shadow-m);border-color:var(--salvia-mid);}
 .node__btn:disabled{opacity:.55;cursor:not-allowed;filter:saturate(.4);}
 .node__dot{
   flex:0 0 42px;height:42px;border-radius:50%;display:grid;place-items:center;
@@ -501,10 +650,9 @@ button{font:inherit;color:inherit;}
 }
 .node__txt b{display:block;font-size:.94rem;font-weight:600;line-height:1.28;}
 .node__txt span{display:block;font-size:.76rem;color:var(--ink-soft);}
-.node--done .node__btn{border-color:var(--salvia-deep);background:oklch(0.975 0.026 166);}
-:root[data-theme="dark"] .node--done .node__btn{background:oklch(0.30 0.040 166);}
-.node--done .node__dot{background:var(--salvia-deep);border-color:var(--salvia-deep);color:oklch(0.99 0.005 40);}
-.node--current .node__btn{border-color:var(--rosa-deep);box-shadow:0 0 0 5px oklch(0.605 0.160 16 / .16);}
+.node--done .node__btn{border-color:var(--salvia-deep);background:var(--salvia);}
+.node--done .node__dot{background:var(--salvia-deep);border-color:var(--salvia-deep);color:var(--on-primary);}
+.node--current .node__btn{border-color:var(--salvia-deep);box-shadow:0 0 0 5px oklch(var(--glow-primary) / .18);}
 .node--test .node__dot{background:var(--oro);border-color:var(--oro-deep);}
 
 /* ══════════════════ LEKCJA ══════════════════ */
@@ -514,8 +662,8 @@ button{font:inherit;color:inherit;}
   padding:14px 0 12px;background:var(--paper);
   background-image:inherit;
 }
-.lesson-top__bar{flex:1;height:12px;border-radius:20px;background:var(--paper-sunk);overflow:hidden;border:1px solid var(--line);}
-.lesson-top__bar i{display:block;height:100%;background:linear-gradient(90deg,var(--salvia-mid),var(--salvia-deep));border-radius:20px;transition:width .35s ease;}
+.lesson-top__bar{flex:1;height:12px;border-radius:var(--r-pill);background:var(--paper-sunk);overflow:hidden;border:1px solid var(--line);}
+.lesson-top__bar i{display:block;height:100%;background:linear-gradient(90deg,var(--salvia-mid),var(--salvia-deep));border-radius:var(--r-pill);transition:width .35s ease;}
 .lesson-top__hearts{font-size:1rem;letter-spacing:2px;flex:0 0 auto;}
 
 .step{margin-bottom:34px;}
@@ -527,31 +675,34 @@ button{font:inherit;color:inherit;}
   content:"";width:11px;height:11px;border-radius:50%;flex:0 0 11px;
   background:var(--salvia-deep);
 }
-.step--gram .step__label::before{background:var(--rosa-deep);}
+.step--gram .step__label::before{background:var(--lavanda-deep);}
 .step--vocab .step__label::before{background:var(--oro-deep);}
-.step--ex .step__label::before{background:var(--lavanda-deep);}
+/* Not the accent red: this dot stands on the exercises section of EVERY
+   lesson, and a colour the system reserves for streaks, milestones and the
+   citizenship badge stops meaning anything once it marks a page furniture
+   item. Green-500, one step off the section dot above it. */
+.step--ex .step__label::before{background:var(--salvia-mid);}
 
 .prose{max-width:68ch;}
 .prose p{font-size:1.02rem;}
-.prose strong{color:var(--rosa-deep);font-weight:700;}
-.prose em{font-style:normal;font-weight:600;color:var(--salvia-deep);}
+.prose strong{color:var(--salvia-deep);font-weight:700;}
+.prose em{font-style:normal;font-weight:600;color:var(--lavanda-deep);}
 .prose h4{font-size:1rem;margin:20px 0 6px;color:var(--ink);}
 .prose ul{padding-left:20px;margin:0 0 14px;}
 .prose li{margin-bottom:5px;}
 
 .callout{
-  border-left:5px solid var(--oro);
-  background:oklch(0.975 0.030 84);
+  border-left:5px solid var(--oro-deep);
+  background:var(--oro-soft);
   border-radius:0 var(--r-m) var(--r-m) 0;
   padding:14px 20px;margin:18px 0;font-size:.94rem;
 }
-:root[data-theme="dark"] .callout{background:oklch(0.30 0.040 84);}
 .callout b{color:var(--oro-deep);}
-.callout--trap{border-left-color:var(--rosa-deep);background:oklch(0.972 0.028 14);}
-:root[data-theme="dark"] .callout--trap{background:oklch(0.30 0.045 14);}
+/* The three soft fills flip with the theme now, so a callout needs one rule
+   instead of a light one plus a dark correction underneath it. */
+.callout--trap{border-left-color:var(--rosa-deep);background:var(--rosa);}
 .callout--trap b{color:var(--rosa-deep);}
-.callout--pl{border-left-color:var(--lavanda-deep);background:oklch(0.972 0.026 312);}
-:root[data-theme="dark"] .callout--pl{background:oklch(0.30 0.040 312);}
+.callout--pl{border-left-color:var(--lavanda-deep);background:var(--lavanda);}
 .callout--pl b{color:var(--lavanda-deep);}
 
 .gram-box{
@@ -560,7 +711,7 @@ button{font:inherit;color:inherit;}
   background:linear-gradient(180deg, var(--paper-3), var(--paper-2) 62%);
   padding:22px 24px;
 }
-.gram-box__rule{font-family:var(--display);font-weight:600;font-size:1.06rem;margin:0 0 6px;color:var(--rosa-deep);}
+.gram-box__rule{font-family:var(--display);font-weight:600;font-size:1.06rem;margin:0 0 6px;color:var(--salvia-deep);}
 .gram-box__note{font-size:.9rem;color:var(--ink-soft);margin:0 0 16px;}
 
 .table-wrap{overflow-x:auto;border-radius:var(--r-m);border:1px solid var(--line);}
@@ -569,7 +720,7 @@ table.gt th,table.gt td{padding:9px 14px;text-align:left;border-bottom:1px solid
 table.gt thead th{background:var(--paper-3);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);}
 table.gt tbody tr:last-child td{border-bottom:none;}
 table.gt td:first-child{font-weight:600;color:var(--ink-soft);white-space:nowrap;}
-table.gt .it{font-weight:700;color:var(--rosa-deep);}
+table.gt .it{font-weight:700;color:var(--salvia-deep);}
 
 .ex-list{list-style:none;margin:16px 0 0;padding:0;}
 .ex-list li{
@@ -587,8 +738,7 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
   display:inline-grid;place-items:center;cursor:pointer;font-size:.82rem;padding:0;
   vertical-align:middle;
 }
-.say-btn:hover{border-color:var(--rosa-deep);background:oklch(0.965 0.030 12);}
-:root[data-theme="dark"] .say-btn:hover{background:var(--rosa);}
+.say-btn:hover{border-color:var(--salvia-deep);background:var(--salvia);}
 .say-btn.is-playing{border-color:var(--salvia-deep);background:var(--ok-bg);}
 
 /* vocabolario */
@@ -599,7 +749,7 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
   border-radius:var(--r-m);padding:11px 14px;
 }
 .vocab-card__txt{min-width:0;flex:1;}
-.vocab-card__it{font-weight:700;color:var(--rosa-deep);display:block;font-size:.98rem;}
+.vocab-card__it{font-weight:700;color:var(--salvia-deep);display:block;font-size:.98rem;}
 .vocab-card__pl{color:var(--ink-soft);font-size:.85rem;display:block;}
 .vocab-card__ex{font-size:.78rem;color:var(--ink-faint);display:block;margin-top:3px;font-style:italic;}
 .vocab-card__star{
@@ -635,7 +785,7 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
   border-radius:var(--r-m);padding:10px 14px;min-height:44px;font:inherit;
   transition:border-color .16s ease, background .16s ease;
 }
-.dlg-opt:hover{border-color:var(--rosa-deep);background:var(--paper-3);}
+.dlg-opt:hover{border-color:var(--salvia-deep);background:var(--paper-3);}
 .dlg-opt i{display:block;font-style:italic;font-weight:600;}
 .dlg-opt span{display:block;font-size:.84rem;color:var(--ink-soft);margin-top:2px;}
 
@@ -661,10 +811,9 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
   font-size:.96rem;font-weight:600;min-height:48px;
   transition:border-color .14s, background .14s;
 }
-.opt:hover{border-color:var(--rosa-mid);}
-.opt input{accent-color:var(--rosa-deep);width:18px;height:18px;flex:0 0 18px;}
-.opt.is-sel{border-color:var(--rosa-deep);background:oklch(0.972 0.028 12);}
-:root[data-theme="dark"] .opt.is-sel{background:var(--rosa);}
+.opt:hover{border-color:var(--salvia-mid);}
+.opt input{accent-color:var(--salvia-deep);width:18px;height:18px;flex:0 0 18px;}
+.opt.is-sel{border-color:var(--salvia-deep);background:var(--salvia);}
 .opt.is-ok{border-color:var(--ok);background:var(--ok-bg);}
 .opt.is-ko{border-color:var(--ko);background:var(--ko-bg);}
 
@@ -673,7 +822,7 @@ table.gt .it{font-weight:700;color:var(--rosa-deep);}
   padding:12px 16px;border:2px solid var(--line-strong);border-radius:var(--r-m);
   background:var(--paper-2);color:var(--ink);min-height:48px;width:100%;max-width:420px;
 }
-.field:focus{outline:none;border-color:var(--rosa-deep);box-shadow:0 0 0 4px oklch(0.605 0.160 16 / .14);}
+.field:focus{outline:none;border-color:var(--salvia-deep);box-shadow:0 0 0 4px oklch(var(--glow-primary) / .16);}
 .field-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 /* Wypracowanie potrzebuje szerokości i wysokości, których pole jednoliniowe
    nie daje: 420 px na tekst o osiemdziesięciu słowach to pisanie w rurce. */
@@ -687,10 +836,10 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
 .tok-bank{display:flex;flex-wrap:wrap;gap:8px;}
 .tok{
   border:2px solid var(--line-strong);background:var(--paper-2);
-  border-radius:14px;padding:8px 14px;font-weight:600;cursor:pointer;min-height:40px;font-size:.94rem;
+  border-radius:var(--r-m);padding:8px 14px;font-weight:600;cursor:pointer;min-height:40px;font-size:.94rem;
 }
-.tok:hover{border-color:var(--rosa-deep);}
-.tok--placed{background:var(--rosa);border-color:var(--rosa-mid);}
+.tok:hover{border-color:var(--salvia-deep);}
+.tok--placed{background:var(--salvia);border-color:var(--salvia-mid);}
 
 /* match */
 .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;}
@@ -699,8 +848,7 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
   border:2px solid var(--line-strong);background:var(--paper-2);border-radius:var(--r-m);
   padding:11px 14px;cursor:pointer;font-weight:600;text-align:left;min-height:46px;font-size:.93rem;
 }
-.match-btn.is-sel{border-color:var(--rosa-deep);background:oklch(0.972 0.028 12);}
-:root[data-theme="dark"] .match-btn.is-sel{background:var(--rosa);}
+.match-btn.is-sel{border-color:var(--salvia-deep);background:var(--salvia);}
 .match-btn.is-ok{border-color:var(--ok);background:var(--ok-bg);opacity:.75;cursor:default;}
 .match-btn.is-ko{border-color:var(--ko);background:var(--ko-bg);}
 
@@ -714,16 +862,20 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
   border:2px dashed var(--line-strong);border-radius:var(--r-l);
   background:var(--paper-3);padding:20px;text-align:center;
 }
-.voice-target{font-family:var(--display);font-size:1.3rem;font-weight:600;margin:0 0 4px;color:var(--rosa-deep);}
+.voice-target{font-family:var(--display);font-size:1.3rem;font-weight:600;margin:0 0 4px;color:var(--salvia-deep);}
 .voice-pl{font-size:.88rem;color:var(--ink-soft);margin:0 0 16px;}
 .mic{
   width:76px;height:76px;border-radius:50%;border:none;cursor:pointer;
-  background:var(--rosa-deep);color:oklch(0.99 0.005 40);font-size:1.7rem;
-  box-shadow:0 6px 20px oklch(0.605 0.160 16 / .35);
+  /* At rest the microphone is the primary action, so it is green like every
+     other one. RECORDING is the state that earns the accent: something is
+     leaving the student's machine, and that is the one moment on this screen
+     worth spending the red on. */
+  background:var(--salvia-deep);color:var(--on-primary);font-size:1.7rem;
+  box-shadow:0 6px 20px oklch(var(--glow-primary) / .32);
 }
-.mic:hover{background:oklch(0.545 0.170 16);}
-.mic.is-rec{background:var(--salvia-deep);animation:pulse 1.3s ease-in-out infinite;}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 oklch(0.545 0.098 168 / .55);}50%{box-shadow:0 0 0 18px oklch(0.545 0.098 168 / 0);}}
+.mic:hover{background:var(--btn-primary-hover);}
+.mic.is-rec{background:var(--rosa-deep);color:var(--on-accent);animation:pulse 1.3s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 oklch(var(--glow-accent) / .50);}50%{box-shadow:0 0 0 18px oklch(var(--glow-accent) / 0);}}
 .voice-heard{margin-top:14px;font-size:.95rem;min-height:1.4em;}
 .voice-heard b{color:var(--ink);}
 .voice-score{font-family:var(--display);font-size:1.5rem;font-weight:700;}
@@ -744,13 +896,13 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
   border:2px solid var(--line-strong);border-radius:var(--r-xl);
   background:linear-gradient(180deg, var(--paper-3), var(--paper-2) 65%);
 }
-.summary__score{font-family:var(--display);font-size:3.4rem;font-weight:700;color:var(--rosa-deep);line-height:1;}
+.summary__score{font-family:var(--display);font-size:3.4rem;font-weight:700;color:var(--salvia-deep);line-height:1;}
 .summary__msg{font-size:1.06rem;color:var(--ink-soft);margin:8px 0 24px;}
 .summary__acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
 /* ══════════════════ PIĘĆ MINUT ══════════════════ */
 .flash__bar{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
-.flash__clock{font-family:var(--display);font-size:2rem;font-weight:700;color:var(--rosa-deep);font-variant-numeric:tabular-nums;line-height:1;}
+.flash__clock{font-family:var(--display);font-size:2rem;font-weight:700;color:var(--salvia-deep);font-variant-numeric:tabular-nums;line-height:1;}
 .flash__count{font-size:.86rem;color:var(--ink-soft);}
 /* The note keeps its height when empty, so the card does not jump down when the minute warning appears. */
 .flash__note{min-height:1.5em;font-size:.92rem;color:var(--ink-soft);margin:0 0 10px;}
@@ -772,7 +924,7 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
   border:1.5px solid var(--line);border-radius:var(--r-l);background:var(--paper-2);
   padding:18px 20px;
 }
-.stat-card b{display:block;font-family:var(--display);font-size:2rem;font-weight:700;line-height:1.1;color:var(--rosa-deep);}
+.stat-card b{display:block;font-family:var(--display);font-size:2rem;font-weight:700;line-height:1.1;color:var(--salvia-deep);}
 .stat-card span{font-size:.82rem;color:var(--ink-soft);font-weight:600;}
 
 .list-row{
@@ -815,7 +967,7 @@ textarea.field{max-width:min(720px, 100%);line-height:1.7;font-weight:500;resize
   position:absolute;width:1px;height:1px;padding:0;margin:-1px;
   overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;
 }
-mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0 2px;}
+mark{background:var(--oro);color:var(--on-oro);border-radius:3px;padding:0 2px;}
 
 /* ══════════════════ PASEK ZNAKÓW ══════════════════ */
 /* Unosi się nad treścią pod polem tekstowym: pozycję liczy keys.js,
@@ -840,7 +992,7 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   background:var(--paper);color:var(--ink);
   font-family:inherit;font-size:1.05rem;font-weight:600;cursor:pointer;
 }
-.keybar__k:hover{background:var(--paper-3);border-color:var(--rosa-deep);}
+.keybar__k:hover{background:var(--paper-3);border-color:var(--salvia-deep);}
 
 /* Uwaga „w twoim języku jest inaczej" — najcenniejsza treść kursu wobec
    aplikacji, które uczą wszystkich tak samo. Wyróżniona lewą krawędzią,
@@ -859,23 +1011,23 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   background:var(--paper-2);border:2px solid var(--ink-faint);
   font-family:inherit;font-size:.94rem;font-weight:600;color:var(--ink);cursor:pointer;
 }
-.tab:hover{border-color:var(--rosa-mid);}
-.tab:focus-visible{outline:3px solid var(--rosa-deep);outline-offset:2px;}
-.tab[aria-current="true"]{border-color:var(--rosa-deep);background:var(--paper-3);}
-/* Ta sama para barw, co odznaka w panelu bocznym (.rail__badge): jasne tło
-   i stały ciemny tusz, niezależny od motywu. Wersja z var(--rosa-deep) i
-   var(--paper-1) dawała 2.58:1 w jasnym i 1.59:1 w ciemnym — zmierzone,
-   nie oszacowane, a to jest liczba do przeczytania, nie ozdoba. */
+.tab:hover{border-color:var(--salvia-mid);}
+.tab:focus-visible{outline:3px solid var(--salvia-deep);outline-offset:2px;}
+.tab[aria-current="true"]{border-color:var(--salvia-deep);background:var(--paper-3);}
+/* The same pair as the badge in the side panel (.rail__badge): a pale gold
+   fill and a fixed dark ink, neither of which follows the theme. An earlier
+   version used the brand colour over --paper-1 and measured 2.58:1 in light
+   and 1.59:1 in dark — this is a number to be read, not an ornament. */
 .tab__n{
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:22px;height:22px;padding:0 6px;border-radius:11px;
-  background:var(--oro);color:oklch(0.30 0.05 60);font-size:.72rem;font-weight:700;
+  min-width:22px;height:22px;padding:0 6px;border-radius:var(--r-pill);
+  background:var(--oro);color:var(--on-oro);font-size:.72rem;font-weight:700;
 }
 
 /* ══════════════════ TOAST ══════════════════ */
 .toast-stack{position:fixed;right:20px;bottom:20px;z-index:80;display:flex;flex-direction:column;gap:8px;}
 .toast{
-  background:var(--paper-2);border:2px solid var(--rosa-deep);border-radius:var(--r-m);
+  background:var(--paper-2);border:2px solid var(--salvia-deep);border-radius:var(--r-m);
   padding:11px 18px;box-shadow:var(--shadow-m);font-weight:600;font-size:.9rem;
   animation:toastIn .25s ease;max-width:320px;
 }
@@ -894,7 +1046,7 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   border:0;background:none;color:var(--ink-soft);font-size:1.25rem;cursor:pointer;border-radius:var(--r-s);
 }
 .toast__x:hover{background:var(--paper-3);color:var(--ink);}
-.toast__x:focus-visible{outline:3px solid var(--rosa-deep);outline-offset:2px;}
+.toast__x:focus-visible{outline:3px solid var(--salvia-deep);outline-offset:2px;}
 /* Akcja w trwałym komunikacie, trzy decyzje i wszystkie z pomiaru:
    `flex`, nie odziedziczone `inline-flex` z .btn, bo przycisk zostawał w
    linii tekstu i margin-top wsuwał go NA ostatni wiersz zamiast wypchnąć
@@ -921,11 +1073,11 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   }
   .rail.is-open{transform:none;}
   /* Chowanie zasłony obsługuje teraz globalna reguła [hidden] na górze pliku. */
-  .rail__scrim{display:block;position:fixed;inset:0;background:oklch(0.30 0.03 350 / .45);z-index:35;}
+  .rail__scrim{display:block;position:fixed;inset:0;background:oklch(0.211 0.007 67 / .50);z-index:35;}
   .rail-toggle{
     display:grid;place-items:center;position:fixed;top:14px;left:14px;z-index:45;
     width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;
-    background:var(--rosa-deep);color:oklch(0.99 0.005 40);box-shadow:var(--shadow-m);
+    background:var(--salvia-deep);color:var(--on-primary);box-shadow:var(--shadow-m);
   }
   .rail-toggle__bars,.rail-toggle__bars::before,.rail-toggle__bars::after{
     display:block;width:20px;height:2.5px;background:currentColor;border-radius:2px;position:relative;
@@ -967,8 +1119,8 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   text-decoration:underline dotted color-mix(in oklch, var(--ink-faint) 60%, transparent);
   text-underline-offset:4px;
 }
-.lk-word:hover{background:var(--paper-3);text-decoration-color:var(--rosa-deep);}
-.lk-word:focus-visible{outline:2px solid var(--rosa-deep);outline-offset:2px;}
+.lk-word:hover{background:var(--paper-3);text-decoration-color:var(--salvia-deep);}
+.lk-word:focus-visible{outline:2px solid var(--salvia-deep);outline-offset:2px;}
 
 /* Wiersz tekstu ma line-height 2.1 właśnie po to: cel dotknięcia rośnie
    w pionie do ~44px bez rozstrzeliwania liter w poziomie. Sam padding na
@@ -979,8 +1131,8 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 
 .lk-card{
   display:block;margin:10px 0;padding:14px 16px;
-  background:var(--paper-2);border:1px solid var(--rosa-deep);border-radius:14px;
-  box-shadow:0 6px 22px rgba(0,0,0,.10);
+  background:var(--paper-2);border:1px solid var(--salvia-deep);border-radius:var(--r-m);
+  box-shadow:var(--shadow-m);
   max-width:min(460px,100%);
 }
 .lk-card__head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
@@ -990,7 +1142,7 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
   background:none;border:0;cursor:pointer;color:var(--ink-soft);font-size:1rem;border-radius:10px;
 }
 .lk-card__x:hover{background:var(--paper-sunk);color:var(--ink);}
-.lk-card__x:focus-visible{outline:2px solid var(--rosa-deep);outline-offset:2px;}
+.lk-card__x:focus-visible{outline:2px solid var(--salvia-deep);outline-offset:2px;}
 .lk-card__lab{display:block;font-size:.86rem;font-weight:600;color:var(--ink-soft);}
 .lk-card__lab .field{margin-top:5px;width:100%;}
 .lk-card__row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;}
@@ -1006,9 +1158,9 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .cov__top{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
 .cov__top b{font-family:var(--display);font-size:1.06rem;}
 .cov__n{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink-soft);font-size:.92rem;}
-.cov__bar{height:12px;border-radius:99px;background:var(--paper-sunk);overflow:hidden;}
-.cov__fill{display:block;height:100%;border-radius:99px;background:var(--salvia-mid);}
-.cov__fill--strong{background:var(--rosa-deep);}
+.cov__bar{height:12px;border-radius:var(--r-pill);background:var(--paper-sunk);overflow:hidden;}
+.cov__fill{display:block;height:100%;border-radius:var(--r-pill);background:var(--salvia-mid);}
+.cov__fill--strong{background:var(--salvia-deep);}
 .cov__why{margin:7px 0 0;color:var(--ink-soft);font-size:.9rem;}
 .cov__tok{margin:3px 0 0;font-size:.9rem;font-weight:600;}
 .cov__h{font-size:1.15rem;margin:26px 0 4px;}
@@ -1025,7 +1177,7 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .fa-line{display:flex;gap:10px;align-items:baseline;margin:0 0 5px;flex-wrap:wrap;}
 .fa-tag{
   flex:0 0 auto;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  padding:2px 8px;border-radius:99px;
+  padding:2px 8px;border-radius:var(--r-pill);
 }
 .fa-tag--no{background:var(--ko-bg);color:var(--ko);}
 .fa-tag--yes{background:var(--ok-bg);color:var(--ok);}
@@ -1042,7 +1194,7 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .sh-note{margin-top:18px;color:var(--ink-faint);font-size:.86rem;}
 /* Nagrywanie widać, a nie tylko słychać w opisie: puls przy czerwonym
    przycisku plus aria-pressed, bo sam kolor nie jest informacją. */
-.js-rec.is-rec{background:var(--ko);border-color:var(--ko);color:oklch(0.99 0.005 40);}
+.js-rec.is-rec{background:var(--ko);border-color:var(--ko);color:var(--on-accent);}
 @media (prefers-reduced-motion: no-preference){
   .js-rec.is-rec{animation:sh-puls 1.4s ease-in-out infinite;}
 }
@@ -1052,10 +1204,10 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .stt-consent{
   position:fixed;inset:0;z-index:400;
   display:flex;align-items:center;justify-content:center;padding:20px;
-  background:oklch(0.30 0.03 340 / .55);
+  background:oklch(0.211 0.007 67 / .60);
 }
 .stt-consent__box{
-  background:var(--paper-2);border:2px solid var(--rosa-deep);border-radius:var(--r-l);
+  background:var(--paper-2);border:2px solid var(--salvia-deep);border-radius:var(--r-l);
   padding:26px;max-width:520px;box-shadow:var(--shadow-l);
 }
 .stt-consent__box h2{font-size:1.2rem;margin-bottom:10px;}
@@ -1073,12 +1225,18 @@ mark{background:var(--oro);color:oklch(0.30 0.05 60);border-radius:3px;padding:0
 .sp-it{font-family:var(--display);font-size:1.28rem;line-height:1.5;margin:12px 0 0;}
 
 /* ══════════════════ SYMULACJA EGZAMINU ══════════════════ */
+/* The exam simulation is the citizenship track, and the design system puts
+   the accent red exactly there. One edge on the running bar carries it —
+   not a red panel, not a red heading: the register is set once and the rest
+   of the screen stays the same course. The step label goes mono with it,
+   like every other classifier in the system. */
 .cils-bar{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   margin-bottom:14px;padding:10px 14px;border:2px solid var(--line-strong);
+  border-left:4px solid var(--rosa-deep);
   border-radius:var(--r-m);background:var(--paper-2);
 }
-.cils-step{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+.cils-step{font-family:var(--mono);font-size:.74rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
 /* Zegar: cyfry o stałej szerokości, żeby pasek nie drgał co sekundę. */
 .cils-clock{font-variant-numeric:tabular-nums;font-size:1.3rem;font-weight:700;color:var(--ink);}
 .cils-prova{margin-bottom:18px;}

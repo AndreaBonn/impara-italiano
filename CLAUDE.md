@@ -415,13 +415,24 @@ strażnik stoi na protokole, nie w `try/catch`, i żadna ścieżka kodu nie zak�
 worker istnieje. Zakładka Ustawienia pokazuje, w którym z trzech stanów jest kurs.
 
 Cudzych domen worker nie dotyka w ogóle: nieprzejrzysta odpowiedź w pamięci to rozmiar bez
-możliwości sprawdzenia treści. Do niedawna kosztowało to wygląd kursu bez sieci, bo Fraunces
-i Inter szły z `fonts.googleapis.com` i przez tę właśnie regułę nie trafiały do pamięci.
-**Oba kroje leżą teraz w `assets/fonts/`** (cztery pliki: `latin` i `latin-ext` na rodzinę,
-bo polskie znaki diakrytyczne siedzą w `latin-ext`), są w `PRECACHE`, a `index.html` nie
-odpytuje już żadnej cudzej domeny. Zmierzone, nie założone: wszystkie cztery pliki ładują się
-**także z `file://`** — obawa, że CORS je tam zablokuje, okazała się nietrafiona, natomiast
-`<link rel="preload" crossorigin>` faktycznie tam pada i dlatego go nie ma.
+możliwości sprawdzenia treści. Do niedawna kosztowało to wygląd kursu bez sieci, bo kroje szły
+z `fonts.googleapis.com` i przez tę właśnie regułę nie trafiały do pamięci.
+**Wszystkie kroje leżą teraz w `assets/fonts/`**, są w `PRECACHE`, a `index.html` nie odpytuje
+żadnej cudzej domeny. Nie jest to tylko nawyk: `font-src 'self'` w polityce CSP sprawia, że
+dopisany kiedyś `@import` z Google byłby po prostu zablokowany, a strona zjechałaby na krój
+zastępczy bez słowa. Zmierzone, nie założone: pliki ładują się **także z `file://`** — obawa,
+że CORS je tam zablokuje, okazała się nietrafiona, natomiast `<link rel="preload" crossorigin>`
+faktycznie tam pada i dlatego go nie ma.
+
+Trzy rodziny, bo design system ma trzy rejestry: **Spectral** (szeryfowy) na nagłówki,
+**Manrope** (bezszeryfowy) na tekst i interfejs, **JetBrains Mono** na poziomy CEFR i inne
+klasyfikatory. Podział na podzbiory jest ten sam co wcześniej — `latin` i `latin-ext` na
+rodzinę, bo polskie znaki diakrytyczne siedzą w `latin-ext`. Mono jest wyjątkiem i ma sam
+`latin`: pisze kody CEFR i nazwy grup czasownikowych, czyli ASCII, a znak spoza zakresu
+i tak spada do następnego kroju w stosie, po jednym znaku. Manrope i JetBrains Mono są
+zmienne (jeden plik na całą oś grubości); Spectral nie jest i dlatego ma dwa pliki na
+podzbiór, 600 na nagłówki i 700 na duże liczby — sztuczne pogrubienie szeryfowego kroju
+widać gołym okiem, więc drugi plik jest tańszy niż artefakt.
 
 ## Biblioteka: długie teksty, które przychodzą z poziomem
 
@@ -549,7 +560,7 @@ ją Chromium, tym samym, którego potrzebują testy DOM. Nowa zależność nie j
 Ponowne uruchomienie nie rusza gita: ten sam szablon daje ten sam plik co do bajtu, i to
 właśnie czyni `assets/og/cover.png` wynikiem repozytorium, a nie doczepionym do niego
 załącznikiem. Skrypt czeka na `document.fonts.ready` przed zdjęciem: bez tego zdjęcie ściga
-się z czterema plikami woff2 i Chromium maluje zastępczą szeryfową, co nadal wygląda jak
+się z plikami woff2 i Chromium maluje zastępczą szeryfową, co nadal wygląda jak
 poprawna karta.
 
 **Adres serwisu stoi w jednym miejscu**: w polu `homepage` w `package.json`. Czytają go
@@ -733,7 +744,7 @@ w pliku, i dlatego każdy z nich niesie swoje własne polecenie.
 | Typy ćwiczeń obecnych w danych | 13 | `node scripts/baseline.mjs` |
 | Nagrania | 4071 plików mp3, 46 MiB bajtów; 4070 skrótów w indeksie | `node scripts/baseline.mjs` |
 | Klucze interfejsu na język | 890 × 5 języków | `node scripts/baseline.mjs` |
-| Kroje pisma | 4 plików woff2 w assets/fonts/, 254 KB | `node scripts/baseline.mjs` |
+| Kroje pisma | 7 plików woff2 w assets/fonts/, 155 KB | `node scripts/baseline.mjs` |
 | Pliki silnika | 77 w assets/js/, 16049 linii | `node scripts/baseline.mjs` |
 
 Trzy rzeczy, których tabela nie mieści, a które trzeba przeczytać razem z nią.

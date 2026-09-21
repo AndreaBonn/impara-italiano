@@ -128,7 +128,7 @@
       (Retention.wspiera.odznaka()
         ? '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-badge"' +
           (r.odznaka ? " checked" : "") +
-          ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + esc(t("ret.badge")) + "</span></label>" +
+          ' style="width:18px;height:18px;accent-color:var(--salvia-deep)"><span>' + esc(t("ret.badge")) + "</span></label>" +
           '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
           esc(t("ret.badgeHint")) + "</span>"
         : '<span style="display:block;font-size:.84rem;color:var(--ink-soft)">' +
@@ -167,9 +167,9 @@
       t(Audio2.naturalAvailable ? "set.recordedHint" : "set.notBuiltHint") +
       "</span></label>" +
       '<label style="display:block"><span style="font-weight:600;display:block;margin-bottom:5px">' + t("set.rate") + ' <b class="js-rate-v">' + st.rate + "×</b></span>" +
-      '<input type="range" class="js-rate" min="0.6" max="1.4" step="0.05" value="' + st.rate + '" style="width:100%;max-width:420px;accent-color:var(--rosa-deep)"></label>' +
-      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-autoplay"' + (st.autoplay ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("set.autoplay") + "</span></label>" +
-      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-strict"' + (st.strictAccents ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("set.strictAccents") + "</span></label>" +
+      '<input type="range" class="js-rate" min="0.6" max="1.4" step="0.05" value="' + st.rate + '" style="width:100%;max-width:420px;accent-color:var(--salvia-deep)"></label>' +
+      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-autoplay"' + (st.autoplay ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--salvia-deep)"><span>' + t("set.autoplay") + "</span></label>" +
+      '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-strict"' + (st.strictAccents ? " checked" : "") + ' style="width:18px;height:18px;accent-color:var(--salvia-deep)"><span>' + t("set.strictAccents") + "</span></label>" +
       '<button class="btn btn--ghost btn--sm js-test" style="align-self:flex-start">' + t("set.testVoice") + "</button>" +
 
       /* Withdrawing the speech-recognition consent. It sits HERE, next to
@@ -189,7 +189,7 @@
       (Audio2.sttSupported
         ? '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-consent"' +
           (Consent.udzielona() ? " checked" : "") +
-          ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("set.sttConsent") + "</span></label>" +
+          ' style="width:18px;height:18px;accent-color:var(--salvia-deep)"><span>' + t("set.sttConsent") + "</span></label>" +
           '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
           esc(t("set.sttConsentHint")) + "</span>"
         : "") +
@@ -256,7 +256,7 @@
       }).join("") +
       '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-llm-consent"' +
       (Consent.udzielonaLlm() ? " checked" : "") +
-      ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("llm.consent") + "</span></label>" +
+      ' style="width:18px;height:18px;accent-color:var(--salvia-deep)"><span>' + t("llm.consent") + "</span></label>" +
       '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
       esc(t("llm.consentHint")) + "</span>" +
 
@@ -267,7 +267,7 @@
          leave the other alone. */
       '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" class="js-chat-consent"' +
       (Consent.udzielonaChat() ? " checked" : "") +
-      ' style="width:18px;height:18px;accent-color:var(--rosa-deep)"><span>' + t("chat.consent") + "</span></label>" +
+      ' style="width:18px;height:18px;accent-color:var(--salvia-deep)"><span>' + t("chat.consent") + "</span></label>" +
       '<span style="display:block;font-size:.84rem;color:var(--ink-soft);margin-top:-4px">' +
       esc(t("chat.consentHint")) + "</span>" +
       '<div class="fb js-llm-fb" role="status"></div>' +

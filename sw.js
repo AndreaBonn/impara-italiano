@@ -48,7 +48,7 @@
 
    A human raises "v35" when they want to name a release; the fingerprint
    is not their job. */
-var SW_VERSION = "v35.40c1f62c0f0e";
+var SW_VERSION = "v35.c94b7aceef18";
 
 var SHELL_CACHE = "linguai-shell-" + SW_VERSION;
 /* Recordings are content-addressed, so their cache survives a version change.
@@ -175,10 +175,13 @@ var PRECACHE = [
      the first foreign origin. Without a network the page therefore looked
      different than with one, which read like a fault and was written down
      in the rule. */
-  "./assets/fonts/fraunces-latin.woff2",
-  "./assets/fonts/fraunces-latin-ext.woff2",
-  "./assets/fonts/inter-latin.woff2",
-  "./assets/fonts/inter-latin-ext.woff2"
+  "./assets/fonts/spectral-600-latin.woff2",
+  "./assets/fonts/spectral-600-latin-ext.woff2",
+  "./assets/fonts/spectral-700-latin.woff2",
+  "./assets/fonts/spectral-700-latin-ext.woff2",
+  "./assets/fonts/manrope-latin.woff2",
+  "./assets/fonts/manrope-latin-ext.woff2",
+  "./assets/fonts/jetbrainsmono-latin.woff2"
 ];
 
 function isAudio(url) { return /\/audio\/[0-9a-f]{2}\/[0-9a-f]{16}\.mp3$/.test(url.pathname); }

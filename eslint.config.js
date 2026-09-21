@@ -66,7 +66,13 @@ module.exports = defineConfig([
       "audio/**",
       "test-results/**",
       "playwright-report/**",
-      ".playwright-mcp/**"
+      ".playwright-mcp/**",
+      /* The design system is a reference kit dropped into the tree, not code
+         this repository runs: React components, a prebuilt bundle and two
+         demo screens, none of which index.html loads. Linting it reports 715
+         errors about React and JSX that no one here can act on, which is the
+         noise the header of this file exists to keep out. */
+      "assets/Design system */**"
     ]
   },
 

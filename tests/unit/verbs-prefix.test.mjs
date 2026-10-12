@@ -130,6 +130,28 @@ describe("splitting off a prefix is spelling, not etymology", () => {
     assert.equal(V.participle("mantenere"), "mantenuto");
   });
 
+  /* The auxiliary is a flag, not a form: the prefix used to be glued onto it
+     too, so "promettere" got "proavere" and a passato prossimo "proho
+     promesso". The participle was right, which is why nobody saw it. */
+  test("a prefixed verb keeps the root auxiliary unprefixed", () => {
+    const V = silnik();
+    assert.equal(V.auxOf("promettere"), "avere");
+    assert.equal(V.conjugate("promettere", "passPross")[0], "ho promesso");
+    assert.equal(V.conjugate("ottenere", "passPross")[2], "ha ottenuto");
+    assert.equal(V.conjugate("ridurre", "passPross")[0], "ho ridotto");
+  });
+
+  /* The regular imperative has no -rre pattern and used the infinitive as
+     its stem ("ridurrei"); the -rre models carry their own and the family
+     inherits it. */
+  test("the -rre families have a real imperative", () => {
+    const V = silnik();
+    assert.deepEqual(Array.from(V.conjugate("ridurre", "imper")),
+      [null, "riduci", "riduca", "riduciamo", "riducete", "riducano"]);
+    assert.deepEqual(Array.from(V.conjugate("supporre", "imper")),
+      [null, "supponi", "supponga", "supponiamo", "supponete", "suppongano"]);
+  });
+
   test("stare nadal jest nieregularne", () => {
     const V = silnik();
     assert.deepEqual(Array.from(V.conjugate("stare", "pres")),

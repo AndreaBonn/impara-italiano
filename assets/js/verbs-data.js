@@ -256,7 +256,8 @@
       remoto: ["tradussi", "traducesti", "tradusse", "traducemmo", "traduceste", "tradussero"],
       futStem: "tradurr",
       cong: ["traduca", "traduca", "traduca", "traduciamo", "traduciate", "traducano"],
-      congImp: ["traducessi", "traducessi", "traducesse", "traducessimo", "traduceste", "traducessero"]
+      congImp: ["traducessi", "traducessi", "traducesse", "traducessimo", "traduceste", "traducessero"],
+      imper: [null, "traduci", "traduca", "traduciamo", "traducete", "traducano"]
     },
     porre: {
       aux: "avere", pp: "posto", ger: "ponendo",
@@ -265,7 +266,8 @@
       remoto: ["posi", "ponesti", "pose", "ponemmo", "poneste", "posero"],
       futStem: "porr",
       cong: ["ponga", "ponga", "ponga", "poniamo", "poniate", "pongano"],
-      congImp: ["ponessi", "ponessi", "ponesse", "ponessimo", "poneste", "ponessero"]
+      congImp: ["ponessi", "ponessi", "ponesse", "ponessimo", "poneste", "ponessero"],
+      imper: [null, "poni", "ponga", "poniamo", "ponete", "pongano"]
     },
     sedere: {
       aux: "essere", ppAgree: true, pp: "seduto",

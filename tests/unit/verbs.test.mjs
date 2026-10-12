@@ -97,6 +97,32 @@ describe("irregular verbs", () => {
     assert.equal(V.gerund("tradurre"), "traducendo");
   });
 
+  /* "ridurre" is taught in A2 and was conjugated from its infinitive as a
+     stem: "ridurreevo", "ridurreuto". The -durre family is one Latin verb,
+     -ducere, and every member conjugates like "tradurre" with its own
+     prefix - whether or not that prefix is on the closed list. */
+  test("every -durre verb follows tradurre, not only the one in the table", () => {
+    assert.deepEqual(formy("ridurre", "imperf"), ["riducevo", "riducevi", "riduceva", "riducevamo", "riducevate", "riducevano"]);
+    assert.deepEqual(formy("ridurre", "pres"), ["riduco", "riduci", "riduce", "riduciamo", "riducete", "riducono"]);
+    assert.equal(formy("ridurre", "remoto")[2], "ridusse");
+    assert.equal(V.participle("ridurre"), "ridotto");
+    assert.equal(V.gerund("produrre"), "producendo");
+    assert.equal(formy("ridurre", "passPross")[0], "ho ridotto");
+  });
+
+  /* "supporre" (in the course) splits as su + pporre, so the prefix list
+     never reached "porre" and the verb came out as "supporreevo". */
+  test("every -porre verb follows porre, including a doubled consonant", () => {
+    assert.deepEqual(formy("supporre", "pres"), ["suppongo", "supponi", "suppone", "supponiamo", "supponete", "suppongono"]);
+    assert.equal(V.participle("supporre"), "supposto");
+    assert.equal(formy("proporre", "imperf")[0], "proponevo");
+  });
+
+  test("the -rre models keep their own forms under the family rule", () => {
+    assert.equal(formy("tradurre", "remoto")[0], "tradussi", "the model itself is unchanged");
+    assert.equal(formy("porre", "pres")[0], "pongo", "the model itself is unchanged");
+  });
+
   test("an irregular participle wins over the regular one", () => {
     assert.equal(V.participle("fare"), "fatto");
     assert.equal(V.participle("parlare"), "parlato", "the regular one stays regular");
@@ -169,6 +195,22 @@ describe("reflexive verbs", () => {
     assert.equal(imper[2], "si alzi", "Lei");
     assert.equal(imper[5], "si alzino", "Loro");
   });
+
+  /* The table holds "accorgersi" under its reflexive infinitive, with the
+     pronoun already in the forms. The lookup went through the base form
+     "accorgere", found nothing and derived "mi accorgei" and "accorguto". */
+  test("an irregular reflexive entry is used: accorgersi", () => {
+    assert.deepEqual(formy("accorgersi", "remoto"),
+      ["mi accorsi", "ti accorgesti", "si accorse", "ci accorgemmo", "vi accorgeste", "si accorsero"]);
+    assert.equal(V.participle("accorgersi"), "accorto");
+    assert.equal(formy("accorgersi", "passPross", "f")[3], "ci siamo accorte");
+    assert.equal(V.fullTable("accorgersi")._meta.irregolare, true);
+  });
+
+  test("its regular tenses still get the pronoun once", () => {
+    assert.deepEqual(formy("accorgersi", "pres"),
+      ["mi accorgo", "ti accorgi", "si accorge", "ci accorgiamo", "vi accorgete", "si accorgono"]);
+  });
 });
 
 describe("the imperative without reflexives", () => {
@@ -239,4 +281,16 @@ describe("input that is not an infinitive", () => {
     assert.equal(out.length, 6);
     assert.equal(out[0], "blurbo");
   });
+});
+
+test("verbs: finire label", () => {
+  const V = loadEngine({ files: VERBS }).sandbox.Verbs;
+  assert.equal(V.fullTable("finire")._meta.gruppo, "-ire (-isc-)");
+  assert.equal(V.fullTable("dormire")._meta.gruppo, "-ire");
+});
+
+test("verbs: future of -rre verbs outside IRR", () => {
+  const V = loadEngine({ files: VERBS }).sandbox.Verbs;
+  assert.equal(Array.from(V.conjugate("trarre", "futuro"))[0], "trarrò");
+  assert.equal(Array.from(V.conjugate("condurre", "condizionale"))[2], "condurrebbe");
 });

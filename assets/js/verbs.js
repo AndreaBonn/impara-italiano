@@ -119,6 +119,14 @@
      pointed at directly. Without this "ottiene" came out as "ottene". */
   var DZIEDZICZY_WPROST = { ottenere: "tenere", mantenere: "tenere", sostenere: "tenere" };
 
+  /* The contracted -rre verbs are whole Latin families: -durre is -ducere,
+     -porre is -ponere. The prefix list cannot reach them - "ridurre" has no
+     "durre" in the table to inherit from, "supporre" splits as su+pporre -
+     and the regular rules have no -rre pattern at all, so the infinitive
+     itself became the stem ("ridurreevo", "ridurreuto"). Every member
+     conjugates like the model with the model's prefix swapped for its own. */
+  var RODZINY_RRE = { durre: "tradurre", porre: "porre" };
+
   var cachePrzedrostkow = {};
 
   /**
@@ -138,6 +146,12 @@
       return cachePrzedrostkow[b];
     }
 
+    var rodzina = rodzinaRre(b);
+    if (rodzina) {
+      cachePrzedrostkow[b] = rodzina;
+      return rodzina;
+    }
+
     var wynik = null;
     for (var i = 0; i < PRZEDROSTKI.length && !wynik; i++) {
       var p = PRZEDROSTKI[i];
@@ -151,13 +165,34 @@
     return wynik;
   }
 
-  /** A copy of the description with the prefix attached to every form. */
-  function zPrzedrostkiem(d, p) {
+  /** The description of an -rre family member, or null when `b` is in none. */
+  function rodzinaRre(b) {
+    var sufiksy = Object.keys(RODZINY_RRE);
+    for (var i = 0; i < sufiksy.length; i++) {
+      var sufiks = sufiksy[i], wzor = RODZINY_RRE[sufiks];
+      if (b.length <= sufiks.length || b.slice(-sufiks.length) !== sufiks || !IRR[wzor]) continue;
+      var staryPrzedrostek = wzor.slice(0, wzor.length - sufiks.length);
+      return zPrzedrostkiem(IRR[wzor], b.slice(0, b.length - sufiks.length), staryPrzedrostek.length);
+    }
+    return null;
+  }
+
+  /**
+   * A copy of the description with the prefix attached to every form.
+   *
+   * @param {object} d the root's description
+   * @param {string} p the prefix to attach
+   * @param {number} [obciac] how many leading letters of each form to drop
+   *   first: the model's own prefix, when the root is not a bare verb
+   */
+  function zPrzedrostkiem(d, p, obciac) {
+    var n = obciac || 0;
     var out = {};
     Object.keys(d).forEach(function (k) {
       var v = d[k];
-      if (typeof v === "string") out[k] = p + v;
-      else if (Array.isArray(v)) out[k] = v.map(function (x) { return x === null ? null : p + x; });
+      if (k === "aux") out[k] = v;           // a flag spelled as a word, not a form
+      else if (typeof v === "string") out[k] = p + v.slice(n);
+      else if (Array.isArray(v)) out[k] = v.map(function (x) { return x === null ? null : p + x.slice(n); });
       else out[k] = v;                       // aux, ppAgree and other flags
     });
     /* The auxiliary is NOT inherited: "andare" wants "essere", but
@@ -165,6 +200,18 @@
        keep whatever the root's description had, because for prefixed pairs
        it agrees in practice; exceptions go straight into IRR. */
     return out;
+  }
+
+  /**
+   * The irregularity description for any infinitive, reflexive included.
+   *
+   * A reflexive verb with forms of its own sits in the table under its
+   * reflexive infinitive ("accorgersi"), pronouns written into the forms.
+   * Looking it up through the base form alone ("accorgere") found nothing
+   * and fell back to the regular rules.
+   */
+  function descOf(inf) {
+    return (isRefl(inf) && IRR[inf]) || irrOf(baseOf(inf));
   }
 
   function reflPronoun(i) { return ["mi", "ti", "si", "ci", "vi", "si"][i]; }
@@ -196,14 +243,14 @@
   function auxOf(inf) {
     var b = baseOf(inf);
     if (isRefl(inf)) return "essere";
-    var d = irrOf(b);
+    var d = descOf(inf);
     if (d && d.aux && d.aux !== "both") return d.aux;
     if (d && d.aux === "both") return "avere";
     return ESSERE_VERBS.indexOf(b) >= 0 ? "essere" : "avere";
   }
 
   function participle(inf) {
-    var b = baseOf(inf), d = irrOf(b);
+    var d = descOf(inf);
     if (d && d.pp) return d.pp;
     return stemOf(inf) + REG[groupOf(inf)].pp;
   }
@@ -218,14 +265,14 @@
   }
 
   function gerund(inf) {
-    var b = baseOf(inf), d = irrOf(b);
+    var d = descOf(inf);
     if (d && d.ger) return d.ger;
     return stemOf(inf) + REG[groupOf(inf)].ger;
   }
 
   /* ---------------- Simple tenses ---------------- */
   function simple(inf, tense) {
-    var b = baseOf(inf), g = groupOf(inf), s = stemOf(inf), d = irrOf(b) || {};
+    var b = baseOf(inf), g = groupOf(inf), s = stemOf(inf), d = descOf(inf) || {};
     var out = [];
 
     if (tense === "futuro" || tense === "condizionale") {
@@ -290,7 +337,7 @@
       participio: participle(inf),
       gerundio: gerund(inf),
       riflessivo: isRefl(inf),
-      irregolare: !!irrOf(baseOf(inf))
+      irregolare: !!descOf(inf)
     };
     return out;
   }

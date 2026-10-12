@@ -140,3 +140,14 @@ test("the end lists what went wrong and puts the lesson's words in the reviews",
   await page.locator(".lesson-recap [data-go]").first().click();
   await expect(page.locator(".exq:visible")).toHaveCount(1);
 });
+
+/* On a phone the grammar table scrolls sideways; a scrolling region that
+   the keyboard cannot reach hides half the table from it (axe:
+   scrollable-region-focusable). */
+test("the grammar table's scrolling box can be reached from the keyboard", async ({ page }) => {
+  await lezione(page, "a1-u01-l3");
+  const box = page.locator(".step--gram .table-wrap").first();
+  await expect(box).toHaveAttribute("tabindex", "0");
+  await expect(box).toHaveAttribute("role", "region");
+  await expect(box).toHaveAttribute("aria-label", /.+/);
+});

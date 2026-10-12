@@ -101,7 +101,9 @@
       var gh = '<div class="gram-box"><p class="gram-box__rule">' + esc(g.title) + "</p>" +
         (g.note ? '<p class="gram-box__note">' + g.note + "</p>" : "");
       if (g.table) {
-        gh += '<div class="table-wrap"><table class="gt"><thead><tr>' +
+        /* Focusable and named: on a phone the box scrolls sideways, and a
+           scrolling region the keyboard cannot reach hides half the table. */
+        gh += '<div class="table-wrap" tabindex="0" role="region" aria-label="' + esc(g.title) + '"><table class="gt"><thead><tr>' +
           g.table.head.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") +
           "</tr></thead><tbody>" +
           g.table.rows.map(function (r) {

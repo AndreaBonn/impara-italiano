@@ -1067,6 +1067,7 @@ LINGUAI.addUI("fr", {
   "stats.streak": { one: "jour d'affilée", many: "jours d'affilée", other: "jours d'affilée" },
   "stats.open": "Voir ta progression",
   "lesson.starAdd": "+ Révisions",
-  "lesson.starIn": "En révision"
+  "lesson.starIn": "En révision",
+  "chat.openSettings": "Ouvrir les Réglages"
 
 });

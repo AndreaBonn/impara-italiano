@@ -1071,6 +1071,7 @@ LINGUAI.addUI("pl", {
   "stats.streak": { one: "dzień z rzędu", few: "dni z rzędu", many: "dni z rzędu", other: "dni z rzędu" },
   "stats.open": "Zobacz postępy",
   "lesson.starAdd": "+ Powtórki",
-  "lesson.starIn": "W powtórkach"
+  "lesson.starIn": "W powtórkach",
+  "chat.openSettings": "Otwórz Ustawienia"
 
 });

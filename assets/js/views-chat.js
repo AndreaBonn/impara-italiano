@@ -55,9 +55,14 @@
        list, not after the first turn. It is the same principle as the exam:
        whoever finds out at the end has spent the session on a false
        expectation — except that here the expectation costs money. */
+    var gotowy = !!(global.Llm && Llm.available());
     set(pageHead(t("chat.kicker"), t("chat.title"), t("chat.intro")) +
-      '<div class="callout callout--trap"><b>' + esc(t("chat.needsKeyLabel")) + "</b> " +
-      esc(t(global.Llm && Llm.available() ? "chat.needsKeyOn" : "chat.needsKeyOff")) + "</div>" +
+      /* Information, not an error: the red callout read as a broken feature.
+         Without a key the notice leads where the key is set. */
+      '<div class="callout callout--info"><b>' + esc(t("chat.needsKeyLabel")) + "</b> " +
+      esc(t(gotowy ? "chat.needsKeyOn" : "chat.needsKeyOff")) +
+      (gotowy ? "" : '<p style="margin:10px 0 0"><button class="btn btn--primary btn--sm js-settings">' +
+        esc(t("chat.openSettings")) + "</button></p>") + "</div>" +
       '<div class="stack">' + lista.map(function (s) {
         return '<button class="list-row" data-scena="' + esc(s.id) + '" style="text-align:left;cursor:pointer;width:100%">' +
           '<span style="font-size:1.6rem">' + esc(s.icon) + "</span>" +
@@ -66,6 +71,8 @@
           '<span class="chip chip--cefr">' + esc(s.cefr) + "</span></button>";
       }).join("") + "</div>");
 
+    var doUstawien = el().querySelector(".js-settings");
+    if (doUstawien) doUstawien.addEventListener("click", function () { App.go("impostazioni"); });
     el().querySelectorAll("[data-scena]").forEach(function (b) {
       b.addEventListener("click", function () {
         App.go("chiacchiere", { id: b.getAttribute("data-scena") });

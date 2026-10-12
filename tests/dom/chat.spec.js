@@ -164,9 +164,9 @@ test("the conversation never reaches the exported profile", async ({ page }) => 
 test("without a key the screen says so and sends nothing", async ({ page }) => {
   await przygotuj(page, { key: "" });
   await page.goto("/index.html#/chiacchiere");
-  await page.waitForSelector(".callout--trap");
+  await page.waitForSelector(".callout--info");
 
-  const avviso = await page.locator(".callout--trap").innerText();
+  const avviso = await page.locator(".callout--info").innerText();
   expect(avviso.length, "the sentence is there before the list").toBeGreaterThan(40);
   expect(avviso, "and it is a sentence, not a key").not.toContain("chat.needsKey");
 

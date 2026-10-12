@@ -1062,6 +1062,7 @@ LINGUAI.addUI("de", {
   "stats.streak": { one: "Tag in Folge", other: "Tage in Folge" },
   "stats.open": "Fortschritt ansehen",
   "lesson.starAdd": "+ Wiederholen",
-  "lesson.starIn": "Im Wiederholen"
+  "lesson.starIn": "Im Wiederholen",
+  "chat.openSettings": "Einstellungen öffnen"
 
 });

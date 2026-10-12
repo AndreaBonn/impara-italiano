@@ -1,0 +1,28 @@
+/* ============================================================
+   Notices that inform, and empty screens that lead somewhere.
+
+   The red "trap" callout was used for plain information (a feature needs a
+   key, the simulator scores two skills): it read as a failure. And an empty
+   vocabulary showed three zero tiles above the message, with no way out.
+   ============================================================ */
+const { test, expect } = require("@playwright/test");
+
+async function trasa(page, r) {
+  await page.goto("/index.html#/" + r);
+  await page.waitForFunction(() => window.App && window.Core && window.Core.registry.levels.length > 0);
+}
+
+test("the key notice of the free conversation is information, and leads to Settings", async ({ page }) => {
+  await trasa(page, "chiacchiere");
+  const avviso = page.locator(".callout--info").first();
+  await expect(avviso).toBeVisible();
+  await expect(page.locator(".callout--trap")).toHaveCount(0);
+  await avviso.locator(".js-settings").click();
+  await expect(page).toHaveURL(/#\/impostazioni/);
+});
+
+test("the exam notice before the list is information, not an error", async ({ page }) => {
+  await trasa(page, "esame");
+  await expect(page.locator(".callout--info").first()).toBeVisible();
+  await expect(page.locator(".callout--trap")).toHaveCount(0);
+});

@@ -40,7 +40,7 @@
    * file touches neither Views nor the DOM.
    */
   function lista(symulacje) {
-    return '<div class="callout callout--trap"><b>' + esc(t("cils.limitLabel")) + "</b> " +
+    return '<div class="callout callout--info"><b>' + esc(t("cils.limitLabel")) + "</b> " +
       esc(t("cils.limit")) + "</div>" +
       '<div class="card"><p class="cils-struct">' + esc(t("cils.structure")) + "</p>" +
       '<p class="cils-src">' + esc(t("cils.thresholdSource")) + "</p></div>" +
@@ -160,7 +160,7 @@
    */
   function corpoOrale(sez, powod) {
     return '<div class="js-body"><div class="card">' +
-      '<p class="callout callout--trap"><b>' + esc(t("cils.oralLabel")) + "</b> " + esc(t("cils.oralNotScored")) + "</p>" +
+      '<p class="callout callout--info"><b>' + esc(t("cils.oralLabel")) + "</b> " + esc(t("cils.oralNotScored")) + "</p>" +
       "<h3 class=\"cils-h\">" + esc(t("cils.oralIntro")) + "</h3><ul class=\"cils-list\">" +
       (sez.presentazione || []).map(function (q) { return "<li>" + esc(q) + "</li>"; }).join("") + "</ul>" +
       "<h3 class=\"cils-h\">" + esc(t("cils.oralTopic")) + "</h3>" +
@@ -191,7 +191,7 @@
   function rewizja(ustna, powod) {
     var arg = (ustna && ustna.argomento) || {};
     return '<div class="js-body"><div class="card">' +
-      '<p class="callout callout--trap"><b>' + esc(t("cils.reviewLabel")) + "</b> " +
+      '<p class="callout callout--info"><b>' + esc(t("cils.reviewLabel")) + "</b> " +
       esc(t("cils.reviewIntro")) + "</p>" +
       /* Its own key, not the one from the exam section. There the heading
          says "choose a topic" and there is something to choose; here the

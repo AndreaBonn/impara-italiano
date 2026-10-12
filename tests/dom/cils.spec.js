@@ -31,11 +31,11 @@ test.describe("simulazione d'esame", () => {
   test("il limite del simulatore è detto prima di cominciare", async ({ page }) => {
     await page.goto("/index.html#/esame");
     await page.waitForSelector(".js-start");
-    const avviso = await page.locator(".callout--trap").first().textContent();
+    const avviso = await page.locator(".callout--info").first().textContent();
     /* Non è una frase decorativa: dice che due abilità su quattro non
        vengono contate, e deve stare sopra il pulsante di avvio. */
     expect(avviso.length).toBeGreaterThan(80);
-    const yAvviso = (await page.locator(".callout--trap").first().boundingBox()).y;
+    const yAvviso = (await page.locator(".callout--info").first().boundingBox()).y;
     const yStart = (await page.locator(".js-start").first().boundingBox()).y;
     expect(yAvviso).toBeLessThan(yStart);
   });

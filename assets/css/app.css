@@ -710,6 +710,10 @@ button{font:inherit;color:inherit;}
 .callout--trap{border-left-color:var(--rosa-deep);background:var(--rosa);}
 .callout--trap b{color:var(--rosa-deep);}
 .callout--pl{border-left-color:var(--lavanda-deep);background:var(--lavanda);}
+/* Plain information (a feature needs a key, what the simulator scores): the
+   red trap callout made it read as a failure. */
+.callout--info{border-left-color:var(--lavanda-deep);background:var(--lavanda);}
+.callout--info b{color:var(--lavanda-deep);}
 .callout--pl b{color:var(--lavanda-deep);}
 
 .gram-box{

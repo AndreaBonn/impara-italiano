@@ -1067,6 +1067,7 @@ LINGUAI.addUI("es", {
   "stats.streak": { one: "día seguido", many: "días seguidos", other: "días seguidos" },
   "stats.open": "Ver tu progreso",
   "lesson.starAdd": "+ Repaso",
-  "lesson.starIn": "En repaso"
+  "lesson.starIn": "En repaso",
+  "chat.openSettings": "Abrir Ajustes"
 
 });

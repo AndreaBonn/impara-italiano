@@ -1092,6 +1092,17 @@ LINGUAI.addUI("pl", {
   "path.hideLessons": "Ukryj lekcje",
   "welcome.langLabel": "Wyjaśnienia po:",
   "head.more": "Więcej",
-  "head.less": "Mniej"
+  "head.less": "Mniej",
+  "lesson.stepsLabel": "Części lekcji",
+  "lesson.stepDialogue": "Dialog",
+  "lesson.exOf": "Zadanie {i} z {n}",
+  "lesson.exNext": "Dalej →",
+  "lesson.exPrev": "← Wstecz",
+  "lesson.exOpen": { one: "Zostało {n} zadanie", few: "Zostały {n} zadania", many: "Zostało {n} zadań", other: "Zostało {n} zadań" },
+  "lesson.chipOpen": "Zadanie {i}: do zrobienia",
+  "lesson.chipOk": "Zadanie {i}: dobrze",
+  "lesson.chipKo": "Zadanie {i}: błąd",
+  "lesson.end.recap": "Warto wrócić do:",
+  "lesson.end.vocabIn": { one: "Słówko z tej lekcji jest już w powtórkach.", few: "{n} słówka z tej lekcji są już w powtórkach.", many: "{n} słówek z tej lekcji jest już w powtórkach.", other: "{n} słówek z tej lekcji jest już w powtórkach." }
 
 });

@@ -22,6 +22,18 @@
      THE LESSON
      ═══════════════════════════════════════════════════════════ */
   var session = null;
+  var run = null;       // LessonRun state: which exercise shows, which are answered
+
+  /** The jump bar: the lesson stays one page, the sections are one tap away. */
+  function steps(L) {
+    var list = [["theory", L.theory && L.theory.length, "lesson.theory"], ["gram", L.grammar, "lesson.grammar"],
+      ["vocab", L.vocab && L.vocab.length, "lesson.vocab"], ["dlg", L.dialogue, "lesson.stepDialogue"],
+      ["ex", L.exercises && L.exercises.length, "lesson.exercises"]].filter(function (s) { return s[1]; });
+    if (list.length < 2) return "";
+    return '<nav class="lesson-steps" aria-label="' + esc(t("lesson.stepsLabel")) + '">' + list.map(function (s) {
+      return '<button type="button" class="lesson-steps__btn" data-step="' + s[0] + '">' + esc(t(s[2])) + "</button>";
+    }).join("") + "</nav>";
+  }
 
   Views.lezione = function (params) {
     var found = Core.getLesson(params.id);
@@ -59,6 +71,7 @@
       "</div>");
 
     parts.push('<header class="view-head"><h1>' + esc(L.titleIt) + "</h1><p>" + esc(L.title) + "</p></header>");
+    parts.push(steps(L));
 
     if (L.objectives && L.objectives.length) {
       parts.push('<div class="callout"><b>' + t("lesson.objectives") + '</b><ul style="margin:8px 0 0;padding-left:20px">' +
@@ -67,7 +80,7 @@
 
     /* --- theory --- */
     if (L.theory && L.theory.length) {
-      parts.push('<section class="step"><h2 class="step__label">' + t("lesson.theory") + '</h2><div class="prose">' +
+      parts.push('<section class="step" id="step-theory"><h2 class="step__label">' + t("lesson.theory") + '</h2><div class="prose">' +
         L.theory.map(function (b) {
           if (typeof b === "string") return "<p>" + b + "</p>";
           var list = b.list ? "<ul>" + b.list.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>" : "";
@@ -105,12 +118,12 @@
         }).join("") + "</ul>";
       }
       gh += "</div>";
-      parts.push('<section class="step step--gram"><h2 class="step__label">' + t("lesson.grammar") + "</h2>" + gh + "</section>");
+      parts.push('<section class="step step--gram" id="step-gram"><h2 class="step__label">' + t("lesson.grammar") + "</h2>" + gh + "</section>");
     }
 
     /* --- vocabulary --- */
     if (L.vocab && L.vocab.length) {
-      parts.push('<section class="step step--vocab"><h2 class="step__label">' + t("lesson.vocab") + "</h2>" +
+      parts.push('<section class="step step--vocab" id="step-vocab"><h2 class="step__label">' + t("lesson.vocab") + "</h2>" +
         '<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">' +
         '<button class="btn btn--ghost btn--sm js-play-all">' + t("lesson.playAll") + "</button>" +
         '<button class="btn btn--ghost btn--sm js-save-all">' + t("lesson.saveAll") + "</button></div>" +
@@ -129,7 +142,7 @@
 
     /* --- dialogue --- */
     if (L.dialogue) {
-      parts.push('<section class="step"><h2 class="step__label">' + t("lesson.dialogue", { title: esc(L.dialogue.titleIt || "") }) + "</h2>" +
+      parts.push('<section class="step" id="step-dlg"><h2 class="step__label">' + t("lesson.dialogue", { title: esc(L.dialogue.titleIt || "") }) + "</h2>" +
         '<button class="btn btn--ghost btn--sm js-play-dlg" style="margin-bottom:12px">' + t("lesson.playDialogue") + "</button>" +
         '<div class="dlg">' + L.dialogue.lines.map(function (ln, i) {
           return '<div class="dlg__line' + (i % 2 ? " dlg__line--b" : "") + '">' +
@@ -148,7 +161,17 @@
 
     /* --- exercises --- */
     if (L.exercises && L.exercises.length) {
-      parts.push('<section class="step step--ex"><h2 class="step__label">' + t("lesson.exercises") + '</h2><div id="exWrap"></div></section>');
+      /* One exercise at a time: nine open at once were answered out of order
+         and one skipped while scrolling kept the lesson from ever closing. */
+      parts.push('<section class="step step--ex" id="step-ex"><h2 class="step__label">' + t("lesson.exercises") + "</h2>" +
+        '<div class="ex-nav"><div class="ex-chips" role="group" aria-label="' + esc(t("lesson.exercises")) + '">' +
+        L.exercises.map(function (e, i) {
+          return '<button type="button" class="ex-chip" data-go="' + i + '">' + (i + 1) + "</button>";
+        }).join("") + '</div><span class="ex-open js-ex-open"></span></div>' +
+        '<div id="exWrap"></div>' +
+        '<div class="ex-foot"><button type="button" class="btn btn--ghost btn--sm js-ex-prev">' + esc(t("lesson.exPrev")) + "</button>" +
+        '<span class="ex-foot__pos js-ex-pos"></span>' +
+        '<button type="button" class="btn btn--primary btn--sm js-ex-next">' + esc(t("lesson.exNext")) + "</button></div></section>");
       parts.push('<div id="lessonEnd"></div>');
     }
 
@@ -185,6 +208,13 @@
       });
     });
 
+    el().querySelectorAll(".lesson-steps [data-step]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = document.getElementById("step-" + b.getAttribute("data-step"));
+        if (s) s.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
     var playDlg = el().querySelector(".js-play-dlg");
     if (playDlg) playDlg.addEventListener("click", function () {
       Audio2.speakSequence(L.dialogue.lines);
@@ -196,12 +226,51 @@
       var built = L.exercises.map(function (ex, i) { return Ex.build(ex, i, L.id); });
       wrap.innerHTML = built.map(function (b) { return b.html; }).join("");
       var nodes = wrap.querySelectorAll(".exq");
+      run = LessonRun.create(built.length);
       built.forEach(function (b, i) {
-        b.wire(nodes[i], function (ok) { onAnswer(ok, L, U, LV); });
+        b.wire(nodes[i], function (ok) {
+          run = LessonRun.answer(run, i, ok);
+          drawRun();
+          onAnswer(ok, L, U, LV);
+        });
       });
       Ex.wireSpeakers(wrap);
+      el().querySelectorAll(".ex-chip").forEach(function (c) {
+        c.addEventListener("click", function () { showEx(+c.getAttribute("data-go")); });
+      });
+      el().querySelector(".js-ex-prev").addEventListener("click", function () { showEx(run.current - 1); });
+      el().querySelector(".js-ex-next").addEventListener("click", function () {
+        var n = LessonRun.next(run);
+        if (n !== null) showEx(n);
+        else document.getElementById("lessonEnd").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      drawRun();
     }
   };
+
+  function showEx(i) {
+    run = LessonRun.go(run, i);
+    drawRun();
+    var cur = document.querySelectorAll("#exWrap .exq")[run.current];
+    if (cur) cur.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /** Draws the run: which exercise shows, the chips' states, the counters. */
+  function drawRun() {
+    var n = run.answers.length;
+    document.querySelectorAll("#exWrap .exq").forEach(function (q, i) { q.hidden = i !== run.current; });
+    document.querySelectorAll(".ex-chip").forEach(function (c, i) {
+      var a = run.answers[i];
+      c.className = "ex-chip" + (a === true ? " is-ok" : a === false ? " is-ko" : "");
+      if (i === run.current) c.setAttribute("aria-current", "step"); else c.removeAttribute("aria-current");
+      c.setAttribute("aria-label", t(a === true ? "lesson.chipOk" : a === false ? "lesson.chipKo" : "lesson.chipOpen", { i: i + 1 }));
+    });
+    var open = LessonRun.unanswered(run).length;
+    el().querySelector(".js-ex-open").textContent = open ? t("lesson.exOpen", { n: open }) : "";
+    el().querySelector(".js-ex-pos").textContent = t("lesson.exOf", { i: run.current + 1, n: n });
+    el().querySelector(".js-ex-prev").disabled = run.current === 0;
+    el().querySelector(".js-ex-next").disabled = LessonRun.next(run) === null && !LessonRun.isDone(run);
+  }
 
   /** The star with words: the glyph alone did not say that it sends the word to the reviews. */
   function gwiazdka(saved) {
@@ -224,6 +293,9 @@
 
     if (session.answered >= session.total) {
       var res = Core.recordLesson(L.id, session.score, session.total, (Date.now() - session.started) / 1000);
+      /* A finished lesson puts its words in the reviews: until now only a star,
+         "add all" or a mistake did, and after two lessons the deck was empty. */
+      (L.vocab || []).forEach(function (v) { Core.addCard(v.it, v.tr, L.id); });
       renderLessonEnd(res, L, U, LV);
       App.refreshRail();
     }
@@ -245,12 +317,26 @@
       '<button class="btn btn--ghost js-again">' + t("lesson.again") + "</button>" +
       (next ? '<button class="btn btn--primary js-next">' + t("lesson.next", { title: esc(next.lesson.titleIt) }) + "</button>" : "") +
       '<button class="btn btn--ghost js-path">' + t("nav.path") + "</button>" +
-      "</div></div>";
+      "</div>" + recap(L) + "</div>";
 
     box.querySelector(".js-again").addEventListener("click", function () { App.go("lezione", { id: L.id }); });
     box.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
     var nb = box.querySelector(".js-next");
     if (nb) nb.addEventListener("click", function () { App.go("lezione", { id: next.lesson.id }); });
+    box.querySelectorAll(".lesson-recap [data-go]").forEach(function (b) {
+      b.addEventListener("click", function () { showEx(+b.getAttribute("data-go")); });
+    });
     box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  /** What went wrong, each a way back to its exercise, and where the words went. */
+  function recap(L) {
+    var zle = LessonRun.wrong(run);
+    var n = (L.vocab || []).length;
+    return (zle.length ? '<div class="lesson-recap"><b>' + esc(t("lesson.end.recap")) + "</b> " + zle.map(function (i) {
+      return '<button type="button" class="btn btn--quiet btn--sm" data-go="' + i + '">' +
+        esc(t("lesson.exOf", { i: i + 1, n: run.answers.length })) + "</button>";
+    }).join("") + "</div>" : "") +
+      (n ? '<p class="lesson-vocab-in">✓ ' + esc(t("lesson.end.vocabIn", { n: n })) + "</p>" : "");
   }
 })();

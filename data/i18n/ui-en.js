@@ -1080,6 +1080,17 @@ LINGUAI.addUI("en", {
   "path.hideLessons": "Hide the lessons",
   "welcome.langLabel": "Explanations in:",
   "head.more": "More",
-  "head.less": "Less"
+  "head.less": "Less",
+  "lesson.stepsLabel": "Lesson sections",
+  "lesson.stepDialogue": "Dialogue",
+  "lesson.exOf": "Exercise {i} of {n}",
+  "lesson.exNext": "Next →",
+  "lesson.exPrev": "← Previous",
+  "lesson.exOpen": { one: "{n} still to answer", other: "{n} still to answer" },
+  "lesson.chipOpen": "Exercise {i}: to answer",
+  "lesson.chipOk": "Exercise {i}: right",
+  "lesson.chipKo": "Exercise {i}: wrong",
+  "lesson.end.recap": "Worth another look:",
+  "lesson.end.vocabIn": { one: "The word from this lesson is now in your reviews.", other: "The {n} words from this lesson are now in your reviews." }
 
 });

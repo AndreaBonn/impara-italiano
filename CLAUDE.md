@@ -206,9 +206,12 @@ też zostaje: po wyprowadzeniu przebiegu (`cils-run.js`) i markupu (`cils-html.j
 jego linia dotyka zegara, DOM-u albo mikrofonu, więc dalszy podział szedłby już za liczbą
 linii, a nie za granicą czystości. `llm.js` zostaje z tego samego powodu: czyste kawałki
 wyszły do `llm-rules.js`, `llm-prompts.js` i `llm-providers.js`, a to, co zostało, to trzy
-wejścia i bramki, które ich pilnują — same skutki uboczne.
+wejścia i bramki, które ich pilnują — same skutki uboczne. `views-lesson.js` tak samo:
+przebieg ćwiczeń (które widać, które zostały, dokąd prowadzi „Dalej”) wyszedł do
+`lesson-run.js` (globalna `LessonRun`, czyste funkcje na małym stanie), a w widoku zostało
+rysowanie lekcji i podpinanie zdarzeń.
 
-Te trzy pliki przekraczają limit 300 linii z `code-standards.md` i to jest świadome
+Te cztery pliki przekraczają limit 300 linii z `code-standards.md` i to jest świadome
 odstępstwo, nie przeoczenie: limit liczy linie, a kryterium tego projektu liczy
 testowalność, i przy konflikcie wygrywa kryterium. **Liczby nie ma w tym zdaniu celowo** —
 poprzednia wersja mówiła „`views-cils.js` (306 linii)", plik urósł do 422 i zdanie

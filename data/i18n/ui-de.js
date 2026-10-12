@@ -1083,6 +1083,17 @@ LINGUAI.addUI("de", {
   "path.hideLessons": "Lektionen ausblenden",
   "welcome.langLabel": "Erklärungen auf:",
   "head.more": "Mehr",
-  "head.less": "Weniger"
+  "head.less": "Weniger",
+  "lesson.stepsLabel": "Teile der Lektion",
+  "lesson.stepDialogue": "Dialog",
+  "lesson.exOf": "Aufgabe {i} von {n}",
+  "lesson.exNext": "Weiter →",
+  "lesson.exPrev": "← Zurück",
+  "lesson.exOpen": { one: "Noch {n} offen", other: "Noch {n} offen" },
+  "lesson.chipOpen": "Aufgabe {i}: offen",
+  "lesson.chipOk": "Aufgabe {i}: richtig",
+  "lesson.chipKo": "Aufgabe {i}: falsch",
+  "lesson.end.recap": "Lohnt einen zweiten Blick:",
+  "lesson.end.vocabIn": { one: "Das Wort aus dieser Lektion ist jetzt in deinen Wiederholungen.", other: "Die {n} Wörter aus dieser Lektion sind jetzt in deinen Wiederholungen." }
 
 });

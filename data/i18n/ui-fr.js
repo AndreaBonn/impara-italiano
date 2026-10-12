@@ -1088,6 +1088,17 @@ LINGUAI.addUI("fr", {
   "path.hideLessons": "Masquer les leçons",
   "welcome.langLabel": "Explications en :",
   "head.more": "Plus",
-  "head.less": "Moins"
+  "head.less": "Moins",
+  "lesson.stepsLabel": "Parties de la leçon",
+  "lesson.stepDialogue": "Dialogue",
+  "lesson.exOf": "Exercice {i} sur {n}",
+  "lesson.exNext": "Suivant →",
+  "lesson.exPrev": "← Précédent",
+  "lesson.exOpen": { one: "Encore {n} à faire", many: "Encore {n} à faire", other: "Encore {n} à faire" },
+  "lesson.chipOpen": "Exercice {i} : à faire",
+  "lesson.chipOk": "Exercice {i} : juste",
+  "lesson.chipKo": "Exercice {i} : faux",
+  "lesson.end.recap": "À revoir :",
+  "lesson.end.vocabIn": { one: "Le mot de cette leçon est maintenant dans tes révisions.", many: "Les {n} mots de cette leçon sont maintenant dans tes révisions.", other: "Les {n} mots de cette leçon sont maintenant dans tes révisions." }
 
 });

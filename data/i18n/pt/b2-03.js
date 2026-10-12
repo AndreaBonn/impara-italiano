@@ -186,7 +186,7 @@ LINGUAI.addStrings("pt", {
         "p": "<em>Pur avendo ragione</em> = «mesmo tendo razão» (concessão). <em>Pur di finire</em> = «só para terminar, custe o que custar» (finalidade, com nuance de sacrifício). Parecem iguais, significam o contrário e se confundem o tempo todo."
       },
       {
-        "contrast": "Em português, «embora» e «mesmo que» levam subjuntivo tanto para um fato quanto para uma hipótese («mesmo que chova», «mesmo que chovesse»), por isso o reflexo de um brasileiro é pôr subjuntivo depois de <em>anche se</em>. Em italiano o subjuntivo só aparece na hipótese. Já <em>pur di</em> não tem equivalente exato: «contanto que» parece próximo, mas é condição, não finalidade. Traduza por «só para», «para conseguir», «a qualquer custo»; em italiano a expressão é frequente e não soa enfática."
+        "contrast": "Em português, «embora» e «mesmo que» levam subjuntivo tanto para um fato quanto para uma hipótese («mesmo que chova», «mesmo que chovesse»), por isso o reflexo de um brasileiro é pôr subjuntivo depois de <em>anche se</em>. Com <em>anche se</em>, o subjuntivo só aparece na hipótese; já <em>benché</em> e <em>sebbene</em> (= «embora») levam congiuntivo sempre, como em português. Já <em>pur di</em> não tem equivalente exato: «contanto que» parece próximo, mas é condição, não finalidade. Traduza por «só para», «para conseguir», «a qualquer custo»; em italiano a expressão é frequente e não soa enfática."
       }
     ],
     "grammar": {
@@ -340,7 +340,7 @@ LINGUAI.addStrings("pt", {
         "p": "<em>Pertanto</em> e <em>peraltro</em> pertencem à linguagem administrativa e, falados, soam rígidos. Na fala se diz <em>quindi</em>, <em>allora</em>, <em>comunque</em>. Regra prática: por escrito a uma repartição, a primeira coluna; falando, a segunda."
       },
       {
-        "contrast": "Dois falsos amigos de uma vez. <em>In effetti</em> lembra «com efeito» e serve para dar razão a alguém: «pensando bem, é verdade». Não introduz uma consequência; para isso existe <em>di conseguenza</em>. E <em>eventualmente</em> engana o brasileiro: aqui «eventualmente» costuma querer dizer «de vez em quando», enquanto o italiano significa «se for o caso, caso necessário». Os dois soam familiares e os dois dizem outra coisa."
+        "contrast": "Um amigo verdadeiro e um falso. <em>In effetti</em> é o seu «com efeito», «de fato»: serve para dar razão a alguém («pensando bem, é verdade»); para uma consequência use <em>di conseguenza</em>. Já <em>eventualmente</em> engana o brasileiro: aqui «eventualmente» costuma querer dizer «de vez em quando», enquanto o italiano significa «se for o caso, caso necessário». O primeiro soa familiar e de fato é; o segundo soa familiar e diz outra coisa."
       }
     ],
     "grammar": {

@@ -26,11 +26,11 @@ LINGUAI.addStrings("pt", {
   "int:brutto": { looks: "bruto", mean: "feio", why: "Significa FEIO. Bruto, grosseiro, é «rozzo» ou «brutale»." },
   "int:bravo": { looks: "bravo", mean: "bom, competente", why: "Significa BOM no que faz, competente. Bravo de raiva é «arrabbiato»; corajoso é «coraggioso»." },
   "int:regalo": { looks: "regalo", mean: "presente", why: "É um PRESENTE que se dá a alguém. Um regalo, um prazer, é «un piacere» ou «una delizia»." },
-  "int:termine": { looks: "término", mean: "prazo", why: "É o PRAZO, a data-limite. O término, o fim, é «la fine»." },
-  "int:firmare": { looks: "firmar", mean: "assinar", why: "Significa ASSINAR. Firmar, estabelecer, é «stabilire» ou «consolidare»." },
+  "int:termine": { looks: "término", mean: "prazo", why: "Muitas vezes é o PRAZO, a data-limite: «il termine per l'iscrizione». Mas também é o fim («al termine della riunione», «portare a termine») e o termo, a palavra. O sentido de prazo é o que pega o brasileiro." },
+  "int:firmare": { looks: "firmar", mean: "assinar", why: "Significa ASSINAR (como em «firmar um contrato»), nunca estabelecer ou fixar: isso é «stabilire» ou «consolidare»." },
   "int:pasta": { looks: "pasta", mean: "massa", why: "É MASSA, macarrão. A pasta de documentos é «la cartella»; a pasta de dente é «il dentifricio»." },
   "int:gabinetto": { looks: "gabinete", mean: "banheiro, privada", why: "É o BANHEIRO ou a privada. O gabinete de trabalho é «lo studio» ou «l'ufficio»." },
-  "int:stanza": { looks: "estância", mean: "quarto, cômodo", why: "É um QUARTO, um cômodo da casa. A estância, fazenda ou balneário, não tem nada a ver." },
+  "int:stanza": { looks: "estância", mean: "quarto, cômodo", why: "É um QUARTO, um cômodo da casa. No Brasil «estância» lembra fazenda ou balneário, sentidos que «stanza» não tem (só coincidem no sentido poético de estrofe)." },
   "int:attendere": { looks: "atender", mean: "esperar", why: "Significa ESPERAR. Atender o telefone é «rispondere al telefono»." },
   "int:carta": { looks: "carta", mean: "papel", why: "É PAPEL. A carta que se envia é «la lettera»." },
   "int:seta": { looks: "seta", mean: "seda", why: "É SEDA. A seta que indica direção é «la freccia»." },
@@ -45,5 +45,5 @@ LINGUAI.addStrings("pt", {
   "int:noioso": { looks: "nojento", mean: "chato, entediante", why: "Significa CHATO, entediante. Nojento é «schifoso»." },
   "int:ritenere": { looks: "reter", mean: "achar, considerar", why: "Significa ACHAR, considerar. Reter, segurar, é «trattenere»." },
   "int:attitudine": { looks: "atitude", mean: "aptidão", why: "É APTIDÃO, talento para algo. A atitude, o comportamento, é «l'atteggiamento»." },
-  "int:abusivo": { looks: "abusivo", mean: "ilegal, irregular", why: "Significa ILEGAL, sem autorização. Abusivo no sentido de abuso é «prepotente» ou «violento»." }
+  "int:abusivo": { looks: "abusivo", mean: "ilegal, irregular", why: "Significa ILEGAL, sem autorização («casa abusiva», «parcheggiatore abusivo»). O «preço abusivo» é «prezzo esorbitante»; a relação abusiva, «relazione violenta/tossica»." }
 });

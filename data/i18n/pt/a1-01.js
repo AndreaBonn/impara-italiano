@@ -31,7 +31,7 @@ LINGUAI.addStrings("pt", {
         p: "<strong>Essere</strong> significa «ser» e «estar» ao mesmo tempo. Suas formas não se parecem com o infinitivo (<em>sono</em>, <em>sei</em>, <em>è</em>…), então não há regra que as gere: é preciso decorar. A boa notícia é que você vai repeti-las tantas vezes que elas se fixam sozinhas."
       },
       {
-        tip: "Os pronomes sujeito (io, tu, lui…) são omitidos quase sempre, porque a desinência já diz quem é. <em>Sono americana</em> basta; <em>io sono americana</em> acrescenta ênfase: «<b>eu</b> sou americana (e você não)». O português também permite omitir («sou americana»), mas no Brasil se usa o pronome com muito mais frequência do que em italiano."
+        tip: "Os pronomes sujeito (io, tu, lui…) são omitidos quase sempre, porque a desinência já diz quem é. <em>Sono brasiliana</em> basta; <em>io sono brasiliana</em> acrescenta ênfase: «<b>eu</b> sou brasileira (e você não)». O português também permite omitir («sou brasileira»), mas no Brasil se usa o pronome com muito mais frequência do que em italiano."
       }
     ],
     grammar: {
@@ -152,7 +152,7 @@ LINGUAI.addStrings("pt", {
         ]
       },
       {
-        trap: "Os substantivos em <b>-e</b> são o único grupo cujo gênero precisa ser decorado junto com a palavra. Anote-os sempre com o artigo: não «fiore», mas <b>il fiore</b>."
+        trap: "Os substantivos em <b>-e</b> são o principal grupo cujo gênero precisa ser decorado junto com a palavra (além de exceções como <em>il problema</em>, <em>la mano</em>). Anote-os sempre com o artigo: não «fiore», mas <b>il fiore</b>."
       },
       {
         h: "Palavras que nunca mudam",
@@ -263,7 +263,7 @@ LINGUAI.addStrings("pt", {
         p: "<strong>Un</strong> antes de consoante e antes de vogal (<em>un libro</em>, <em>un amico</em>, sem apóstrofo!), <strong>uno</strong> onde iria <em>lo</em> (<em>uno studente</em>), <strong>una</strong> para o feminino, <strong>un'</strong> antes de vogal feminina (<em>un'amica</em>)."
       },
       {
-        trap: "<b>un amico</b> (sem apóstrofo, um amigo) contra <b>un'amica</b> (com apóstrofo, uma amiga). Na escrita o apóstrofo é a única diferença e carrega sozinho todo o gênero. O português distingue amigo/amiga pela vogal, então aqui não há costume em que se apoiar."
+        trap: "<b>un amico</b> (sem apóstrofo, um amigo) contra <b>un'amica</b> (com apóstrofo, uma amiga). Na fala os dois artigos soam iguais; na escrita o apóstrofo é o que marca o feminino do artigo. Onde o português troca a palavra (um/uma), o italiano só acrescenta o apóstrofo, e escrever «un amica» ou «un'amico» é erro clássico."
       }
     ],
     grammar: {
@@ -700,7 +700,7 @@ LINGUAI.addStrings("pt", {
         p: "Formas como <em>l'avvocata</em>, <em>la sindaca</em>, <em>la ministra</em> hoje são padrão na imprensa e nos documentos oficiais, embora vinte anos atrás provocassem discussões. Na fala ainda se ouve <em>l'avvocato</em> referido a uma mulher. Lembra o debate que «presidenta» gerou no Brasil."
       },
       {
-        contrast: "O sufixo <em>-essa</em> em português só aparece em títulos como condessa ou princesa, por isso soa estranho em profissões no começo: <em>la professoressa</em>, <em>la studentessa</em>, <em>la dottoressa</em>. Não é uma forma antiquada nem pejorativa: é a normal."
+        contrast: "O sufixo <em>-essa</em> em português só aparece em títulos como condessa ou abadessa (e, com -esa, princesa, baronesa), por isso soa estranho em profissões no começo: <em>la professoressa</em>, <em>la studentessa</em>, <em>la dottoressa</em>. Não é uma forma antiquada nem pejorativa: é a normal."
       }
     ],
     grammar: {
@@ -1105,7 +1105,7 @@ LINGUAI.addStrings("pt", {
         p: "Não há regra: é preciso decorar. Ajuda saber que o grupo do <em>-isc-</em> é o mais numeroso e fica com quase todos os verbos novos (<em>gestire, inserire, garantire</em>). Os dicionários o indicam com <i>(-isc-)</i> ao lado do verbete."
       },
       {
-        contrast: "O português não tem nada parecido: os verbos em -ir têm no máximo uma troca de vogal (dormir → durmo), nunca um pedaço a mais no meio. Aqui não há intuição para trazer, é preciso aprender a lista. Consolo: o infixo é sempre o mesmo e o ritmo pega rápido."
+        contrast: "O português não tem nada parecido: os verbos em -ir têm no máximo uma alteração no radical (dormir → durmo, pedir → peço), nunca um pedaço a mais no meio. Aqui não há intuição para trazer, é preciso aprender a lista. Consolo: o infixo é sempre o mesmo e o ritmo pega rápido."
       },
       {
         tip: "O padrão -isc- tem forma de parêntese: quatro formas com o infixo nas pontas, duas sem ele no meio. Aprenda o ritmo: <b>ca-pi-sco, ca-pi-sci, ca-pi-sce — ca-piamo, ca-pite — ca-pi-scono</b>."

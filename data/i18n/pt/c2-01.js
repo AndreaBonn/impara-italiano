@@ -23,7 +23,7 @@ LINGUAI.addStrings("pt", {
         p: "O particípio presente em <em>-ante / -ente</em> perdeu sua função verbal no italiano moderno, mas deixou centenas de adjetivos e substantivos: <em>brillante, interessante, insegnante, cantante, dirigente, presidente, studente</em>. Todos são antigos particípios."
       },
       {
-        contrast: "O português fez o mesmo caminho e no mesmo grau: estudante, cantante, dirigente, presidente também são particípios presentes fossilizados, e o uso verbal também sobrevive quase só no registro jurídico («o dinheiro proveniente de», «os requerentes»). Já <em>gli aventi diritto</em> não tem decalque direto: em português se diz «os beneficiários» ou «quem tem direito». No resto, você lê quase sem traduzir."
+        contrast: "O português fez o mesmo caminho e no mesmo grau: estudante, cantor, dirigente, presidente também são particípios presentes fossilizados, e o uso verbal também sobrevive quase só no registro jurídico («o dinheiro proveniente de», «os requerentes»). Já <em>gli aventi diritto</em> não tem decalque direto: em português se diz «os beneficiários» ou «quem tem direito». No resto, você lê quase sem traduzir."
       },
       {
         h: "O uso verbal: direito e administração",
@@ -125,7 +125,7 @@ LINGUAI.addStrings("pt", {
         p: "<em>Una volta finita la riunione…</em>, <em>Appena arrivati…</em>, <em>Terminati i lavori…</em>. Acrescentar <em>una volta</em> ou <em>appena</em> fixa a relação temporal e soa mais natural, como o seu «uma vez terminada»."
       },
       {
-        trap: "A construção absoluta exige que o seu sujeito seja <b>diferente</b> do sujeito da principal, ou que seja um objeto. <em>Finito il lavoro, sono uscito</em> vale, porque <em>il lavoro</em> não é o sujeito da principal."
+        trap: "Com verbo transitivo, o nome da construção absoluta é o <b>objeto</b>, não o sujeito: <em>Finito il lavoro, sono uscito</em> (eu terminei; <em>il lavoro</em> é o que foi terminado). Com intransitivo, o sujeito pode ser o mesmo da principal: <em>Arrivati a casa, abbiamo cenato</em>. O particípio concorda sempre com esse nome."
       }
     ],
     grammar: {
@@ -317,7 +317,7 @@ LINGUAI.addStrings("pt", {
         p: "Uma boa dúzia de substantivos masculinos tem dois plurais: um regular em <em>-i</em> (masculino) e outro irregular em <em>-a</em> (feminino). A diferença não é de estilo: são dois significados diferentes."
       },
       {
-        contrast: "O português não tem essa alternância e faz as mesmas distinções com palavras diferentes: «muralhas» × «paredes», «fios» × «cabos»; e «ossos» serve para os dois sentidos, sem distinguir. A única dupla que você já tem é <em>la frutta</em> / <em>i frutti</em>, o seu «a fruta» × «os frutos», coletivo comestível × resultados. Use-a como âncora e trate o resto como vocabulário novo."
+        contrast: "O português não tem essa alternância e faz as mesmas distinções com palavras diferentes: «muralhas» × «paredes»; e «ossos» e «fios» servem para os dois sentidos, sem distinguir. A única dupla que você já tem é <em>la frutta</em> / <em>i frutti</em>, o seu «a fruta» × «os frutos», coletivo comestível × resultados. Use-a como âncora e trate o resto como vocabulário novo."
       },
       {
         h: "A regra geral",
@@ -723,11 +723,11 @@ LINGUAI.addStrings("pt", {
         ]
       },
       {
-        contrast: "Atenção com <em>a me mi</em>: em italiano é um traço coloquial marcado e um erro na escrita. O português tem um pleonasmo parecido, «a mim me parece», que a norma culta aceita como recurso de ênfase, e por isso a construção italiana pode passar sem soar errada para você. Na escrita em italiano fica só <em>a me piace</em> ou <em>mi piace</em>."
+        contrast: "Atenção com <em>a me mi</em>: em italiano é um traço coloquial marcado e um erro na escrita. O português tem um pleonasmo parecido, «a mim me parece» (mais literário que falado no Brasil), que a norma culta aceita como recurso de ênfase, e por isso a construção italiana pode passar sem soar errada para você. Na escrita em italiano fica só <em>a me piace</em> ou <em>mi piace</em>."
       },
       {
         h: "Um dialeto não é uma gíria",
-        p: "O napolitano e o siciliano são <b>línguas distintas</b>, descendentes do latim ao lado do toscano, com literatura e gramática próprias. Chamá-las de «italiano mal falado» é falso e, culturalmente, uma gafe: o mesmo erro que chamar o mirandês de «português mal falado»."
+        p: "O napolitano e o siciliano são <b>línguas distintas</b>, descendentes do latim ao lado do toscano, com literatura e gramática próprias. Chamá-las de «italiano mal falado» é falso e, culturalmente, uma gafe: o mesmo erro que chamar o mirandês, língua oficial em Portugal, de «português mal falado»."
       },
       {
         trap: "<em>Mica</em> («de jeito nenhum», «nem de longe») está em toda parte na fala: <em>Non è mica facile.</em> Num texto formal, substitua por <em>affatto</em> ou tire."

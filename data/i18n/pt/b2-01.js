@@ -119,7 +119,7 @@ LINGUAI.addStrings("pt", {
         p: "Congiuntivo imperfetto de <em>avere/essere</em> + particípio: <em>avessi fatto</em>, <em>fossi andato</em>. Marca o que é anterior a uma principal no passado: <em>Pensavo che <b>fosse già partito</b>.</em> É o seu “tivesse feito”, construído do mesmo jeito."
       },
       {
-        contrast: "A posterioridade é onde o português e o italiano se separam. Você diz “esperava que ele me <b>ligasse</b>”, com imperfeito do subjuntivo, ou “achava que ele <b>viria</b>”, com futuro do pretérito simples. O italiano exige o <b>condicional composto</b>: <em>Pensavo che <b>sarebbe venuto</b></em>, literalmente “teria vindo”. É o mesmo desencontro do discurso indireto do B1, e continua sendo o erro mais frequente."
+        contrast: "A posterioridade é onde o português e o italiano se separam. Você diz “achava que ele <b>viria</b>”, com futuro do pretérito simples; o italiano exige o <b>condizionale passato</b>: <em>Pensavo che <b>sarebbe venuto</b></em>, literalmente “achava que teria vindo”. (Depois de verbos de desejo também se aceita o congiuntivo imperfetto: <em>speravo che mi chiamasse</em>.) É o mesmo desencontro do discurso indireto do B1, e continua sendo o erro mais frequente."
       }
     ],
     grammar: {
@@ -983,7 +983,7 @@ LINGUAI.addStrings("pt", {
         p: "<em>la transizione ecologica</em>, <em>le energie rinnovabili</em>, <em>l'impronta di carbonio</em>, <em>la raccolta differenziata</em>, <em>l'intelligenza artificiale</em>, <em>la privacy</em>, <em>la disinformazione</em>, <em>l'automazione</em>."
       },
       {
-        tip: "<em>Il fatto che</em> pede sempre congiuntivo: <em>Il fatto che <b>sia</b> difficile non significa che sia impossibile.</em> Em português você muitas vezes diria “o fato de ser difícil”, com infinitivo; em italiano, depois de <em>il fatto che</em>, use o congiuntivo, como em “o fato de que seja difícil”."
+        tip: "<em>Il fatto che</em> pede normalmente o congiuntivo, sobretudo na escrita: <em>Il fatto che <b>sia</b> difficile non significa che sia impossibile.</em> Em português você muitas vezes diria “o fato de ser difícil”, com infinitivo; em italiano, depois de <em>il fatto che</em>, use o congiuntivo, como em “o fato de que seja difícil”."
       }
     ],
     grammar: {

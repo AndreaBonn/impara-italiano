@@ -26,7 +26,7 @@ LINGUAI.addStrings("pt", {
       },
       {
         h: "O artigo é a regra",
-        p: "Diz-se quase sempre <em><b>il</b> mio libro</em>, <em><b>la</b> mia macchina</em>. Em português o artigo é opcional (meu livro / o meu livro) e no Brasil quase sempre cai; em italiano ele é obrigatório, e é a primeira coisa que o brasileiro esquece ao falar rápido."
+        p: "Diz-se quase sempre <em><b>il</b> mio libro</em>, <em><b>la</b> mia macchina</em>. Em português o artigo é opcional (meu livro / o meu livro) e em muitas regiões do Brasil cai; em italiano ele é obrigatório, e é a primeira coisa que o brasileiro esquece ao falar rápido."
       },
       {
         h: "A exceção: um único parente",
@@ -425,7 +425,7 @@ LINGUAI.addStrings("pt", {
         p: "As fórmulas comuns: <em>Ti va di…?</em> («você está a fim de…?»), <em>Che ne dici di…?</em> («que tal…?»), <em>Andiamo a…?</em>. As respostas: <em>Volentieri!</em>, <em>Perché no?</em>, <em>Mi dispiace, non posso</em>."
       },
       {
-        tip: "<em>Ti va</em> é impessoal como <em>mi piace</em>: <em>ti va un caffè?</em> («está a fim de um café?», literalmente «um café te vai?»). De novo a coisa é o sujeito — ao contrário do português, em que é «você» quem está a fim."
+        tip: "<em>Ti va</em> funciona como <em>mi piace</em>: <em>ti va un caffè?</em> («está a fim de um café?», literalmente «um café te vai?»). O sujeito é a coisa — ao contrário do português, em que é «você» quem está a fim."
       }
     ],
     grammar: {
@@ -510,7 +510,7 @@ LINGUAI.addStrings("pt", {
         ]
       },
       {
-        contrast: "<em>Fa caldo</em> = «faz calor», igualzinho. Mas a semelhança para aí: para a pessoa, o italiano usa <em>avere</em> — <em>ho caldo</em> = «estou com calor», nunca «sto con caldo». E <em>c'è il sole</em> corresponde ao nosso «está sol» / «tem sol», com artigo em italiano. Não estenda o paralelo: <em>sono caldo</em> não significa nada de bom."
+        contrast: "<em>Fa caldo</em> = «faz calor», igualzinho. Mas a semelhança para aí: para a pessoa, o italiano usa <em>avere</em> — <em>ho caldo</em> = «estou com calor», nunca «sto con caldo». E <em>c'è il sole</em> corresponde ao nosso «está sol» / «tem sol», com artigo em italiano. Não estenda o paralelo: <em>sono caldo</em> descreve a temperatura do corpo ao toque, não a sensação; para «estou com calor», só <em>ho caldo</em>."
       },
       {
         h: "As estações",
@@ -782,7 +782,7 @@ LINGUAI.addStrings("pt", {
         p: "<strong>Passato prossimo</strong> = <em>avere</em> ou <em>essere</em> no presente + o <b>particípio passado</b>. É o passado do dia a dia em italiano e corresponde ao nosso pretérito perfeito: <em>ho mangiato</em> = «comi»."
       },
       {
-        contrast: "Cuidado com a aparência: <em>ho mangiato</em> parece «tenho comido», mas o «tenho comido» português indica algo repetido até agora («tenho comido pouco ultimamente»). <em>Ho mangiato</em> é simplesmente «comi», um fato concluído — e o italiano falado do norte e do centro o usa até para coisas de anos atrás. A forma de um verbo só (<em>mangiai</em>, o passato remoto) existe, mas na conversa do norte não se ouve; aparece no C1."
+        contrast: "Cuidado com a aparência: <em>ho mangiato</em> parece «tenho comido», mas o «tenho comido» português indica algo repetido até agora («tenho comido pouco ultimamente»). <em>Ho mangiato</em> é simplesmente «comi», um fato concluído — e o italiano falado do norte e do centro o usa até para coisas de anos atrás. A forma simples (<em>mangiai</em>, o passato remoto) existe, mas na conversa do norte não se ouve; aparece no C1."
       },
       {
         h: "O particípio regular",

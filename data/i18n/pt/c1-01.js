@@ -524,7 +524,7 @@ LINGUAI.addStrings("pt", {
         ]
       },
       {
-        trap: "<em>Avere le mani in pasta</em> é um falso amigo perigoso: lembra o seu «pôr a mão na massa» (pegar no trabalho) e o «ser pego com a mão na massa» (ser flagrado), mas não quer dizer nenhum dos dois. Significa estar envolvido no assunto, ter contatos e capacidade de influir, e muitas vezes é dito com admiração. Traduzir pela sua expressão transforma um elogio numa acusação ou numa frase sem sentido."
+        trap: "<em>Avere le mani in pasta</em> é um falso amigo perigoso: lembra o seu «pôr a mão na massa» (pegar no trabalho) e o «ser pego com a mão na massa» (ser flagrado), mas não quer dizer nenhum dos dois. Significa estar por dentro do assunto, ter contatos e influência nele, às vezes com um tom de insinuação. Traduzir pela sua expressão muda completamente o sentido da frase."
       },
       {
         h: "Falsos amigos entre português e italiano",

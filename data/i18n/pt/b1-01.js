@@ -129,7 +129,7 @@ LINGUAI.addStrings("pt", {
         p: "Depois de expressões de certeza: <em>so che, è certo che, è vero che, è chiaro che, siccome, poiché</em>. Cuidado com <em>perché</em>: no sentido de «porque» leva indicativo, no sentido de «para que» leva congiuntivo (<em>te lo dico perché tu <b>capisca</b></em>). Exatamente o seu «porque» diante do «para que»."
       },
       {
-        contrast: "Quase toda essa lista soa familiar, porque o português distribui igual: «embora seja», «antes que chegue», «contanto que», «a menos que». Os dois gatilhos que é preciso vigiar são os verbos de opinião na afirmativa, que em italiano pedem congiuntivo, e <em>nonostante</em>, que pede sempre, como o seu «embora», enquanto o seu «apesar de que» aceita indicativo quando o fato é real («apesar de que estava cansado»)."
+        contrast: "Quase toda essa lista soa familiar, porque o português distribui igual: «embora seja», «antes que chegue», «contanto que», «a menos que». Os dois gatilhos que é preciso vigiar são os verbos de opinião na afirmativa, que em italiano pedem congiuntivo, e <em>nonostante</em>, que pede sempre, como o seu «embora», enquanto na fala você foge do subjuntivo com «apesar de» + infinitivo («apesar de estar cansado»), algo que <em>nonostante</em> + verbo conjugado não permite."
       }
     ],
     grammar: {

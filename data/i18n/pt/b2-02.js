@@ -186,7 +186,7 @@ LINGUAI.addStrings("pt", {
         "p": "<em>venire</em> significa «ir até onde está o interlocutor». Ao relatar, o ponto de referência muda, então <em>«Vengo domani»</em> vira <em>ha detto che <b>sarebbe andato</b> il giorno dopo</em>. O mesmo acontece com <em>portare</em>, que vira <em>portare</em> ou <em>lasciare</em> conforme a direção."
       },
       {
-        "contrast": "Aqui o português ajuda bastante: «vir» e «ir» funcionam como <em>venire</em> e <em>andare</em> («amanhã eu venho» → «disse que iria no dia seguinte»), e a troca sai quase sozinha. Só fique atento à fala brasileira, que às vezes usa «vir» de forma mais solta; em italiano a regra do ponto de referência é estrita. O que não tem correspondência é <em>l'indomani</em>, que pertence a um registro mais alto que «no dia seguinte» e não se usa na fala."
+        "contrast": "Aqui o português ajuda bastante: «vir» e «ir» funcionam como <em>venire</em> e <em>andare</em> («amanhã eu venho» → «disse que iria no dia seguinte»), e a troca sai quase sozinha. Só uma diferença: o italiano usa <em>venire</em> também para ir até onde está o interlocutor (<em>vengo da te</em>, <em>vengo anch'io!</em>), onde o brasileiro diz «vou aí», «já vou». O que não tem correspondência é <em>l'indomani</em>, que pertence a um registro mais alto que «no dia seguinte» e não se usa na fala."
       }
     ],
     "grammar": {
@@ -345,7 +345,7 @@ LINGUAI.addStrings("pt", {
         "p": "<em>«Aspetta!»</em> → <em>Mi ha detto <b>di aspettare</b>.</em> A negação vai antes do infinitivo: <em>mi ha detto <b>di non</b> firmare</em>. O mesmo padrão depois de <em>raccomandare, consigliare, pregare, ordinare, vietare</em>."
       },
       {
-        "contrast": "Aqui o português do Brasil ajuda: você já diz «ele me disse <b>para esperar</b>», com infinitivo, e o italiano faz igual, só que com <em>di</em> no lugar de «para»: <em>mi ha detto di aspettare</em>. Cuidado com a tradução literal: «para» não vira <em>per</em> aqui. A outra forma do português, «me disse <b>que esperasse</b>», com subjuntivo, em italiano (<em>mi ha detto che aspettassi</em>) se entende, mas ninguém diz. As duas línguas voltam a coincidir com <em>insistere perché</em> + subjuntivo («insistir para que»)."
+        "contrast": "Aqui o português do Brasil ajuda: você já diz «ele me disse <b>para esperar</b>», com infinitivo, e o italiano faz igual, só que com <em>di</em> no lugar de «para»: <em>mi ha detto di aspettare</em>. Cuidado com a tradução literal: «para» não vira <em>per</em> aqui. A outra forma do português, «me disse <b>que esperasse</b>», com subjuntivo, em italiano (<em>mi ha detto che aspettassi</em>) é correto, mas bem menos frequente que <em>di</em> + infinitivo. As duas línguas voltam a coincidir com <em>insistere perché</em> + subjuntivo («insistir para que»)."
       }
     ],
     "grammar": {

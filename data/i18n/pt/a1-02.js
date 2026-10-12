@@ -312,18 +312,18 @@ LINGUAI.addStrings("pt", {
         p: "<strong>Molto</strong> antes de um adjetivo ou depois de um verbo é <b>advérbio</b> e não varia: <em>molto bella</em>, <em>lavoro molto</em>. Antes de um substantivo é <b>adjetivo</b> e concorda: <em>molt<b>i</b> amici</em>, <em>molt<b>a</b> gente</em>. A mesma regra vale para <em>poco, troppo, tanto</em>."
       },
       {
-        contrast: "Outro capítulo de presente: o português faz exatamente isso com «muito», e até com uma palavra só nos dois papéis. «Muito bonita» frente a «muitos amigos»: advérbio invariável frente a adjetivo que concorda. O cuidado é o mesmo que você já tem em português: não diga «muita cara» quando quer dizer «muito cara»."
+        contrast: "Mais um ponto que vem de presente: o português faz exatamente isso com «muito», e até com uma palavra só nos dois papéis. «Muito bonita» e «muitos amigos»: advérbio invariável de um lado, adjetivo que concorda do outro. O cuidado é o mesmo que você já tem em português: não diga «muita cara» quando quer dizer «muito cara»."
       },
       {
         h: "Um teste que sempre funciona",
-        p: "Faça a pergunta: «quanto de quê?» → adjetivo, concorda. «em que medida?» → advérbio, forma fixa. <em>Ho molti libri</em> (quantos livros) frente a <em>Sono molto stanca</em> (quão cansada)."
+        p: "Faça a pergunta: «quanto de quê?» → adjetivo, concorda. «em que medida?» → advérbio, forma fixa. <em>Ho molti libri</em> (quantos livros) ×  <em>Sono molto stanca</em> (quão cansada)."
       },
       {
         h: "O superlativo em -issimo",
         p: "Tire a terminação do adjetivo e acrescente <em>-issimo/-issima/-issimi/-issime</em>: <em>bello → bellissimo</em>, <em>caro → carissimo</em>. É o seu <em>-íssimo</em>, com o mesmo valor."
       },
       {
-        trap: "<b>Poco</b> significa «pouco, não muito», enquanto <b>un po' di</b> é «um pouco de». Não são a mesma coisa: <em>ho poco tempo</em> (estou sem tempo, é uma queixa) frente a <em>ho un po' di tempo</em> (tenho algum tempo, e está tudo bem). O português distingue do mesmo jeito «pouco tempo» e «um pouco de tempo»."
+        trap: "<b>Poco</b> significa «pouco, não muito», enquanto <b>un po' di</b> é «um pouco de». Não são a mesma coisa: <em>ho poco tempo</em> (estou sem tempo, é uma queixa), ao contrário de <em>ho un po' di tempo</em> (tenho algum tempo, e está tudo bem). O português distingue do mesmo jeito «pouco tempo» e «um pouco de tempo»."
       }
     ],
     grammar: {
@@ -422,10 +422,10 @@ LINGUAI.addStrings("pt", {
       },
       {
         h: "O pronome vem sempre antes",
-        p: "<em><b>Mi</b> sveglio alle sette.</em> Nunca «sveglio mi». As exceções são o infinitivo e o imperativo, em que o pronome gruda no final: <em>devo alzar<b>mi</b></em>, <em>svegliati!</em> — como no português escrito «devo levantar-me», «acorda-te!», e não como no Brasil falado, «preciso me levantar», «se acalma!»."
+        p: "<em><b>Mi</b> sveglio alle sette.</em> Nunca «sveglio mi». As exceções são o infinitivo e o imperativo, em que o pronome gruda no final: <em>devo alzar<b>mi</b></em>, <em>svegliati!</em> — como no português formal «devo levantar-me», «acalme-se!», e não como no Brasil falado, «preciso me levantar», «se acalma!»."
       },
       {
-        contrast: "Este capítulo você já tem pronto: o português usa os reflexivos para a rotina diária do mesmo jeito (me levanto, me visto, me penteio). O que precisa de atenção é a lista concreta, não o sistema: no Brasil falado vários verbos perderam o pronome, e o italiano não acompanha essa queda."
+        contrast: "Este ponto você já tem pronto: o português usa os reflexivos para a rotina diária do mesmo jeito (me levanto, me visto, me penteio). O que precisa de atenção é a lista concreta, não o sistema: no Brasil falado vários verbos perderam o pronome, e o italiano não acompanha essa queda."
       },
       {
         h: "Alguns verbos são reflexivos só em italiano",
@@ -507,7 +507,7 @@ LINGUAI.addStrings("pt", {
         p: "Um italiano pergunta <em>Che ore sono?</em> e responde <em>Sono le tre</em>. O substantivo subentendido é <em>le ore</em>, daí o artigo feminino plural. As exceções são uma hora, meio-dia e meia-noite, que vão no singular: <em>è l'una</em>, <em>è mezzogiorno</em>, <em>è mezzanotte</em>."
       },
       {
-        contrast: "Isto é exatamente o seu sistema: «são três horas» frente a «é uma hora», «é meio-dia». Mesmo verbo no plural, mesma exceção no singular, e o mesmo artigo feminino que aparece no seu «às três» (a + as), como em <em>alle tre</em>. Não há nada de novo para aprender, só as palavras."
+        contrast: "Quase o seu sistema: «são três horas» e «é uma hora», «é meio-dia» — verbo no plural, com a mesma exceção no singular. A diferença é o <b>artigo</b>: o italiano o põe sempre (<em>sono <b>le</b> tre</em>, <em>è <b>l'</b>una</em>), enquanto o português só o mostra depois de preposição, no seu «às três» (a + as), como em <em>alle tre</em>. Não diga «sono tre»."
       },
       {
         h: "Os minutos",
@@ -680,10 +680,10 @@ LINGUAI.addStrings("pt", {
       },
       {
         h: "Os dias da semana",
-        p: "Escrevem-se com minúscula, como em português, e são masculinos, exceto <em>la domenica</em> — o contrário do português, em que quase todos são femininos (a segunda-feira) e o domingo é masculino."
+        p: "Escrevem-se com minúscula, como em português, e são masculinos, exceto <em>la domenica</em> — o contrário do português, em que os dias úteis são femininos (a segunda-feira) e sábado e domingo são masculinos."
       },
       {
-        contrast: "Aqui está a diferença que importa: o italiano marca o hábito com o <b>artigo</b> e deixa o dia no singular (<em>il lunedì vado in palestra</em> = às segundas), enquanto sem artigo indica um dia concreto (<em>lunedì vado a Roma</em> = nesta segunda). O português distingue pelo número: «na segunda» frente a «às segundas». Traduzir o plural português por um plural italiano não funciona."
+        contrast: "Aqui está a diferença que importa: o italiano marca o hábito com o <b>artigo</b> e deixa o dia no singular (<em>il lunedì vado in palestra</em> = às segundas), enquanto sem artigo indica um dia concreto (<em>lunedì vado a Roma</em> = nesta segunda). O português distingue pelo número: «na segunda» e «às segundas». Traduzir o plural português por um plural italiano não funciona."
       }
     ],
     grammar: {
@@ -881,7 +881,7 @@ LINGUAI.addStrings("pt", {
         trap: "<em>A piedi</em> («a pé») quebra a regra do transporte, porque ninguém sobe nos próprios pés. Aprenda como exceção: aqui o português coincide, e isso ajuda."
       },
       {
-        contrast: "O português usa «a» ou «para» em quase tudo: a Roma, ao banco, ao médico, para a Itália. O italiano reparte entre três preposições, e a divisão não se deduz do português. Cuidado também com o transporte: o seu «de trem», «de carro» vira <em>in treno</em>, <em>in macchina</em>, nunca «di treno». Não traduza palavra por palavra: aprenda a combinação inteira como um bloco."
+        contrast: "O português usa «a» ou «para» (e, no Brasil falado, muito «em»: «vou no banco», «vou no médico») em quase tudo: a Roma, ao banco, para a Itália. O italiano reparte entre três preposições, e a divisão não se deduz do português. Cuidado também com o transporte: o seu «de trem», «de carro» vira <em>in treno</em>, <em>in macchina</em>, nunca «di treno». Não traduza palavra por palavra: aprenda a combinação inteira como um bloco."
       }
     ],
     grammar: {
@@ -1041,8 +1041,8 @@ LINGUAI.addStrings("pt", {
     ],
     theory: [
       {
-        h: "Existência frente a qualidade",
-        p: "<strong>C'è</strong> e <strong>ci sono</strong> dizem que algo <b>existe num lugar</b>. <em>Essere</em> diz <b>como</b> algo é. <em>C'è un museo in centro</em> (tem um museu) frente a <em>Il museo è bellissimo</em> (o museu é lindo). O português separa do mesmo jeito com «tem» ou «há» e «é»."
+        h: "Existência × qualidade",
+        p: "<strong>C'è</strong> e <strong>ci sono</strong> dizem que algo <b>existe num lugar</b>. <em>Essere</em> diz <b>como</b> algo é. <em>C'è un museo in centro</em> (tem um museu) ×  <em>Il museo è bellissimo</em> (o museu é lindo). O português separa do mesmo jeito com «tem» ou «há» e «é»."
       },
       {
         h: "Negativa e interrogativa",

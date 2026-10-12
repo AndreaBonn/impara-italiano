@@ -509,7 +509,7 @@ LINGUAI.addStrings("pt", {
         p: "Um uso muito frequente é a <b>suposição sobre o presente</b>: <em>Che ore sono? — <b>Saranno</b> le tre.</em> Ou <em>Dov'è Marco? — Sarà a casa.</em> O português também conhece esse uso («serão umas três horas», «estará em casa»), mas no Brasil ele soa formal: na fala você diria «devem ser umas três», «deve estar em casa». Em italiano, ao contrário, é totalmente coloquial."
       },
       {
-        trap: "Para um futuro próximo e certo, os italianos usam mais o <b>presente</b>: <em>domani parto alle sette</em>. Ali o futuro soa rígido, ou menos certo. Guarde-o para previsões e planos distantes."
+        trap: "Para um futuro próximo e certo, os italianos usam mais o <b>presente</b>: <em>domani parto alle sette</em>. Nesse caso o futuro soa rígido, ou menos certo. Guarde-o para previsões e planos distantes."
       }
     ],
     grammar: {
@@ -1140,7 +1140,7 @@ LINGUAI.addStrings("pt", {
         p: "<em>Mi fa male la testa</em> é literalmente «a cabeça me faz mal». O sujeito é a <b>parte do corpo</b>, e por isso o verbo tem duas formas: <em>mi <b>fa</b> male il piede</em> (uma coisa) e <em>mi <b>fanno</b> male i piedi</em> (várias)."
       },
       {
-        contrast: "É o modelo do seu «me dói a cabeça» / «me doem os pés»: o sujeito é a parte do corpo e o verbo concorda com ela. No Brasil se diz mais «minha cabeça está doendo» ou «estou com dor de cabeça», mas em italiano o molde é sempre o do «me dói»: pronome + verbo + artigo + parte do corpo. O verbo é <em>fare male</em>, não um verbo próprio como «doer»."
+        contrast: "É o modelo do seu «me dói a cabeça» / «me doem os pés»: o sujeito é a parte do corpo e o verbo concorda com ela. No Brasil se diz mais «minha cabeça está doendo» ou «estou com dor de cabeça», mas em italiano o molde é sempre o do «me dói»: pronome + verbo + artigo + parte do corpo. O verbo usual é <em>fare male</em>; <em>dolere</em> («doer») existe, mas soa literário."
       },
       {
         h: "Dois caminhos paralelos",

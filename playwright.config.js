@@ -30,6 +30,10 @@ module.exports = defineConfig({
        error than the user's browser, so that path stays unverified and is
        described as such in recorder.js. */
     permissions: ["microphone"],
+    /* A first visit follows the browser's language (app.js, boot). The suite
+       was written against the Polish default, so the test browser speaks
+       Polish; a test about another browser language sets its own locale. */
+    locale: "pl-PL",
     launchOptions: {
       args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"]
     }

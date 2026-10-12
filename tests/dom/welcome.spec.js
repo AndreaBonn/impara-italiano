@@ -129,3 +129,22 @@ test("the welcome strings exist in five languages", async ({ page }) => {
   });
   expect(braki, JSON.stringify(braki)).toEqual({});
 });
+
+test.describe("a first visit from a French browser", () => {
+  test.use({ locale: "fr-FR" });
+
+  /* The default was Polish for everyone. */
+  test("the welcome speaks the browser's language", async ({ page }) => {
+    await page.goto("/index.html");
+    await gotowe(page);
+    await expect(page.locator(".js-zero")).toBeVisible();
+    expect(await page.evaluate(() => window.I18n.lang)).toBe("fr");
+  });
+});
+
+test("a saved choice of language beats the browser", async ({ page }) => {
+  await zProfilem(page, { schema: 2, settings: { lang: "de" }, stats: { lessonsDone: 0, correct: 0, wrong: 0, days: {} } });
+  await page.goto("/index.html");
+  await gotowe(page);
+  expect(await page.evaluate(() => window.I18n.lang)).toBe("de");
+});

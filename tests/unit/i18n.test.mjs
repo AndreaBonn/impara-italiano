@@ -81,3 +81,20 @@ describe("napisy interfejsu", () => {
     assert.ok(I18n.missing().indexOf("x") >= 0, "the gap is still visible on the list");
   });
 });
+
+/* The first visit used to be in Polish whatever the browser said: someone
+   with an English browser met a welcome screen they could not read. */
+describe("the language of a first visit", () => {
+  test("the first browser language the course has wins, region ignored", () => {
+    const { I18n } = swiezy();
+    assert.equal(I18n.pickLang(["fr-CA", "en-US"]), "fr");
+    assert.equal(I18n.pickLang(["it-IT", "de-AT", "en"]), "de");
+  });
+
+  test("a browser with none of the course languages gives null, not a guess", () => {
+    const { I18n } = swiezy();
+    assert.equal(I18n.pickLang(["it-IT", "ja"]), null);
+    assert.equal(I18n.pickLang([]), null);
+    assert.equal(I18n.pickLang(undefined), null);
+  });
+});

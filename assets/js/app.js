@@ -192,8 +192,21 @@
   };
 
   /* ---------------- Startup ---------------- */
+  /** Whether the browser holds a saved profile, read before load() fills defaults. */
+  function zapisIstnieje() {
+    try { return global.localStorage.getItem(Core.STORE_KEY) !== null; } catch (e) { return false; }
+  }
+
   function boot() {
+    var pierwszaWizyta = !zapisIstnieje();
     Core.load();
+    /* A first visit takes the browser's language when the course has it:
+       the default (Polish) left everyone else facing a welcome they could not
+       read. A saved choice always wins, so this runs only without a save. */
+    if (pierwszaWizyta) {
+      var zPrzegladarki = I18n.pickLang(global.navigator.languages || [global.navigator.language]);
+      if (zPrzegladarki) Core.state.settings.lang = zPrzegladarki;
+    }
     var lang = Core.state.settings.lang;
     I18n.set(lang);
     applyTheme(Core.state.settings.theme || "light");

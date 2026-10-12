@@ -120,12 +120,28 @@
 
   function locale() { return LOCALE[current] || current; }
 
+  /**
+   * The course language for a browser's preference list (navigator.languages),
+   * by primary subtag: "fr-CA" -> "fr". Null when none of them is offered,
+   * so the caller keeps its own default instead of a guess.
+   */
+  function pickLang(prefs) {
+    var codes = LANGS.map(function (l) { return l.code; });
+    var list = prefs || [];
+    for (var i = 0; i < list.length; i++) {
+      var c = String(list[i] || "").toLowerCase().split("-")[0];
+      if (codes.indexOf(c) >= 0) return c;
+    }
+    return null;
+  }
+
   var I18n = {
     t: t,
     apply: apply,
     set: setLang,
     missing: missing,
     locale: locale,
+    pickLang: pickLang,
     LANGS: LANGS,
     // exposed so that scripts/parity.mjs reads the map from here instead of
     // duplicating it: two copies would drift apart at the first new language

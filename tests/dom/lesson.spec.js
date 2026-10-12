@@ -186,3 +186,25 @@ test("the grammar table's scrolling box can be reached from the keyboard", async
   await expect(box).toHaveAttribute("role", "region");
   await expect(box).toHaveAttribute("aria-label", /.+/);
 });
+
+/* An answer can report late (the model judge answers over the network). If
+   it lands after the student moved to another lesson, it must count for
+   nothing there: the run and the score are per lesson. */
+test("a late answer from a lesson already left changes nothing in the new one", async ({ page }) => {
+  const bledy = [];
+  page.on("pageerror", e => bledy.push(String(e)));
+  await lezione(page, "a1-u01-l3");
+  await page.evaluate(() => { window.__stary = document.querySelector('.exq input[type="radio"]').closest(".exq"); });
+  await page.evaluate(() => window.App.go("lezione", { id: "a1-u01-l2" }));
+  await page.waitForFunction(() => document.querySelector(".exq") && !document.contains(window.__stary));
+  const przed = await page.locator(".ex-chip.is-ok, .ex-chip.is-ko").count();
+  await page.evaluate(() => {
+    const r = window.__stary;
+    r.querySelector('input[type="radio"]').checked = true;
+    r.querySelector(".js-check").click();
+  });
+  await page.waitForTimeout(200);
+  expect(bledy, "no error from the late answer").toEqual([]);
+  await expect(page.locator(".ex-chip.is-ok, .ex-chip.is-ko")).toHaveCount(przed);
+  await expect(page.locator("#lessonScore")).toHaveText(/^0\//);
+});

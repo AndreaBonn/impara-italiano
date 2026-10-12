@@ -229,8 +229,12 @@
       wrap.innerHTML = built.map(function (b) { return b.html; }).join("");
       var nodes = wrap.querySelectorAll(".exq");
       run = LessonRun.create(built.length);
+      /* An answer may report late (the model judge goes over the network):
+         one from a lesson the student has left must not land in this one. */
+      var mine = session;
       built.forEach(function (b, i) {
         b.wire(nodes[i], function (ok) {
+          if (session !== mine) return;
           run = LessonRun.answer(run, i, ok);
           drawRun();
           onAnswer(ok, L, U, LV);

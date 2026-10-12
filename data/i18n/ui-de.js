@@ -1081,6 +1081,8 @@ LINGUAI.addUI("de", {
   "today.streak": { one: "{n} Tag in Folge · dein Rekord: {best}", other: "{n} Tage in Folge · dein Rekord: {best}" },
   "path.showLessons": "Lektionen zeigen",
   "path.hideLessons": "Lektionen ausblenden",
-  "welcome.langLabel": "Erklärungen auf:"
+  "welcome.langLabel": "Erklärungen auf:",
+  "head.more": "Mehr",
+  "head.less": "Weniger"
 
 });

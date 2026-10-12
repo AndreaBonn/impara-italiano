@@ -26,6 +26,7 @@
     m.innerHTML = html;
     Ex.wireSpeakers(m);
     wireGuide(m);
+    wireIntro(m);
     m.scrollTop = 0;
     global.scrollTo(0, 0);
     return m;
@@ -45,6 +46,24 @@
       esc(sekcja) + '">' + esc(t("guide.more")) + "</button></p>";
   }
 
+  /**
+   * On a phone the introduction is folded to two lines by CSS. The button
+   * appears only when the text really overflows, so a desktop, or a short
+   * introduction, gets no control that would do nothing.
+   */
+  function wireIntro(root) {
+    var p = root.querySelector(".view-head__intro");
+    var b = root.querySelector(".view-head__more");
+    if (!p || !b) return;
+    b.hidden = p.scrollHeight <= p.clientHeight + 1;
+    b.addEventListener("click", function () {
+      var open = b.getAttribute("aria-expanded") !== "true";
+      b.setAttribute("aria-expanded", String(open));
+      p.classList.toggle("is-open", open);
+      b.textContent = t(open ? "head.less" : "head.more");
+    });
+  }
+
   function wireGuide(root) {
     root.querySelectorAll(".js-guide-link").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -57,7 +76,9 @@
     return '<header class="view-head">' +
       (kicker ? '<p class="view-head__kicker">' + esc(kicker) + "</p>" : "") +
       "<h1>" + esc(title) + "</h1>" +
-      (sub ? "<p>" + esc(sub) + "</p>" : "") + "</header>";
+      (sub ? '<p class="view-head__intro" id="viewIntro">' + esc(sub) + "</p>" +
+        '<button type="button" class="view-head__more" aria-controls="viewIntro" aria-expanded="false" hidden>' +
+        esc(t("head.more")) + "</button>" : "") + "</header>";
   }
 
   function pct(n) { return Math.round(n * 100); }

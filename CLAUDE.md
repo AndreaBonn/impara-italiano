@@ -224,7 +224,7 @@ zgniło po cichu, dokładnie jak wiersze tabeli Baseline przed `baseline.mjs`. A
   vocab[{it,tr,ex}], dialogue{titleIt,lines[{who,it,tr}]}, culture{title,text},
   exercises[] }
 ```
-Pola `theory[]` przyjmują stringi albo obiekty: `{h,p}`, `{list}`, `{trap}`, `{contrast}`, `{tip}`.
+Pola `theory[]` przyjmują stringi albo obiekty: `{h,p}`, `{h,list}`, `{list}`, `{trap}`, `{contrast}`, `{tip}`.
 `{contrast}` to uwaga „w twoim języku jest inaczej” — pisze się ją **od nowa** dla każdego języka,
 nie tłumaczy: dla Polaka chodzi o rodzaj nijaki i deklinację, dla Amerykanina o to, że angielski
 nie ma rodzaju gramatycznego w ogóle. Zawartość `p`, `trap`, `contrast`, `tip` jest wstawiana jako

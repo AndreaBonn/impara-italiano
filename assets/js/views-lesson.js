@@ -70,8 +70,11 @@
       parts.push('<section class="step"><h2 class="step__label">' + t("lesson.theory") + '</h2><div class="prose">' +
         L.theory.map(function (b) {
           if (typeof b === "string") return "<p>" + b + "</p>";
-          if (b.h) return "<h4>" + esc(b.h) + "</h4>" + (b.p ? "<p>" + b.p + "</p>" : "");
-          if (b.list) return "<ul>" + b.list.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>";
+          var list = b.list ? "<ul>" + b.list.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>" : "";
+          /* A heading travels with a paragraph or with a list ({h, list}, 65
+             blocks per language): leaving at the heading dropped the list. */
+          if (b.h) return "<h4>" + esc(b.h) + "</h4>" + (b.p ? "<p>" + b.p + "</p>" : "") + list;
+          if (b.list) return list;
           if (b.trap) return '<div class="callout callout--trap"><b>' + t("lesson.trapLabel") + "</b> " + b.trap + "</div>";
           if (b.contrast) return '<div class="callout callout--pl"><b>' + t("lesson.contrastLabel") + "</b> " + b.contrast + "</div>";
           if (b.tip) return '<div class="callout"><b>' + t("lesson.tipLabel") + "</b> " + b.tip + "</div>";

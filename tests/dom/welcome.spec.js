@@ -162,3 +162,20 @@ test("the welcome offers every language of explanation", async ({ page }) => {
   await expect(page.locator(".js-zero")).toBeVisible();
   await expect(page.locator('.welcome-lang [data-lang="es"]')).toHaveAttribute("aria-pressed", "true");
 });
+
+test.describe("a profile saved before the current format", () => {
+  test.use({ locale: "fr-FR" });
+
+  /* A v1 save is migrated on load; it is not a first visit, so the browser's
+     language must not replace the one the profile was studied in. */
+  test("keeps its language instead of taking the browser's", async ({ page }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("seeded")) return;
+      localStorage.setItem("linguai.italiano.pl.v1", JSON.stringify({ lessons: {}, srs: {}, stats: { lessonsDone: 0, correct: 0, wrong: 0, days: {} }, settings: {} }));
+      sessionStorage.setItem("seeded", "1");
+    });
+    await page.goto("/index.html");
+    await gotowe(page);
+    expect(await page.evaluate(() => window.I18n.lang)).toBe("pl");
+  });
+});

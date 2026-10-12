@@ -487,6 +487,7 @@
 
   global.Store = {
     KEY: STORE_KEY,
+    KEY_V1: STORE_KEY_V1,
     SCHEMA: SCHEMA,
     get state() { return state; },
     load: load, save: save, flush: flush,

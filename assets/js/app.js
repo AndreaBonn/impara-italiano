@@ -195,7 +195,11 @@
   /* ---------------- Startup ---------------- */
   /** Whether the browser holds a saved profile, read before load() fills defaults. */
   function zapisIstnieje() {
-    try { return global.localStorage.getItem(Core.STORE_KEY) !== null; } catch (e) { return false; }
+    /* A v1 save counts too: it is migrated on load, not a first visit. */
+    try {
+      return global.localStorage.getItem(Core.STORE_KEY) !== null ||
+        global.localStorage.getItem(global.Store.KEY_V1) !== null;
+    } catch (e) { return false; }
   }
 
   function boot() {

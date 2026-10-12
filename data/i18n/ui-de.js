@@ -1054,6 +1054,12 @@ LINGUAI.addUI("de", {
   "flash.replay": "Noch einmal anhören",
   "flash.listenPick": "Hör zu und wähl aus, was du gehört hast.",
   "flash.listenWrite": "Hör zu und schreib es auf Italienisch.",
-  "guide.s.cinque": "Eine Kartenrunde, die nach fünf Minuten oder zwanzig Karten endet."
+  "guide.s.cinque": "Eine Kartenrunde, die nach fünf Minuten oder zwanzig Karten endet.",
+  "nav.g.study": "Lernen",
+  "nav.g.practise": "Üben",
+  "nav.g.lookup": "Nachschlagen",
+  "nav.g.you": "Du",
+  "stats.streak": { one: "Tag in Folge", other: "Tage in Folge" },
+  "stats.open": "Fortschritt ansehen"
 
 });

@@ -430,6 +430,7 @@ button{font:inherit;color:inherit;}
 .rail__lang-opt:focus-visible{outline:3px solid var(--salvia-deep);outline-offset:-3px;}
 
 .rail__stats{
+  width:calc(100% - 32px);color:inherit;font:inherit;cursor:pointer;
   margin:0 16px 14px;padding:12px 14px;
   /* nakładka ciemna, nie jasna: rozjaśnienie tła obniżyłoby kontrast białego tekstu */
   background:oklch(0 0 0 / .16);
@@ -437,6 +438,12 @@ button{font:inherit;color:inherit;}
   border-radius:var(--r-m);
   display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;
 }
+.rail__stats:hover{background:oklch(0 0 0 / .26);}
+.rail__stat{display:block;}
+.rail__stats-go{grid-column:1 / -1;font-size:.74rem;font-weight:600;text-decoration:underline;text-underline-offset:2px;opacity:.95;}
+.rail__group + .rail__group{margin-top:10px;}
+.rail__group ul{list-style:none;margin:0;padding:0;}
+.rail__group-title{margin:6px 13px 4px;font-size:.66rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.75;}
 .rail__stat b{display:block;font-family:var(--display);font-size:1.12rem;font-weight:600;line-height:1.1;}
 .rail__stat span{font-size:.68rem;opacity:.95;letter-spacing:.03em;text-transform:uppercase;}
 
@@ -1072,6 +1079,8 @@ mark{background:var(--oro);color:var(--on-oro);border-radius:3px;padding:0 2px;}
     transition:transform .24s ease;box-shadow:var(--shadow-l);
   }
   .rail.is-open{transform:none;}
+  /* The round toggle stays on top of the open panel: the head moves right so the course name is not under it. */
+  .rail__head{padding-left:76px;}
   /* Chowanie zasłony obsługuje teraz globalna reguła [hidden] na górze pliku. */
   .rail__scrim{display:block;position:fixed;inset:0;background:oklch(0.211 0.007 67 / .50);z-index:35;}
   .rail-toggle{

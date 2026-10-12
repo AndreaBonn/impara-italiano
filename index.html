@@ -90,28 +90,54 @@
       </button>
     </div>
 
-    <div class="rail__stats" id="railStats"></div>
+    <!-- A button, not a tile: the counters lead to Progress, where the numbers are explained. -->
+    <button type="button" class="rail__stats" id="railStats"></button>
 
-    <ul class="rail__menu" id="railMenu">
-      <li><button class="rail__item" data-route="oggi"><span class="rail__ico" aria-hidden="true">☀️</span><span data-i18n="nav.today">Dziś</span></button></li>
-      <li><button class="rail__item" data-route="percorso"><span class="rail__ico" aria-hidden="true">🗺️</span><span data-i18n="nav.path">Ścieżka nauki</span></button></li>
-      <li><button class="rail__item" data-route="ripasso"><span class="rail__ico" aria-hidden="true">🔁</span><span data-i18n="nav.review">Powtórki</span><span class="rail__badge" id="dueBadge" hidden>0</span></button></li>
-      <li><button class="rail__item" data-route="cinque"><span class="rail__ico" aria-hidden="true">⏱️</span><span data-i18n="nav.flash">Pięć minut</span></button></li>
-      <li><button class="rail__item" data-route="allenamento"><span class="rail__ico" aria-hidden="true">🎯</span><span data-i18n="nav.train">Trening</span></button></li>
-      <li><button class="rail__item" data-route="conversazione"><span class="rail__ico" aria-hidden="true">🎙️</span><span data-i18n="nav.talk">Rozmowy na głos</span></button></li>
-      <li><button class="rail__item" data-route="chiacchiere"><span class="rail__ico" aria-hidden="true">💬</span><span data-i18n="nav.chat">Swobodna rozmowa</span></button></li>
-      <li><button class="rail__item" data-route="grammatica"><span class="rail__ico" aria-hidden="true">📐</span><span data-i18n="nav.grammar">Gramatyka</span></button></li>
-      <li><button class="rail__item" data-route="coniugatore"><span class="rail__ico" aria-hidden="true">🧩</span><span data-i18n="nav.verbs">Odmiana czasowników</span></button></li>
-      <li><button class="rail__item" data-route="lessico"><span class="rail__ico" aria-hidden="true">📖</span><span data-i18n="nav.lexicon">Mój słownik</span></button></li>
-      <li><button class="rail__item" data-route="shadowing"><span class="rail__ico" aria-hidden="true">🗣️</span><span data-i18n="nav.shadow">Powtarzanie</span></button></li>
-      <li><button class="rail__item" data-route="velocita"><span class="rail__ico" aria-hidden="true">⏩</span><span data-i18n="nav.speed">Tempo</span></button></li>
-      <li><button class="rail__item" data-route="esame"><span class="rail__ico" aria-hidden="true">📋</span><span data-i18n="nav.exam">Egzamin</span></button></li>
-      <li><button class="rail__item" data-route="falsi"><span class="rail__ico" aria-hidden="true">🪤</span><span data-i18n="nav.falsi">Fałszywi przyjaciele</span></button></li>
-      <li><button class="rail__item" data-route="copertura"><span class="rail__ico" aria-hidden="true">📊</span><span data-i18n="nav.coverage">Pokrycie</span></button></li>
-      <li><button class="rail__item" data-route="progressi"><span class="rail__ico" aria-hidden="true">🌸</span><span data-i18n="nav.progress">Postępy</span></button></li>
-      <li><button class="rail__item" data-route="guida"><span class="rail__ico" aria-hidden="true">📖</span><span data-i18n="nav.guide">Przewodnik</span></button></li>
-      <li><button class="rail__item" data-route="impostazioni"><span class="rail__ico" aria-hidden="true">⚙️</span><span data-i18n="nav.settings">Ustawienia</span></button></li>
-    </ul>
+    <!-- Four groups, not one flat list: eighteen entries gave a newcomer no
+         idea where to start. The labels are filled by I18n.apply(). -->
+    <div class="rail__menu" id="railMenu">
+      <div class="rail__group" role="group" aria-labelledby="rg-study">
+        <p class="rail__group-title" id="rg-study" data-i18n="nav.g.study">Nauka</p>
+        <ul>
+        <li><button class="rail__item" data-route="oggi"><span class="rail__ico" aria-hidden="true">☀️</span><span data-i18n="nav.today">Dziś</span></button></li>
+        <li><button class="rail__item" data-route="percorso"><span class="rail__ico" aria-hidden="true">🗺️</span><span data-i18n="nav.path">Ścieżka nauki</span></button></li>
+        <li><button class="rail__item" data-route="ripasso"><span class="rail__ico" aria-hidden="true">🔁</span><span data-i18n="nav.review">Powtórki</span><span class="rail__badge" id="dueBadge" hidden>0</span></button></li>
+        <li><button class="rail__item" data-route="cinque"><span class="rail__ico" aria-hidden="true">⏱️</span><span data-i18n="nav.flash">Pięć minut</span></button></li>
+        </ul>
+      </div>
+      <div class="rail__group" role="group" aria-labelledby="rg-practise">
+        <p class="rail__group-title" id="rg-practise" data-i18n="nav.g.practise">Ćwiczenia</p>
+        <ul>
+        <li><button class="rail__item" data-route="allenamento"><span class="rail__ico" aria-hidden="true">🎯</span><span data-i18n="nav.train">Trening</span></button></li>
+        <li><button class="rail__item" data-route="conversazione"><span class="rail__ico" aria-hidden="true">🎙️</span><span data-i18n="nav.talk">Rozmowy na głos</span></button></li>
+        <li><button class="rail__item" data-route="chiacchiere"><span class="rail__ico" aria-hidden="true">💬</span><span data-i18n="nav.chat">Swobodna rozmowa</span></button></li>
+        <li><button class="rail__item" data-route="shadowing"><span class="rail__ico" aria-hidden="true">🗣️</span><span data-i18n="nav.shadow">Powtarzanie</span></button></li>
+        <li><button class="rail__item" data-route="velocita"><span class="rail__ico" aria-hidden="true">⏩</span><span data-i18n="nav.speed">Tempo</span></button></li>
+        <li><button class="rail__item" data-route="lettura"><span class="rail__ico" aria-hidden="true">📚</span><span data-i18n="read.title">Czytanie i słuchanie</span></button></li>
+        <li><button class="rail__item" data-route="scrittura"><span class="rail__ico" aria-hidden="true">✍️</span><span data-i18n="write.title">Pisanie po włosku</span></button></li>
+        <li><button class="rail__item" data-route="suoni"><span class="rail__ico" aria-hidden="true">👂</span><span data-i18n="sound.title">Pary minimalne</span></button></li>
+        <li><button class="rail__item" data-route="esame"><span class="rail__ico" aria-hidden="true">📋</span><span data-i18n="nav.exam">Egzamin</span></button></li>
+        </ul>
+      </div>
+      <div class="rail__group" role="group" aria-labelledby="rg-lookup">
+        <p class="rail__group-title" id="rg-lookup" data-i18n="nav.g.lookup">Do sprawdzenia</p>
+        <ul>
+        <li><button class="rail__item" data-route="grammatica"><span class="rail__ico" aria-hidden="true">📐</span><span data-i18n="nav.grammar">Gramatyka</span></button></li>
+        <li><button class="rail__item" data-route="coniugatore"><span class="rail__ico" aria-hidden="true">🧩</span><span data-i18n="nav.verbs">Odmiana czasowników</span></button></li>
+        <li><button class="rail__item" data-route="lessico"><span class="rail__ico" aria-hidden="true">📖</span><span data-i18n="nav.lexicon">Mój słownik</span></button></li>
+        <li><button class="rail__item" data-route="falsi"><span class="rail__ico" aria-hidden="true">🪤</span><span data-i18n="nav.falsi">Fałszywi przyjaciele</span></button></li>
+        <li><button class="rail__item" data-route="copertura"><span class="rail__ico" aria-hidden="true">📊</span><span data-i18n="nav.coverage">Pokrycie</span></button></li>
+        </ul>
+      </div>
+      <div class="rail__group" role="group" aria-labelledby="rg-you">
+        <p class="rail__group-title" id="rg-you" data-i18n="nav.g.you">Ty</p>
+        <ul>
+        <li><button class="rail__item" data-route="progressi"><span class="rail__ico" aria-hidden="true">🌸</span><span data-i18n="nav.progress">Postępy</span></button></li>
+        <li><button class="rail__item" data-route="guida"><span class="rail__ico" aria-hidden="true">❔</span><span data-i18n="nav.guide">Przewodnik</span></button></li>
+        <li><button class="rail__item" data-route="impostazioni"><span class="rail__ico" aria-hidden="true">⚙️</span><span data-i18n="nav.settings">Ustawienia</span></button></li>
+        </ul>
+      </div>
+    </div>
 
     <div class="rail__foot">
       <button class="rail__theme" id="themeToggle" data-i18n-label="theme.toggle" aria-label="Przełącz motyw">🌙 Tryb nocny</button>

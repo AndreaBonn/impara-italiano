@@ -30,7 +30,7 @@
   /* ---------------- The shell ---------------- */
   /** A counter tile. The word form follows the number, not the other way round. */
   function stat(n, key) {
-    return '<div class="rail__stat"><b>' + n + "</b><span>" + Core.esc(I18n.t(key, { n: n })) + "</span></div>";
+    return '<span class="rail__stat"><b>' + n + "</b><span>" + Core.esc(I18n.t(key, { n: n })) + "</span></span>";
   }
 
   App.refreshRail = function () {
@@ -38,9 +38,12 @@
     var box = document.getElementById("railStats");
     if (box) {
       box.innerHTML =
-        stat(s.streak.count, "stats.days") +
+        /* "days" alone did not say they are consecutive; the box is a button
+           to Progress, where every number is explained. */
+        stat(s.streak.count, "stats.streak") +
         stat(s.stats.lessonsDone, "stats.lessons") +
-        stat(s.xp, "stats.points");
+        stat(s.xp, "stats.points") +
+        '<span class="rail__stats-go">' + Core.esc(I18n.t("stats.open")) + " →</span>";
     }
     // the badge counts both decks: flashcards and the mistake notebook live in the same tab
     var due = Core.dueCount() + Errors.dueCount();
@@ -200,6 +203,7 @@
     document.querySelectorAll(".rail__item").forEach(function (b) {
       b.addEventListener("click", function () { App.go(b.getAttribute("data-route")); });
     });
+    document.getElementById("railStats").addEventListener("click", function () { App.go("progressi"); });
     document.getElementById("railToggle").addEventListener("click", function () {
       document.getElementById("rail").classList.contains("is-open") ? closeRail() : openRail();
     });

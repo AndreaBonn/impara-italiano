@@ -1059,6 +1059,12 @@ LINGUAI.addUI("fr", {
   "flash.replay": "Réécouter",
   "flash.listenPick": "Écoute et choisis ce que tu as entendu.",
   "flash.listenWrite": "Écoute et écris-le en italien.",
-  "guide.s.cinque": "Une séance de cartes qui s'arrête après cinq minutes ou vingt cartes."
+  "guide.s.cinque": "Une séance de cartes qui s'arrête après cinq minutes ou vingt cartes.",
+  "nav.g.study": "Apprendre",
+  "nav.g.practise": "S'entraîner",
+  "nav.g.lookup": "Consulter",
+  "nav.g.you": "Toi",
+  "stats.streak": { one: "jour d'affilée", many: "jours d'affilée", other: "jours d'affilée" },
+  "stats.open": "Voir ta progression"
 
 });

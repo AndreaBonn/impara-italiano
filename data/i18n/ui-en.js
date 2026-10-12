@@ -1051,6 +1051,12 @@ LINGUAI.addUI("en", {
   "flash.replay": "Play it again",
   "flash.listenPick": "Listen and pick what you heard.",
   "flash.listenWrite": "Listen and write it in Italian.",
-  "guide.s.cinque": "A card session that stops after five minutes or twenty cards."
+  "guide.s.cinque": "A card session that stops after five minutes or twenty cards.",
+  "nav.g.study": "Study",
+  "nav.g.practise": "Practice",
+  "nav.g.lookup": "Look up",
+  "nav.g.you": "You",
+  "stats.streak": { one: "day in a row", other: "days in a row" },
+  "stats.open": "See your progress"
 
 });

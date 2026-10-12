@@ -1063,6 +1063,12 @@ LINGUAI.addUI("pl", {
   "flash.replay": "Posłuchaj jeszcze raz",
   "flash.listenPick": "Posłuchaj i wybierz, co usłyszałeś.",
   "flash.listenWrite": "Posłuchaj i zapisz po włosku.",
-  "guide.s.cinque": "Sesja fiszek, która kończy się po pięciu minutach albo dwudziestu fiszkach."
+  "guide.s.cinque": "Sesja fiszek, która kończy się po pięciu minutach albo dwudziestu fiszkach.",
+  "nav.g.study": "Nauka",
+  "nav.g.practise": "Ćwiczenia",
+  "nav.g.lookup": "Do sprawdzenia",
+  "nav.g.you": "Ty",
+  "stats.streak": { one: "dzień z rzędu", few: "dni z rzędu", many: "dni z rzędu", other: "dni z rzędu" },
+  "stats.open": "Zobacz postępy"
 
 });

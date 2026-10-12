@@ -1059,6 +1059,12 @@ LINGUAI.addUI("es", {
   "flash.replay": "Escuchar otra vez",
   "flash.listenPick": "Escucha y elige lo que oíste.",
   "flash.listenWrite": "Escucha y escríbelo en italiano.",
-  "guide.s.cinque": "Una sesión de tarjetas que se detiene a los cinco minutos o a las veinte tarjetas."
+  "guide.s.cinque": "Una sesión de tarjetas que se detiene a los cinco minutos o a las veinte tarjetas.",
+  "nav.g.study": "Estudiar",
+  "nav.g.practise": "Practicar",
+  "nav.g.lookup": "Consultar",
+  "nav.g.you": "Tú",
+  "stats.streak": { one: "día seguido", many: "días seguidos", other: "días seguidos" },
+  "stats.open": "Ver tu progreso"
 
 });

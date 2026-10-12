@@ -54,9 +54,10 @@
 
     var go = el().querySelector(".js-go");
     if (go) go.addEventListener("click", function () {
-      var next = Core.nextOpenLesson();
-      if (next) App.go("lezione", { id: next.lesson.id });
-      else App.go("percorso");
+      Core.findNextLesson(function (next) {
+        if (next) App.go("lezione", { id: next.lesson.id });
+        else App.go("percorso");
+      });
     });
 
     var filter = el().querySelector(".js-filter");

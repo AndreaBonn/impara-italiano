@@ -249,3 +249,15 @@ test("a student who has only looked around still opens on the path", async ({ pa
   await expect(page).not.toHaveURL(/#\/oggi/);
   expect(await page.evaluate(() => window.Router.current.route)).toBe("percorso");
 });
+
+/* Levels load lazily: with A1 finished, only A1 was loaded at start and the
+   next lesson (in A2) was invisible, so Today showed no card at all. */
+test("with a level finished, the next lesson comes from the next level", async ({ page }) => {
+  const A1 = ["a1-u04-l1","a1-u04-l2","a1-u04-l3","a1-u04-l4","a1-u04-test","a1-u05-l1","a1-u05-l2","a1-u05-l3","a1-u05-l4","a1-u05-test","a1-u06-l1","a1-u06-l2","a1-u06-l3","a1-u06-l4","a1-u06-test","a1-u07-l1","a1-u07-l2","a1-u07-l3","a1-u07-l4","a1-u07-test","a1-u01-l1","a1-u01-l2","a1-u01-l3","a1-u01-l4","a1-u01-test","a1-u02-l1","a1-u02-l2","a1-u02-l3","a1-u02-l4","a1-u02-test","a1-u03-l1","a1-u03-l2","a1-u03-l3","a1-u03-l4","a1-u03-test","a1-u08-l1","a1-u08-l2","a1-u08-l3","a1-u08-l4","a1-u08-test","a1-u09-l1","a1-u09-l2","a1-u09-l3","a1-u09-l4","a1-u09-test","a1-u10-l1","a1-u10-l2","a1-u10-l3","a1-u10-l4","a1-u10-test"];
+  await profil(page, zdane(A1));
+  await oggi(page);
+  const karta = page.locator(".today-next");
+  await expect(karta).toBeVisible();
+  const id = await karta.locator(".js-next-lesson").evaluate(() => window.Core.nextOpenLesson().lesson.id);
+  expect(id).toMatch(/^a2-/);
+});

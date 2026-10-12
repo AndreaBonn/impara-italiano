@@ -173,6 +173,26 @@
     return null;
   }
 
+  /**
+   * The same lesson as nextOpenLesson, but walking the levels in order and
+   * loading the ones not loaded yet. Levels load lazily: at start only one is
+   * there, so a student who finished A1 saw no next lesson at all. A level
+   * that fails to load is marked "error" by the registry and skipped.
+   */
+  function findNextLesson(cb, from) {
+    var levels = registry.levels;
+    for (var i = from || 0; i < levels.length; i++) {
+      var lv = levels[i];
+      if (!registry.loaded[lv.code]) {
+        Registry.loadLevelData(lv.code, function () { findNextLesson(cb, i); });
+        return;
+      }
+      var n = nextLesson(lv);
+      if (n) { cb({ level: lv, unit: n.unit, lesson: n.lesson }); return; }
+    }
+    cb(null);
+  }
+
   /* ---------------- Backup ---------------- */
   /* Every how many FINISHED lessons to remind about a backup. Retaking a
      lesson already passed does not count: nothing new appeared that could be
@@ -285,7 +305,7 @@
     dueCards: Srs.dueCards, dueCount: Srs.dueCount,
     lessonState: lessonState, isLessonDone: isLessonDone,
     recordLesson: recordLesson, recordAnswer: recordAnswer,
-    unitProgress: unitProgress, levelProgress: levelProgress, nextLesson: nextLesson, nextOpenLesson: nextOpenLesson,
+    unitProgress: unitProgress, levelProgress: levelProgress, nextLesson: nextLesson, nextOpenLesson: nextOpenLesson, findNextLesson: findNextLesson,
     registerLevel: Registry.registerLevel, addUnits: Registry.addUnits, getLesson: Registry.getLesson,
     loadLevelData: Registry.loadLevelData, setLanguage: Registry.setLanguage,
     exportState: Store.exportState, importState: Store.importState, resetState: resetState,

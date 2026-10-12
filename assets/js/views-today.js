@@ -106,6 +106,11 @@
     document.querySelector(".js-start").addEventListener("click", function () { przebieg(s); });
     var nb = document.querySelector(".js-next-lesson");
     if (nb) nb.addEventListener("click", function () { App.go("lezione", { id: next.lesson.id }); });
+    /* No next lesson among the loaded levels: it may sit in one not loaded
+       yet. Redraw once it is found, if the student is still here. */
+    if (!next) Core.findNextLesson(function (n) {
+      if (n && Router.current.route === "oggi" && !document.querySelector(".js-next-lesson")) Views.oggi();
+    });
   };
 
   /* ---------------- The run ---------------- */
@@ -184,7 +189,12 @@
     function koniec() {
       Core.state.session = { date: dzis(), score: dobre, total: wszystkie };
       Core.save();
-      var next = Core.nextOpenLesson();
+      Core.findNextLesson(function (next) { podsumowanie(next); });
+      App.refreshRail();
+    }
+
+    function podsumowanie(next) {
+      if (!box.isConnected) return;   // the student left before a level finished loading
       box.innerHTML = '<div class="summary"><div class="summary__score">' + dobre + "/" + wszystkie + "</div>" +
         '<p class="summary__msg">' + esc(t("today.done")) + "</p>" +
         (zgubione ? '<p class="summary__msg">' + esc(t("err.gone", { n: zgubione })) + "</p>" : "") +
@@ -195,7 +205,6 @@
       var b = box.querySelector(".js-lesson");
       if (b) b.addEventListener("click", function () { App.go("lezione", { id: next.lesson.id }); });
       box.querySelector(".js-path").addEventListener("click", function () { App.go("percorso"); });
-      App.refreshRail();
     }
 
     zadanie();

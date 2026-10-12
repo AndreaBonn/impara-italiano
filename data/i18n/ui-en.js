@@ -1077,6 +1077,7 @@ LINGUAI.addUI("en", {
   "today.continue": "Continue →",
   "today.streak": { one: "{n} day in a row · your best: {best}", other: "{n} days in a row · your best: {best}" },
   "path.showLessons": "Show the lessons",
-  "path.hideLessons": "Hide the lessons"
+  "path.hideLessons": "Hide the lessons",
+  "welcome.langLabel": "Explanations in:"
 
 });

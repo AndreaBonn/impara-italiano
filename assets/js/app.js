@@ -171,6 +171,7 @@
     if (lang === Core.state.settings.lang) return;
     App.applyLang(lang);
   }
+  App.switchLang = switchLang;
 
   /**
    * Applies the language and theme from the state onto the interface.

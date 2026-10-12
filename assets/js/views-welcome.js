@@ -32,8 +32,19 @@
       '<button class="btn ' + klasaPrzycisku + ' js-' + klucz + '">' + esc(etykieta) + "</button></div>";
   }
 
+  /* On a phone the switch in the menu is out of sight, so the screen that
+     meets a newcomer offers the languages itself. Endonyms, as in the menu. */
+  function jezyki() {
+    return '<div class="welcome-lang" role="group" aria-label="' + esc(t("welcome.langLabel")) + '">' +
+      '<span class="welcome-lang__label">' + esc(t("welcome.langLabel")) + "</span>" +
+      I18n.LANGS.map(function (l) {
+        return '<button type="button" class="chip welcome-lang__opt" data-lang="' + esc(l.code) + '" aria-pressed="' +
+          (l.code === I18n.lang) + '" lang="' + esc(l.code) + '">' + esc(l.name) + "</button>";
+      }).join("") + "</div>";
+  }
+
   Views.benvenuto = function () {
-    set(pageHead(t("welcome.kicker"), t("welcome.title"), t("welcome.intro")) +
+    set(jezyki() + pageHead(t("welcome.kicker"), t("welcome.title"), t("welcome.intro")) +
       '<div class="stack">' +
       droga("zero", "btn--primary", t("welcome.zeroGo")) +
       droga("test", "btn--ghost", t("place.start")) +
@@ -47,6 +58,9 @@
     /* The choice is what ends the welcome — not the screen being shown.
        Otherwise: whoever closed the tab while reading would come back to the
        course without the one answer this screen was meant to give them. */
+    el().querySelectorAll(".welcome-lang [data-lang]").forEach(function (b) {
+      b.addEventListener("click", function () { App.switchLang(b.getAttribute("data-lang")); });
+    });
     el().querySelector(".js-zero").addEventListener("click", function () { odZera(); });
     el().querySelector(".js-test").addEventListener("click", function () { wybrano("piazzamento"); });
     el().querySelector(".js-look").addEventListener("click", function () { wybrano("percorso"); });

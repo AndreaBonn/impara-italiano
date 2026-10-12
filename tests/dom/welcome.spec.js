@@ -148,3 +148,17 @@ test("a saved choice of language beats the browser", async ({ page }) => {
   await gotowe(page);
   expect(await page.evaluate(() => window.I18n.lang)).toBe("de");
 });
+
+/* On a phone the language switch is behind the menu: whoever lands in the
+   wrong language must be able to change it where they are. */
+test("the welcome offers every language of explanation", async ({ page }) => {
+  await page.goto("/index.html");
+  await gotowe(page);
+  const wybor = page.locator(".welcome-lang [data-lang]");
+  const ile = await page.evaluate(() => window.I18n.LANGS.length);
+  await expect(wybor).toHaveCount(ile);
+  await wybor.filter({ hasText: "Español" }).click();
+  await expect.poll(() => page.evaluate(() => window.I18n.lang)).toBe("es");
+  await expect(page.locator(".js-zero")).toBeVisible();
+  await expect(page.locator('.welcome-lang [data-lang="es"]')).toHaveAttribute("aria-pressed", "true");
+});

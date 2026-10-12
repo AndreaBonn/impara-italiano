@@ -1089,6 +1089,7 @@ LINGUAI.addUI("pl", {
   "today.continue": "Dalej →",
   "today.streak": { one: "{n} dzień z rzędu · rekord: {best}", few: "{n} dni z rzędu · rekord: {best}", many: "{n} dni z rzędu · rekord: {best}", other: "{n} dni z rzędu · rekord: {best}" },
   "path.showLessons": "Pokaż lekcje",
-  "path.hideLessons": "Ukryj lekcje"
+  "path.hideLessons": "Ukryj lekcje",
+  "welcome.langLabel": "Wyjaśnienia po:"
 
 });

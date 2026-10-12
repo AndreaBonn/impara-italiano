@@ -1085,6 +1085,7 @@ LINGUAI.addUI("fr", {
   "today.continue": "Continuer →",
   "today.streak": { one: "{n} jour d'affilée · ton record : {best}", many: "{n} jours d'affilée · ton record : {best}", other: "{n} jours d'affilée · ton record : {best}" },
   "path.showLessons": "Afficher les leçons",
-  "path.hideLessons": "Masquer les leçons"
+  "path.hideLessons": "Masquer les leçons",
+  "welcome.langLabel": "Explications en :"
 
 });

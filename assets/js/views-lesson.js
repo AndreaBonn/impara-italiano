@@ -294,10 +294,14 @@
     }
 
     if (session.answered >= session.total) {
+      var wasDone = Core.isLessonDone(L.id);
       var res = Core.recordLesson(L.id, session.score, session.total, (Date.now() - session.started) / 1000);
-      /* A finished lesson puts its words in the reviews: until now only a star,
-         "add all" or a mistake did, and after two lessons the deck was empty. */
-      (L.vocab || []).forEach(function (v) { Core.addCard(v.it, v.tr, L.id); });
+      /* A lesson passed for the FIRST time puts its words in the reviews: until
+         now only a star, "add all" or a mistake did, and after two lessons the
+         deck was empty. Only then: at every run it brought back words the
+         student had deleted, and a failed run will be taken again. */
+      session.newWords = res.done && !wasDone;
+      if (session.newWords) (L.vocab || []).forEach(function (v) { Core.addCard(v.it, v.tr, L.id); });
       renderLessonEnd(res, L, U, LV);
       App.refreshRail();
     }
@@ -334,7 +338,7 @@
   /** What went wrong, each a way back to its exercise, and where the words went. */
   function recap(L) {
     var zle = LessonRun.wrong(run);
-    var n = (L.vocab || []).length;
+    var n = session.newWords ? (L.vocab || []).length : 0;
     return (zle.length ? '<div class="lesson-recap"><b>' + esc(t("lesson.end.recap")) + "</b> " + zle.map(function (i) {
       return '<button type="button" class="btn btn--quiet btn--sm" data-go="' + i + '">' +
         esc(t("lesson.exOf", { i: i + 1, n: run.answers.length })) + "</button>";

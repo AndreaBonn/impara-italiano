@@ -118,7 +118,7 @@ async function lekcjaZPolami(page) {
   });
 }
 
-test("the end lists what went wrong and puts the lesson's words in the reviews", async ({ page }) => {
+test("the end lists what went wrong, and a failed run adds no words", async ({ page }) => {
   await bezMowy(page);
   const id = await lekcjaZPolami(page);
   expect(id, "an A1 lesson answerable through fields").toBeTruthy();
@@ -129,16 +129,51 @@ test("the end lists what went wrong and puts the lesson's words in the reviews",
   const zle = await page.locator(".ex-chip.is-ko").count();
   expect(zle, "wrong text in the fields makes mistakes").toBeGreaterThan(0);
   await expect(page.locator(".lesson-recap [data-go]")).toHaveCount(zle);
+  await page.locator(".lesson-recap [data-go]").first().click();
+  await expect(page.locator(".exq:visible")).toHaveCount(1);
 
-  const brak = await page.evaluate(id => {
-    const L = window.Core.getLesson(id).lesson;
+  await expect(page.locator(".lesson-vocab-in")).toHaveCount(0);
+});
+
+/* A lesson passed for the first time puts its words in the reviews. Only
+   then: adding them at every run brought back the words a student had
+   deleted from the vocabulary, and a failed run will be taken again. The
+   score is forced through the facade so the test does not depend on
+   answering every exercise type right. */
+test("a lesson passed for the first time puts its words in the reviews, a retake does not", async ({ page }) => {
+  await bezMowy(page);
+  const id = await lekcjaZPolami(page);
+  await lezione(page, id);
+  await page.evaluate(() => {
+    const zapisz = window.Core.recordLesson;
+    window.Core.recordLesson = (lid, s, total, sec) => zapisz(lid, total, total, sec);
+  });
+  await odpowiedzNaWszystko(page);
+  await expect(page.locator(".lesson-vocab-in")).toBeVisible();
+  const brak = await page.evaluate(lid => {
+    const L = window.Core.getLesson(lid).lesson;
     return L.vocab.filter(v => !window.Core.state.srs[window.Core.cardKey(v.it)]).map(v => v.it);
   }, id);
   expect(brak, "words missing from the reviews").toEqual([]);
-  await expect(page.locator(".lesson-vocab-in")).toBeVisible();
 
-  await page.locator(".lesson-recap [data-go]").first().click();
-  await expect(page.locator(".exq:visible")).toHaveCount(1);
+  const usuniete = await page.evaluate(lid => {
+    /* The last word, not the first: a mistake still adds the lesson's first
+       four words (views-lesson.js, onAnswer), a separate older rule. */
+    const v = window.Core.getLesson(lid).lesson.vocab;
+    const it = v[v.length - 1].it;
+    delete window.Core.state.srs[window.Core.cardKey(it)];
+    return it;
+  }, id);
+  await page.evaluate(lid => window.App.go("lezione", { id: lid }), id);
+  await page.waitForSelector(".exq");
+  await page.evaluate(() => {
+    const zapisz = window.Core.recordLesson;
+    window.Core.recordLesson = (lid, s, total, sec) => zapisz(lid, total, total, sec);
+  });
+  await odpowiedzNaWszystko(page);
+  await expect(page.locator(".summary")).toBeVisible();
+  expect(await page.evaluate(it => !!window.Core.state.srs[window.Core.cardKey(it)], usuniete),
+    "a deleted word stays deleted after a retake").toBe(false);
 });
 
 /* On a phone the grammar table scrolls sideways; a scrolling region that

@@ -1092,6 +1092,8 @@ LINGUAI.addUI("en", {
   "lesson.chipKo": "Exercise {i}: wrong",
   "lesson.end.recap": "Worth another look:",
   "lesson.end.vocabIn": { one: "The word from this lesson is now in your reviews.", other: "The {n} words from this lesson are now in your reviews." },
-  "train.notYet": "not studied yet"
+  "train.notYet": "not studied yet",
+  "nav.more": "More",
+  "nav.bottomLabel": "Quick navigation"
 
 });

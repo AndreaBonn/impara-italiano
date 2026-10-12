@@ -1100,6 +1100,8 @@ LINGUAI.addUI("es", {
   "lesson.chipKo": "Ejercicio {i}: mal",
   "lesson.end.recap": "Vale la pena repasar:",
   "lesson.end.vocabIn": { one: "La palabra de esta lección ya está en tus repasos.", many: "Las {n} palabras de esta lección ya están en tus repasos.", other: "Las {n} palabras de esta lección ya están en tus repasos." },
-  "train.notYet": "aún no estudiado"
+  "train.notYet": "aún no estudiado",
+  "nav.more": "Más",
+  "nav.bottomLabel": "Navegación rápida"
 
 });

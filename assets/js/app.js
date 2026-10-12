@@ -20,7 +20,7 @@
   App.go = function (route, params) { Router.go(route, params); };
 
   function markRail(route) {
-    document.querySelectorAll(".rail__item").forEach(function (b) {
+    document.querySelectorAll(".rail__item, .bottom-nav__item[data-route]").forEach(function (b) {
       var r = b.getAttribute("data-route");
       if (r === route || (route === "lezione" && r === "percorso")) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
@@ -214,9 +214,10 @@
     renderLangPicker();
     App.refreshRail();
 
-    document.querySelectorAll(".rail__item").forEach(function (b) {
+    document.querySelectorAll(".rail__item, .bottom-nav__item[data-route]").forEach(function (b) {
       b.addEventListener("click", function () { App.go(b.getAttribute("data-route")); });
     });
+    document.querySelector(".bottom-nav .js-more").addEventListener("click", openRail);
     document.getElementById("railStats").addEventListener("click", function () { App.go("progressi"); });
     document.getElementById("railToggle").addEventListener("click", function () {
       document.getElementById("rail").classList.contains("is-open") ? closeRail() : openRail();

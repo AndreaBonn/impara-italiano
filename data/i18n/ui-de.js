@@ -1095,6 +1095,8 @@ LINGUAI.addUI("de", {
   "lesson.chipKo": "Aufgabe {i}: falsch",
   "lesson.end.recap": "Lohnt einen zweiten Blick:",
   "lesson.end.vocabIn": { one: "Das Wort aus dieser Lektion ist jetzt in deinen Wiederholungen.", other: "Die {n} Wörter aus dieser Lektion sind jetzt in deinen Wiederholungen." },
-  "train.notYet": "noch nicht gelernt"
+  "train.notYet": "noch nicht gelernt",
+  "nav.more": "Mehr",
+  "nav.bottomLabel": "Schnellnavigation"
 
 });

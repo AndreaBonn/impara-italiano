@@ -1104,6 +1104,8 @@ LINGUAI.addUI("pl", {
   "lesson.chipKo": "Zadanie {i}: błąd",
   "lesson.end.recap": "Warto wrócić do:",
   "lesson.end.vocabIn": { one: "Słówko z tej lekcji jest już w powtórkach.", few: "{n} słówka z tej lekcji są już w powtórkach.", many: "{n} słówek z tej lekcji jest już w powtórkach.", other: "{n} słówek z tej lekcji jest już w powtórkach." },
-  "train.notYet": "jeszcze nie przerobione"
+  "train.notYet": "jeszcze nie przerobione",
+  "nav.more": "Więcej",
+  "nav.bottomLabel": "Szybka nawigacja"
 
 });

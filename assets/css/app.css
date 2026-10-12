@@ -487,6 +487,7 @@ button{font:inherit;color:inherit;}
 .rail__theme:hover{background:oklch(0 0 0 / .26);}
 
 .rail-toggle{display:none;}
+.bottom-nav{display:none;}
 .rail__scrim{display:none;}
 
 /* ══════════════════ MAIN ══════════════════ */
@@ -1147,6 +1148,19 @@ mark{background:var(--oro);color:var(--on-oro);border-radius:3px;padding:0 2px;}
   /* The heading took half the first screen: the introduction folds to two
      lines and opens with the button views.js shows when it overflows. */
   .view-head{margin-bottom:20px;}
+  /* Above the content, below the open menu's scrim (35) and toggle (45). */
+  .bottom-nav{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;
+    background:var(--paper-2);border-top:1px solid var(--line);box-shadow:0 -2px 10px oklch(0.211 0.007 67 / .08);
+    padding:4px 4px calc(4px + env(safe-area-inset-bottom));
+  }
+  .bottom-nav__item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;min-height:52px;justify-content:center;
+    background:none;border:0;border-radius:var(--r-m);font:inherit;font-size:.72rem;font-weight:700;color:var(--ink-soft);cursor:pointer;
+  }
+  .bottom-nav__item[aria-current="page"]{color:var(--salvia-deep);background:var(--salvia);}
+  .toast-stack{bottom:84px;}
+  .site-foot{padding-bottom:84px;}
   .view-head h1{font-size:1.6rem;margin-bottom:6px;}
   .view-head__intro:not(.is-open){display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 }

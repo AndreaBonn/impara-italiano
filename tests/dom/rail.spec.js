@@ -66,3 +66,25 @@ test("on a phone the open menu does not hide the course name under the button", 
     przycisk.y < nazwa.y + nazwa.height && nazwa.y < przycisk.y + przycisk.height;
   expect(zachodzi, `button ${JSON.stringify(przycisk)} over name ${JSON.stringify(nazwa)}`).toBe(false);
 });
+
+/* On a phone every move went through the round button and an eighteen-entry
+   menu; the three daily screens are now one tap away at the bottom. */
+test("on a phone a bottom bar leads to the daily screens and opens the menu", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await otworz(page);
+  const pasek = page.locator(".bottom-nav");
+  await expect(pasek).toBeVisible();
+  await expect(pasek.locator("[data-route]")).toHaveCount(3);
+  await pasek.locator('[data-route="ripasso"]').click();
+  await expect(page).toHaveURL(/#\/ripasso/);
+  await expect(pasek.locator('[data-route="ripasso"]')).toHaveAttribute("aria-current", "page");
+  await pasek.locator(".js-more").click();
+  await expect(page.locator("#rail")).toHaveClass(/is-open/);
+});
+
+test("on a desktop there is no bottom bar", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await otworz(page);
+  await expect(page.locator(".bottom-nav")).toBeHidden();
+  await expect(page.locator(".rail")).toBeVisible();
+});

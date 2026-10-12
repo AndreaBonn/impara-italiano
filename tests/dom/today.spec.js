@@ -38,13 +38,18 @@ test("the session has something to offer even when nothing is due", async ({ pag
   await expect(page.locator(".exq")).toBeVisible();
 });
 
-test("the session lists three parts and counts them", async ({ page }) => {
+/* A part with nothing in it is a sentence, not a row with a zero: two of
+   three rows used to say "0". */
+test("the session lists only the parts that hold something, and counts them", async ({ page }) => {
   await oggi(page);
-  await expect(page.locator(".list-row")).toHaveCount(3);
+  await expect(page.locator(".stack .list-row")).toHaveCount(1);
+  await expect(page.locator(".today-quiet")).toBeVisible();
 
   await zalegleBledy(page, 3);
   await page.reload();
   await page.waitForSelector(".js-start");
+  await expect(page.locator(".stack .list-row")).toHaveCount(2);
+  await expect(page.locator(".today-quiet")).toHaveCount(0);
 
   const etykieta = await page.locator(".js-start").innerText();
   expect(etykieta, "the button carries the number of tasks").toMatch(/\d/);
@@ -119,7 +124,7 @@ test("a closed session is recorded under today's date", async ({ page }) => {
 
   await page.reload();
   await page.waitForSelector(".list-row");
-  await expect(page.locator(".card").first(), "the notice about a closed session").toBeVisible();
+  await expect(page.locator(".today-done"), "the notice about a closed session").toBeVisible();
 });
 
 test("rail prowadzi do sesji dnia", async ({ page }) => {
@@ -145,4 +150,84 @@ test("the daily session strings exist in five languages", async ({ page }) => {
     return out;
   });
   expect(braki, JSON.stringify(braki)).toEqual({});
+});
+
+/** A profile written before the engine reads it. */
+async function profil(page, p) {
+  await page.addInitScript(x => {
+    if (sessionStorage.getItem("seeded")) return;
+    localStorage.setItem("linguai.italiano.v2", JSON.stringify(x));
+    sessionStorage.setItem("seeded", "1");
+  }, p);
+}
+
+function zdane(ids, extra) {
+  const lessons = {};
+  ids.forEach((id, i) => { lessons[id] = { attempts: 1, score: 9, total: 10, best: 0.9, done: true, ts: i + 1 }; });
+  return Object.assign({ schema: 2, onboarded: true, settings: { lang: "en" }, lessons,
+    stats: { correct: 9, wrong: 1, lessonsDone: ids.length, days: {} } }, extra || {});
+}
+
+/* Today used to only revise: the next lesson showed up as a pointer at the
+   END of the session, so whoever used only Today stopped learning new things. */
+test("the next lesson leads the screen", async ({ page }) => {
+  await profil(page, zdane(["a1-u01-l1", "a1-u01-l2"]));
+  await oggi(page);
+  const karta = page.locator(".today-next");
+  await expect(karta).toBeVisible();
+  const nastepna = await page.evaluate(() => window.Core.nextOpenLesson().lesson);
+  await expect(karta).toContainText(nastepna.titleIt);
+  const yKarta = (await karta.boundingBox()).y;
+  const yStart = (await page.locator(".js-start").boundingBox()).y;
+  expect(yKarta).toBeLessThan(yStart);
+  await karta.locator(".js-next-lesson").click();
+  await expect(page).toHaveURL(new RegExp("#/lezione\\?id=" + nastepna.id));
+});
+
+/* Without mistakes the drill came from a rotation over every topic, numbers
+   included, for a student who had not reached them. */
+test("without mistakes the drill comes from a lesson already passed", async ({ page }) => {
+  await profil(page, zdane(["a1-u01-l1", "a1-u01-l2", "a1-u01-l3", "a1-u01-l4", "a1-u02-l1", "a1-u02-l2"]));
+  await oggi(page);
+  const wiersz = page.locator(".stack .list-row").first();
+  const etykiety = await page.evaluate(() => ["numeri", "date"].map(id => window.Train.topicLabel(id)));
+  const tekst = await wiersz.innerText();
+  expect(etykiety.some(e => tekst.indexOf(e) >= 0), tekst).toBe(true);
+});
+
+test("a student who passed nothing yet gets the drill as a declared preview", async ({ page }) => {
+  await profil(page, zdane([]));
+  await oggi(page);
+  await expect(page.locator(".stack .list-row").first()).toContainText(
+    await page.evaluate(() => window.I18n.t("today.drillPreview")));
+});
+
+/* The intro promised "your weakest point" also when there was none. */
+test("the intro only promises a weak point when there are mistakes", async ({ page }) => {
+  await oggi(page);
+  const [cichy, zwykly] = await page.evaluate(() => [window.I18n.t("today.introQuiet"), window.I18n.t("today.intro")]);
+  await expect(page.locator(".view-head")).toContainText(cichy);
+  await zalegleBledy(page, 2);
+  await page.reload();
+  await page.waitForSelector(".js-start");
+  await expect(page.locator(".view-head")).toContainText(zwykly);
+});
+
+test("the streak is named on Today, and only when there is one", async ({ page }) => {
+  await profil(page, zdane(["a1-u01-l1"], { streak: { count: 4, lastDay: "2000-01-01", best: 5 } }));
+  await oggi(page);
+  const pasek = page.locator(".today-streak");
+  await expect(pasek).toBeVisible();
+  await expect(pasek).toContainText("5");
+});
+
+test("a profile with no streak shows no streak line", async ({ page }) => {
+  await profil(page, zdane([], { streak: { count: 0, lastDay: null, best: 0 } }));
+  await page.goto("/index.html#/oggi");
+  await page.waitForFunction(() => window.Views && window.Views.oggi);
+  await page.waitForSelector(".js-start");
+  /* touchDay() at start begins today's streak at one; reset it to see the empty case. */
+  await page.evaluate(() => { window.Core.state.streak.count = 0; window.App.go("percorso"); window.App.go("oggi"); });
+  await page.waitForSelector(".js-start");
+  await expect(page.locator(".today-streak")).toHaveCount(0);
 });

@@ -716,6 +716,11 @@ button{font:inherit;color:inherit;}
    "pick up where you left off". */
 .card-eyebrow{margin:0 0 4px;font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--salvia-deep);}
 .review-start{margin-bottom:16px;}
+.today-next{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px;border-color:var(--salvia-deep);}
+.today-next__txt{flex:1;min-width:0;}
+.today-next h3{margin:0 0 2px;}
+.today-streak{margin:-6px 0 14px;font-size:.9rem;font-weight:600;color:var(--ink-soft);}
+.today-quiet{margin:0 0 18px;}
 .review-start h3{margin:0 0 4px;}
 .review-algo{margin-top:10px;font-size:.85rem;}
 .review-algo summary{cursor:pointer;font-weight:600;}

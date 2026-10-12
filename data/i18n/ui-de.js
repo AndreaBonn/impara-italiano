@@ -1070,6 +1070,14 @@ LINGUAI.addUI("de", {
   "review.nothingDue": "Noch nichts fällig",
   "review.practiseDone": { one: "Übe die Wörter aus deiner abgeschlossenen Lektion", other: "Übe die Wörter aus deinen {n} abgeschlossenen Lektionen" },
   "review.practiseHint": "Fünf Minuten, höchstens {n} neue Wörter am Tag.",
-  "review.practiseGo": "Fünf Minuten starten"
+  "review.practiseGo": "Fünf Minuten starten",
+  "today.introQuiet": "Noch keine Fehler zu verbessern: ein Training zu dem, was du schon gelernt hast, dann die Karten.",
+  "today.quietBoth": "Heute keine Fehler zu verbessern und keine Karten fällig.",
+  "today.drillWeak": "dort, wo du die meisten Fehler machst",
+  "today.drillStudied": "aus einer Lektion, die du bestanden hast",
+  "today.drillPreview": "ein Vorgeschmack auf das, was kommt",
+  "today.nextEyebrow": "Nächste Lektion",
+  "today.continue": "Weiter →",
+  "today.streak": { one: "{n} Tag in Folge · dein Rekord: {best}", other: "{n} Tage in Folge · dein Rekord: {best}" }
 
 });

@@ -1067,6 +1067,14 @@ LINGUAI.addUI("en", {
   "review.nothingDue": "Nothing due yet",
   "review.practiseDone": { one: "Practice the words from the lesson you finished", other: "Practice the words from the {n} lessons you finished" },
   "review.practiseHint": "Five minutes, at most {n} new words a day.",
-  "review.practiseGo": "Start five minutes"
+  "review.practiseGo": "Start five minutes",
+  "today.introQuiet": "Nothing to fix from your mistakes yet: a drill on what you have already studied, then flashcards.",
+  "today.quietBoth": "No mistakes to fix and no flashcards due today.",
+  "today.drillWeak": "where you make the most mistakes",
+  "today.drillStudied": "from a lesson you have passed",
+  "today.drillPreview": "a preview of what comes next",
+  "today.nextEyebrow": "Next lesson",
+  "today.continue": "Continue →",
+  "today.streak": { one: "{n} day in a row · your best: {best}", other: "{n} days in a row · your best: {best}" }
 
 });

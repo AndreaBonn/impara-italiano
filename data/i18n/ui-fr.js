@@ -1075,6 +1075,14 @@ LINGUAI.addUI("fr", {
   "review.nothingDue": "Rien à réviser pour l'instant",
   "review.practiseDone": { one: "Entraîne-toi sur les mots de la leçon terminée", many: "Entraîne-toi sur les mots des {n} leçons terminées", other: "Entraîne-toi sur les mots des {n} leçons terminées" },
   "review.practiseHint": "Cinq minutes, au plus {n} mots nouveaux par jour.",
-  "review.practiseGo": "Lancer cinq minutes"
+  "review.practiseGo": "Lancer cinq minutes",
+  "today.introQuiet": "Pas encore d'erreurs à corriger : un entraînement sur ce que tu as déjà étudié, puis les cartes.",
+  "today.quietBoth": "Aujourd'hui, aucune erreur à corriger et aucune carte à réviser.",
+  "today.drillWeak": "là où tu te trompes le plus",
+  "today.drillStudied": "d'une leçon que tu as réussie",
+  "today.drillPreview": "un avant-goût de la suite",
+  "today.nextEyebrow": "Prochaine leçon",
+  "today.continue": "Continuer →",
+  "today.streak": { one: "{n} jour d'affilée · ton record : {best}", many: "{n} jours d'affilée · ton record : {best}", other: "{n} jours d'affilée · ton record : {best}" }
 
 });

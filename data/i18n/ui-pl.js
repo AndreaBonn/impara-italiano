@@ -1079,6 +1079,14 @@ LINGUAI.addUI("pl", {
   "review.nothingDue": "Na razie nic do powtórki",
   "review.practiseDone": { one: "Przećwicz słówka z ukończonej lekcji", few: "Przećwicz słówka z {n} ukończonych lekcji", many: "Przećwicz słówka z {n} ukończonych lekcji", other: "Przećwicz słówka z {n} ukończonych lekcji" },
   "review.practiseHint": "Pięć minut, najwyżej {n} nowych słówek dziennie.",
-  "review.practiseGo": "Zacznij pięć minut"
+  "review.practiseGo": "Zacznij pięć minut",
+  "today.introQuiet": "Na razie nie ma pomyłek do poprawienia: trening z tego, co już przerobiłeś, a na koniec fiszki.",
+  "today.quietBoth": "Dziś nie ma pomyłek do poprawienia ani fiszek do powtórki.",
+  "today.drillWeak": "tam, gdzie mylisz się najczęściej",
+  "today.drillStudied": "z lekcji, którą już zaliczyłeś",
+  "today.drillPreview": "zapowiedź tego, co przyjdzie",
+  "today.nextEyebrow": "Następna lekcja",
+  "today.continue": "Dalej →",
+  "today.streak": { one: "{n} dzień z rzędu · rekord: {best}", few: "{n} dni z rzędu · rekord: {best}", many: "{n} dni z rzędu · rekord: {best}", other: "{n} dni z rzędu · rekord: {best}" }
 
 });

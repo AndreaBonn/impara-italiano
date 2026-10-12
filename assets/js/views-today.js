@@ -35,27 +35,42 @@
     var bledy = Errors.due(PLAN.errors);
     var fiszki = Core.dueCards(PLAN.cards);
     /* The drill topic is chosen where the student has the most open cards:
-       training is meant to hammer at a weak spot, not to draw at random. */
+       training is meant to hammer at a weak spot, not to draw at random.
+       Without one, it comes from a lesson already passed (Drills.pickTopic). */
     var wg = Errors.byTag();
     var najslabszy = Object.keys(wg).sort(function (a, b) { return wg[b].length - wg[a].length; })[0];
-    var topic = Drills.TOPICS.filter(function (x) { return x.tag === najslabszy; })[0] ||
-      Drills.TOPICS[Math.floor(Date.now() / 86400000) % Drills.TOPICS.length];
-    var drille = Drills.session(topic.id, PLAN.drills, "oggi-" + dzis());
-    return { bledy: bledy, fiszki: fiszki, drille: drille, topic: topic };
+    var wybor = Drills.pickTopic({
+      weakTag: najslabszy || null,
+      isDone: Core.isLessonDone,
+      day: Math.floor(Date.now() / 86400000)
+    });
+    var drille = Drills.session(wybor.topic.id, PLAN.drills, "oggi-" + dzis());
+    return { bledy: bledy, fiszki: fiszki, drille: drille, topic: wybor.topic, why: wybor.why };
   }
 
-  function nastepnaLekcja() {
-    var levels = Core.registry.levels;
-    for (var i = 0; i < levels.length; i++) {
-      var n = Core.nextLesson(levels[i]);
-      if (n) return n;
-    }
-    return null;
-  }
-
-  function wiersz(label, n) {
-    return '<div class="list-row"><span class="list-row__main"><b>' + esc(label) + "</b></span>" +
+  function wiersz(label, n, sub) {
+    return '<div class="list-row"><span class="list-row__main"><b>' + esc(label) + "</b>" +
+      (sub ? "<span>" + esc(sub) + "</span>" : "") + "</span>" +
       '<span class="chip' + (n ? " chip--green" : "") + '">' + n + "</span></div>";
+  }
+
+  /* Today used to only revise, with the new lesson as a pointer at the END:
+     whoever used only this screen stopped learning anything new. */
+  function kartaLekcji(next) {
+    if (!next) return "";
+    var L = next.lesson;
+    var opis = [next.unit && next.unit.title, L.title].filter(Boolean).join(" · ");
+    return '<div class="card today-next"><div class="today-next__txt">' +
+      '<p class="card-eyebrow">' + esc(t("today.nextEyebrow")) + "</p>" +
+      "<h3>" + esc(L.titleIt || L.title) + "</h3>" +
+      (opis ? '<p class="exq__sub">' + esc(opis) + "</p>" : "") + "</div>" +
+      '<button class="btn btn--primary js-next-lesson">' + esc(t("today.continue")) + "</button></div>";
+  }
+
+  function pasekSerii() {
+    var st = Core.state.streak;
+    if (!st || !st.count) return "";
+    return '<p class="today-streak">' + esc(t("today.streak", { n: st.count, best: Math.max(st.best || 0, st.count) })) + "</p>";
   }
 
   Views.oggi = function () {
@@ -63,14 +78,23 @@
     var razem = s.bledy.length + s.drille.length + s.fiszki.length;
     var zrobione = (Core.state.session || {}).date === dzis();
 
-    set(pageHead(t("today.kicker"), t("today.title"), t("today.intro")) +
+    var next = Core.nextOpenLesson();
+    var DRILL_SUB = { weak: "today.drillWeak", studied: "today.drillStudied", preview: "today.drillPreview" };
+
+    /* The intro promises "your weakest point" only when there are mistakes to
+       draw it from; otherwise it says what the session really is. */
+    set(pageHead(t("today.kicker"), t("today.title"), t(s.bledy.length ? "today.intro" : "today.introQuiet")) +
       Views.shell.guideLink("oggi") +
-      (zrobione ? '<div class="card" style="margin-bottom:18px"><p>' + esc(t("today.alreadyDone")) + "</p></div>" : "") +
-      '<div class="stack" style="margin-bottom:20px">' +
-      wiersz(t("today.partErrors"), s.bledy.length) +
-      wiersz(t("today.partDrills", { topic: Train.topicLabel(s.topic.id) }), s.drille.length) +
-      wiersz(t("today.partCards"), s.fiszki.length) +
+      pasekSerii() +
+      kartaLekcji(next) +
+      (zrobione ? '<div class="card today-done" style="margin-bottom:18px"><p>' + esc(t("today.alreadyDone")) + "</p></div>" : "") +
+      /* A part with nothing in it is not a row with a zero. */
+      '<div class="stack" style="margin-bottom:12px">' +
+      (s.bledy.length ? wiersz(t("today.partErrors"), s.bledy.length) : "") +
+      wiersz(t("today.partDrills", { topic: Train.topicLabel(s.topic.id) }), s.drille.length, t(DRILL_SUB[s.why])) +
+      (s.fiszki.length ? wiersz(t("today.partCards"), s.fiszki.length) : "") +
       "</div>" +
+      (s.bledy.length || s.fiszki.length ? "" : '<p class="exq__sub today-quiet">' + esc(t("today.quietBoth")) + "</p>") +
       /* There is no empty state here and there cannot be one: generated
          tasks are always available, so the session always has something to
          fill ten minutes with. That is its whole reason to exist — "nothing
@@ -80,6 +104,8 @@
       '<div id="todayBox" style="margin-top:20px"></div>');
 
     document.querySelector(".js-start").addEventListener("click", function () { przebieg(s); });
+    var nb = document.querySelector(".js-next-lesson");
+    if (nb) nb.addEventListener("click", function () { App.go("lezione", { id: next.lesson.id }); });
   };
 
   /* ---------------- The run ---------------- */
@@ -158,7 +184,7 @@
     function koniec() {
       Core.state.session = { date: dzis(), score: dobre, total: wszystkie };
       Core.save();
-      var next = nastepnaLekcja();
+      var next = Core.nextOpenLesson();
       box.innerHTML = '<div class="summary"><div class="summary__score">' + dobre + "/" + wszystkie + "</div>" +
         '<p class="summary__msg">' + esc(t("today.done")) + "</p>" +
         (zgubione ? '<p class="summary__msg">' + esc(t("err.gone", { n: zgubione })) + "</p>" : "") +

@@ -1075,6 +1075,14 @@ LINGUAI.addUI("es", {
   "review.nothingDue": "Nada pendiente todavía",
   "review.practiseDone": { one: "Practica las palabras de la lección que terminaste", many: "Practica las palabras de las {n} lecciones que terminaste", other: "Practica las palabras de las {n} lecciones que terminaste" },
   "review.practiseHint": "Cinco minutos, como mucho {n} palabras nuevas al día.",
-  "review.practiseGo": "Empezar cinco minutos"
+  "review.practiseGo": "Empezar cinco minutos",
+  "today.introQuiet": "Todavía no hay fallos que corregir: un entrenamiento de lo que ya estudiaste y, al final, las tarjetas.",
+  "today.quietBoth": "Hoy no hay fallos que corregir ni tarjetas pendientes.",
+  "today.drillWeak": "donde más te equivocas",
+  "today.drillStudied": "de una lección que ya aprobaste",
+  "today.drillPreview": "un adelanto de lo que viene",
+  "today.nextEyebrow": "Próxima lección",
+  "today.continue": "Continuar →",
+  "today.streak": { one: "{n} día seguido · tu récord: {best}", many: "{n} días seguidos · tu récord: {best}", other: "{n} días seguidos · tu récord: {best}" }
 
 });

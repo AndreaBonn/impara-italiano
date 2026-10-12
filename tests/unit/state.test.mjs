@@ -797,11 +797,67 @@ describe("the review log", () => {
     assert.deepEqual(box.stored(KEY).lessons, lessons);
   });
 
-  /* store.js:265 and CLAUDE.md say the review journal gives way AFTER the
-     mistakes and drills; pruneCandidates() scores it 500, above most mistake
-     cards, so today it goes first. Which one is right is an open decision,
-     and a test pinning either would turn a guess into a requirement. */
-  test.todo("the pruning order between journal, drills and mistakes follows the documented one");
+  /* The order is a decision, not an accident (store.js pruneCandidates):
+     drill counters are worth nothing, the journal's oldest half has no
+     consumer today, and every card left in the notebook is an open weakness
+     because cards leave it at GRADUATE_REPS. One refused save prunes one
+     batch of 20, so a single batch shows the whole ranking. */
+  test("pruning takes drills, then the journal's oldest half, then the best-mastered mistakes", () => {
+    const storage = makeStorage();
+    const box = loadEngine({ storage });
+    box.Core.load();
+    for (let i = 0; i < 5; i++) box.Core.state.drills["d" + i] = { attempts: 1 };
+    for (let i = 0; i < 300; i++) box.Core.state.reviews.push({ k: "k" + i, t: i, q: 4 });
+    for (let i = 0; i < 15; i++) box.Core.state.errors["m" + i] = { kind: "authored", reps: 1, lapses: 0, ts: i };
+    for (let i = 0; i < 15; i++) box.Core.state.errors["w" + i] = { kind: "authored", reps: 0, lapses: 2, ts: i };
+    let refusals = 0;
+    const setItem = storage.setItem;
+    storage.setItem = (key, value) => {
+      if (refusals++ === 0) {
+        const error = new Error("QuotaExceededError");
+        error.name = "QuotaExceededError";
+        throw error;
+      }
+      setItem(key, value);
+    };
+    box.Core.save();
+    box.flush();
+
+    const saved = box.stored(KEY);
+    assert.deepEqual(Object.keys(saved.drills), [], "drills go first");
+    assert.equal(saved.reviews.length, 150, "the journal is halved in the same batch");
+    assert.equal(saved.reviews[0].k, "k150", "and loses its oldest entries");
+    const left = Object.keys(saved.errors).sort();
+    const weak = Array.from({ length: 15 }, (_, i) => "w" + i).sort();
+    assert.deepEqual(left, ["m14", ...weak].sort(),
+      "14 best-mastered cards (oldest first) fill the batch; every weak card stays");
+  });
+
+  /* Within one batch drills and journal both go, so their relative order
+     only shows when the drills alone fill the batch. */
+  test("while drill counters fill a batch the journal is left whole", () => {
+    const storage = makeStorage();
+    const box = loadEngine({ storage });
+    box.Core.load();
+    for (let i = 0; i < 25; i++) box.Core.state.drills["d" + i] = { attempts: 1 };
+    for (let i = 0; i < 300; i++) box.Core.state.reviews.push({ k: "k" + i, t: i, q: 4 });
+    let refusals = 0;
+    const setItem = storage.setItem;
+    storage.setItem = (key, value) => {
+      if (refusals++ === 0) {
+        const error = new Error("QuotaExceededError");
+        error.name = "QuotaExceededError";
+        throw error;
+      }
+      setItem(key, value);
+    };
+    box.Core.save();
+    box.flush();
+
+    const saved = box.stored(KEY);
+    assert.equal(Object.keys(saved.drills).length, 5, "a batch of 20 drills went");
+    assert.equal(saved.reviews.length, 300, "the journal was not reached");
+  });
 });
 
 /* ============================================================

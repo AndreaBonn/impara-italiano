@@ -247,8 +247,15 @@
    * sentences the student wrote, the only content in this file nobody can
    * reconstruct.
    *
-   * Order: best-mastered cards first (long correct streak, few lapses,
-   * added long ago), because they are the closest to leaving circulation.
+   * Order, highest score first: drill counters, then the older half of the
+   * review journal, then mistake cards. Among the cards the best-mastered go
+   * first (more correct reps, fewer lapses, added long ago), because they are
+   * the closest to leaving circulation.
+   *
+   * Mistake cards come last because every card still in the notebook is an
+   * open weakness: a card leaves the deck at Errors.GRADUATE_REPS (2) correct
+   * reps, so none of them is "mastered" in any wider sense, and a dropped
+   * card comes back only if the student repeats that exact mistake.
    */
   function pruneCandidates() {
     var out = [];
@@ -262,11 +269,15 @@
     Object.keys(state.drills).forEach(function (k) {
       out.push({ bag: "drills", key: k, score: 1000 });   // counters only, reproducible
     });
-    /* The review journal gives way AFTER mistakes and drills, because those
-       come back by themselves through further study and it does not. It
-       gives way before lesson progress and compositions, though: it is input
-       for tuning that does not exist yet, while those are study the learner
-       has already done. */
+    /* The review journal gives way after the drill counters and BEFORE the
+       mistake cards. Its consumer today reads only recent entries (the new
+       words counted for the current day), its real consumer - FSRS tuning -
+       does not exist yet, and pruning drops the OLDEST half, the same end
+       srs.js already trims at MAX_REVIEWS. It is also the heaviest bag, so
+       one step frees what dozens of cards would. It never outranks lesson
+       progress or compositions: those are not candidates at all.
+       Known edge: if pruning removes a card's first review, the day counter
+       may take that card for new today. */
     if (Array.isArray(state.reviews) && state.reviews.length) {
       out.push({ bag: "reviews", key: "", score: 500 });
     }

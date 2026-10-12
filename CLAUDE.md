@@ -660,9 +660,14 @@ istniejącego pola (tak było przy v1 → v2). Bump „na wszelki wypadek" odrzu
 plik wyeksportowany przez ucznia do tej pory; `importState` przyjmuje `schema <= SCHEMA`
 i dokłada migracje po drodze.
 
-**Przy pełnej pamięci potarcie wyrzuca to, co wraca samo**: najpierw karty najlepiej
-opanowane, potem liczniki drilli. Nigdy postępów lekcji ani wypracowań — tych uczeń nie
-odtworzy dalszą nauką.
+**Przy pełnej pamięci potarcie idzie od tego, co najmniej warte dla ucznia teraz**:
+najpierw liczniki drilli, potem starsza połowa dziennika powtórek, na końcu karty
+quaderno (wśród nich najpierw najlepiej opanowane). Nigdy postępów lekcji ani wypracowań —
+tych uczeń nie odtworzy dalszą nauką. Karty błędów idą na koniec, bo w talii nie ma kart
+„opanowanych": karta wypada z niej po `Errors.GRADUATE_REPS` (2) dobrych odpowiedziach,
+więc każda, która została, to otwarta słabość. Dziennik czyta dziś tylko licznik nowych
+słów z bieżącego dnia, a strojenie FSRS, dla którego istnieje, jeszcze nie powstało.
+Pilnuje tej kolejności test w `tests/unit/state.test.mjs`.
 
 **Kopia zapasowa: dwa pola, nie jedno.** Kurs nie ma konta ani synchronizacji, więc jedyną
 kopią postępów jest plik, który uczeń sam zapisze. Co `BACKUP_EVERY` (10) UKOŃCZONYCH lekcji

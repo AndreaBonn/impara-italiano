@@ -115,3 +115,32 @@ test("the training strings exist in five languages", async ({ page }) => {
   });
   expect(braki, JSON.stringify(braki)).toEqual({});
 });
+
+/* The line under each topic was the grammar tag's title, which sometimes had
+   nothing to do with the drill: "Numbers / Word order, questions, negation".
+   An Italian sample says what is practised, in every language alike. */
+test("each topic shows an Italian sample of what it drills", async ({ page }) => {
+  await hub(page);
+  const probki = await page.evaluate(() => window.Drills.TOPICS.map(x => x.sample));
+  probki.forEach(p => expect(p, "every topic has a sample").toBeTruthy());
+  for (const p of probki) await expect(page.locator(".list-row:has(.js-topic)", { hasText: p })).toHaveCount(1);
+});
+
+/* A beginner saw the seven drills alike, with no word that some assume
+   lessons they have not reached. */
+test("a topic whose lesson is not passed says so, a passed one does not", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem("seeded")) return;
+    localStorage.setItem("linguai.italiano.v2", JSON.stringify({ schema: 2, onboarded: true,
+      lessons: { "a1-u02-l2": { attempts: 1, score: 9, total: 10, best: 0.9, done: true, ts: 1 } },
+      stats: { correct: 9, wrong: 1, lessonsDone: 1, days: {} } }));
+    sessionStorage.setItem("seeded", "1");
+  });
+  await hub(page);
+  const numeri = page.locator(".list-row:has(.js-topic[data-topic=numeri])");
+  const pronomi = page.locator(".list-row:has(.js-topic[data-topic=pronomi])");
+  await expect(numeri.locator(".train-level")).toHaveText(/A1/);
+  await expect(numeri.locator(".train-notyet")).toHaveCount(0);
+  await expect(pronomi.locator(".train-level")).toHaveText(/A2/);
+  await expect(pronomi.locator(".train-notyet")).toHaveCount(1);
+});

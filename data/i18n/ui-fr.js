@@ -1099,6 +1099,7 @@ LINGUAI.addUI("fr", {
   "lesson.chipOk": "Exercice {i} : juste",
   "lesson.chipKo": "Exercice {i} : faux",
   "lesson.end.recap": "À revoir :",
-  "lesson.end.vocabIn": { one: "Le mot de cette leçon est maintenant dans tes révisions.", many: "Les {n} mots de cette leçon sont maintenant dans tes révisions.", other: "Les {n} mots de cette leçon sont maintenant dans tes révisions." }
+  "lesson.end.vocabIn": { one: "Le mot de cette leçon est maintenant dans tes révisions.", many: "Les {n} mots de cette leçon sont maintenant dans tes révisions.", other: "Les {n} mots de cette leçon sont maintenant dans tes révisions." },
+  "train.notYet": "pas encore étudié"
 
 });

@@ -229,15 +229,16 @@
   /* `from` is the lesson that teaches what the generator asks for. The tag
      cannot say it: "numeri" carries g-frase, which the very first lesson
      already has, while numbers arrive in unit 2. Dates need the numbers and
-     the article, nothing later. */
+     the article, nothing later. `sample` is Italian, so it needs no
+     translation: it shows on the Training list what the drill asks for. */
   var TOPICS = [
-    { id: "prep-art", tag: "g-preposizioni", from: "a1-u06-l1", make: prepArt },
-    { id: "accordo", tag: "g-agg-accordo", from: "a1-u04-l1", make: accordo },
-    { id: "ausiliare", tag: "g-passato-prossimo", from: "a1-u10-l2", make: ausiliare },
-    { id: "pronomi", tag: "g-pron-diretti", from: "a2-u03-l1", make: pronomi },
-    { id: "numeri", tag: "g-frase", from: "a1-u02-l2", make: numeri },
-    { id: "date", tag: "g-articolo-det", from: "a1-u02-l2", make: date },
-    { id: "ore", tag: "g-articolo-det", from: "a1-u05-l2", make: ore }
+    { id: "prep-art", tag: "g-preposizioni", from: "a1-u06-l1", sample: "di + il = del · in + la = nella", make: prepArt },
+    { id: "accordo", tag: "g-agg-accordo", from: "a1-u04-l1", sample: "rosso, rossa, rossi, rosse", make: accordo },
+    { id: "ausiliare", tag: "g-passato-prossimo", from: "a1-u10-l2", sample: "sono andato · ho mangiato", make: ausiliare },
+    { id: "pronomi", tag: "g-pron-diretti", from: "a2-u03-l1", sample: "lo vedo · la chiamo · li compro", make: pronomi },
+    { id: "numeri", tag: "g-frase", from: "a1-u02-l2", sample: "ventuno · trentotto · cento", make: numeri },
+    { id: "date", tag: "g-articolo-det", from: "a1-u02-l2", sample: "il tre maggio · il primo giugno", make: date },
+    { id: "ore", tag: "g-articolo-det", from: "a1-u05-l2", sample: "sono le tre · è l'una", make: ore }
   ];
 
   var byId = {};

@@ -176,8 +176,14 @@
 
     set(pageHead(t("train.kicker"), t("train.title"), t("train.intro")) +
       '<div class="stack">' + Drills.TOPICS.map(function (topic) {
+        /* An Italian sample instead of the tag's title, which could be
+           unrelated ("Numbers / Word order"); the level comes from the lesson
+           that teaches the topic, and an unpassed one is said plainly. */
+        var studied = Core.isLessonDone(topic.from);
         return '<div class="list-row"><span class="list-row__main"><b>' + esc(topicLabel(topic.id)) + "</b>" +
-          "<span>" + esc(tagLabel(topic.tag)) + "</span></span>" +
+          '<span lang="it">' + esc(topic.sample) + "</span></span>" +
+          '<span class="chip chip--cefr train-level">' + esc(topic.from.slice(0, 2).toUpperCase()) + "</span>" +
+          (studied ? "" : '<span class="chip train-notyet">' + esc(t("train.notYet")) + "</span>") +
           '<button class="btn btn--primary btn--sm js-topic" data-topic="' + esc(topic.id) + '">' +
           esc(t("train.start")) + "</button></div>";
       }).join("") + "</div>" +

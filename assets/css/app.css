@@ -723,6 +723,7 @@ button{font:inherit;color:inherit;}
 .today-next h3{margin:0 0 2px;}
 .today-streak{margin:-6px 0 14px;font-size:.9rem;font-weight:600;color:var(--ink-soft);}
 .today-quiet{margin:0 0 18px;}
+.train-notyet{background:transparent;border:1px dashed var(--line-strong);color:var(--ink-soft);}
 .lesson-steps{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px;}
 .lesson-steps__btn{border:1.5px solid var(--line-strong);background:var(--paper-2);border-radius:var(--r-pill);
   padding:6px 14px;min-height:36px;font:inherit;font-size:.86rem;font-weight:700;color:var(--ink);cursor:pointer;}

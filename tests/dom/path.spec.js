@@ -53,3 +53,11 @@ test("the level button says how many lessons of it are passed", async ({ page })
   const total = await page.evaluate(() => window.Core.levelProgress(window.Core.registry.byCode.A1).total);
   await expect(page.locator('.level-pill[data-level="A1"]')).toContainText("2/" + total);
 });
+
+/* Ten buttons all reading "Show the lessons" are one name repeated for a
+   screen reader: each names its unit. */
+test("each unit toggle names its unit", async ({ page }) => {
+  await sciezka(page);
+  const nazwy = await page.locator(".js-unit-toggle").evaluateAll(bs => bs.map(b => b.textContent.trim()));
+  expect(new Set(nazwy).size).toBe(nazwy.length);
+});

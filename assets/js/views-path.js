@@ -86,7 +86,7 @@
         var open = b.getAttribute("aria-expanded") !== "true";
         b.setAttribute("aria-expanded", String(open));
         document.getElementById(b.getAttribute("aria-controls")).hidden = !open;
-        b.textContent = t(open ? "path.hideLessons" : "path.showLessons");
+        b.querySelector(".js-unit-toggle-txt").textContent = t(open ? "path.hideLessons" : "path.showLessons");
       });
     });
   };
@@ -168,7 +168,9 @@
       '<div class="unit__count"><b>' + p.done + "/" + p.total + "</b><span>" + esc(t("stats.lessons", { n: p.total })) + "</span></div>" +
       "</div>" +
       (next ? '<button type="button" class="unit__toggle js-unit-toggle" aria-expanded="' + !folded + '" aria-controls="' + esc(pathId) + '">' +
-        esc(t(folded ? "path.showLessons" : "path.hideLessons")) + "</button>" : "") +
+        '<span class="js-unit-toggle-txt">' + esc(t(folded ? "path.showLessons" : "path.hideLessons")) + "</span>" +
+        /* Ten identical "Show the lessons" read as one name repeated: the unit is named, for screen readers. */
+        '<span class="visually-hidden">: ' + esc(unit.titleIt) + "</span></button>" : "") +
       '<div class="path" id="' + esc(pathId) + '"' + (folded ? " hidden" : "") + ">" + nodes + "</div></section>";
   }
 })();

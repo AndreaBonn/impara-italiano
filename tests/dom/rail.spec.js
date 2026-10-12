@@ -88,3 +88,12 @@ test("on a desktop there is no bottom bar", async ({ page }) => {
   await expect(page.locator(".bottom-nav")).toBeHidden();
   await expect(page.locator(".rail")).toBeVisible();
 });
+
+test("the bottom bar's More says whether the menu is open", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await otworz(page);
+  const wiecej = page.locator(".bottom-nav .js-more");
+  await expect(wiecej).toHaveAttribute("aria-expanded", "false");
+  await wiecej.click();
+  await expect(wiecej).toHaveAttribute("aria-expanded", "true");
+});

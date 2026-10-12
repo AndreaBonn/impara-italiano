@@ -58,11 +58,13 @@
     document.getElementById("rail").classList.add("is-open");
     document.getElementById("railScrim").hidden = false;
     document.getElementById("railToggle").setAttribute("aria-expanded", "true");
+    document.querySelector(".bottom-nav .js-more").setAttribute("aria-expanded", "true");
   }
   function closeRail() {
     document.getElementById("rail").classList.remove("is-open");
     document.getElementById("railScrim").hidden = true;
     document.getElementById("railToggle").setAttribute("aria-expanded", "false");
+    document.querySelector(".bottom-nav .js-more").setAttribute("aria-expanded", "false");
   }
 
   function applyTheme(t) {

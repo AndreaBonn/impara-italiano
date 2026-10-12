@@ -103,7 +103,7 @@ test("every string of the tab exists in five languages", async ({ page }) => {
 
   const brakujace = await page.evaluate(async () => {
     const braki = {};
-    for (const lang of ["pl", "en", "es", "fr", "de"]) {
+    for (const lang of ["pl", "en", "es", "pt", "fr", "de"]) {
       await new Promise(r => window.Core.setLanguage(lang, r));
       window.I18n.set(lang);
       window.Core.state.errors["a1-u01-l2#deadbeefdeadbeef#0"] = {

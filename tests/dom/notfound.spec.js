@@ -23,7 +23,7 @@ const { test, expect } = require("@playwright/test");
 const PREFIKS = "/impara-italiano/";
 
 /** The five languages of explanation, in the order of I18n.LANGS. */
-const JEZYKI = ["pl", "en", "es", "fr", "de"];
+const JEZYKI = ["pl", "en", "es", "pt", "fr", "de"];
 
 /**
  * Serves the page the way Pages does: everything under the publication

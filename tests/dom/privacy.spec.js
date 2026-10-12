@@ -26,7 +26,7 @@
 const { test, expect } = require("@playwright/test");
 
 /** The five languages of explanation, in the order of I18n.LANGS. */
-const JEZYKI = ["pl", "en", "es", "fr", "de"];
+const JEZYKI = ["pl", "en", "es", "pt", "fr", "de"];
 
 async function otworz(page) {
   await page.goto("/index.html");

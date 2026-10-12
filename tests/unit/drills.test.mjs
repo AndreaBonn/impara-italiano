@@ -83,15 +83,21 @@ describe("repeatability", () => {
 });
 
 describe("nothing that leads to a recording", () => {
-  test("no generated task has a say field or a listen/speak type", () => {
-    const S = silnik();
-    S.Drills.TOPICS.forEach(topic => {
-      for (let i = 0; i < 60; i++) {
-        const { ex } = S.Drills.make(topic.id, "n" + i);
-        assert.equal(ex.say, undefined, `${topic.id} emits say`);
-        assert.ok(["listen", "speak"].indexOf(ex.t) < 0, `${topic.id} emits type ${ex.t}`);
-      }
-    });
+  test("make rejects a listening generator but accepts a written one", () => {
+    const { Drills } = silnik();
+    const topic = Drills.TOPICS[0];
+    topic.make = () => ({ t: "listen", it: "ciao", say: "ciao" });
+    assert.equal(Drills.make(topic.id, "seed"), null);
+    topic.make = () => ({ t: "fill", q: "Greeting", a: ["ciao"] });
+    assert.deepEqual(Drills.make(topic.id, "seed").ex, { t: "fill", q: "Greeting", a: ["ciao"] });
+  });
+
+  test("make removes emitted say and alt fields while preserving the exercise", () => {
+    const { Drills } = silnik();
+    const topic = Drills.TOPICS[0];
+    topic.make = () => ({ t: "fill", q: "Greeting", a: ["ciao"], say: "ciao", alt: "salve" });
+    const { ex } = Drills.make(topic.id, "seed");
+    assert.deepEqual(ex, { t: "fill", q: "Greeting", a: ["ciao"] });
   });
 
   test("every type is one the engine already knows how to build", () => {

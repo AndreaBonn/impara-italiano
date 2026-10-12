@@ -12,7 +12,8 @@
    ============================================================ */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { loadEngine, makeStorage, probePrototype, CORE } from "./_harness.mjs";
+import vm from "node:vm";
+import { loadEngine, makeStorage, CORE } from "./_harness.mjs";
 
 /**
  * Objects from the sandbox have a prototype from another realm, so a strict
@@ -82,7 +83,9 @@ describe("the containers of the adaptive engine", () => {
     box.Core.save();
     box.flush();
 
-    const zapis = box.stored(KEY);
+    const reloaded = loadEngine({ storage: box.storage });
+    reloaded.Core.load();
+    const zapis = reloaded.Core.state;
     assert.equal(zapis.errors["klucz-1"].tag, "g-presente");
     assert.equal(zapis.drills["prep-art"].podejscia, 3);
   });
@@ -237,6 +240,7 @@ describe("full storage: what gives way", () => {
 
     const zostale = box.stored(KEY).errors;
     assert.ok(zostale["swieza"], "a card with three lapses and no streak stays");
+    assert.equal(Object.hasOwn(zostale, "klucz-4"), false, "the oldest card with the longest streak was dropped");
   });
 
   test("the drill counters give way before the essays: they come back by themselves with further study", () => {
@@ -301,14 +305,20 @@ describe("importState / exportState", () => {
   test("a file from the future is rejected", () => {
     const box = loadEngine();
     box.Core.load();
-    assert.throws(() => box.Core.importState(JSON.stringify({ schema: 99, xp: 1 })));
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: 99, xp: 1 })), {
+      name: "Error", key: "set.errFromFuture"
+    });
   });
 
   test("a file with no schema field is rejected", () => {
     const box = loadEngine();
     box.Core.load();
-    assert.throws(() => box.Core.importState(JSON.stringify({ xp: 1 })));
-    assert.throws(() => box.Core.importState(JSON.stringify({ schema: "2", xp: 1 })));
+    assert.throws(() => box.Core.importState(JSON.stringify({ xp: 1 })), {
+      name: "Error", key: "set.errNoVersion"
+    });
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: "2", xp: 1 })), {
+      name: "Error", key: "set.errNoVersion"
+    });
   });
 
   /* A change from the state before F0: previously EVERY file with a different
@@ -332,18 +342,26 @@ describe("importState / exportState", () => {
   test("a file of the wrong shape is rejected at the door, not three screens later", () => {
     const box = loadEngine();
     box.Core.load();
-    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, lessons: "ciao" })));
-    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, srs: [1, 2, 3] })));
-    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: "a lot" })));
-    assert.throws(() => box.Core.importState(JSON.stringify([1, 2, 3])));
-    assert.throws(() => box.Core.importState('"text"'));
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, lessons: "ciao" })),
+      error => error instanceof Error && error.key === "set.errBadField" && error.vars.field === "lessons");
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, srs: [1, 2, 3] })),
+      error => error instanceof Error && error.key === "set.errBadField" && error.vars.field === "srs");
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: "a lot" })),
+      error => error instanceof Error && error.key === "set.errBadField" && error.vars.field === "xp");
+    assert.throws(() => box.Core.importState(JSON.stringify([1, 2, 3])), {
+      name: "Error", key: "set.errNotSave"
+    });
+    assert.throws(() => box.Core.importState('"text"'), {
+      name: "Error", key: "set.errNotSave"
+    });
   });
 
   test("a rejected file does not leave half a state behind", () => {
     const box = loadEngine();
     box.Core.load();
     box.Core.recordLesson("a1-u01-l1", 10, 10, 20);
-    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: 999, lessons: "ciao" })));
+    assert.throws(() => box.Core.importState(JSON.stringify({ schema: SCHEMA, xp: 999, lessons: "ciao" })),
+      error => error instanceof Error && error.key === "set.errBadField" && error.vars.field === "lessons");
     assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "the previous state is untouched");
     assert.notEqual(box.Core.state.xp, 999);
   });
@@ -352,7 +370,9 @@ describe("importState / exportState", () => {
     const box = loadEngine();
     box.Core.load();
     const ogromny = '{"schema":2,"note":"' + "x".repeat(9 * 1024 * 1024) + '"}';
-    assert.throws(() => box.Core.importState(ogromny));
+    assert.throws(() => box.Core.importState(ogromny), {
+      name: "Error", key: "set.errTooBig"
+    });
   });
 });
 
@@ -388,7 +408,7 @@ describe("the SM-2 schedule (since F1 the mistake notebook only)", () => {
     assert.equal(box.Core.schedule(c, 5).interval, 1);
     assert.equal(box.Core.schedule(c, 5).interval, 3);
     const trzecia = box.Core.schedule(c, 5);
-    assert.ok(trzecia.interval > 3, `the third interval ${trzecia.interval} has to grow`);
+    assert.equal(trzecia.interval, 8, "three days multiplied by ef 2.7, rounded");
   });
 
   test("a wrong answer resets the streak and comes back in the same session", () => {
@@ -409,7 +429,7 @@ describe("the SM-2 schedule (since F1 the mistake notebook only)", () => {
     box.Core.load();
     const c = karta();
     for (let i = 0; i < 20; i++) { box.Core.schedule(c, 3); box.Core.schedule(c, 0); }
-    assert.ok(c.ef >= 1.3);
+    assert.equal(c.ef, 1.3);
   });
 
   test("the card key is Italian alone, with no translation", () => {
@@ -568,15 +588,18 @@ describe("gradeCard: FSRS on the vocabulary deck", () => {
   });
 
   test("successive correct answers lengthen the interval", () => {
-    const { box, key } = zTalia();
+    const now = 1700000000000;
+    const box = loadEngine({ now });
+    box.Core.load();
+    const key = box.Core.addCard("mangiare", "jeść", "a1-u01-l1");
     /* The card goes through the learning steps, so the first due dates are in
        minutes; what counts is the direction, not the exact number - those are
        in fsrs.test.mjs. */
     let poprzedni = 0;
     for (let i = 0; i < 4; i++) {
       const c = box.Core.gradeCard(key, 5);
-      assert.ok(c.due - Date.now() >= poprzedni, `step ${i + 1} does not shorten the due date`);
-      poprzedni = c.due - Date.now();
+      assert.ok(c.due - now > poprzedni, `step ${i + 1} strictly lengthens the interval`);
+      poprzedni = c.due - now;
     }
   });
 
@@ -743,21 +766,42 @@ describe("the review log", () => {
     assert.equal(znowu.Core.state.reviews.length, 1, "it goes through the export");
   });
 
-  test("the log gives way AFTER the mistakes and before the lesson progress", () => {
-    const box = loadEngine({ storage: makeStorage({ limit: 4000 }) });
+  test("a full storage gives way batch by batch and never touches lesson progress", () => {
+    const storage = makeStorage();
+    const box = loadEngine({ storage });
     box.Core.load();
-    box.Core.state.lessons["a1-u01-l1"] = { done: true, score: 9, total: 10 };
+    const lessons = { "a1-u01-l1": { done: true, score: 9, total: 10 } };
+    box.Core.state.lessons = lessons;
     for (let i = 0; i < 300; i++) box.Core.state.reviews.push({ k: "k" + i, t: i, q: 4 });
     for (let i = 0; i < 30; i++) box.Core.state.errors["e" + i] = { kind: "authored", reps: 3, ts: i };
+    for (let i = 0; i < 20; i++) box.Core.state.drills["d" + i] = { attempts: 1 };
+    const snapshots = [];
+    const setItem = storage.setItem;
+    storage.setItem = (key, value) => {
+      snapshots.push(JSON.parse(value));
+      if (snapshots.length <= 2) {
+        const error = new Error("QuotaExceededError");
+        error.name = "QuotaExceededError";
+        throw error;
+      }
+      setItem(key, value);
+    };
     box.Core.save();
     box.flush();
 
-    assert.equal(box.Core.state.lessons["a1-u01-l1"].done, true, "the lesson progress stays");
-    assert.ok(
-      Object.keys(box.Core.state.errors).length < 30 || box.Core.state.reviews.length < 300,
-      "something gave way"
-    );
+    const volume = (x) => Object.keys(x.drills).length + Object.keys(x.errors).length + x.reviews.length;
+    assert.equal(snapshots.length, 3, "two refusals, then the save goes through");
+    assert.ok(volume(snapshots[1]) < volume(snapshots[0]), "the first refusal pruned something");
+    assert.ok(volume(snapshots[2]) < volume(snapshots[1]), "the second refusal pruned more");
+    snapshots.forEach(snapshot => assert.deepEqual(snapshot.lessons, lessons));
+    assert.deepEqual(box.stored(KEY).lessons, lessons);
   });
+
+  /* store.js:265 and CLAUDE.md say the review journal gives way AFTER the
+     mistakes and drills; pruneCandidates() scores it 500, above most mistake
+     cards, so today it goes first. Which one is right is an open decision,
+     and a test pinning either would turn a guess into a requirement. */
+  test.todo("the pruning order between journal, drills and mistakes follows the documented one");
 });
 
 /* ============================================================
@@ -781,34 +825,43 @@ describe("the review log", () => {
 describe("addCard: reserved keys do not touch the prototype", () => {
   const ZASTRZEZONE = ["__proto__", "constructor", "prototype"];
 
-  for (const zly of ZASTRZEZONE) {
-    test(`a card named "${zly}" stays an own property, not the prototype`, () => {
+  for (const reserved of ZASTRZEZONE) {
+    test(`a card named "${reserved}" is rejected without changing the prototype`, () => {
       const box = loadEngine();
       box.Core.load();
-      box.Core.addCard(zly, "whatever", "import");
-      box.Core.save();
-      box.flush();
+      const objectPrototype = vm.runInContext("({}).constructor.prototype", box.sandbox);
+      assert.equal(box.Core.addCard("caffè", "coffee", "import"), "caffe");
+      const rejected = box.Core.addCard(reserved, "whatever", "import");
 
-      assert.ok(
-        Object.prototype.hasOwnProperty.call(box.Core.state.srs, zly) ||
-        Object.keys(box.Core.state.srs).length === 0,
-        `"${zly}" is either an own property or was rejected - it must not vanish into the prototype`
-      );
-      assert.equal(probePrototype(box, "polluted"), undefined, "the prototype is untouched");
+      assert.equal(Object.getPrototypeOf(box.Core.state.srs), objectPrototype);
+      assert.deepEqual(Object.keys(box.Core.state.srs), ["caffe"]);
+      assert.equal(rejected, null);
     });
   }
 
-  test("a card with a reserved name survives a save and a load, or is never created", () => {
+  test("a rejected reserved card stays absent after save and load", () => {
     const box = loadEngine();
     box.Core.load();
-    box.Core.addCard("__proto__", "coffee", "import");
+    assert.equal(box.Core.addCard("__proto__", "coffee", "import"), null);
+    assert.equal(box.Core.addCard("pane", "bread", "import"), "pane");
     box.Core.save();
     box.flush();
+    assert.deepEqual(Object.keys(box.stored(KEY).srs), ["pane"]);
+    const reloaded = loadEngine({ storage: box.storage });
+    reloaded.Core.load();
+    assert.deepEqual(Object.keys(reloaded.Core.state.srs), ["pane"]);
+  });
 
-    const zapis = box.stored("linguai.italiano.v2");
-    const klucze = Object.keys(zapis.srs || {});
-    /* Either it is in the saved state or it is not. What is not allowed: that
-       addCard returns a key and the save shows no trace of it. */
-    if (klucze.length) assert.ok(klucze.includes("__proto__"));
+  test("an accepted card survives save and load with its translation", () => {
+    const box = loadEngine();
+    box.Core.load();
+    assert.equal(box.Core.addCard("caffè", "coffee", "import"), "caffe");
+    box.Core.save();
+    box.flush();
+    assert.deepEqual(Object.keys(box.stored(KEY).srs), ["caffe"]);
+    const reloaded = loadEngine({ storage: box.storage });
+    reloaded.Core.load();
+    assert.deepEqual(Object.keys(reloaded.Core.state.srs), ["caffe"]);
+    assert.equal(reloaded.Core.state.srs.caffe.tr.pl, "coffee");
   });
 });

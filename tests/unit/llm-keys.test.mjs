@@ -150,6 +150,14 @@ describe("the keys must not leave in the backup", () => {
 });
 
 describe("keeping the key off the screen", () => {
+  test("overlapping keys are redacted longest first", () => {
+    const K = box().sandbox.LlmKeys;
+    assert.equal(K.set("openai", KEY), true);
+    assert.equal(K.set("groq", KEY + "-long5678"), true);
+    assert.equal(K.redact("Keys: " + KEY + "-long5678, " + KEY + "."),
+      "Keys: …5678, …1234.");
+  });
+
   test("a fingerprint identifies the key without showing it", () => {
     const b = box();
     const K = b.sandbox.LlmKeys;

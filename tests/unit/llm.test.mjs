@@ -54,7 +54,7 @@ function answer(id, esito, commento) {
  */
 function course(options) {
   const opts = options || {};
-  const b = loadEngine({ files: FILES });
+  const b = loadEngine({ files: FILES, now: opts.now, protocol: opts.protocol });
   b.Core.load();
 
   const keys = opts.keys || { gemini: "key-gemini-1", openai: "key-openai-2" };
@@ -245,6 +245,16 @@ describe("what the student pays for", () => {
 });
 
 describe("trying a key from the settings page", () => {
+  test("testing a key is unavailable on disk and succeeds over HTTPS", async () => {
+    for (const protocol of ["file:", "https:"]) {
+      const c = course({ protocol });
+      const out = await new Promise((resolve) => c.Llm.test("openai", "key-openai-2", resolve));
+      assert.deepEqual({ ...out }, protocol === "file:"
+        ? { ok: false, error: "unavailable" } : { ok: true });
+      assert.deepEqual(c.calls, protocol === "file:" ? [] : ["openai"]);
+    }
+  });
+
   test("a working key reports success", async () => {
     const c = course();
     const out = await new Promise((r) => c.Llm.test("openai", "key-openai-2", r));
@@ -272,6 +282,48 @@ describe("trying a key from the settings page", () => {
 });
 
 describe("the budget", () => {
+  for (const step of [1000, 8001]) {
+    test(`busy providers respect the total deadline with ${step} ms steps`, async () => {
+      const order = ["gemini", "openai", "groq"];
+      const c = course({ now: 0, order, keys: {
+        gemini: "key-gemini-1", openai: "key-openai-2", groq: "key-groq-3"
+      } });
+      c.Llm.useTransport((req) => {
+        c.calls.push(idOf(req.url));
+        c.box.przesunZegar(step);
+        return Promise.resolve(BUSY);
+      });
+      assert.equal(await judge(c.Llm), null);
+      assert.deepEqual(c.calls, step === 1000 ? order : ["gemini"]);
+    });
+  }
+
+  test("a timed-out request aborts its transport signal before the next provider wins", async () => {
+    const c = course({ order: ["gemini", "openai"] });
+    const controllers = [];
+    const requests = [];
+    c.box.sandbox.AbortController = class {
+      constructor() { this.signal = { aborted: false }; controllers.push(this); }
+      abort() { this.signal.aborted = true; }
+    };
+    c.Llm.useTransport((req) => {
+      requests.push(req);
+      return idOf(req.url) === "gemini" ? new Promise(() => {})
+        : Promise.resolve(answer("openai", "SI"));
+    });
+    const pending = judge(c.Llm);
+    await Promise.resolve();
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].signal, controllers[0].signal);
+    assert.equal(requests[0].signal.aborted, false);
+    c.box.flush();
+    assert.equal(requests[0].signal.aborted, true);
+    assert.equal((await pending).promote, true);
+    assert.deepEqual(requests.map((req) => idOf(req.url)), ["gemini", "openai"]);
+    assert.equal(requests[1].signal, controllers[1].signal);
+    assert.equal(requests[1].signal.aborted, false);
+  });
+
   /**
    * A provider that never answers.
    *
@@ -466,6 +518,19 @@ function proza(id, tekst) {
 }
 
 describe("reading an exam production", () => {
+  test("production reading stops without a request once the judge budget is spent", async () => {
+    const c = course({ order: ["openai"] });
+    for (let i = 0; i < c.Llm.MAX_PER_SESSION; i++) {
+      assert.equal((await judge(c.Llm, { ...TASK, given: "answer " + i })).promote, true);
+    }
+    assert.equal(c.calls.length, c.Llm.MAX_PER_SESSION);
+    assert.equal(await czytaj(c.Llm, PRODUKCJA), null);
+    assert.equal(c.calls.length, c.Llm.MAX_PER_SESSION);
+    const fresh = course({ answers: { gemini: proza("gemini", "La struttura è chiara.") } });
+    assert.equal(await czytaj(fresh.Llm, PRODUKCJA), "La struttura è chiara.");
+    assert.deepEqual(fresh.calls, ["gemini"]);
+  });
+
   test("ordinary feedback comes back as it was written", async () => {
     const c = course({ answers: { gemini: proza("gemini", "Hai scritto «non posso venire»: va bene così.") } });
     const out = await czytaj(c.Llm, PRODUKCJA);
@@ -594,16 +659,30 @@ describe("a turn of a free conversation", () => {
   });
 
   test("a conversation does not spend the judge's budget", async () => {
-    /* The assertion that justifies the second counter existing. Ten turns go
-       out, and then the judge is asked and answers — which it could not do
-       if the two shared a ceiling low enough to matter. */
     const c = rozmowa({ answers: { gemini: replika("gemini", "Sì!", "") } });
-    for (let i = 0; i < 10; i++) {
-      await rozmawiaj(c.Llm, { scenario: SCENA, message: "ciao " + i, history: [] });
+    for (let i = 0; i < c.Llm.MAX_CHAT_PER_SESSION; i++) {
+      const out = await rozmawiaj(c.Llm, { scenario: SCENA, message: "ciao " + i, history: [] });
+      assert.equal(out.risposta, "Sì!");
     }
+    assert.equal(await rozmawiaj(c.Llm, { scenario: SCENA, message: "ancora", history: [] }), null);
+    assert.equal(c.calls.length, c.Llm.MAX_CHAT_PER_SESSION);
     c.box.sandbox.Llm.useTransport((req) => Promise.resolve(answer(idOf(req.url), "SI", "Va bene.")));
-    const verdict = await judge(c.Llm);
-    assert.equal(verdict.promote, true, "the judge stopped working after ten turns of talk");
+    for (let i = 0; i < c.Llm.MAX_PER_SESSION; i++) {
+      const verdict = await judge(c.Llm, { ...TASK, given: "answer " + i });
+      assert.equal(verdict?.promote, true, "conversation spent part of the judge budget");
+    }
+  });
+
+  test("a spent judge budget does not spend the conversation budget", async () => {
+    const c = rozmowa();
+    for (let i = 0; i < c.Llm.MAX_PER_SESSION; i++) {
+      assert.equal((await judge(c.Llm, { ...TASK, given: "answer " + i })).promote, true);
+    }
+    assert.equal(await judge(c.Llm), null);
+    assert.equal(c.calls.length, c.Llm.MAX_PER_SESSION);
+    c.Llm.useTransport((req) => Promise.resolve(replika(idOf(req.url), "Certo!")));
+    const out = await rozmawiaj(c.Llm, { scenario: SCENA, message: "ciao", history: [] });
+    assert.equal(out.risposta, "Certo!");
   });
 
   test("a spent conversation budget does not look like a dead network", async () => {

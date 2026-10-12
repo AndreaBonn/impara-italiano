@@ -58,7 +58,7 @@ describe("frequency: coverage of the lemma set", () => {
   test("a word outside the set stays uncovered", () => {
     const s = silnik();
     const p = s.Frequency.pokrycie(LISTA, { casa: true }, TOKENOW);
-    assert.ok(p.znane < p.wszystkie, "xyzzy has no right to count");
+    assert.deepEqual({ ...p }, { znane: 1, wszystkie: 7, udzialTokenow: 40 / 255 });
   });
 
   test("an empty list does not divide by zero", () => {
@@ -92,7 +92,7 @@ describe("frequency: the nearest gaps", () => {
     const avere = braki.filter(b => b.haslo === "avere")[0];
     assert.equal(avere.ile, 240, "the frequency is the sum over the forms");
     assert.equal(avere.ranga, 1, "the rank is the best rank among its forms");
-    assert.ok(Array.from(avere.formy).length >= 3, "the forms are kept as context");
+    assert.deepEqual(Array.from(avere.formy), ["ho", "ha", "hai"]);
   });
 
   test("function words do not make it onto the clickable list", () => {
@@ -188,4 +188,12 @@ describe("frequency without the lemmatiser", () => {
     box.Core.load();
     assert.deepEqual(Object.keys(box.sandbox.Frequency.slownikKursu()), []);
   });
+});
+
+test("the default gap limit is twenty rows in frequency order", () => {
+  const { Frequency } = silnik();
+  const words = Array.from({ length: 25 }, (_, i) => ["parolaxx" + i, 100 - i]);
+  const course = Object.fromEntries(words.map(([word]) => [word, true]));
+  const gaps = Array.from(Frequency.brakujace(words, course, {}));
+  assert.deepEqual(gaps.map(gap => gap.haslo), words.slice(0, 20).map(([word]) => word));
 });

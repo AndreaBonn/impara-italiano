@@ -173,7 +173,8 @@ describe("closed section: vero/falso", () => {
 
   test("V and F stay Italian: this is exam content, not interface copy", () => {
     const out = html().corpoChiuso(LETTURA);
-    assert.ok(!out.includes("cils.true"), "there is no translation key for V");
+    assert.match(out, /> V<\/label>/);
+    assert.match(out, /> F<\/label>/);
   });
 
   test("the data-p/data-i grid matches the task and item index", () => {
@@ -295,15 +296,13 @@ describe("oral production", () => {
     assert.ok(out.includes("Il lavoro"), "the topic itself, not the object around it");
   });
 
-  test("no self-assessment checklist: ADR-009 rejected it and it lived on anyway", () => {
-    /* Option G in that document, rejected with its reason: under exam
-       conditions the incentive to tick every box is at its highest. It was
-       in the markup all the same, so this assertion is the one that keeps it
-       out. The positive half stands above: the section still draws its
-       radios, so an empty return would not pass both. */
+  /* ADR-009: the oral production is detected, never scored, so there is no
+     self-assessment checklist to tick. The radios are the paired positive:
+     the form is rendered, it just has no checkboxes. */
+  test("the oral task has no self-assessment checklist", () => {
     const out = html().corpoOrale(ORALE, "");
+    assert.equal(ile(out, 'name="arg"'), 2, "the form itself is there");
     assert.equal(ile(out, 'type="checkbox"'), 0, out);
-    assert.ok(!out.includes("cils.selfCheck"), out);
   });
 
   test("the section is marked as not scored", () => {
@@ -469,10 +468,18 @@ describe("the whole summary", () => {
     /* Not "cils.sec.scritta": that key also sits in the skills table row, so
        an assertion on it would always pass. The card has strings of its own. */
     assert.ok(!bez.includes("cils.writingNotScored"), "with no written part there is no card for it");
-    assert.ok(!bez.includes("cils.selfChecked"), "with no oral part there is no card for it");
+    assert.ok(zProdukcja.includes("cils.oralSummary"));
+    assert.ok(!bez.includes("cils.oralSummary"), "with no oral part there is no card for it");
     /* The full class name with its quote: "cils-h" as a substring also
        catches "cils-hint", of which the summary has three. */
     assert.equal(ile(zProdukcja, 'class="cils-h"'), 2, "two headings of the production cards");
     assert.equal(ile(bez, 'class="cils-h"'), 0);
   });
+});
+
+test("the oral card marks unmet requirements with a cross", () => {
+  const H = html();
+  const argomento = ORALE.argomenti[0];
+  assert.match(H.orale({ argomento, testo: "Lavoro in fabbrica." }), /<li>✗ gli orari<\/li>/);
+  assert.match(H.orale({ argomento, testo: "Lavoro a turni." }), /<li>✓ gli orari<\/li>/);
 });

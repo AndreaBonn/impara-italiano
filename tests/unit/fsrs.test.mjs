@@ -174,3 +174,20 @@ describe("fsrs: properties the vectors do not show directly", () => {
     );
   });
 });
+
+describe("fsrs: relearning steps", () => {
+  test("Hard on the only relearning step waits one and a half steps and stays in relearning", () => {
+    /* One relearning step of 10 minutes: Hard on step 0 is 15 minutes, not 10
+       and not a jump back into review. */
+    const F = silnik();
+    const teraz = Date.UTC(2026, 0, 5, 12);
+    const karta = F.powtorz(
+      { st: "relearning", step: 0, s: 5, d: 5, due: teraz, last: teraz - 60000 },
+      F.TRUDNE, teraz
+    );
+
+    assert.equal(karta.st, "relearning");
+    assert.equal(karta.step, 0);
+    assert.equal(karta.due - teraz, 15 * 60000);
+  });
+});

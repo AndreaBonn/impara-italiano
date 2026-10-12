@@ -36,6 +36,7 @@ describe("anki: the export survives content that breaks this format", () => {
       assert.equal(wynik.length, 1);
       assert.equal(wynik[0].it, k.it);
       assert.equal(wynik[0].tr, k.tr);
+      assert.equal(wynik[0].tag, k.tag, "the tag column survives the round trip too");
     });
   }
 
@@ -116,5 +117,30 @@ describe("anki: a file from outside is treated as hostile", () => {
     const zly = '<img src=x onerror=alert(1)>';
     const w = A.fromTsv(`${zly}\t${zly}\tx`);
     assert.equal(w.karty[0].it, zly, "the parser interprets nothing and sanitises nothing");
+  });
+});
+
+describe("anki: incoming file limits and line endings", () => {
+  test("a file over the character cap is refused before it is parsed", () => {
+    const wynik = anki().fromTsv("x".repeat(8 * 1024 * 1024 + 1));
+
+    assert.equal(wynik.blad, "anki.errTooBig");
+    assert.equal(wynik.karty.length, 0);
+  });
+
+  test("a file exactly at the cap is not refused for size", () => {
+    /* The refusal above must not fire one character early. */
+    const wynik = anki().fromTsv("x".repeat(8 * 1024 * 1024));
+
+    assert.notEqual(wynik.blad, "anki.errTooBig");
+  });
+
+  test("a CRLF file (Windows export) imports without a stray carriage return in the fields", () => {
+    const wynik = anki().fromTsv("#separator:tab\r\ncasa\tdom\ta1\r\ncane\tpies\ta1\r\n");
+
+    assert.deepEqual(
+      Array.from(wynik.karty, (k) => [k.it, k.tr, k.tag]),
+      [["casa", "dom", "a1"], ["cane", "pies", "a1"]]
+    );
   });
 });

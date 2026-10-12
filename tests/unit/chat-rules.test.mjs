@@ -107,7 +107,10 @@ describe("chat: what gets sent", () => {
     const R = reguly();
     const dlugosc = R.doWyslania(historia(30, 300))
       .reduce((n, t) => n + t.text.length, 0);
-    assert.ok(dlugosc <= R.MAX_ZNAKOW, `${dlugosc} > ${R.MAX_ZNAKOW}`);
+    /* 13 whole turns of 303 characters fit under MAX_ZNAKOW (4000); the 14th
+       would not. Whole turns, so the budget is never filled to the letter. */
+    assert.equal(dlugosc, 13 * 303);
+    assert.ok(dlugosc <= R.MAX_ZNAKOW);
   });
 
   test("one enormous turn does not empty the whole history", () => {
@@ -116,7 +119,7 @@ describe("chat: what gets sent", () => {
     const R = reguly();
     const wyslane = R.doWyslania([{ role: "student", text: "z".repeat(50000) }]);
     assert.equal(wyslane.length, 1);
-    assert.ok(wyslane[0].text.length <= R.MAX_ZNAKOW, "the single turn was not cut down");
+    assert.equal(wyslane[0].text, "z".repeat(R.MAX_ZNAKOW));
   });
 
   test("a missing history is an empty one, not an exception", () => {
@@ -163,8 +166,8 @@ describe("chat: reading what came back", () => {
   test("a reply that runs away is cut, and the cut is declared", () => {
     const R = reguly();
     const out = R.czytaj(JSON.stringify({ risposta: "a".repeat(5000), correzione: "b".repeat(5000) }));
-    assert.ok(out.risposta.length <= R.MAX_REPLIKI, out.risposta.length);
-    assert.ok(out.correzione.length <= R.MAX_REPLIKI, out.correzione.length);
+    assert.equal(out.risposta, "a".repeat(R.MAX_REPLIKI));
+    assert.equal(out.correzione, "b".repeat(R.MAX_REPLIKI));
   });
 
   test("control characters do not reach the bubble", () => {
@@ -185,7 +188,7 @@ describe("chat: reading what came back", () => {
        the turn still has to happen. The student sees the raw sentence rather
        than a conversation that stopped. */
     const out = reguly().czytaj('{risposta: Certo, arriva!}');
-    assert.ok(out.risposta.length > 0, JSON.stringify(out));
+    assert.equal(out.risposta, "{risposta: Certo, arriva!}");
     assert.equal(out.correzione, "");
   });
 
@@ -195,13 +198,20 @@ describe("chat: reading what came back", () => {
     assert.equal(out.correzione, "");
   });
 
-  test("it does not throw on anything a provider might return", () => {
+  /* The contract is "a string and no crash", not how a number or an object
+     is spelled: those spellings are coercion details, not behaviour. */
+  test("whatever the provider returns, the reply is a string and the correction empty", () => {
     const R = reguly();
-    for (const [opis, wejscie] of [
-      ["a number", 42], ["an object", {}], ["an array", []],
-      ["broken json", '{"risposta":'], ["null", null], ["undefined", undefined]
-    ]) {
-      assert.doesNotThrow(() => R.czytaj(wejscie), opis);
+    for (const input of [42, {}, [], '{"risposta":', null, undefined]) {
+      const out = R.czytaj(input);
+      assert.equal(typeof out.risposta, "string", String(input));
+      assert.equal(out.correzione, "", String(input));
     }
+    for (const input of [null, undefined, []]) assert.equal(R.czytaj(input).risposta, "");
+    assert.equal(R.czytaj('{"risposta":').risposta, '{"risposta":', "a broken JSON is shown as text, not lost");
   });
+});
+
+test("an omitted correction becomes an empty string", () => {
+  assert.deepEqual({ ...reguly().czytaj('{"risposta":"Certo!"}') }, { risposta: "Certo!", correzione: "" });
 });

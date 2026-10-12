@@ -145,8 +145,8 @@ describe("the signature of a nested field", () => {
      exercises of the same type would share one identity and one card. */
   test("an object inside an exercise enters the signature together with its values", () => {
     const box = silnik();
-    const a = { t: "dialogue", lines: [{ sp: "A", it: "Ciao", a: 0 }] };
-    const b = { t: "dialogue", lines: [{ sp: "A", it: "Buonasera", a: 0 }] };
+    const a = { t: "fill", alt: { x: 1 } };
+    const b = { t: "fill", alt: { x: 2 } };
 
     assert.notEqual(box.sandbox.Errors.sigOf(a), box.sandbox.Errors.sigOf(b));
   });

@@ -187,3 +187,7 @@ describe("ics: the identity of the event", () => {
     assert.equal(plik(), plik());
   });
 });
+
+test("midnight is a valid reminder hour", () => {
+  assert.equal(wartosc(plik({ godzina: 0, minuta: 30 }), "DTSTART"), "20260911T003000");
+});

@@ -213,6 +213,36 @@ describe("the system voice", () => {
   });
 });
 
+describe("the system voice: handlers and degraded stop", () => {
+  test("among two non-neural voices, the mechanical one gives way", () => {
+    const box = silnik({ voices: [glos("espeak-ng italiano", "it-IT"), glos("Luca", "it-IT")] });
+    box.sandbox.Audio2.speak(SPOZA_KURSU);
+    assert.equal(box.audio.wypowiedzi[0].voice.name, "Luca");
+  });
+
+  test("the synthesiser's start and error reach the view's handlers", () => {
+    const box = silnik(); let start = 0, koniec = 0;
+    box.sandbox.Audio2.speak(SPOZA_KURSU, { onstart: () => start++, onend: () => koniec++ });
+    box.audio.wypowiedzi[0].onstart();
+    assert.deepEqual([start, koniec], [1, 0]);
+    box.audio.wypowiedzi[0].onerror();
+    assert.deepEqual([start, koniec], [1, 1], "an error ends the sentence, it must not leave the view waiting");
+  });
+
+  test("stop() survives a synthesiser and a player that throw, and still mutes the late end", () => {
+    const box = silnik(); let domkniete = 0;
+    box.sandbox.Audio2.speak(Z_KURSU, { onend: () => domkniete++ });
+    const gracz = box.audio.odtwarzacze[0];
+    box.sandbox.speechSynthesis.cancel = () => { throw new Error("no cancel"); };
+    gracz.pause = () => { throw new Error("no pause"); };
+
+    box.sandbox.Audio2.stop();
+    gracz.onended();
+
+    assert.equal(domkniete, 0);
+  });
+});
+
 describe("playing a list of sentences", () => {
   test("the next sentence starts only after the previous one has finished", () => {
     const box = silnik();
@@ -233,6 +263,41 @@ describe("playing a list of sentences", () => {
     box.flush();
 
     assert.equal(box.audio.wypowiedzi.length, 1, "after the break nothing more comes in");
+  });
+
+  test("cancel() during the pause between two lines stops the next one from starting", () => {
+    /* stop() already silences the line that is playing, via the token. The gap
+       is different: the first line has ended and the 380 ms timer for the second
+       is pending. A new speak() there takes a fresh token, so only the list's
+       own `cancelled` flag can keep it from starting. */
+    const box = silnik();
+    const bieg = box.sandbox.Audio2.speakSequence([SPOZA_KURSU, "un'altra frase fuori dal corso"], {});
+
+    box.audio.wypowiedzi[0].onend();
+    bieg.cancel();
+    box.flush();
+
+    assert.equal(box.audio.wypowiedzi.length, 1, "the pending timer must not start line two");
+  });
+
+  test("onLine and onend: lines reported in order, onend only after the last", () => {
+    const box = silnik(); const widziane = []; let koniec = 0;
+    box.sandbox.Audio2.speakSequence([SPOZA_KURSU, "un'altra frase fuori dal corso"], {
+      onLine: (_l, i) => widziane.push(i), onend: () => koniec++
+    });
+
+    box.audio.wypowiedzi[0].onend(); box.flush();
+    assert.equal(koniec, 0, "one line left");
+    box.audio.wypowiedzi[1].onend(); box.flush();
+
+    assert.deepEqual(widziane, [0, 1]);
+    assert.equal(koniec, 1);
+  });
+
+  test("an empty list ends at once", () => {
+    const box = silnik(); let koniec = 0;
+    box.sandbox.Audio2.speakSequence([], { onend: () => koniec++ });
+    assert.equal(koniec, 1);
   });
 });
 
@@ -357,6 +422,25 @@ describe("speech recognition: the run", () => {
 
     rec.onresult(wynik(["buon"], false));
     assert.deepEqual(czesciowe, ["buon"]);
+  });
+
+
+  test("a final result is reported to oninterim when no interim text is pending", () => {
+    const box = silnik(); const czesciowe = [];
+    const { rec } = nasluch(box, { oninterim: (x) => czesciowe.push(x) });
+
+    rec.onresult(wynik(["ciao"], true));
+
+    assert.deepEqual(czesciowe, ["ciao"]);
+  });
+
+  test("a recognition error with no code is reported as \"error\"", () => {
+    const box = silnik(); const bledy = [];
+    const { rec } = nasluch(box, { onerror: (k) => bledy.push(k) });
+
+    rec.onerror({});
+
+    assert.deepEqual(bledy, ["error"]);
   });
 
   test("at the end both the text and all recognition variants come back", () => {

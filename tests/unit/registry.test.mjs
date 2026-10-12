@@ -359,3 +359,55 @@ describe("finding the next lesson across levels", () => {
     assert.equal(wynik, null);
   });
 });
+
+describe("levels registered without units", () => {
+  /* The startup index has metadata only; rebuilding must retain loaded lessons. */
+  test("reindex and getLesson accept a level without units", () => {
+    const box = swiezy();
+    R(box).registerLevel({ code: "A1", dataFiles: ["a1-01.js"] });
+    assert.equal(R(box).getLesson("a1-u01-l1"), null);
+    R(box).registerLevel(poziom({ code: "A2", units: [jednostka("a2-u01")] }));
+    R(box).reindex();
+    assert.equal(R(box).getLesson("a2-u01-l1").level.code, "A2");
+    assert.equal(R(box).getLesson("a1-u01-l1"), null);
+  });
+
+  /* A metadata-only level must not block the next available lesson. */
+  test("nextOpenLesson skips an unloaded level without units", () => {
+    const box = swiezy();
+    R(box).registerLevel({ code: "A1", dataFiles: ["a1-01.js"] });
+    assert.equal(box.Core.nextOpenLesson(), null);
+    R(box).registerLevel(poziom({ code: "A2", units: [jednostka("a2-u01")] }));
+    const next = box.Core.nextOpenLesson();
+    assert.equal(next.lesson.id, "a2-u01-l1");
+    assert.equal(next.level.code, "A2");
+  });
+});
+
+describe("readings arriving with a level", () => {
+  /* Loading a second library must preserve the texts already available. */
+  test("addReadings appends to the existing library", () => {
+    const box = swiezy();
+    box.sandbox.LINGUAI.addReadings([{ id: "r1" }]);
+    box.sandbox.LINGUAI.addReadings([{ id: "r2" }]);
+    assert.deepEqual(Array.from(box.sandbox.READINGS, reading => reading.id), ["r1", "r2"]);
+  });
+
+  /* Retrying a data file must not duplicate a text or replace its reading state. */
+  test("addReadings deduplicates by id within and across calls", () => {
+    const box = swiezy();
+    const first = { id: "r1", title: "Original" };
+    box.sandbox.READINGS = [first];
+    box.sandbox.LINGUAI.addReadings([{ id: "r1", title: "Replacement" }, { id: "r2" }, { id: "r2" }]);
+    box.sandbox.LINGUAI.addReadings([{ id: "r2" }]);
+    assert.deepEqual(Array.from(box.sandbox.READINGS, reading => reading.id), ["r1", "r2"]);
+    assert.equal(box.sandbox.READINGS[0], first);
+  });
+
+  /* Entries without identity cannot have a stable reading position. */
+  test("addReadings discards entries without an id and keeps valid texts", () => {
+    const box = swiezy();
+    box.sandbox.LINGUAI.addReadings([null, {}, { id: "" }, { id: "r1" }]);
+    assert.deepEqual(Array.from(box.sandbox.READINGS, reading => reading.id), ["r1"]);
+  });
+});

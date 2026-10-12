@@ -193,3 +193,7 @@ describe("liczba mnoga: wyrazy niezmienne", () => {
     assert.equal(lex().pluralOf({ s: "yogurt", g: "m" }), "yogurt");
   });
 });
+
+test("a masculine noun ending in -a has a regular plural in -i", () => {
+  assert.equal(lex().pluralOf({ s: "poeta", g: "m" }), "poeti");
+});

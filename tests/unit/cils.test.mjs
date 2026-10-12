@@ -155,3 +155,32 @@ describe("what is not in the data", () => {
     assert.equal(C.sezione(null, "ascolto"), null);
   });
 });
+
+
+test("missing section answers score zero out of twelve", () => {
+  const C = silnik();
+  const result = C.punteggioSezione(C.sezione(C.sim("sim-1"), "ascolto"), undefined);
+  assert.equal(result.punti, 0);
+  assert.equal(result.max, 12);
+});
+
+test("seven meets the threshold and six and a half does not", () => {
+  const C = silnik();
+  for (const skill of ["ascolto", "lettura"]) {
+    const passing = C.esito({ ascolto: 7, lettura: 7 });
+    assert.equal(passing.abilita[skill].sopraSoglia, true);
+    assert.equal(passing.verdetto, "indeterminato");
+    const failing = C.esito({ ascolto: 7, lettura: 7, [skill]: 6.5 });
+    assert.equal(failing.abilita[skill].sopraSoglia, false);
+    assert.equal(failing.verdetto, "sotto-soglia");
+  }
+});
+
+test("the word limits include eighty and one hundred twenty", () => {
+  const C = silnik();
+  for (const [count, accepted] of [[0, false], [79, false], [80, true], [120, true], [121, false]]) {
+    const result = C.controlloScritta({}, Array(count).fill("ciao").join(" "));
+    assert.equal(result.parole, count);
+    assert.equal(result.dentroLimite, accepted, count + " words");
+  }
+});

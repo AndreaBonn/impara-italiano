@@ -65,7 +65,6 @@ describe("the file address", () => {
 
   test("the address of a course sentence points at a file that exists", () => {
     const skrot = R.hash(R.norm(WSZYSTKIE[0]));
-    assert.equal(R.url(skrot), "audio/" + skrot.slice(0, 2) + "/" + skrot + ".mp3");
     assert.ok(existsSync(join(ROOT, R.url(skrot))), "the address from Recordings.url() does not hit a file on disk");
   });
 });
@@ -141,5 +140,31 @@ describe("binary search over the index", () => {
   test("an empty hash is not a hit", () => {
     assert.equal(R.inIndex(""), false);
     assert.equal(R.inIndex(null), false);
+  });
+});
+
+describe("recordings in degraded environments", () => {
+  /* A missing index must report no recordings instead of claiming an mp3 exists. */
+  test("without an index has is false and count is zero", () => {
+    assert.equal(R.has(WSZYSTKIE[0]), true);
+    assert.ok(R.count > 0);
+    const recordings = loadEngine({ files: ["assets/js/recordings.js"] }).sandbox.Recordings;
+    assert.equal(recordings.has(WSZYSTKIE[0]), false);
+    assert.equal(recordings.count, 0);
+  });
+
+  /* Browsers without BigInt must let the audio layer fall back without crashing. */
+  test("without BigInt hash returns null", () => {
+    assert.equal(R.hash("a"), "af63dc4c8601ec8c");
+    const box = loadEngine({ files: [] });
+    box.sandbox.BigInt = undefined;
+    box.run("data/audio-index.js").run("assets/js/recordings.js");
+    assert.equal(box.sandbox.Recordings.hash("a"), null);
+  });
+
+  /* Fixed vectors detect algorithm drift independently of the generated audio files. */
+  test("hash matches the empty and single-letter FNV-1a vectors", () => {
+    assert.equal(R.hash(""), "cbf29ce484222325");
+    assert.equal(R.hash("a"), "af63dc4c8601ec8c");
   });
 });

@@ -138,11 +138,18 @@ describe("branches", () => {
   }
 
   test("the branch CLOSEST to the utterance wins, not the first that matches", () => {
-    /* "just a coffee" and "a coffee and a dessert" are similar to each other;
-       taking the first one at hand would send the student into a scene they
-       did not ask for. */
-    const run = naWyborze();
-    const w = run.answer("un caffè e un dolce");
+    const box = loadEngine({ files: PLIKI });
+    const scene = zRozwidleniem();
+    scene.turns[1].opts[0].accept = ["un caffè e un cornetto"];
+    scene.turns[1].opts[1].accept = ["un caffè e un cornetto caldo"];
+    const answer = "un caffè e un cornetto caldo";
+    for (const option of scene.turns[1].opts) {
+      assert.ok(box.Core.similarity(answer, option.accept[0]) >= box.sandbox.Talk.PROG);
+    }
+    const run = box.sandbox.Talk.create(scene);
+    run.advance();
+    run.beginTurn(7);
+    const w = run.answer(answer);
 
     assert.equal(w.ok, true);
     assert.equal(w.tr, "Kawa i deser");
@@ -345,4 +352,16 @@ describe("judging without acting", () => {
     run.commit("un caffè e un dolce", verdict.opcja);
     assert.equal(run.current().it, "Ecco il dolce.");
   });
+});
+
+test("an out of range choice leaves the turn and score unchanged", () => {
+  const run = Talk().create(zRozwidleniem());
+  run.advance();
+  run.beginTurn(0);
+  assert.deepEqual({ ...run.choose(5) }, { ok: false, pierwszaPomylka: false });
+  assert.equal(run.index, 1);
+  assert.equal(run.score, 0);
+  assert.equal(run.turns, 1);
+  assert.equal(run.choose(1).punkt, true);
+  assert.equal(run.index, 2);
 });

@@ -105,7 +105,8 @@ describe("section points", () => {
 
     assert.equal(w.punti, 12);
     assert.equal(run.dane.punti.ascolto, 12);
-    assert.equal(run.dane.szczegoly.ascolto.esatte, w.esatte);
+    assert.equal(w.esatte, 18);
+    assert.equal(run.dane.szczegoly.ascolto.esatte, 18);
   });
 
   test("a section closed with not a single answer gives zero, not undefined", () => {
@@ -135,7 +136,7 @@ describe("time that has run out", () => {
     sez.prove[0].items.forEach((it, i) => run.odpowiedz(sez.id, 0, i, it.a));
     run.scadla(sez.id);
 
-    assert.ok(run.zamknij(sez).punti > 0);
+    assert.equal(run.zamknij(sez).punti, 6);
   });
 });
 
@@ -252,4 +253,24 @@ describe("answers to the open sections", () => {
     assert.equal(run.dane.punti.scritta, undefined, "no points is not zero points");
     assert.equal(run.esito().abilita.scritta.misurata, false);
   });
+});
+
+
+test("listening never closed is recorded as zero points", () => {
+  const box = silnik();
+  const run = podejscie(box);
+  wypelnijPoprawnie(run, run.sekcja());
+  assert.equal(box.sandbox.CilsRun.wpis(run, run.esito(), 123).punti.ascolto, 0);
+  run.zamknij(run.sekcja());
+  assert.equal(box.sandbox.CilsRun.wpis(run, run.esito(), 123).punti.ascolto, 12);
+});
+
+test("a transcript before the oral topic leaves the attempt unchanged", () => {
+  const run = podejscie(silnik());
+  const before = JSON.stringify(run.dane);
+  assert.equal(run.zapiszTrascrizione("Abito a Roma."), false);
+  assert.equal(JSON.stringify(run.dane), before);
+  run.zapiszOrale({ it: "La mia città", richiede: [] });
+  assert.equal(run.zapiszTrascrizione("Abito a Roma."), true);
+  assert.equal(run.dane.orale.testo, "Abito a Roma.");
 });

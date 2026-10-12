@@ -188,3 +188,15 @@ describe("composing the queue", () => {
     assert.equal(R().NEW_PER_DAY, 10);
   });
 });
+
+test("clock keeps two-digit seconds without extra padding", () => {
+  assert.equal(R().clock(275000), "4:35");
+});
+
+test("reserve skips vocabulary without a translation", () => {
+  const levels = [{ code: "A1", units: [{ id: "u", lessons: [
+    { id: "a1-u01-l1", vocab: [{ it: "grazie" }, { it: "il bar", tr: "bar" }] }
+  ] }] }];
+  const words = R().reserve(levels, { isDone: () => true, inDeck: () => false, keyOf: word => word });
+  assert.deepEqual(Array.from(words, word => word.it), ["il bar"]);
+});

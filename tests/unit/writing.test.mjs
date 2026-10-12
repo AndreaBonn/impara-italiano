@@ -155,10 +155,12 @@ describe("zapis wypracowania", () => {
     for (let i = 0; i < 40; i++) {
       box.Core.state.errors["k" + i] = { kind: "authored", reps: 3, lapses: 0, ts: i, due: 1, wypelniacz: "x".repeat(200) };
     }
+    assert.equal(Object.keys(box.Core.state.errors).length, 40);
     box.storage._setLimit(3000);
     box.Core.save();
     box.flush();
 
+    assert.ok(Object.keys(box.Core.state.errors).length < 40, "errors were pruned");
     assert.ok(box.Core.state.writing["w-1"], "wypracowanie zostaje");
     assert.equal(box.Core.state.writing["w-1"].text, "Un testo lungo del corso.");
   });
@@ -216,4 +218,16 @@ describe("odczyt wypracowania", () => {
     const box = silnik();
     assert.equal(box.sandbox.Writing.load("w2"), null);
   });
+});
+
+test("unknown verbs and empty requirements remain unmet", () => {
+  const box = silnik();
+  const result = znajdz(box, "Parlo italiano.", [{ verb: "unknown-verb" }, {}, { verb: "parlare", tense: "pres" }]);
+  assert.equal(result.length, 3);
+  assert.equal(result[0].found, false);
+  assert.equal(result[0].hit, null);
+  assert.equal(result[1].found, false);
+  assert.equal(result[1].hit, null);
+  assert.equal(result[2].found, true);
+  assert.equal(result[2].hit, "parlo");
 });

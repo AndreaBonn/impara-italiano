@@ -43,9 +43,12 @@ describe("dueCards: the makeup of today's session", () => {
   });
 
   test("a card due exactly now is already due", () => {
-    const box = swiezy();
-    karta(box, "adesso", Date.now());
-    assert.equal(box.Core.dueCards().length, 1, "a due date of \"now\" means now, not in a moment");
+    const now = 1700000000000;
+    const box = loadEngine({ now });
+    box.Core.load();
+    karta(box, "adesso", now);
+    karta(box, "later", now + 1);
+    assert.deepEqual(Array.from(box.Core.dueCards(), card => card.it), ["adesso"]);
   });
 
   test("the most urgent go first", () => {

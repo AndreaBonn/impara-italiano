@@ -220,3 +220,14 @@ describe("listening modes", () => {
     assert.equal(R().gradeFor("listen-write", true, 5), 5);
   });
 });
+
+test("tiersFor skips a registered level without units", () => {
+  const modes = R();
+  const levels = [{ code: "A1" }, { code: "A2", units: [{ id: "a2-u01", lessons: [
+    { id: "a2-u01-l1", vocab: [{ it: "il treno", tr: "train" }] }
+  ] }] }];
+  const tiers = modes.tiersFor("a2-u01-l1", levels);
+  assert.deepEqual(Array.from(tiers, tier => Array.from(tier, word => word.it)),
+    [["il treno"], ["il treno"], ["il treno"], ["il treno"]]);
+  assert.deepEqual(Array.from(modes.tiersFor("anki", [{ code: "A1" }]), tier => Array.from(tier)), [[]]);
+});

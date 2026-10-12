@@ -229,3 +229,37 @@ describe("flushing the pending save", () => {
     assert.equal(box.stored().xp, 9);
   });
 });
+
+describe("saves load() cannot read", () => {
+  /* A readable-looking value that is not a v2 save must neither become the
+     state nor be overwritten: the student's file stays on disk as it was. */
+  for (const surowy of ["null", '{"xp":5}', '{"schema":0,"xp":5}']) {
+    test(`a stored ${surowy} leaves the default state and the stored value untouched`, () => {
+      const box = loadEngine({ seed: { [KEY]: surowy } });
+      box.Core.load();
+      box.flush();
+
+      assert.equal(box.Core.state.xp, 0);
+      assert.equal(box.storage.getItem(KEY), surowy);
+    });
+  }
+});
+
+describe("the v1 migration: duplicates in the other order", () => {
+  test("the urgent card comes first and still wins, taking the loser's gloss when its own is empty", () => {
+    const v1 = {
+      schema: 1,
+      srs: {
+        "stare|": { it: "stare", pl: "", ef: 2.5, reps: 4, interval: 9, due: 100, lapses: 2 },
+        "stare|być": { it: "stare", pl: "być", ef: 2.5, reps: 1, interval: 1, due: 500, lapses: 0 }
+      }
+    };
+    const box = loadEngine({ seed: { "linguai.italiano.pl.v1": JSON.stringify(v1) } });
+    box.Core.load();
+
+    assert.equal(Object.keys(box.Core.state.srs).length, 1);
+    assert.equal(box.Core.state.srs.stare.due, 100);
+    assert.equal(box.Core.state.srs.stare.lapses, 2);
+    assert.equal(box.Core.state.srs.stare.tr.pl, "być", "the empty slot is filled from the card that lost");
+  });
+});

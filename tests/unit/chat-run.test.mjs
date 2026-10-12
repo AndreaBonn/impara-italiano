@@ -129,3 +129,9 @@ describe("chat-run: the end", () => {
     assert.equal(r.koniec, false);
   });
 });
+
+test("student text is trimmed before entering history", () => {
+  const run = rozmowa();
+  assert.equal(run.dodajStudenta("  buongiorno  "), true);
+  assert.deepEqual(Array.from(run.historia, entry => ({ ...entry })), [{ role: "student", text: "buongiorno" }]);
+});

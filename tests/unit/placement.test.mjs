@@ -75,7 +75,13 @@ describe("wyszukiwanie poziomu", () => {
     let p = P.nowyPrzebieg("s");
     /* 4 out of 6 is 0.67, the threshold is 0.7 */
     P.zapiszRunde(p, "B1", 4, 6);
-    assert.ok(P.wynik(p).index < KODY.indexOf("B1"));
+    assert.equal(p.lo, -1);
+    assert.equal(p.hi, 1);
+    assert.equal(P.wynik(p).code, "A1");
+    const passing = P.nowyPrzebieg("s");
+    P.zapiszRunde(passing, "B1", 5, 6);
+    assert.equal(passing.lo, 2);
+    assert.equal(P.wynik(passing).code, "B1");
   });
 });
 
@@ -161,4 +167,21 @@ describe("the task pool", () => {
   test("an unknown level gives an empty pool, not an exception", () => {
     assert.equal(silnik().sandbox.Placement.pulaDla("Z9", "s").length, 0);
   });
+});
+
+test("a registered level without units has an empty pool", () => {
+  const box = silnik();
+  box.Core.registerLevel({ code: "Z9", dataFiles: [] });
+  assert.equal(box.sandbox.Placement.pulaDla("Z9", "s").length, 0);
+  box.Core.registry.byCode.Z9.units = [{ test: { id: "test", exercises: [{ t: "mcq", a: 0 }] } }];
+  assert.equal(box.sandbox.Placement.pulaDla("Z9", "s").length, 1);
+});
+
+test("units without a test are skipped while tested units contribute tasks", () => {
+  const box = silnik();
+  box.Core.registry.byCode.B1.units = [{ id: "empty" }, {
+    test: { id: "b1-test", exercises: [{ t: "mcq", a: 0 }] }
+  }];
+  const pool = box.sandbox.Placement.pulaDla("B1", "s");
+  assert.deepEqual(JSON.parse(JSON.stringify(pool)), [{ ex: { t: "mcq", a: 0 }, lessonId: "b1-test", index: 0 }]);
 });

@@ -98,3 +98,31 @@ describe("the language of a first visit", () => {
     assert.equal(I18n.pickLang(undefined), null);
   });
 });
+
+describe("applying translations to a root", () => {
+  /* A rerendered view needs both visible copy and input hints translated. */
+  test("apply translates text and placeholder inside the supplied root", () => {
+    const I18n = zNapisami({ greeting: "Ciao", search: "Szukaj" });
+    const text = {
+      textContent: "Old text",
+      getAttribute: name => name === "data-i18n" ? "greeting" : null
+    };
+    const attributes = { "data-i18n-placeholder": "search", placeholder: "Old hint" };
+    const input = {
+      getAttribute: name => attributes[name] ?? null,
+      setAttribute: (name, value) => { attributes[name] = value; }
+    };
+    const elements = { "[data-i18n]": [text], "[data-i18n-placeholder]": [input] };
+    const root = { querySelectorAll: selector => elements[selector] || [] };
+    I18n.apply(root);
+    assert.equal(text.textContent, "Ciao");
+    assert.equal(attributes.placeholder, "Szukaj");
+  });
+
+  /* An incomplete plural dictionary must still produce readable text. */
+  test("a missing plural category uses the other form", () => {
+    const I18n = zNapisami({ days: { one: "{n} dzień", other: "{n} dni" } });
+    assert.equal(I18n.t("days", { n: 1 }), "1 dzień");
+    assert.equal(I18n.t("days", { n: 3 }), "3 dni");
+  });
+});

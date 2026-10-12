@@ -199,6 +199,20 @@ describe("reading a successful answer", () => {
 });
 
 describe("reading a failure", () => {
+  for (const [label, body, expected] of [
+    ["gateway message", { message: "Gateway unavailable" }, "Gateway unavailable"],
+    ["bare error", { error: "Unauthorized" }, "Unauthorized"],
+    ["error type", { error: { type: "overloaded_error" } }, "overloaded_error"],
+    ["empty object", {}, "HTTP 500"]
+  ]) {
+    test(`read preserves the ${label} failure`, () => {
+      const P = providers();
+      for (const id of P.ORDER) {
+        assert.equal(P.get(id).read(500, body).error, expected, id);
+      }
+    });
+  }
+
   test("a rejected key is permanent, a rate limit is not", () => {
     const P = providers();
     for (const id of P.ORDER) {
@@ -234,6 +248,9 @@ describe("reading a failure", () => {
     assert.ok(P.get("openai").read(200, { choices: [] }).error);
     assert.ok(P.get("gemini").read(200, { candidates: [] }).error);
     assert.ok(P.get("anthropic").read(200, { content: [] }).error);
+    for (const id of ["openai", "groq", "anthropic"]) {
+      assert.equal(P.get(id).read(200, {}).kind, "transient", id);
+    }
   });
 
   test("a withheld Gemini answer is permanent: sending it again changes nothing", () => {

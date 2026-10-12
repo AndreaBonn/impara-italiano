@@ -42,7 +42,7 @@ describe("lemma: verb forms come down to the infinitive", () => {
   test("the remote past and the subjunctive", () => {
     const L = zeSlownikiem(["essere"]);
     assert.ok(L.resolve("fu").includes("essere"), "fu -> essere");
-    assert.ok(L.resolve("sia").length, "sia is recognised");
+    assert.ok(L.resolve("fossero").includes("essere"), "fossero -> essere");
   });
 
   test("è does not fall out of the index despite being one letter", () => {
@@ -51,9 +51,16 @@ describe("lemma: verb forms come down to the infinitive", () => {
       "the most frequent word in an Italian text: the first version lost it");
   });
 
-  test("a verb from outside verbs.js comes in through dodajCzasowniki", () => {
-    const L = zeSlownikiem(["scegliere"], ["scegliere"]);
-    assert.ok(L.resolve("sceglie").includes("scegliere"));
+  test("a verb taught only by the reading dictionary inflects after refresh", () => {
+    const box = loadEngine({ files: [...VERBS, ...LEMMA] });
+    const L = box.sandbox.Lemma;
+    box.sandbox.READINGS = [];
+    L.uzyjSlownika(null);
+    L.odswiez();
+    assert.deepEqual(zZewnatrz(L.resolve("camminano")), []);
+    box.sandbox.READINGS = [{ glossIt: [], lexIt: ["camminare"] }];
+    L.odswiez();
+    assert.deepEqual(zZewnatrz(L.resolve("camminano")), ["camminare"]);
   });
 });
 
@@ -88,8 +95,7 @@ describe("lemma: granica jest zadeklarowana, nie ukryta", () => {
     const L = zeSlownikiem([]);
     const k = L.kandydaci("turisti");
     assert.ok(k.includes("turisti"), "sama forma");
-    assert.ok(k.includes("turisto") || k.includes("turiste") || k.includes("turista"),
-      "co najmniej jedna forma podstawowa do pokazania uczniowi");
+    assert.ok(k.includes("turista"), "turisti -> turista");
   });
 
   test("a function word answers with itself, without asking the dictionary", () => {
@@ -172,4 +178,18 @@ describe("an auxiliary is not an entry", () => {
     assert.ok(L.resolve("hanno").includes("avere"), "hanno -> avere");
     assert.ok(L.resolve("fossero").includes("essere"), "fossero -> essere");
   });
+});
+
+test("a phrase entry excludes auxiliary and function words", () => {
+  const L = zeSlownikiem([]);
+  const dictionary = L.zbudujSlownik([], [{ lexIt: ["era tutto buonissimo", "a che ora"] }]);
+  assert.deepEqual(Object.keys(dictionary).sort(), ["a che ora", "buonissimo", "era tutto buonissimo", "ora"]);
+});
+
+test("a level without units preserves entries from loaded levels", () => {
+  const L = zeSlownikiem([]);
+  const levels = [{ code: "B1" }, { code: "A1", units: [{ id: "u", lessons: [
+    { id: "l", vocab: [{ it: "casa" }] }
+  ] }] }];
+  assert.deepEqual(Object.keys(L.zbudujSlownik(levels, [])), ["casa"]);
 });

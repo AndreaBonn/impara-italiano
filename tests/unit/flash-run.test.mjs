@@ -146,3 +146,10 @@ describe("the mode reaches the journal", () => {
     assert.deepEqual([...m], ["choice", "flip", undefined]);
   });
 });
+
+test("tick preserves the empty reason after the time limit", () => {
+  const box = silnik();
+  const run = box.sandbox.FlashRun.create(talia(box, 1), T0);
+  assert.equal(run.answer(4, true, T0), "empty");
+  assert.equal(run.tick(T0 + 10 * MIN), "empty");
+});

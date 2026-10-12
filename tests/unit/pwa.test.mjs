@@ -201,6 +201,16 @@ describe("returning to the foreground", () => {
     assert.equal(box.guska.log.sprawdzenia, 0);
   });
 
+  test("returning to the foreground after a refused registration asks nothing", async () => {
+    const box = await otwarty({ rejestracjaOdrzuca: true, kontroler: { state: "activated" }, now: 1000 });
+    await mikro();
+    box.przesunZegar(box.sandbox.PwaRules.PRZERWA);
+
+    box.wDokumencie("visibilitychange");
+
+    assert.equal(box.guska.log.sprawdzenia, 0, "there is no registration to update");
+  });
+
   /* A deferral to "later" returns at every opening of the course, and on an
      installed application the opening is precisely a return to the
      foreground. */
@@ -215,7 +225,13 @@ describe("returning to the foreground", () => {
 
   test("no network when asking about a version does not bring the course down", async () => {
     const box = await otwarty({ kontroler: { state: "activated" }, updateOdrzuca: true, now: 0 });
-    assert.doesNotThrow(() => box.sandbox.PWA.check());
+    box.przesunZegar(box.sandbox.PwaRules.PRZERWA);
+
+    const zapytano = box.sandbox.PWA.check();
     await mikro();
+
+    assert.equal(zapytano, true, "the question was asked");
+    assert.equal(box.guska.log.sprawdzenia, 1);
+    assert.deepEqual(box.warnings, [], "a missing network is not a fault to report");
   });
 });

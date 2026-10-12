@@ -226,3 +226,57 @@ describe("the topic registry", () => {
     assert.equal(silnik().Drills.make("no-such-topic", "x"), null);
   });
 });
+
+/* Which drill the daily session offers when there is no weak spot yet.
+   It used to rotate through every topic by date, so a student in the first
+   unit was handed numbers, which arrive in unit 2. */
+describe("the topic of the daily drill", () => {
+  const zrobione = (ids) => (id) => ids.indexOf(id) >= 0;
+
+  test("every topic names the lesson that introduces it, and that lesson exists", async () => {
+    const { readdirSync, readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const { ROOT } = await import("./_harness.mjs");
+    const dir = join(ROOT, "data", "core");
+    const tekst = readdirSync(dir).map(f => readFileSync(join(dir, f), "utf8")).join("\n");
+    silnik().Drills.TOPICS.forEach(topic => {
+      assert.match(topic.from || "", /^[abc][12]-u\d{2}-l\d$/, `${topic.id}: from`);
+      assert.ok(tekst.indexOf(`id: "${topic.from}"`) >= 0, `${topic.id}: ${topic.from} is not a lesson`);
+    });
+  });
+
+  test("a weak spot wins, as before", () => {
+    const D = silnik().Drills;
+    const r = D.pickTopic({ weakTag: "g-pron-diretti", isDone: zrobione([]), day: 3 });
+    assert.equal(r.topic.id, "pronomi");
+    assert.equal(r.why, "weak");
+  });
+
+  test("without a weak spot only topics already studied are drawn", () => {
+    const D = silnik().Drills;
+    const studiowane = ["a1-u02-l2", "a1-u04-l1"];
+    const tematy = new Set();
+    for (let day = 0; day < 30; day++) {
+      const r = D.pickTopic({ weakTag: null, isDone: zrobione(studiowane), day });
+      assert.equal(r.why, "studied");
+      assert.ok(studiowane.indexOf(r.topic.from) >= 0, `${r.topic.id} is not studied`);
+      tematy.add(r.topic.id);
+    }
+    assert.ok(tematy.size > 1, "the days still rotate among the studied topics");
+  });
+
+  test("before any topic is studied the earliest one is a declared preview", () => {
+    const D = silnik().Drills;
+    const r = D.pickTopic({ weakTag: null, isDone: zrobione(["a1-u01-l1"]), day: 5 });
+    assert.equal(r.why, "preview");
+    const najwczesniejszy = D.TOPICS.map(x => x.from).sort()[0];
+    assert.equal(r.topic.from, najwczesniejszy);
+  });
+
+  test("a weak tag that no generator covers falls back to the studied topics", () => {
+    const D = silnik().Drills;
+    const r = D.pickTopic({ weakTag: "g-congiuntivo", isDone: zrobione(["a1-u04-l1"]), day: 0 });
+    assert.equal(r.topic.id, "accordo");
+    assert.equal(r.why, "studied");
+  });
+});

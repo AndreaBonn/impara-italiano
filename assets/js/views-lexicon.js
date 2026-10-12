@@ -17,7 +17,6 @@
   var set = Views.shell.set;
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
-  var empty = Views.shell.empty;
   /* ═══════════════════════════════════════════════════════════
      MY DICTIONARY
      ═══════════════════════════════════════════════════════════ */
@@ -30,11 +29,15 @@
     var now = Date.now();
     var learned = cards.filter(function (c) { return c.reps >= 3; }).length;
 
-    set(pageHead(t("lex.kicker"), t("nav.lexicon"), t("lex.intro")) +
-      '<div class="grid-2" style="margin-bottom:24px">' +
-      '<div class="stat-card"><b>' + cards.length + "</b><span>" + esc(t("lex.inDeck")) + "</span></div>" +
-      '<div class="stat-card"><b>' + learned + "</b><span>" + esc(t("lex.learned")) + "</span></div>" +
-      '<div class="stat-card"><b>' + Core.dueCount() + "</b><span>" + esc(t("lex.dueToday")) + "</span></div></div>" +
+    /* Three zero tiles above "your deck is empty" said nothing the message did
+       not; an empty deck gets the message alone, with a way to a lesson. */
+    var liczniki = cards.length
+      ? '<div class="grid-2" style="margin-bottom:24px">' +
+        '<div class="stat-card"><b>' + cards.length + "</b><span>" + esc(t("lex.inDeck")) + "</span></div>" +
+        '<div class="stat-card"><b>' + learned + "</b><span>" + esc(t("lex.learned")) + "</span></div>" +
+        '<div class="stat-card"><b>' + Core.dueCount() + "</b><span>" + esc(t("lex.dueToday")) + "</span></div></div>"
+      : "";
+    set(pageHead(t("lex.kicker"), t("nav.lexicon"), t("lex.intro")) + liczniki +
       (cards.length
         ? '<div class="field-row" style="margin-bottom:14px"><input type="text" class="field js-filter" placeholder="' + esc(t("lex.searchPh")) + '" style="max-width:340px"></div>' +
           '<div class="stack" id="lexList">' + cards.map(function (c) {
@@ -46,7 +49,15 @@
               '<span class="chip">' + esc(when) + "</span>" +
               '<button type="button" class="btn btn--quiet btn--sm js-del" data-k="' + esc(c.key) + '">' + t("lex.delete") + "</button></div>";
           }).join("") + "</div>"
-        : empty(t("lex.empty"), t("lex.emptyHint"))));
+        : '<div class="empty"><h3>' + esc(t("lex.empty")) + "</h3><p>" + esc(t("lex.emptyHint")) + "</p>" +
+          '<p><button class="btn btn--primary btn--sm js-go">' + esc(t("lex.emptyGo")) + "</button></p></div>"));
+
+    var go = el().querySelector(".js-go");
+    if (go) go.addEventListener("click", function () {
+      var next = Core.nextOpenLesson();
+      if (next) App.go("lezione", { id: next.lesson.id });
+      else App.go("percorso");
+    });
 
     var filter = el().querySelector(".js-filter");
     if (filter) filter.addEventListener("input", function () {

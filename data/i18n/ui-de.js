@@ -1063,6 +1063,7 @@ LINGUAI.addUI("de", {
   "stats.open": "Fortschritt ansehen",
   "lesson.starAdd": "+ Wiederholen",
   "lesson.starIn": "Im Wiederholen",
-  "chat.openSettings": "Einstellungen öffnen"
+  "chat.openSettings": "Einstellungen öffnen",
+  "lex.emptyGo": "Zur aktuellen Lektion"
 
 });

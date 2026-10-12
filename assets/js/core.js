@@ -158,6 +158,21 @@
     return null;
   }
 
+  /**
+   * The first unpassed lesson of the whole course, level by level, with the
+   * level it belongs to. Several screens point the student to "what next"
+   * (Today, the empty vocabulary, the empty review deck), and they must all
+   * point to the same lesson.
+   */
+  function nextOpenLesson() {
+    var levels = registry.levels;
+    for (var i = 0; i < levels.length; i++) {
+      var n = nextLesson(levels[i]);
+      if (n) return { level: levels[i], unit: n.unit, lesson: n.lesson };
+    }
+    return null;
+  }
+
   /* ---------------- Backup ---------------- */
   /* Every how many FINISHED lessons to remind about a backup. Retaking a
      lesson already passed does not count: nothing new appeared that could be
@@ -270,7 +285,7 @@
     dueCards: Srs.dueCards, dueCount: Srs.dueCount,
     lessonState: lessonState, isLessonDone: isLessonDone,
     recordLesson: recordLesson, recordAnswer: recordAnswer,
-    unitProgress: unitProgress, levelProgress: levelProgress, nextLesson: nextLesson,
+    unitProgress: unitProgress, levelProgress: levelProgress, nextLesson: nextLesson, nextOpenLesson: nextOpenLesson,
     registerLevel: Registry.registerLevel, addUnits: Registry.addUnits, getLesson: Registry.getLesson,
     loadLevelData: Registry.loadLevelData, setLanguage: Registry.setLanguage,
     exportState: Store.exportState, importState: Store.importState, resetState: resetState,

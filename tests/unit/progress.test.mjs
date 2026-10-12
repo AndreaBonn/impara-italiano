@@ -196,6 +196,20 @@ describe("where I am in the course", () => {
     assert.equal(box.Core.nextLesson(POZIOM).lesson.id, "t1");
   });
 
+  test("the next open lesson of the course skips levels already finished", () => {
+    const box = silnik();
+    const B = { code: "A2", units: [{ id: "u9", lessons: [{ id: "m1" }] }] };
+    box.Core.registry.levels.push(POZIOM, B);
+    zdane(box, ["l1"]);
+    assert.equal(box.Core.nextOpenLesson().lesson.id, "l2");
+    zdane(box, ["l2", "t1", "l3"]);
+    const n = box.Core.nextOpenLesson();
+    assert.equal(n.lesson.id, "m1");
+    assert.equal(n.level.code, "A2");
+    zdane(box, ["m1"]);
+    assert.equal(box.Core.nextOpenLesson(), null);
+  });
+
   test("a level worked through in full has no next lesson", () => {
     const box = silnik();
     zdane(box, ["l1", "l2", "t1", "l3"]);

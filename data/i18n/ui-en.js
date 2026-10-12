@@ -1060,6 +1060,7 @@ LINGUAI.addUI("en", {
   "stats.open": "See your progress",
   "lesson.starAdd": "+ Review",
   "lesson.starIn": "In review",
-  "chat.openSettings": "Open Settings"
+  "chat.openSettings": "Open Settings",
+  "lex.emptyGo": "Go to your current lesson"
 
 });

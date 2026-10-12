@@ -1072,6 +1072,7 @@ LINGUAI.addUI("pl", {
   "stats.open": "Zobacz postępy",
   "lesson.starAdd": "+ Powtórki",
   "lesson.starIn": "W powtórkach",
-  "chat.openSettings": "Otwórz Ustawienia"
+  "chat.openSettings": "Otwórz Ustawienia",
+  "lex.emptyGo": "Do bieżącej lekcji"
 
 });

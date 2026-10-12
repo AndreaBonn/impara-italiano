@@ -1068,6 +1068,7 @@ LINGUAI.addUI("es", {
   "stats.open": "Ver tu progreso",
   "lesson.starAdd": "+ Repaso",
   "lesson.starIn": "En repaso",
-  "chat.openSettings": "Abrir Ajustes"
+  "chat.openSettings": "Abrir Ajustes",
+  "lex.emptyGo": "Ir a tu lección actual"
 
 });

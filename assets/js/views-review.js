@@ -36,7 +36,9 @@
     function zakladka(id, label, n) {
       return '<button type="button" class="tab js-tab" data-tab="' + id + '"' +
         (tab === id ? ' aria-current="true"' : "") + ">" + esc(label) +
-        (n ? ' <span class="tab__n">' + n + "</span>" : "") + "</button>";
+        /* Zero is shown too: without it an empty tab and a tab whose count
+           was not drawn look the same, and the student opens it to find out. */
+        ' <span class="tab__n">' + n + "</span></button>";
     }
 
     set(pageHead(t("nav.review"), t("review.title"), t("review.intro")) +

@@ -178,7 +178,7 @@ LINGUAI.addUI("pl", {
   "srs.allResting": "Wszystkie {n} fiszek jest w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji.",
   "srs.deckEmpty": "Twoja talia jest pusta. Oznacz słówka gwiazdką ⭐ w dowolnej lekcji, a wrócą tu we właściwym momencie.",
   "srs.howTitle": "System powtórek",
-  "srs.howText": "Fiszki wracają w rosnących odstępach, od jednego dnia do wielu miesięcy, zależnie od tego, jak pewnie odpowiadasz. To algorytm FSRS, ten sam, który liczy terminy w Anki.",
+  "srs.howText": "Fiszki wracają w rosnących odstępach, od jednego dnia do wielu miesięcy, zależnie od tego, jak pewnie odpowiadasz.",
   "srs.dueToday": "Do powtórzenia dziś: {n}",
   "srs.gradeHonestly": "Odpowiadaj na głos albo w myślach, potem oceń szczerze — od tego zależy, kiedy fiszka wróci.",
   /* ---------------- Szukanie w kursie ---------------- */
@@ -1073,6 +1073,12 @@ LINGUAI.addUI("pl", {
   "lesson.starAdd": "+ Powtórki",
   "lesson.starIn": "W powtórkach",
   "chat.openSettings": "Otwórz Ustawienia",
-  "lex.emptyGo": "Do bieżącej lekcji"
+  "lex.emptyGo": "Do bieżącej lekcji",
+  "srs.algoQ": "Jaki algorytm?",
+  "srs.algoA": "FSRS, ten sam, który liczy terminy w Anki.",
+  "review.nothingDue": "Na razie nic do powtórki",
+  "review.practiseDone": { one: "Przećwicz słówka z ukończonej lekcji", few: "Przećwicz słówka z {n} ukończonych lekcji", many: "Przećwicz słówka z {n} ukończonych lekcji", other: "Przećwicz słówka z {n} ukończonych lekcji" },
+  "review.practiseHint": "Pięć minut, najwyżej {n} nowych słówek dziennie.",
+  "review.practiseGo": "Zacznij pięć minut"
 
 });

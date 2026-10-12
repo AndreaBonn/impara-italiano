@@ -173,7 +173,7 @@ LINGUAI.addUI("en", {
   "srs.allResting": "All {n} cards are resting. Come back tomorrow, or star new words inside a lesson.",
   "srs.deckEmpty": "Your deck is empty. Star ⭐ a word in any lesson and it will come back here at the right moment.",
   "srs.howTitle": "How review works",
-  "srs.howText": "Cards come back at growing intervals, from a single day to many months, depending on how confidently you answer. It is the FSRS algorithm, the same one that schedules cards in Anki.",
+  "srs.howText": "Cards come back at growing intervals, from a single day to many months, depending on how confidently you answer.",
   "srs.dueToday": "Due today: {n}",
   "srs.gradeHonestly": "Answer out loud or in your head, then grade yourself honestly — that decides when the card comes back.",
   /* ---------------- Searching the course ---------------- */
@@ -1061,6 +1061,12 @@ LINGUAI.addUI("en", {
   "lesson.starAdd": "+ Review",
   "lesson.starIn": "In review",
   "chat.openSettings": "Open Settings",
-  "lex.emptyGo": "Go to your current lesson"
+  "lex.emptyGo": "Go to your current lesson",
+  "srs.algoQ": "Which algorithm?",
+  "srs.algoA": "FSRS, the same one that schedules cards in Anki.",
+  "review.nothingDue": "Nothing due yet",
+  "review.practiseDone": { one: "Practice the words from the lesson you finished", other: "Practice the words from the {n} lessons you finished" },
+  "review.practiseHint": "Five minutes, at most {n} new words a day.",
+  "review.practiseGo": "Start five minutes"
 
 });

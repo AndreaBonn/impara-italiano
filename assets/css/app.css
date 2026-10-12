@@ -712,6 +712,13 @@ button{font:inherit;color:inherit;}
 .callout--pl{border-left-color:var(--lavanda-deep);background:var(--lavanda);}
 /* Plain information (a feature needs a key, what the simulator scores): the
    red trap callout made it read as a failure. */
+/* A small uppercase label above a card's title, the same voice as the path's
+   "pick up where you left off". */
+.card-eyebrow{margin:0 0 4px;font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--salvia-deep);}
+.review-start{margin-bottom:16px;}
+.review-start h3{margin:0 0 4px;}
+.review-algo{margin-top:10px;font-size:.85rem;}
+.review-algo summary{cursor:pointer;font-weight:600;}
 .callout--info{border-left-color:var(--lavanda-deep);background:var(--lavanda);}
 .callout--info b{color:var(--lavanda-deep);}
 .callout--pl b{color:var(--lavanda-deep);}

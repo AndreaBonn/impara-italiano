@@ -17,7 +17,6 @@
   var set = Views.shell.set;
   var pageHead = Views.shell.head;
   var el = Views.shell.root;
-  var empty = Views.shell.empty;
   var runCards = Views.shell.runCards;
   /* ═══════════════════════════════════════════════════════════
      REVIEWS (SRS)
@@ -64,12 +63,23 @@
     var due = Core.dueCards(30);
     if (!due.length) {
       var total = Object.keys(Core.state.srs).length;
-      host.innerHTML = '<p class="exq__sub" style="margin-bottom:14px">' +
+      var lekcje = Core.state.stats.lessonsDone;
+      /* Nothing due is exactly when five minutes has something to offer:
+         new words from the lessons, which this tab does not draw from. With
+         lessons behind the student that is THE action here, so it leads the
+         screen instead of waiting under the explanation. */
+      var start = lekcje
+        ? '<div class="card review-start"><p class="card-eyebrow">' + esc(t("review.nothingDue")) + "</p>" +
+          "<h3>" + esc(t("review.practiseDone", { n: lekcje })) + "</h3>" +
+          '<p class="exq__sub">' + esc(t("review.practiseHint", { n: window.FlashRules.NEW_PER_DAY })) + "</p>" +
+          '<button class="btn btn--primary js-flash">' + esc(t("review.practiseGo")) + "</button></div>"
+        : "";
+      host.innerHTML = start + '<p class="exq__sub" style="margin-bottom:14px">' +
         esc(total ? t("srs.allResting", { n: total }) : t("srs.deckEmpty")) + "</p>" +
-        empty(t("srs.howTitle"), t("srs.howText")) +
-        /* Nothing due is exactly when five minutes has something to offer:
-           new words from the lessons, which this tab does not draw from. */
-        '<button class="btn btn--ghost js-flash">' + esc(t("flash.tryIt")) + "</button>";
+        /* The algorithm's name is for the curious, not part of how it works. */
+        '<div class="empty"><h3>' + esc(t("srs.howTitle")) + "</h3><p>" + esc(t("srs.howText")) + "</p>" +
+        '<details class="review-algo"><summary>' + esc(t("srs.algoQ")) + "</summary>" + esc(t("srs.algoA")) + "</details></div>" +
+        (lekcje ? "" : '<button class="btn btn--ghost js-flash">' + esc(t("flash.tryIt")) + "</button>");
       host.querySelector(".js-flash").addEventListener("click", function () { App.go("cinque"); });
       return;
     }

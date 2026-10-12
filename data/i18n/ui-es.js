@@ -180,7 +180,7 @@ LINGUAI.addUI("es", {
   "srs.allResting": "Las {n} tarjetas están descansando. Vuelve mañana, o marca palabras nuevas dentro de una lección.",
   "srs.deckEmpty": "Tu baraja está vacía. Marca ⭐ una palabra en cualquier lección y volverá aquí en el momento justo.",
   "srs.howTitle": "Cómo funciona el repaso",
-  "srs.howText": "Las tarjetas vuelven a intervalos cada vez más largos, de un día a varios meses, según la seguridad con la que respondas. Es el algoritmo FSRS, el mismo que calcula los plazos en Anki.",
+  "srs.howText": "Las tarjetas vuelven a intervalos cada vez más largos, de un día a varios meses, según la seguridad con la que respondas.",
   "srs.dueToday": "Para hoy: {n}",
   "srs.gradeHonestly": "Responde en voz alta o mentalmente y luego puntúate con sinceridad: de eso depende cuándo vuelve la tarjeta.",
   /* ---------------- Buscar en el curso ---------------- */
@@ -1069,6 +1069,12 @@ LINGUAI.addUI("es", {
   "lesson.starAdd": "+ Repaso",
   "lesson.starIn": "En repaso",
   "chat.openSettings": "Abrir Ajustes",
-  "lex.emptyGo": "Ir a tu lección actual"
+  "lex.emptyGo": "Ir a tu lección actual",
+  "srs.algoQ": "¿Qué algoritmo?",
+  "srs.algoA": "FSRS, el mismo que calcula los plazos en Anki.",
+  "review.nothingDue": "Nada pendiente todavía",
+  "review.practiseDone": { one: "Practica las palabras de la lección que terminaste", many: "Practica las palabras de las {n} lecciones que terminaste", other: "Practica las palabras de las {n} lecciones que terminaste" },
+  "review.practiseHint": "Cinco minutos, como mucho {n} palabras nuevas al día.",
+  "review.practiseGo": "Empezar cinco minutos"
 
 });

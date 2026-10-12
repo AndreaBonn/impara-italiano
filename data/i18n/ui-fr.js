@@ -180,7 +180,7 @@ LINGUAI.addUI("fr", {
   "srs.allResting": "Les {n} cartes se reposent. Reviens demain, ou marque de nouveaux mots dans une leçon.",
   "srs.deckEmpty": "Ton paquet est vide. Marque ⭐ un mot dans n'importe quelle leçon et il reviendra ici au bon moment.",
   "srs.howTitle": "Comment marchent les révisions",
-  "srs.howText": "Les cartes reviennent à des intervalles de plus en plus longs, d'un jour à plusieurs mois, selon l'assurance de ta réponse. C'est l'algorithme FSRS, celui qui calcule les échéances dans Anki.",
+  "srs.howText": "Les cartes reviennent à des intervalles de plus en plus longs, d'un jour à plusieurs mois, selon l'assurance de ta réponse.",
   "srs.dueToday": "Pour aujourd'hui : {n}",
   "srs.gradeHonestly": "Réponds à voix haute ou dans ta tête, puis note-toi honnêtement : c'est ce qui décide du retour de la carte.",
   /* ---------------- Chercher dans le cours ---------------- */
@@ -1069,6 +1069,12 @@ LINGUAI.addUI("fr", {
   "lesson.starAdd": "+ Révisions",
   "lesson.starIn": "En révision",
   "chat.openSettings": "Ouvrir les Réglages",
-  "lex.emptyGo": "Aller à ta leçon en cours"
+  "lex.emptyGo": "Aller à ta leçon en cours",
+  "srs.algoQ": "Quel algorithme ?",
+  "srs.algoA": "FSRS, celui qui calcule les échéances dans Anki.",
+  "review.nothingDue": "Rien à réviser pour l'instant",
+  "review.practiseDone": { one: "Entraîne-toi sur les mots de la leçon terminée", many: "Entraîne-toi sur les mots des {n} leçons terminées", other: "Entraîne-toi sur les mots des {n} leçons terminées" },
+  "review.practiseHint": "Cinq minutes, au plus {n} mots nouveaux par jour.",
+  "review.practiseGo": "Lancer cinq minutes"
 
 });

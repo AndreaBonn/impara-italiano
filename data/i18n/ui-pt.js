@@ -275,7 +275,7 @@ LINGUAI.addUI("pt", {
   /* ---------------- Tela de boas-vindas ---------------- */
   "welcome.kicker": "INÍCIO",
   "welcome.title": "Boas-vindas ao curso de italiano",
-  "welcome.intro": "Antes de começar: em que nível você quer começar? Não se preocupe, dá para trocar de nível quando quiser.",
+  "welcome.intro": "Antes de tudo: em que nível você quer começar? Não se preocupe, dá para trocar de nível quando quiser.",
   "welcome.zeroTitle": "Começo do zero",
   "welcome.zeroHint": "Primeira lição do A1, da saudação até pedir um café.",
   "welcome.zeroGo": "Vamos lá →",

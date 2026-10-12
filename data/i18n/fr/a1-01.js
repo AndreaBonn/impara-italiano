@@ -109,8 +109,8 @@ LINGUAI.addStrings("fr", {
       },
       {
         q: "Traduis : « Je viens de Pologne. »",
-        hint: "essere + da + pays",
-        why: "Sono dalla Polonia. Les noms de pays prennent l'article : la Polonia → dalla Polonia."
+        hint: "venire + da + article + pays (ou la nationalité)",
+        why: "Vengo dalla Polonia, ou tout simplement sono polacco/a. Avec un pays, on ne dit pas « sono dalla » : <em>essere di</em> sert pour la ville (<em>sono di Varsavia</em>) ; pour le pays on emploie <em>venire da</em> + article (la Polonia → dalla Polonia)."
       },
       {
         tr: "Un café et un croissant, s'il vous plaît.",

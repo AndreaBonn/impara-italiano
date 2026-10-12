@@ -27,7 +27,7 @@ import { dirname, join } from "node:path";
 import vm from "node:vm";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const LANGS = ["pl", "en", "es", "fr", "de"];
+const LANGS = ["pl", "en", "es", "pt", "fr", "de"];
 const MIN_NA_JEZYK = 30;
 const GATE = process.argv.includes("--gate");
 

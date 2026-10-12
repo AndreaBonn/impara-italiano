@@ -53,8 +53,8 @@ window.CONVERSATIONS = [
       { sp: "A", it: "Piacere! Di dove sei?" },
       {
         sp: "TY",
-        hintIt: "Sono dalla Polonia",
-        accept: ["sono dalla polonia", "vengo dalla polonia", "sono polacca", "sono polacco"]
+        hintIt: "Vengo dalla Polonia",
+        accept: ["vengo dalla polonia", "sono polacca", "sono polacco"]
       },
       { sp: "A", it: "Che bello! E che lavoro fai?" },
       {

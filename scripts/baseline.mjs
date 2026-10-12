@@ -31,7 +31,7 @@ import vm from "node:vm";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /* The languages the course speaks, in the order the document lists them. */
-const LANGS = ["pl", "en", "es", "fr", "de"];
+const LANGS = ["pl", "en", "es", "pt", "fr", "de"];
 
 /* ---------------- The course data, in a sandbox ---------------- */
 

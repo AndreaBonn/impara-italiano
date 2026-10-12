@@ -23,7 +23,7 @@
   var LINGUAI = global.LINGUAI = global.LINGUAI || {};
 
   /* Language code -> BCP-47 locale. "en" means American English. */
-  var LOCALE = { pl: "pl-PL", en: "en-US", es: "es-ES", fr: "fr-FR", de: "de-DE" };
+  var LOCALE = { pl: "pl-PL", en: "en-US", es: "es-ES", pt: "pt-BR", fr: "fr-FR", de: "de-DE" };
   var FALLBACK = "en";
 
   /**
@@ -36,6 +36,7 @@
     { code: "pl", flag: "🇵🇱", name: "Polski" },
     { code: "en", flag: "🇺🇸", name: "English" },
     { code: "es", flag: "🇪🇸", name: "Español" },
+    { code: "pt", flag: "🇧🇷", name: "Português (Brasil)" },
     { code: "fr", flag: "🇫🇷", name: "Français" },
     { code: "de", flag: "🇩🇪", name: "Deutsch" }
   ];

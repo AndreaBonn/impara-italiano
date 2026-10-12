@@ -109,8 +109,8 @@ LINGUAI.addStrings("pl", {
       },
       {
         q: "Przetłumacz: „Jestem z Polski.”",
-        hint: "essere + da + kraj",
-        why: "Sono dalla Polonia. Nazwy krajów biorą rodzajnik: la Polonia → dalla Polonia."
+        hint: "venire + da + rodzajnik + kraj (albo narodowość)",
+        why: "Vengo dalla Polonia albo po prostu sono polacco/a. Z krajem nie mówi się „sono dalla”: <em>essere di</em> jest dla miasta (<em>sono di Varsavia</em>), dla kraju — <em>venire da</em> + rodzajnik (la Polonia → dalla Polonia)."
       },
       {
         tr: "Poproszę kawę i rogalika.",

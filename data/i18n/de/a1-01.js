@@ -109,8 +109,8 @@ LINGUAI.addStrings("de", {
       },
       {
         q: "Übersetze: „Ich komme aus Polen.\"",
-        hint: "essere + da + Land",
-        why: "Sono dalla Polonia. Ländernamen stehen mit Artikel: la Polonia → dalla Polonia."
+        hint: "venire + da + Artikel + Land (oder die Nationalität)",
+        why: "Vengo dalla Polonia oder einfach sono polacco/a. Bei Ländern sagt man nicht „sono dalla“: <em>essere di</em> gilt für Städte (<em>sono di Varsavia</em>), für Länder nimmt man <em>venire da</em> + Artikel (la Polonia → dalla Polonia)."
       },
       {
         tr: "Einen Kaffee und ein Cornetto, bitte.",

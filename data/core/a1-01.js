@@ -58,7 +58,7 @@ LINGUAI.addUnits("A1", [
           {
             t: "trans",
             dir: "toIt",
-            a: ["sono dalla polonia", "sono della polonia", "vengo dalla polonia"]
+            a: ["vengo dalla polonia", "sono polacca", "sono polacco"]
           },
           {
             t: "order",
@@ -335,7 +335,7 @@ LINGUAI.addUnits("A1", [
               { sp: "A", it: "Ciao! Io sono Giulia. E tu, come ti chiami?" },
               { sp: "TY", choices: ["Mi chiamo Ewa.", "Si chiama Ewa.", "Ti chiami Ewa."], a: 0 },
               { sp: "A", it: "Piacere, Ewa! Di dove sei?" },
-              { sp: "TY", choices: ["Sono di Polonia.", "Sono dalla Polonia.", "Abito Polonia."], a: 1 }
+              { sp: "TY", choices: ["Sono di Polonia.", "Vengo dalla Polonia.", "Abito Polonia."], a: 1 }
             ]
           },
           { t: "listen", it: "Mi chiamo Elena e abito a Napoli." },

@@ -316,3 +316,46 @@ describe("what Core exposes", () => {
     assert.ok(box.Core.getLesson("a1-u01-l1"));
   });
 });
+
+/* Core.findNextLesson: levels load lazily, so with the first level finished
+   the next lesson sits in a level nobody has loaded yet. */
+describe("finding the next lesson across levels", () => {
+  function dwaPoziomy(box) {
+    R(box).registerLevel(poziom());
+    R(box).registerLevel(poziom({ code: "A2", cefrLabel: "A2", dataFiles: ["a2-01.js"] }));
+    R(box).addUnits("A1", [jednostka("a1-u01")]);
+    R(box).registry.loaded.A1 = true;
+  }
+
+  test("the first level's open lesson comes back at once, with nothing loaded", () => {
+    const box = swiezy();
+    dwaPoziomy(box);
+    let wynik = null;
+    box.Core.findNextLesson(n => { wynik = n; });
+    assert.equal(wynik.lesson.id, "a1-u01-l1");
+    assert.equal(box.scripts.length, 0, "no level was fetched");
+  });
+
+  test("with the first level finished the next one is loaded and searched", () => {
+    const box = swiezy();
+    dwaPoziomy(box);
+    ["a1-u01-l1", "a1-u01-test"].forEach(id => box.Core.recordLesson(id, 10, 10, 0));
+    let wynik = "untouched";
+    box.Core.findNextLesson(n => { wynik = n; });
+    assert.equal(wynik, "untouched", "it waits for the level to load");
+    R(box).addUnits("A2", [jednostka("a2-u01")]);
+    box.settleScripts();
+    assert.equal(wynik.lesson.id, "a2-u01-l1");
+    assert.equal(wynik.level.code, "A2");
+  });
+
+  test("a level that fails to load is skipped and the search ends with null", () => {
+    const box = swiezy();
+    dwaPoziomy(box);
+    ["a1-u01-l1", "a1-u01-test"].forEach(id => box.Core.recordLesson(id, 10, 10, 0));
+    let wynik = "untouched";
+    box.Core.findNextLesson(n => { wynik = n; });
+    box.settleScripts(["data/core/a2-01.js", "data/i18n/pl/a2-01.js"]);
+    assert.equal(wynik, null);
+  });
+});

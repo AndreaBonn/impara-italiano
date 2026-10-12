@@ -1069,6 +1069,8 @@ LINGUAI.addUI("pl", {
   "nav.g.lookup": "Do sprawdzenia",
   "nav.g.you": "Ty",
   "stats.streak": { one: "dzień z rzędu", few: "dni z rzędu", many: "dni z rzędu", other: "dni z rzędu" },
-  "stats.open": "Zobacz postępy"
+  "stats.open": "Zobacz postępy",
+  "lesson.starAdd": "+ Powtórki",
+  "lesson.starIn": "W powtórkach"
 
 });

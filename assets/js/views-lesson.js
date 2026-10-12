@@ -123,7 +123,7 @@
             '<span class="vocab-card__pl">' + esc(v.tr) + "</span>" +
             (v.ex ? '<span class="vocab-card__ex">' + esc(v.ex) + "</span>" : "") + "</span>" +
             '<button type="button" class="vocab-card__star js-star" data-it="' + esc(v.it) + '" data-tr="' + esc(v.tr) + '" ' +
-            'aria-pressed="' + saved + '" aria-label="' + esc(t("lesson.addToReview")) + '">' + (saved ? "★" : "☆") + "</button></div>";
+            'aria-pressed="' + saved + '" aria-label="' + esc(t("lesson.addToReview")) + '">' + gwiazdka(saved) + "</button></div>";
         }).join("") + "</div></section>");
     }
 
@@ -165,7 +165,7 @@
     var saveAll = el().querySelector(".js-save-all");
     if (saveAll) saveAll.addEventListener("click", function () {
       (L.vocab || []).forEach(function (v) { Core.addCard(v.it, v.tr, L.id); });
-      el().querySelectorAll(".js-star").forEach(function (b) { b.setAttribute("aria-pressed", "true"); b.textContent = "★"; });
+      el().querySelectorAll(".js-star").forEach(function (b) { b.setAttribute("aria-pressed", "true"); b.innerHTML = gwiazdka(true); });
       var n = (L.vocab || []).length;
       Core.toast(t("lesson.savedVocab", { n: n }), "ok");
     });
@@ -176,10 +176,10 @@
         var key = Core.cardKey(it);
         if (Core.state.srs[key]) {
           delete Core.state.srs[key]; Core.save();
-          b.setAttribute("aria-pressed", "false"); b.textContent = "☆";
+          b.setAttribute("aria-pressed", "false"); b.innerHTML = gwiazdka(false);
         } else {
           Core.addCard(it, tr, L.id);
-          b.setAttribute("aria-pressed", "true"); b.textContent = "★";
+          b.setAttribute("aria-pressed", "true"); b.innerHTML = gwiazdka(true);
         }
         App.refreshRail();
       });
@@ -202,6 +202,12 @@
       Ex.wireSpeakers(wrap);
     }
   };
+
+  /** The star with words: the glyph alone did not say that it sends the word to the reviews. */
+  function gwiazdka(saved) {
+    return '<span aria-hidden="true">' + (saved ? "★" : "☆") + "</span> " +
+      esc(t(saved ? "lesson.starIn" : "lesson.starAdd"));
+  }
 
   function onAnswer(ok, L, U, LV) {
     session.answered += 1;

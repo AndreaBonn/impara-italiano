@@ -760,8 +760,9 @@ table.gt .it{font-weight:700;color:var(--salvia-deep);}
 .vocab-card__pl{color:var(--ink-soft);font-size:.85rem;display:block;}
 .vocab-card__ex{font-size:.78rem;color:var(--ink-faint);display:block;margin-top:3px;font-style:italic;}
 .vocab-card__star{
-  flex:0 0 30px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line-strong);
-  background:transparent;cursor:pointer;display:grid;place-items:center;font-size:.8rem;padding:0;
+  flex:0 0 auto;min-height:32px;border-radius:var(--r-pill);border:1.5px solid var(--line-strong);
+  background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:2px;
+  font-size:.74rem;font-weight:700;padding:3px 10px;white-space:nowrap;color:var(--ink);
 }
 .vocab-card__star[aria-pressed="true"]{background:var(--oro);border-color:var(--oro-deep);}
 

@@ -1057,6 +1057,8 @@ LINGUAI.addUI("en", {
   "nav.g.lookup": "Look up",
   "nav.g.you": "You",
   "stats.streak": { one: "day in a row", other: "days in a row" },
-  "stats.open": "See your progress"
+  "stats.open": "See your progress",
+  "lesson.starAdd": "+ Review",
+  "lesson.starIn": "In review"
 
 });

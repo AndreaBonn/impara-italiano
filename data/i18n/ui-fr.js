@@ -1065,6 +1065,8 @@ LINGUAI.addUI("fr", {
   "nav.g.lookup": "Consulter",
   "nav.g.you": "Toi",
   "stats.streak": { one: "jour d'affilée", many: "jours d'affilée", other: "jours d'affilée" },
-  "stats.open": "Voir ta progression"
+  "stats.open": "Voir ta progression",
+  "lesson.starAdd": "+ Révisions",
+  "lesson.starIn": "En révision"
 
 });

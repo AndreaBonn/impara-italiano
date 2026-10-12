@@ -1060,6 +1060,8 @@ LINGUAI.addUI("de", {
   "nav.g.lookup": "Nachschlagen",
   "nav.g.you": "Du",
   "stats.streak": { one: "Tag in Folge", other: "Tage in Folge" },
-  "stats.open": "Fortschritt ansehen"
+  "stats.open": "Fortschritt ansehen",
+  "lesson.starAdd": "+ Wiederholen",
+  "lesson.starIn": "Im Wiederholen"
 
 });

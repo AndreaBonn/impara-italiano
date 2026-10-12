@@ -27,3 +27,19 @@ test("a theory block with a heading keeps its list", async ({ page }) => {
   await expect(lista).toHaveJSProperty("tagName", "UL");
   await expect(lista.locator("li")).toHaveCount(blok.list.length);
 });
+
+/* The star alone did not say what it does: the label names the effect, and
+   follows the state when the word goes in and out of the reviews. */
+test("the vocabulary star says it adds the word to the reviews", async ({ page }) => {
+  await lezione(page, "a1-u01-l3");
+  const gwiazda = page.locator(".js-star").first();
+  const przed = (await gwiazda.innerText()).trim();
+  expect(przed.length, "a label next to the star").toBeGreaterThan(1);
+  await gwiazda.click();
+  await expect(gwiazda).toHaveAttribute("aria-pressed", "true");
+  const po = (await gwiazda.innerText()).trim();
+  expect(po, "the label changes with the state").not.toBe(przed);
+  await gwiazda.click();
+  await expect(gwiazda).toHaveAttribute("aria-pressed", "false");
+  await expect(gwiazda).toHaveText(przed);
+});

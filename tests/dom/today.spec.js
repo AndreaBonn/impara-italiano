@@ -231,3 +231,21 @@ test("a profile with no streak shows no streak line", async ({ page }) => {
   await page.waitForSelector(".js-start");
   await expect(page.locator(".today-streak")).toHaveCount(0);
 });
+
+/* The default route was the learning path, a page of about 6500 px: whoever
+   comes back every day had to work out what to do. */
+test("a student who has started opens the course on Today", async ({ page }) => {
+  await profil(page, zdane(["a1-u01-l1"]));
+  await page.goto("/index.html");
+  await page.waitForFunction(() => window.App && window.Router);
+  await expect(page).toHaveURL(/#\/oggi/);
+});
+
+test("a student who has only looked around still opens on the path", async ({ page }) => {
+  await profil(page, zdane([]));
+  await page.goto("/index.html");
+  await page.waitForFunction(() => window.App && window.Router && window.Router.current);
+  await page.waitForTimeout(300);
+  await expect(page).not.toHaveURL(/#\/oggi/);
+  expect(await page.evaluate(() => window.Router.current.route)).toBe("percorso");
+});

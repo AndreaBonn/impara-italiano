@@ -39,7 +39,8 @@ test("a student halfway through the course gets no welcome", async ({ page }) =>
   await page.goto("/index.html");
   await gotowe(page);
   await expect(page.locator(".js-zero")).toHaveCount(0);
-  expect(await page.evaluate(() => window.Router.current.route)).toBe("percorso");
+  /* Not the path any more: a student with lessons behind them opens on Today. */
+  expect(await page.evaluate(() => window.Router.current.route)).toBe("oggi");
 });
 
 test("adres z linku wygrywa nad powitaniem", async ({ page }) => {

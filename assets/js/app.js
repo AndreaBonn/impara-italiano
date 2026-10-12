@@ -248,6 +248,14 @@
   /** The first render: the level the student is coming back to. */
   function startRouting() {
     var powitanie = pierwszeUruchomienie();
+    /* Whoever has started the course opens it on Today, not on the path: the
+       path is a long page, and someone coming back daily wants the next step.
+       Only for an EMPTY address, and replaceState fires no hashchange, so
+       the render below is the only one. */
+    var s = Core.state;
+    if (!global.location.hash && !powitanie && (s.stats.lessonsDone > 0 || s.placement)) {
+      global.history.replaceState(null, "", "#/oggi");
+    }
     var d = Router.decode(global.location.hash);
     var wanted = d.params.level || guessLevel(d);
     /* The level is loaded under the welcome screen too: by the time the

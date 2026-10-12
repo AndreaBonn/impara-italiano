@@ -109,8 +109,8 @@ LINGUAI.addStrings("es", {
       },
       {
         q: "Traduce: «Soy de Polonia.»",
-        hint: "essere + da + país",
-        why: "Sono dalla Polonia. Los nombres de país llevan artículo: la Polonia → dalla Polonia."
+        hint: "venire + da + artículo + país (o la nacionalidad)",
+        why: "Vengo dalla Polonia, o simplemente sono polacco/a. Con un país no se dice «sono dalla»: <em>essere di</em> es para la ciudad (<em>sono di Varsavia</em>); para el país se usa <em>venire da</em> + artículo (la Polonia → dalla Polonia)."
       },
       {
         tr: "Un café y un cruasán, por favor.",

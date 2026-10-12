@@ -1087,6 +1087,8 @@ LINGUAI.addUI("pl", {
   "today.drillPreview": "zapowiedź tego, co przyjdzie",
   "today.nextEyebrow": "Następna lekcja",
   "today.continue": "Dalej →",
-  "today.streak": { one: "{n} dzień z rzędu · rekord: {best}", few: "{n} dni z rzędu · rekord: {best}", many: "{n} dni z rzędu · rekord: {best}", other: "{n} dni z rzędu · rekord: {best}" }
+  "today.streak": { one: "{n} dzień z rzędu · rekord: {best}", few: "{n} dni z rzędu · rekord: {best}", many: "{n} dni z rzędu · rekord: {best}", other: "{n} dni z rzędu · rekord: {best}" },
+  "path.showLessons": "Pokaż lekcje",
+  "path.hideLessons": "Ukryj lekcje"
 
 });

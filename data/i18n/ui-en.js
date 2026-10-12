@@ -1075,6 +1075,8 @@ LINGUAI.addUI("en", {
   "today.drillPreview": "a preview of what comes next",
   "today.nextEyebrow": "Next lesson",
   "today.continue": "Continue →",
-  "today.streak": { one: "{n} day in a row · your best: {best}", other: "{n} days in a row · your best: {best}" }
+  "today.streak": { one: "{n} day in a row · your best: {best}", other: "{n} days in a row · your best: {best}" },
+  "path.showLessons": "Show the lessons",
+  "path.hideLessons": "Hide the lessons"
 
 });

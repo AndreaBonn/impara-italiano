@@ -1083,6 +1083,8 @@ LINGUAI.addUI("fr", {
   "today.drillPreview": "un avant-goût de la suite",
   "today.nextEyebrow": "Prochaine leçon",
   "today.continue": "Continuer →",
-  "today.streak": { one: "{n} jour d'affilée · ton record : {best}", many: "{n} jours d'affilée · ton record : {best}", other: "{n} jours d'affilée · ton record : {best}" }
+  "today.streak": { one: "{n} jour d'affilée · ton record : {best}", many: "{n} jours d'affilée · ton record : {best}", other: "{n} jours d'affilée · ton record : {best}" },
+  "path.showLessons": "Afficher les leçons",
+  "path.hideLessons": "Masquer les leçons"
 
 });

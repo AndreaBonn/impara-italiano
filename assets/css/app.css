@@ -721,6 +721,9 @@ button{font:inherit;color:inherit;}
 .today-next h3{margin:0 0 2px;}
 .today-streak{margin:-6px 0 14px;font-size:.9rem;font-weight:600;color:var(--ink-soft);}
 .today-quiet{margin:0 0 18px;}
+.level-pill__count{font-size:.7rem;font-weight:700;color:var(--salvia-deep);font-family:var(--mono);}
+.unit__toggle{background:none;border:0;padding:6px 4px;margin:-4px 0 6px;min-height:32px;cursor:pointer;
+  font:inherit;font-size:.86rem;font-weight:700;color:var(--salvia-deep);text-decoration:underline;text-underline-offset:3px;}
 .review-start h3{margin:0 0 4px;}
 .review-algo{margin-top:10px;font-size:.85rem;}
 .review-algo summary{cursor:pointer;font-weight:600;}

@@ -1083,6 +1083,8 @@ LINGUAI.addUI("es", {
   "today.drillPreview": "un adelanto de lo que viene",
   "today.nextEyebrow": "Próxima lección",
   "today.continue": "Continuar →",
-  "today.streak": { one: "{n} día seguido · tu récord: {best}", many: "{n} días seguidos · tu récord: {best}", other: "{n} días seguidos · tu récord: {best}" }
+  "today.streak": { one: "{n} día seguido · tu récord: {best}", many: "{n} días seguidos · tu récord: {best}", other: "{n} días seguidos · tu récord: {best}" },
+  "path.showLessons": "Mostrar las lecciones",
+  "path.hideLessons": "Ocultar las lecciones"
 
 });

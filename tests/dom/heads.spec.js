@@ -35,3 +35,14 @@ test("on a desktop the introduction is whole and there is nothing to open", asyn
   await expect(page.locator(".view-head__intro")).toBeVisible();
   await expect(page.locator(".view-head__more")).toBeHidden();
 });
+
+/* The overflow was measured once, at render: a window narrowed afterwards
+   (a phone turned, a desktop window resized) kept a folded intro and no
+   button to open it. */
+test("narrowing the window after the render brings the button", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await oggi(page);
+  await expect(page.locator(".view-head__more")).toBeHidden();
+  await page.setViewportSize({ width: 375, height: 800 });
+  await expect(page.locator(".view-head__more")).toBeVisible();
+});

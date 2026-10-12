@@ -51,11 +51,23 @@
    * appears only when the text really overflows, so a desktop, or a short
    * introduction, gets no control that would do nothing.
    */
+  function measureIntro() {
+    var p = document.querySelector(".view-head__intro");
+    var b = document.querySelector(".view-head__more");
+    if (!p || !b || b.getAttribute("aria-expanded") === "true") return;
+    b.hidden = p.scrollHeight <= p.clientHeight + 1;
+  }
+  /* Measured again when the width changes (a phone turned, a window
+     narrowed) and when the fonts arrive: a measure taken once at render
+     left a folded intro with no button. Registered once, not per screen. */
+  global.addEventListener("resize", measureIntro);
+  if (global.document.fonts && global.document.fonts.ready) global.document.fonts.ready.then(measureIntro);
+
   function wireIntro(root) {
     var p = root.querySelector(".view-head__intro");
     var b = root.querySelector(".view-head__more");
     if (!p || !b) return;
-    b.hidden = p.scrollHeight <= p.clientHeight + 1;
+    measureIntro();
     b.addEventListener("click", function () {
       var open = b.getAttribute("aria-expanded") !== "true";
       b.setAttribute("aria-expanded", String(open));

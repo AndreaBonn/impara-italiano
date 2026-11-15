@@ -484,3 +484,35 @@ for (const theme of ["light", "dark"]) {
     expect(chip.tekst, `chip ${chip.tekst.toFixed(2)}:1`).toBeGreaterThanOrEqual(TEKST);
   });
 }
+
+/* ============================================================
+   Navigation items: the colour behind them has to be a colour.
+
+   The rail paints its panel with a gradient through the `background`
+   shorthand, which also resets background-color to transparent. A tool that
+   reads colours (not images) then fell through to the page and measured the
+   paper-white ink against paper, 1.02:1. The two controls that are hidden at
+   this width (the menu toggle, the bottom bar) showed the browser's grey
+   button face instead of their own, which in the dark theme is light under
+   light ink.
+   ============================================================ */
+for (const theme of ["light", "dark"]) {
+  test(`navigation items: a real colour behind the ink in the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript(MIERNIK);
+    await page.goto("/index.html");
+    await page.waitForSelector(".rail__item");
+    await page.evaluate(t => document.documentElement.setAttribute("data-theme", t), theme);
+    await page.waitForTimeout(600); /* the palette transition */
+
+    const rail = await page.evaluate(() => getComputedStyle(document.getElementById("rail")).backgroundColor);
+    expect(rail, "the panel has an opaque background-color under its gradient").not.toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+    const item = await page.evaluate(bg => window.__kontrast(".rail__item", bg), rail);
+    expect(item.tekst, `rail item on the panel colour: ${item.tekst.toFixed(2)}:1`).toBeGreaterThanOrEqual(TEKST);
+
+    for (const sel of [".rail-toggle", ".bottom-nav__item"]) {
+      const m = await page.evaluate(s => window.__kontrast(s), sel);
+      expect(m, `${sel} exists`).not.toBeNull();
+      expect(m.tekst, `${sel}: ${m.tekst.toFixed(2)}:1`).toBeGreaterThanOrEqual(TEKST);
+    }
+  });
+}

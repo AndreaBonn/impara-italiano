@@ -361,6 +361,11 @@ button{font:inherit;color:inherit;}
       oklch(0.422 0.086 165) 0%,
       oklch(0.308 0.059 168) 45%,
       oklch(0.231 0.040 172) 100%);
+  /* The `background` shorthand above resets background-color to transparent, so
+     anything that reads the panel's colour (not its image) fell through to the
+     page behind it and measured paper-white ink against paper. Restated after
+     the shorthand: the gradient still paints over it. */
+  background-color: oklch(0.308 0.059 168);
   color:var(--on-rail);
   z-index:40;
 }
@@ -370,6 +375,7 @@ button{font:inherit;color:inherit;}
     oklch(0.308 0.059 168) 0%,
     oklch(0.231 0.040 172) 55%,
     oklch(0.201 0.011 242) 100%);
+  background-color: oklch(0.231 0.040 172);
 }
 
 .rail__head{padding:26px 22px 16px;}
@@ -486,8 +492,11 @@ button{font:inherit;color:inherit;}
 }
 .rail__theme:hover{background:oklch(0 0 0 / .26);}
 
-.rail-toggle{display:none;}
+.rail-toggle{display:none;background:var(--salvia-deep);color:var(--on-primary);}
 .bottom-nav{display:none;}
+/* Hidden on wide screens, but never the browser's grey button face: the face is
+   light, and the ink is light in the dark theme. */
+.bottom-nav__item{background:none;}
 .rail__scrim{display:none;}
 
 /* ══════════════════ MAIN ══════════════════ */

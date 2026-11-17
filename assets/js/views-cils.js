@@ -91,7 +91,8 @@
      and skip it without a single answer — and it is clicked under a clock,
      so a nervous double click is the rule here, not the exception. */
   function razTylko(przycisk, akcja) {
-    przycisk.addEventListener("click", function () {
+    przycisk.addEventListener("click", function (e) {
+      if (e && e.detail > 1) return;
       if (przycisk.disabled) return;
       przycisk.disabled = true;
       akcja();

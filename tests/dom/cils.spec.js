@@ -130,6 +130,21 @@ test.describe("simulazione d'esame", () => {
     expect(await page.textContent(".cils-step")).toMatch(/2/);
   });
 
+  test("il secondo clic di un doppio clic non chiude la sezione appena aperta", async ({ page }) => {
+    /* The first click draws the next section synchronously. When that
+       section is short its close button lands under the pointer, and the
+       second click of the double click (event.detail === 2) closed it too,
+       skipping a whole module. Where it lands depends on the layout, so the
+       second click is dispatched on the new button directly. */
+    await otworz(page);
+    await page.locator(".js-next").click();
+    await page.locator(".js-next").evaluate(b => {
+      b.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 2 }));
+    });
+    await page.waitForTimeout(400);
+    expect(await page.textContent(".cils-step")).toMatch(/2/);
+  });
+
   test("l'orologio non parla a ogni secondo", async ({ page }) => {
     await otworz(page);
     /* La cifra che cambia ogni secondo è nascosta agli screen reader; la

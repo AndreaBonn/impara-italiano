@@ -160,7 +160,9 @@
       var haslo = hasloKursu(forma, kurs);
       if (!haslo) return;
       if (!wg[haslo]) {
-        wg[haslo] = { haslo: haslo, ranga: i + 1, ile: 0, formy: [] };
+        /* haslo collapses the forms; wpis is what the row shows and adds. */
+        var wpis = global.Lemma && global.Lemma.wpisKursu ? global.Lemma.wpisKursu(haslo) || haslo : haslo;
+        wg[haslo] = { haslo: haslo, wpis: wpis, ranga: i + 1, ile: 0, formy: [] };
         kolejnosc.push(haslo);
       }
       wg[haslo].ile += para[1];

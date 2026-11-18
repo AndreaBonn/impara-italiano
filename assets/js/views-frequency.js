@@ -78,11 +78,12 @@
         ? '<h2 class="cov__h">' + esc(t("cov.nextUp")) + "</h2>" +
           '<p style="color:var(--ink-soft);font-size:.92rem">' + esc(t("cov.nextUpWhy")) + "</p>" +
           '<div class="stack" id="covList">' + braki.map(function (b) {
-            /* The row holds the ENTRY: that is what goes onto the card and
+            /* The row holds the ENTRY as the course wrote it (b.wpis: "la casa",
+               not the dictionary key "casa"): that is what goes onto the card and
                that is what has a recording. The forms encountered go
                underneath as context. Showing the form while adding the entry
                was two different things presented as one. */
-            return '<div class="list-row" data-haslo="' + esc(b.haslo) + '">' +
+            return '<div class="list-row" data-haslo="' + esc(b.wpis) + '">' +
               '<span class="chip">#' + b.ranga + "</span>" +
               '<span class="list-row__main"><b class="js-w"></b>' +
               (b.formy.length > 1 ? '<span class="js-f"></span>' : "") + "</span>" +
@@ -91,11 +92,11 @@
                  system synthesis does not keep that promise, and the student
                  has no way to tell the difference between "we did not record
                  this" and "this is how it is pronounced". */
-              (Audio2.hasNatural(b.haslo)
-                ? '<button type="button" class="say-btn" data-say="' + esc(b.haslo) + '" aria-label="' +
-                  esc(t("a11y.listenTo", { what: b.haslo })) + '">🔊</button>'
+              (Audio2.hasNatural(b.wpis)
+                ? '<button type="button" class="say-btn" data-say="' + esc(b.wpis) + '" aria-label="' +
+                  esc(t("a11y.listenTo", { what: b.wpis })) + '">🔊</button>'
                 : "") +
-              '<button type="button" class="btn btn--green btn--sm js-add" data-haslo="' + esc(b.haslo) + '">' +
+              '<button type="button" class="btn btn--green btn--sm js-add" data-haslo="' + esc(b.wpis) + '">' +
               esc(t("cov.add")) + "</button></div>";
           }).join("") + "</div>"
         : '<p class="cov__done">' + esc(t("cov.nothingLeft")) + "</p>") +

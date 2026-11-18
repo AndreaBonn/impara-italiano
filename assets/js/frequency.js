@@ -161,7 +161,7 @@
       if (!haslo) return;
       if (!wg[haslo]) {
         /* haslo collapses the forms; wpis is what the row shows and adds. */
-        var wpis = global.Lemma && global.Lemma.wpisKursu ? global.Lemma.wpisKursu(haslo) || haslo : haslo;
+        var wpis = global.Lemma && global.Lemma.wpisKursu ? global.Lemma.wpisKursu(haslo, forma) || haslo : haslo;
         wg[haslo] = { haslo: haslo, wpis: wpis, ranga: i + 1, ile: 0, formy: [] };
         kolejnosc.push(haslo);
       }

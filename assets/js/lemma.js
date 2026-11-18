@@ -136,12 +136,23 @@
      was meant to fix. */
   var aliasy = {};
 
+  /* Bare noun -> the entry the course teaches it with ("casa" -> "la casa").
+     The dictionary key drops nothing for matching, but a card added from the
+     coverage screen must carry the article the lesson taught. Only article +
+     one word: a word of a longer expression is not that expression.
+     Never reset: lemat() rebuilds the course dictionary in the middle of a
+     caller's pass, and a noun keeps the same article across rebuilds. */
+  var wpisy = {};
+  var ARTYKUL = /^(il|lo|la|i|gli|le|un|uno|una)\s+(\S+)$/;
+
   function dodajDoSlownika(zbior, s) {
     if (!s) return;
     var w = String(s).toLowerCase().replace(/[’']/g, "'").trim();
     if (!w) return;
     zbior[w] = true;
     if (M.bezAkcentow(w) !== w) aliasy[M.bezAkcentow(w)] = w;
+    var art = ARTYKUL.exec(w);
+    if (art && !wpisy[art[2]]) wpisy[art[2]] = String(s).trim().replace(/\s+/g, " ");
     /* A multi-word entry also contributes its words: "di solito" makes
        "solito" stop being silence.
 
@@ -293,6 +304,8 @@
        Its own splitter would be a second answer to "what does an entry
        contribute", and the two would drift apart word by word. */
     dodajHaslo: dodajDoSlownika,
+    /** The course entry for a dictionary key, "" when the key is the entry. */
+    wpisKursu: function (haslo) { return wpisy[haslo] || ""; },
     odswiez: odswiez,
     funkcyjne: M.funkcyjny,
     /** For measurement only: how many forms the index knows and how long it took to build. */

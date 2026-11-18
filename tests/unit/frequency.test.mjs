@@ -197,3 +197,29 @@ test("the default gap limit is twenty rows in frequency order", () => {
   const gaps = Array.from(Frequency.brakujace(words, course, {}));
   assert.deepEqual(gaps.map(gap => gap.haslo), words.slice(0, 20).map(([word]) => word));
 });
+
+describe("frequency: the row carries the course entry", () => {
+  /* The dictionary key is the bare lowercase word: right for matching, wrong
+     for the card. "casa" added from the coverage screen lost the article the
+     course teaches with it ("la casa"), and in the German fork the noun also
+     lost its capital ("bescheid"). The row keeps the key for collapsing and
+     carries the entry the course wrote for showing and adding. */
+  const LIVELLI = [{ units: [{ lessons: [{ vocab: [{ it: "la casa" }, { it: "di solito" }, { it: "libro" }] }] }] }];
+
+  test("an article + noun entry is what the row shows", () => {
+    const s = silnik();
+    const kurs = s.Lemma.zbudujSlownik(LIVELLI, []);
+    const braki = Array.from(s.Frequency.brakujace([["casa", 9], ["solito", 5], ["libri", 3]], kurs, {}, 10));
+    const wpis = h => (braki.filter(b => b.haslo === h)[0] || {}).wpis;
+    assert.equal(wpis("casa"), "la casa", "the article comes back with the noun");
+    assert.equal(wpis("libro"), "libro", "an entry without article stays as it is");
+    assert.equal(wpis("solito"), "solito", "a word of a longer expression is not replaced by the expression");
+  });
+
+  test("without Lemma.wpisKursu the row falls back to the key", () => {
+    const s = silnik();
+    s.Lemma.wpisKursu = undefined;
+    const braki = Array.from(s.Frequency.brakujace([["casa", 9]], { casa: true }, {}, 10));
+    assert.equal(braki[0].wpis, "casa");
+  });
+});

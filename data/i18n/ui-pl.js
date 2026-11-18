@@ -175,7 +175,12 @@ LINGUAI.addUI("pl", {
 
   /* ---------------- Powtórki (SRS) ---------------- */
   "srs.nothingDue": "Nic do powtórzenia 🌿",
-  "srs.allResting": "Wszystkie {n} fiszek jest w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji.",
+  "srs.allResting": {
+    one: "Twoja jedyna fiszka jest w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji.",
+    few: "Wszystkie {n} fiszki są w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji.",
+    many: "Wszystkie {n} fiszek jest w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji.",
+    other: "Wszystkie {n} fiszek jest w spoczynku. Wróć jutro albo dodaj nowe słówka gwiazdką w lekcji."
+  },
   "srs.deckEmpty": "Twoja talia jest pusta. Oznacz słówka gwiazdką ⭐ w dowolnej lekcji, a wrócą tu we właściwym momencie.",
   "srs.howTitle": "System powtórek",
   "srs.howText": "Fiszki wracają w rosnących odstępach, od jednego dnia do wielu miesięcy, zależnie od tego, jak pewnie odpowiadasz.",

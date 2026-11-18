@@ -184,3 +184,18 @@ test("errore di import dice il motivo, nella lingua giusta", async ({ page }) =>
   expect(wyniki.pl[0]).not.toBe(wyniki.en[0]);
   expect(wyniki.de[0]).not.toBe(wyniki.en[0]);
 });
+
+/* A model letter is several paragraphs: greeting, body, closing. It goes in
+   as text (see renderModel), and a plain <p> folds every line break into a
+   space, so the letter came out as one block with "Cari saluti" glued to
+   the last sentence. */
+test("the model keeps its line breaks", async ({ page }) => {
+  await zadanie(page, "w-a2-giornata");
+  await page.evaluate(() => { window.WRITING[0].model = "Caro Marco,\ncome stai?\nA presto"; });
+  await page.locator("#writeText").fill("Mi sveglio presto e lavoro.");
+  await page.locator(".js-check").click();
+  await page.locator(".js-model").click();
+  const p = page.locator(".js-model-box p").first();
+  await expect(p).toHaveText("Caro Marco, come stai? A presto");
+  expect(await p.innerText()).toBe("Caro Marco,\ncome stai?\nA presto");
+});

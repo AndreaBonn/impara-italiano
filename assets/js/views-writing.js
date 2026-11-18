@@ -245,6 +245,10 @@
        text: one rule for the whole view is easier to maintain than an
        exception somebody will forget one day. */
     p.textContent = w.model || "";
+    /* A model letter has a greeting, paragraphs and a closing; a plain <p>
+       folds those line breaks into spaces. pre-line keeps them and still
+       wraps long lines. */
+    p.style.whiteSpace = "pre-line";
     var nota = document.createElement("p");
     nota.className = "exq__sub";
     nota.style.marginTop = "8px";

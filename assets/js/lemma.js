@@ -145,14 +145,14 @@
   var wpisy = {};
   var ARTYKUL = /^(il|lo|la|i|gli|le|un|uno|una)\s+(\S+)$/;
 
-  function dodajDoSlownika(zbior, s) {
+  function dodajDoSlownika(zbior, s, zKursu) {
     if (!s) return;
     var w = String(s).toLowerCase().replace(/[’']/g, "'").trim();
     if (!w) return;
     zbior[w] = true;
     if (M.bezAkcentow(w) !== w) aliasy[M.bezAkcentow(w)] = w;
     var art = ARTYKUL.exec(w);
-    if (art && !wpisy[art[2]]) wpisy[art[2]] = String(s).trim().replace(/\s+/g, " ");
+    if (zKursu && art && !wpisy[art[2]]) wpisy[art[2]] = String(s).trim().replace(/\s+/g, " ");
     /* A multi-word entry also contributes its words: "di solito" makes
        "solito" stop being silence.
 
@@ -185,16 +185,16 @@
     (poziomy || []).forEach(function (lv) {
       (lv.units || []).forEach(function (u) {
         (u.lessons || []).forEach(function (l) {
-          (l.vocab || []).forEach(function (v) { dodajDoSlownika(zbior, v.it); });
+          (l.vocab || []).forEach(function (v) { dodajDoSlownika(zbior, v.it, true); });
         });
       });
     });
     (czytanki || []).forEach(function (r) {
-      (r.glossIt || []).forEach(function (w) { dodajDoSlownika(zbior, w); });
+      (r.glossIt || []).forEach(function (w) { dodajDoSlownika(zbior, w, true); });
       /* lexIt: words the lookup must be able to explain but which we do NOT
          show in the hard-word panel. The panel is a list chosen by the
          author; thirty items under an A1 text stops being a choice. */
-      (r.lexIt || []).forEach(function (w) { dodajDoSlownika(zbior, w); });
+      (r.lexIt || []).forEach(function (w) { dodajDoSlownika(zbior, w, true); });
     });
     return zbior;
   }
@@ -303,9 +303,11 @@
        student's deck - and has to write it the same way as the course one.
        Its own splitter would be a second answer to "what does an entry
        contribute", and the two would drift apart word by word. */
-    dodajHaslo: dodajDoSlownika,
+    /* The student's deck goes through here too, and never into wpisy: a
+       custom card must not rename the entry the course teaches. */
+    dodajHaslo: function (zbior, s) { dodajDoSlownika(zbior, s, false); },
     /** The course entry for a dictionary key, "" when the key is the entry. */
-    wpisKursu: function (haslo) { return wpisy[haslo] || ""; },
+    wpisKursu: function (haslo) { return Object.prototype.hasOwnProperty.call(wpisy, haslo) ? wpisy[haslo] : ""; },
     odswiez: odswiez,
     funkcyjne: M.funkcyjny,
     /** For measurement only: how many forms the index knows and how long it took to build. */

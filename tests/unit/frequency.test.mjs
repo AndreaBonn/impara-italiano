@@ -223,3 +223,31 @@ describe("frequency: the row carries the course entry", () => {
     assert.equal(braki[0].wpis, "casa");
   });
 });
+
+describe("frequency: the course entry, edge cases", () => {
+  const LIVELLI = [{ units: [{ lessons: [{ vocab: [{ it: "la casa" }] }] }] }];
+
+  test("wpisKursu receives the frequency form, so a language can tell noun from verb by it", () => {
+    const s = silnik();
+    const seen = [];
+    s.Lemma.wpisKursu = (h, forma) => { seen.push([h, forma]); return ""; };
+    Array.from(s.Frequency.brakujace([["Casa", 9]], { casa: true }, {}, 10));
+    assert.deepEqual(seen.map(x => Array.from(x)), [["casa", "Casa"]]);
+  });
+
+  test("a card of the student does not change the course entry", () => {
+    const s = silnik();
+    s.Lemma.zbudujSlownik([], []);
+    s.Lemma.dodajHaslo({}, "una sedia");
+    assert.equal(s.Lemma.wpisKursu("sedia"), "", "a deck card is not a course entry");
+    s.Lemma.zbudujSlownik([{ units: [{ lessons: [{ vocab: [{ it: "la sedia" }] }] }] }], []);
+    assert.equal(s.Lemma.wpisKursu("sedia"), "la sedia", "the course entry still lands");
+  });
+
+  test("the entry survives a rebuild of the dictionary", () => {
+    const s = silnik();
+    s.Lemma.zbudujSlownik(LIVELLI, []);
+    s.Lemma.zbudujSlownik([], []);
+    assert.equal(s.Lemma.wpisKursu("casa"), "la casa");
+  });
+});

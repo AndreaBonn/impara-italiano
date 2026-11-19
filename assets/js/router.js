@@ -57,7 +57,13 @@
     var params = {};
     (m[2] || "").split("&").filter(Boolean).forEach(function (pair) {
       var kv = pair.split("=");
-      params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
+      /* A lone "%" is not an escape and decodeURIComponent throws: that
+         parameter is unreadable, the rest of the address is not. */
+      try {
+        params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
+      } catch (e) {
+        if (!e || e.name !== "URIError") throw e;
+      }
     });
     return { route: m[1], params: params };
   }

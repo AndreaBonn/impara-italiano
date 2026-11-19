@@ -88,6 +88,15 @@ describe("the address", () => {
     const { R } = silnik();
     assert.deepEqual(struktura(R.decode("#/lezione?id=")), { route: "lezione", params: { id: "" } });
   });
+
+  /* "%" alone is not a valid escape and decodeURIComponent throws URIError,
+     so a hand-typed "#/cerca?q=100%" broke the route change instead of
+     reaching the fallback this function promises. */
+  test("a malformed escape drops that parameter and keeps the route and the others", () => {
+    const { R } = silnik();
+    assert.deepEqual(struktura(R.decode("#/cerca?q=%&level=A1")), { route: "cerca", params: { level: "A1" } });
+    assert.deepEqual(struktura(R.decode("#/cerca?%E0=x")), { route: "cerca", params: {} }, "in the key too");
+  });
 });
 
 describe("moving to a route", () => {

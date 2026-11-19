@@ -286,6 +286,8 @@ const MUTACJE = [
   { plik: RAPORT, test: T_RAPORT, opis: "report: a fraction passes, so 9/12 reaches the student",
     z: "    if (UŁAMEK.test(zdanie) || PROCENT.test(zdanie) || PUNKTY.test(zdanie)) return true;",
     na: "    if (PROCENT.test(zdanie) || PUNKTY.test(zdanie)) return true;" },
+  { plik: RAPORT, test: T_RAPORT, opis: "report: a CEFR level passes, so \"das entspricht B2\" reaches the student",
+    z: "    if (POZIOM.test(zdanie)) return true;", na: "" },
   { plik: RAPORT, test: T_RAPORT, opis: "report: the verdict words stop being checked",
     z: "      if (male.indexOf(WERDYKT[i]) >= 0) return true;", na: "" },
   { plik: RAPORT, test: T_RAPORT, opis: "report: the ceiling on length dropped",

@@ -44,6 +44,33 @@ describe("cils-report: what may not pass", () => {
     assert.ok(!out.includes("75"));
   });
 
+  test("a percentage written as a word goes too, in every language", () => {
+    for (const zdanie of ["Direi 75 percent.", "Direi 75 per cent.", "Direi 75 per cento.",
+      "Direi 75 percento.", "Direi 75 por ciento.", "Direi 75 pour cent.",
+      "Direi 75 Prozent.", "Direi 75 procent."]) {
+      const out = raport().pulisci("Il testo è chiaro. " + zdanie);
+      assert.equal(out, "Il testo è chiaro.", zdanie);
+    }
+  });
+
+  test("points abbreviated are still points", () => {
+    for (const zdanie of ["Dałbym 9 pkt.", "I would give it 9 pts."]) {
+      const out = raport().pulisci("Il testo è chiaro. " + zdanie);
+      assert.equal(out, "Il testo è chiaro.", zdanie);
+    }
+  });
+
+  /* A CEFR level is a verdict on the text: "this corresponds to B2" says how
+     the student would do, which is the one thing this report may not say.
+     The level of the exam is already on the screen, so a sentence naming a
+     level has nothing to add that is worth the risk. */
+  test("a CEFR level goes with its sentence", () => {
+    for (const zdanie of ["Das entspricht B2.", "Il testo è da livello A2.", "Poziom C1."]) {
+      const out = raport().pulisci("Il testo è chiaro. " + zdanie);
+      assert.equal(out, "Il testo è chiaro.", zdanie);
+    }
+  });
+
   test("points are a mark even spelled out", () => {
     const out = raport().pulisci("Ottimo lavoro. Ti darei 8 punti su 12.");
     assert.ok(!out.includes("punti"), out);
@@ -141,6 +168,11 @@ describe("cils-report: what must survive", () => {
        eat the useful ones, and nobody would notice because the text would
        still read fine. */
     const tekst = "Hai usato il passato 3 volte e sempre correttamente.";
+    assert.equal(raport().pulisci(tekst), tekst);
+  });
+
+  test("a word that merely contains a level or a percent stays", () => {
+    const tekst = "La frase «abc12» non c'entra, e nemmeno «percentuale» senza numero.";
     assert.equal(raport().pulisci(tekst), tekst);
   });
 

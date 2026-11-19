@@ -72,8 +72,10 @@
      sbagliato due parole su venti" — the very feedback this feature exists
      to deliver — would be thrown away as a score. */
   var UŁAMEK = /\d+\s*\/\s*\d+/;
-  var PROCENT = /\d+\s*%/;
-  var PUNKTY = /\d+\s*(punt|point|punkt|puntos|punkte|punkty)/i;
+  var PROCENT = /\d+\s*(%|percent|per cent|per ?cento|por ciento|pour ?cent|prozent|procent)/i;
+  var PUNKTY = /\d+\s*(punt|point|punkt|puntos|punkte|punkty|pkt\b|pts\b)/i;
+  /* A CEFR level said of the text is a verdict on it ("das entspricht B2"). */
+  var POZIOM = /\b[ABC][12]\b/;
   var NA_ILE = /\d+\s*(su|na|out of|sur|von|de)\s*(12|48)\b/i;
 
   /* The same thing with the denominator written out. "Ti darei otto punti su
@@ -109,6 +111,7 @@
   /** Whether this sentence carries a mark or a verdict. */
   function werdykt(zdanie) {
     if (UŁAMEK.test(zdanie) || PROCENT.test(zdanie) || PUNKTY.test(zdanie)) return true;
+    if (POZIOM.test(zdanie)) return true;
     if (NA_ILE.test(zdanie) || NA_SLOWNIE.test(zdanie) || OCENA.test(zdanie)) return true;
     var male = zdanie.toLowerCase();
     for (var i = 0; i < WERDYKT.length; i++) {

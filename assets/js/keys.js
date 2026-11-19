@@ -122,7 +122,9 @@
     /* A digit picks an answer. Only outside a text field, otherwise a "1"
        typed into an answer would click the options. */
     if (/^[1-9]$/.test(e.key)) {
-      var opts = document.querySelectorAll(".exq .opts .opt");
+      /* A lesson keeps every exercise in the page and hides all but the
+         current one, so the hidden ones must not take the digit. */
+      var opts = document.querySelectorAll(".exq:not([hidden]) .opts .opt");
       var i = parseInt(e.key, 10) - 1;
       if (opts[i]) {
         e.preventDefault();

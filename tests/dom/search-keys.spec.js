@@ -134,6 +134,32 @@ for (const ksztalt of [
   });
 }
 
+/* A lesson builds every exercise up front and hides all but the current one
+   (views-lesson.js). The digit must answer the exercise on screen: picking an
+   option of an earlier, hidden exercise answered the wrong question. */
+test("a digit picks an answer in the visible exercise, not in a hidden one", async ({ page }) => {
+  await page.goto("/index.html");
+  await page.waitForFunction(() => window.Ex && window.Keys);
+
+  await page.evaluate(() => {
+    const ex = { t: "mcq", q: "Pytanie", opts: ["pierwsza", "druga"], a: 0 };
+    [0, 1].forEach(i => {
+      const host = document.createElement("div");
+      host.id = "klawisze-" + i;
+      document.getElementById("main").appendChild(host);
+      const b = window.Ex.build(ex, i, "klawisze");
+      host.innerHTML = b.html;
+      const q = host.querySelector(".exq");
+      b.wire(q, () => {});
+      q.hidden = i === 0;
+    });
+  });
+
+  await page.locator("body").press("1");
+  await expect(page.locator("#klawisze-1 .opts .opt").first()).toHaveClass(/is-sel/);
+  await expect(page.locator("#klawisze-0 .opts .opt").first()).not.toHaveClass(/is-sel/);
+});
+
 test("a digit does nothing while the student types in a text field", async ({ page }) => {
   await page.goto("/index.html#/cerca");
   await page.waitForSelector("#searchQ");

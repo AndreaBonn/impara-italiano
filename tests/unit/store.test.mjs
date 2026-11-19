@@ -157,6 +157,31 @@ describe("the reasons a backup file is rejected", () => {
     assert.equal(e.vars.field, "lessons");
   });
 
+  /* A file whose containers are right but whose fields inside them are not
+     used to pass, get saved, and break every lesson afterwards: recordLesson
+     writes stats.days[today], and a number takes no property. The profile
+     stayed broken across reloads, because the bad value was in storage. */
+  test("a field inside a container with the wrong type, named by its path", () => {
+    const e = odrzucenie('{"schema":2,"stats":{"days":5}}');
+    assert.equal(e.key, "set.errBadField");
+    assert.equal(e.vars.field, "stats.days");
+    assert.equal(odrzucenie('{"schema":2,"settings":{"retention":"0.9"}}').vars.field, "settings.retention");
+    assert.equal(odrzucenie('{"schema":2,"cils":{"runs":{}}}').vars.field, "cils.runs");
+  });
+
+  test("fields inside containers with the right type, unknown ones and null defaults pass", () => {
+    assert.equal(odrzucenie('{"schema":2,"stats":{"days":{"2026-11-19":3},"correct":4}}'), null);
+    assert.equal(odrzucenie('{"schema":2,"settings":{"llmOrder":["groq"]}}'), null, "a key the defaults do not list");
+    assert.equal(odrzucenie('{"schema":2,"streak":{"lastDay":"2026-11-18"}}'), null, "a field whose default is null");
+  });
+
+  test("an accepted file leaves a profile in which a lesson can be recorded", () => {
+    const box = loadEngine();
+    box.Core.importState('{"schema":2,"stats":{"days":{"2026-11-19":1}}}');
+    box.Core.recordLesson("a1-u01-l1", 9, 10, 60);
+    assert.equal(box.Core.state.stats.lessonsDone, 1);
+  });
+
   test("placement may be an object or null, but not a number", () => {
     assert.equal(odrzucenie('{"schema":2,"placement":null}'), null, "null przechodzi");
     assert.equal(odrzucenie('{"schema":2,"placement":{"cefr":"A2"}}'), null, "obiekt przechodzi");

@@ -469,6 +469,26 @@
       if (parsed[k] === undefined) return;
       if (typeOf(parsed[k]) !== SHAPE[k]) throw importError("set.errBadField", { field: k });
     });
+    var base = defaultState();
+    Object.keys(base).forEach(function (k) {
+      if (typeOf(base[k]) === "object" && typeOf(parsed[k]) === "object") checkNested(parsed[k], base[k], k);
+    });
+  }
+
+  /**
+   * The fields inside the containers, against the defaults. merge() copies
+   * whatever the file says, so `stats: {days: 5}` used to be saved and then
+   * break every lesson: recordLesson writes stats.days[today]. Keys the
+   * defaults do not list (llmOrder, llmConsent) and fields whose default is
+   * null pass as they are: there is no type to compare with.
+   */
+  function checkNested(given, base, path) {
+    Object.keys(base).forEach(function (k) {
+      var want = base[k], got = given[k], field = path + "." + k;
+      if (got === undefined || want === null) return;
+      if (typeOf(got) !== typeOf(want)) throw importError("set.errBadField", { field: field });
+      if (typeOf(want) === "object") checkNested(got, want, field);
+    });
   }
 
   /**

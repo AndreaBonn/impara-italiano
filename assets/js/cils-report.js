@@ -72,7 +72,8 @@
      sbagliato due parole su venti" — the very feedback this feature exists
      to deliver — would be thrown away as a score. */
   var UŁAMEK = /\d+\s*\/\s*\d+/;
-  var PROCENT = /\d+\s*(%|percent|per cent|per ?cento|por ciento|pour ?cent|prozent|procent)/i;
+  /* The words end at a boundary: "3 percentuali" counts things, it is no mark. */
+  var PROCENT = /\d+\s*(%|(?:percent|per cent|per ?cento|por ciento|pour ?cent|prozent|procent)\b)/i;
   var PUNKTY = /\d+\s*(punt|point|punkt|puntos|punkte|punkty|pkt\b|pts\b)/i;
   /* A CEFR level said of the text is a verdict on it ("das entspricht B2"). */
   var POZIOM = /\b[ABC][12]\b/;

@@ -172,7 +172,7 @@ describe("cils-report: what must survive", () => {
   });
 
   test("a word that merely contains a level or a percent stays", () => {
-    const tekst = "La frase «abc12» non c'entra, e nemmeno «percentuale» senza numero.";
+    const tekst = "Hai usato 3 percentuali diverse e la vitamina B12 è scritta bene.";
     assert.equal(raport().pulisci(tekst), tekst);
   });
 
